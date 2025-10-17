@@ -702,6 +702,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
+    gap: 12,
   },
   welcomeContainer: {
     flex: 1,
@@ -723,14 +724,12 @@ const styles = StyleSheet.create({
     }),
   },
   headerLogo: {
+    width: 60,
+    height: 60,
     ...Platform.select({
-      default: {
-        width: 60,
-        height: 60,
-      },
       web: {
-        width: 140,
-        height: 140,
+        width: 80,
+        height: 80,
       },
     }),
   },
@@ -924,6 +923,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 20,
     letterSpacing: -0.5,
+    textTransform: 'capitalize' as const,
   },
   categoryItemsScroll: {
     paddingHorizontal: 20,

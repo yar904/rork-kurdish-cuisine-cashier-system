@@ -306,11 +306,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 140,
     height: 140,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
-    elevation: 10,
     maxWidth: '100%',
     aspectRatio: 1,
   },

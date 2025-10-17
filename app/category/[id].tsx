@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 0,
     marginBottom: 2,
+    textTransform: 'capitalize' as const,
   },
   headerSubtitle: {
     fontSize: 14,
