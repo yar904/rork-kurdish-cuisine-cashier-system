@@ -8,6 +8,7 @@ import {
   Animated,
   useWindowDimensions,
   Image,
+  ScrollView,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import { Language } from '@/constants/i18n';
 import Svg, { Path, Circle, G, Defs, Pattern, Rect } from 'react-native-svg';
+import { ChefHat, Sparkles, Users, Clock } from 'lucide-react-native';
 
 
 
@@ -141,13 +143,17 @@ export default function LandingPage() {
         colors={['rgba(61, 1, 1, 0)', 'rgba(61, 1, 1, 0.85)', 'rgba(61, 1, 1, 0.98)']}
         style={[styles.overlay, isLandscape && styles.overlayLandscape]}
       >
-        <View style={[
-          styles.content,
-          (isTablet || isDesktop) && styles.contentTablet,
-          isDesktop && styles.contentDesktop,
-          isLandscape && styles.contentLandscape,
-          isSmallScreen && styles.contentSmall,
-        ]}>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.content,
+            (isTablet || isDesktop) && styles.contentTablet,
+            isDesktop && styles.contentDesktop,
+            isLandscape && styles.contentLandscape,
+            isSmallScreen && styles.contentSmall,
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={[
             styles.titleContainer,
             (isTablet || isDesktop) && styles.titleContainerTablet,
@@ -165,7 +171,45 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
+            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>Authentic Kurdish Cuisine</Text>
+            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>Experience the rich flavors and traditions of Kurdish hospitality</Text>
           </View>
+
+          <View style={[styles.featuresContainer, isTablet && styles.featuresContainerTablet]}>
+            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
+              <View style={styles.featureIconContainer}>
+                <ChefHat size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
+              </View>
+              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Master Chefs</Text>
+              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Traditional recipes passed down through generations</Text>
+            </View>
+
+            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
+              <View style={styles.featureIconContainer}>
+                <Sparkles size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
+              </View>
+              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Premium Quality</Text>
+              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Fresh ingredients and authentic spices</Text>
+            </View>
+
+            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
+              <View style={styles.featureIconContainer}>
+                <Users size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
+              </View>
+              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Family Atmosphere</Text>
+              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Warm hospitality in every visit</Text>
+            </View>
+
+            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
+              <View style={styles.featureIconContainer}>
+                <Clock size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
+              </View>
+              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Quick Service</Text>
+              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Fresh meals prepared with care</Text>
+            </View>
+          </View>
+
+          <View style={[styles.divider, isTablet && styles.dividerTablet]} />
 
           <View style={[styles.languageContainer, (isTablet || isDesktop) && styles.languageContainerTablet]}>
             <Text style={[styles.languageTitle, isTablet && styles.languageTitleTablet, isDesktop && styles.languageTitleDesktop]}>Select Your Language</Text>
@@ -223,13 +267,23 @@ export default function LandingPage() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
-                <Text style={[styles.continueButtonText, isTablet && styles.continueButtonTextTablet, isDesktop && styles.continueButtonTextDesktop]}>Continue</Text>
+                <Text style={[styles.continueButtonText, isTablet && styles.continueButtonTextTablet, isDesktop && styles.continueButtonTextDesktop]}>Continue to Menu</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
 
-          <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to authentic Kurdish dining</Text>
-        </View>
+          <View style={styles.footerContainer}>
+            <View style={styles.footerLogoContainer}>
+              <Image
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+                style={styles.footerLogo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to authentic Kurdish dining</Text>
+            <Text style={[styles.footerCopyright, isTablet && styles.footerCopyrightTablet]}>© 2025 Tapse Restaurant. All rights reserved.</Text>
+          </View>
+        </ScrollView>
       </LinearGradient>
     </View>
   );
@@ -265,12 +319,13 @@ const styles = StyleSheet.create({
   overlayLandscape: {
     justifyContent: 'center',
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 50 : 30,
     paddingTop: 40,
-    justifyContent: 'center',
-    flex: 1,
   },
   contentTablet: {
     paddingHorizontal: 80,
@@ -291,14 +346,14 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
     flexShrink: 0,
   },
   titleContainerTablet: {
-    marginBottom: 50,
+    marginBottom: 40,
   },
   titleContainerSmall: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   logoBackground: {
     alignSelf: 'center',
@@ -324,6 +379,109 @@ const styles = StyleSheet.create({
   logoSmall: {
     width: 140,
     height: 140,
+  },
+  tagline: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.gold,
+    textAlign: 'center',
+    marginTop: 16,
+    letterSpacing: 1,
+  },
+  taglineTablet: {
+    fontSize: 32,
+    marginTop: 20,
+  },
+  taglineDesktop: {
+    fontSize: 36,
+    marginTop: 24,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: Colors.cream,
+    textAlign: 'center',
+    marginTop: 8,
+    opacity: 0.8,
+    paddingHorizontal: 20,
+    lineHeight: 20,
+  },
+  subtitleTablet: {
+    fontSize: 17,
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  subtitleDesktop: {
+    fontSize: 19,
+    marginTop: 16,
+    lineHeight: 28,
+  },
+  featuresContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 32,
+  },
+  featuresContainerTablet: {
+    gap: 16,
+    marginBottom: 40,
+  },
+  featureCard: {
+    width: '48%',
+    minWidth: 150,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.15)',
+  },
+  featureCardTablet: {
+    width: '48%',
+    minWidth: 200,
+    padding: 20,
+    borderRadius: 20,
+  },
+  featureIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.gold,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  featureTitleTablet: {
+    fontSize: 17,
+    marginBottom: 8,
+  },
+  featureText: {
+    fontSize: 11,
+    color: Colors.cream,
+    textAlign: 'center',
+    opacity: 0.7,
+    lineHeight: 16,
+  },
+  featureTextTablet: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    marginVertical: 24,
+    marginHorizontal: 32,
+  },
+  dividerTablet: {
+    marginVertical: 32,
+    marginHorizontal: 64,
   },
   languageContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -476,20 +634,42 @@ const styles = StyleSheet.create({
     fontSize: 24,
     letterSpacing: 2,
   },
+  footerContainer: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.15)',
+  },
+  footerLogoContainer: {
+    marginBottom: 16,
+  },
+  footerLogo: {
+    width: 60,
+    height: 60,
+    opacity: 0.7,
+  },
   footer: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.cream,
     opacity: 0.6,
     textAlign: 'center',
-    marginTop: 24,
     letterSpacing: 0.5,
+    marginBottom: 8,
   },
   footerTablet: {
-    fontSize: 16,
-    marginTop: 32,
+    fontSize: 15,
   },
   footerDesktop: {
-    fontSize: 18,
-    marginTop: 40,
+    fontSize: 17,
+  },
+  footerCopyright: {
+    fontSize: 11,
+    color: Colors.cream,
+    opacity: 0.4,
+    textAlign: 'center',
+  },
+  footerCopyrightTablet: {
+    fontSize: 13,
   },
 });
