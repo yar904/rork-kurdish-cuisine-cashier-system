@@ -1,0 +1,457 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Dimensions,
+  Platform,
+} from 'react-native';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Search, Globe, ArrowLeft } from 'lucide-react-native';
+import { MENU_ITEMS } from '@/constants/menu';
+import { MenuCategory } from '@/types/restaurant';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Language } from '@/constants/i18n';
+
+const getResponsiveLayout = () => {
+  const { width } = Dimensions.get('window');
+  return {
+    isPhone: width < 768,
+    isTablet: width >= 768 && width < 1024,
+    isDesktop: width >= 1024,
+    isLarge: width >= 1440,
+    width,
+  };
+};
+
+export default function CategoryDetailScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { language, setLanguage, t, tc } = useLanguage();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+
+  const category = id as MenuCategory;
+
+  const filteredItems = MENU_ITEMS.filter((item) => {
+    const matchesCategory = item.category === category;
+    const matchesSearch =
+      searchQuery === '' ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.nameKurdish.includes(searchQuery) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch && item.available;
+  });
+
+  const getItemName = (item: typeof MENU_ITEMS[0]) => {
+    if (language === 'ar') return item.nameArabic;
+    if (language === 'ku') return item.nameKurdish;
+    return item.name;
+  };
+
+  const getItemDescription = (item: typeof MENU_ITEMS[0]) => {
+    if (language === 'ar') return item.descriptionArabic;
+    if (language === 'ku') return item.descriptionKurdish;
+    return item.description;
+  };
+
+  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+    const layout = getResponsiveLayout();
+    const cardWidth = layout.isPhone
+      ? (layout.width - 48) / 2
+      : layout.isTablet
+      ? 220
+      : 240;
+
+    return (
+      <TouchableOpacity 
+        key={item.id} 
+        style={[styles.menuItemCard, { width: cardWidth }]}
+        activeOpacity={0.95}
+      >
+        {item.image && (
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.menuItemImage}
+              resizeMode="cover"
+            />
+          </View>
+        )}
+        <View style={styles.menuItemContent}>
+          <Text style={styles.menuItemName} numberOfLines={1}>
+            {getItemName(item)}
+          </Text>
+          <Text style={styles.menuItemDescription} numberOfLines={2}>
+            {getItemDescription(item)}
+          </Text>
+          <View style={styles.priceContainer}>
+            <Text style={styles.menuItemPrice}>${item.price.toFixed(2)}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{tc(category)}</Text>
+            <Text style={styles.headerSubtitle}>
+              {filteredItems.length} {t('items')}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.languageButton}
+            onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+          >
+            <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
+          </TouchableOpacity>
+        </View>
+
+        {showLanguageMenu && (
+          <View style={styles.languageMenu}>
+            {(['en', 'ku', 'ar'] as Language[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                style={[
+                  styles.languageOption,
+                  language === lang && styles.languageOptionActive,
+                ]}
+                onPress={() => {
+                  setLanguage(lang);
+                  setShowLanguageMenu(false);
+                }}
+              >
+                <Text style={[
+                  styles.languageOptionText,
+                  language === lang && styles.languageOptionTextActive,
+                ]}>
+                  {lang === 'en' ? 'English' : lang === 'ku' ? 'کوردی' : 'العربية'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        <View style={styles.searchContainer}>
+          <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={t('searchMenu')}
+            placeholderTextColor="rgba(255, 255, 255, 0.5)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <View style={styles.menuGrid}>
+          {filteredItems.map(renderMenuItem)}
+        </View>
+
+        {filteredItems.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
+          </View>
+        )}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerTitle}>TAPSÉ</Text>
+          <Text style={styles.footerText}>{t('thankYou')}</Text>
+          <View style={styles.footerDivider} />
+          <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>
+          <Text style={styles.footerTextSecondary}>شكراً لزيارتكم</Text>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5E6D3',
+    ...Platform.select({
+      web: {
+        maxWidth: 1920,
+        alignSelf: 'center' as const,
+        width: '100%',
+        backgroundImage: `
+          linear-gradient(
+            135deg,
+            #F5E6D3 0%,
+            #E8D4B8 25%,
+            #F5E6D3 50%,
+            #E8D4B8 75%,
+            #F5E6D3 100%
+          ),
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 100px,
+            rgba(74, 21, 21, 0.02) 100px,
+            rgba(74, 21, 21, 0.02) 200px
+          )
+        `,
+      },
+    }),
+  },
+  header: {
+    backgroundColor: '#4A1515',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    letterSpacing: 0,
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    letterSpacing: 0,
+  },
+  languageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  languageMenu: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+      },
+    }),
+  },
+  languageOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  languageOptionActive: {
+    backgroundColor: '#F3F4F6',
+  },
+  languageOptionText: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    color: '#6B7280',
+  },
+  languageOptionTextActive: {
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#FFFFFF',
+    fontWeight: '400' as const,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  contentContainer: {
+    paddingBottom: 32,
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 0,
+      },
+    }),
+  },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    gap: 16,
+    ...Platform.select({
+      web: {
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
+      },
+    }),
+  },
+  menuItemCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 21, 21, 0.1)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4A1515',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 16px rgba(74, 21, 21, 0.12)',
+      },
+    }),
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  menuItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  menuItemContent: {
+    padding: 14,
+  },
+  menuItemName: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  menuItemDescription: {
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 16,
+    fontWeight: '400' as const,
+    marginBottom: 10,
+    minHeight: 32,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuItemPrice: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    letterSpacing: -0.5,
+  },
+  emptyState: {
+    padding: 60,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#6B7280',
+    fontWeight: '500' as const,
+  },
+  footer: {
+    padding: 48,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(74, 21, 21, 0.15)',
+  },
+  footerTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  footerText: {
+    fontSize: 15,
+    fontWeight: '400' as const,
+    color: '#6B7280',
+    marginBottom: 16,
+  },
+  footerDivider: {
+    width: 60,
+    height: 2,
+    backgroundColor: '#D4AF37',
+    marginBottom: 16,
+    borderRadius: 1,
+  },
+  footerTextSecondary: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    color: '#9CA3AF',
+    marginBottom: 4,
+  },
+});

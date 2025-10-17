@@ -1,0 +1,417 @@
+import { View, Text, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
+import { useMemo } from 'react';
+import { Stack } from 'expo-router';
+import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
+import { useRestaurant } from '@/contexts/RestaurantContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Colors } from '@/constants/colors';
+import { MenuCategory } from '@/types/restaurant';
+
+const { width } = Dimensions.get('window');
+const isTablet = width >= 768;
+
+export default function AnalyticsScreen() {
+  const { orders } = useRestaurant();
+  const { t, tc } = useLanguage();
+
+  const analytics = useMemo(() => {
+    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalOrders = orders.length;
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    const itemSales: Record<string, { name: string, nameKurdish: string, quantity: number, revenue: number }> = {};
+    const categoryRevenue: Record<MenuCategory, number> = {} as Record<MenuCategory, number>;
+    const statusCounts: Record<string, number> = {
+      new: 0,
+      preparing: 0,
+      ready: 0,
+      served: 0,
+      paid: 0,
+    };
+
+    orders.forEach(order => {
+      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+
+      order.items.forEach(item => {
+        const itemId = item.menuItem.id;
+        if (!itemSales[itemId]) {
+          itemSales[itemId] = {
+            name: item.menuItem.name,
+            nameKurdish: item.menuItem.nameKurdish,
+            quantity: 0,
+            revenue: 0,
+          };
+        }
+        itemSales[itemId].quantity += item.quantity;
+        itemSales[itemId].revenue += item.menuItem.price * item.quantity;
+
+        const category = item.menuItem.category;
+        categoryRevenue[category] = (categoryRevenue[category] || 0) + (item.menuItem.price * item.quantity);
+      });
+    });
+
+    const topItems = Object.entries(itemSales)
+      .sort((a, b) => b[1].quantity - a[1].quantity)
+      .slice(0, 10);
+
+    const categoryData = Object.entries(categoryRevenue)
+      .sort((a, b) => b[1] - a[1])
+      .map(([category, revenue]) => ({
+        category: category as MenuCategory,
+        revenue,
+        percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0,
+      }));
+
+    return {
+      totalRevenue,
+      totalOrders,
+      avgOrderValue,
+      topItems,
+      categoryData,
+      statusCounts,
+    };
+  }, [orders]);
+
+  const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) => (
+    <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
+      <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
+        <Icon size={isTablet ? 28 : 24} color={color} />
+      </View>
+      <View style={styles.statContent}>
+        <Text style={styles.statLabel}>{label}</Text>
+        <Text style={styles.statValue}>{value}</Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ 
+        title: `${t('restaurantName')} - ${t('analytics')}`,
+        headerStyle: { backgroundColor: Colors.primary },
+        headerTintColor: '#fff',
+      }} />
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.statsGrid}>
+          <StatCard
+            icon={DollarSign}
+            label={t('totalRevenue')}
+            value={`$${analytics.totalRevenue.toFixed(2)}`}
+            color={Colors.success}
+          />
+          <StatCard
+            icon={ShoppingBag}
+            label={t('totalOrders')}
+            value={analytics.totalOrders.toString()}
+            color={Colors.info}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label={t('avgOrderValue')}
+            value={`$${analytics.avgOrderValue.toFixed(2)}`}
+            color={Colors.warning}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Award size={24} color={Colors.primary} />
+            <Text style={styles.sectionTitle}>{t('topSellingItems')}</Text>
+          </View>
+          <View style={styles.card}>
+            {analytics.topItems.length === 0 ? (
+              <Text style={styles.emptyText}>{t('noOrders')}</Text>
+            ) : (
+              analytics.topItems.map(([itemId, data], index) => (
+                <View key={itemId} style={styles.topItemRow}>
+                  <View style={styles.topItemRank}>
+                    <Text style={styles.topItemRankText}>{index + 1}</Text>
+                  </View>
+                  <View style={styles.topItemInfo}>
+                    <Text style={styles.topItemName}>{data.name}</Text>
+                    <Text style={styles.topItemNameKurdish}>{data.nameKurdish}</Text>
+                  </View>
+                  <View style={styles.topItemStats}>
+                    <Text style={styles.topItemQuantity}>{data.quantity}x</Text>
+                    <Text style={styles.topItemRevenue}>${data.revenue.toFixed(2)}</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('revenueByCategory')}</Text>
+          <View style={styles.card}>
+            {analytics.categoryData.length === 0 ? (
+              <Text style={styles.emptyText}>{t('noOrders')}</Text>
+            ) : (
+              analytics.categoryData.map(({ category, revenue, percentage }) => (
+                <View key={category} style={styles.categoryRow}>
+                  <View style={styles.categoryInfo}>
+                    <Text style={styles.categoryName}>{tc(category)}</Text>
+                    <View style={styles.progressBarContainer}>
+                      <View 
+                        style={[
+                          styles.progressBar, 
+                          { width: `${percentage}%`, backgroundColor: Colors.primary }
+                        ]} 
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.categoryStats}>
+                    <Text style={styles.categoryRevenue}>${revenue.toFixed(2)}</Text>
+                    <Text style={styles.categoryPercentage}>{percentage.toFixed(1)}%</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('ordersByStatus')}</Text>
+          <View style={styles.card}>
+            <View style={styles.statusGrid}>
+              {Object.entries(analytics.statusCounts).map(([status, count]) => (
+                <View key={status} style={styles.statusCard}>
+                  <View 
+                    style={[
+                      styles.statusDot, 
+                      { backgroundColor: Colors[`status${status.charAt(0).toUpperCase() + status.slice(1)}` as keyof typeof Colors] as string }
+                    ]} 
+                  />
+                  <Text style={styles.statusLabel}>
+                    {t(status as keyof typeof t)}
+                  </Text>
+                  <Text style={styles.statusCount}>{count}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundGray,
+  },
+  content: {
+    flex: 1,
+  },
+  statsGrid: {
+    flexDirection: isTablet ? 'row' : 'column',
+    padding: 16,
+    gap: 16,
+  },
+  statCard: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    gap: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  statCardTablet: {
+    minWidth: 200,
+  },
+  statIconContainer: {
+    width: isTablet ? 56 : 48,
+    height: isTablet ? 56 : 48,
+    borderRadius: isTablet ? 28 : 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statContent: {
+    flex: 1,
+  },
+  statLabel: {
+    fontSize: isTablet ? 14 : 13,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+    fontWeight: '600' as const,
+  },
+  statValue: {
+    fontSize: isTablet ? 26 : 22,
+    fontWeight: '800' as const,
+    color: Colors.text,
+  },
+  section: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: isTablet ? 22 : 20,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  emptyText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    paddingVertical: 20,
+  },
+  topItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+    gap: 12,
+  },
+  topItemRank: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topItemRankText: {
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: '#FFFFFF',
+  },
+  topItemInfo: {
+    flex: 1,
+  },
+  topItemName: {
+    fontSize: isTablet ? 16 : 15,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  topItemNameKurdish: {
+    fontSize: isTablet ? 14 : 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  topItemStats: {
+    alignItems: 'flex-end',
+  },
+  topItemQuantity: {
+    fontSize: isTablet ? 16 : 15,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+    marginBottom: 2,
+  },
+  topItemRevenue: {
+    fontSize: isTablet ? 14 : 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+    gap: 16,
+  },
+  categoryInfo: {
+    flex: 1,
+  },
+  categoryName: {
+    fontSize: isTablet ? 16 : 15,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 4,
+    overflow: 'hidden' as const,
+  },
+  progressBar: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  categoryStats: {
+    alignItems: 'flex-end',
+  },
+  categoryRevenue: {
+    fontSize: isTablet ? 18 : 16,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  categoryPercentage: {
+    fontSize: isTablet ? 14 : 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  statusGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statusCard: {
+    flex: 1,
+    minWidth: isTablet ? 140 : 100,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  statusLabel: {
+    fontSize: isTablet ? 14 : 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+    textTransform: 'capitalize' as const,
+  },
+  statusCount: {
+    fontSize: isTablet ? 24 : 20,
+    fontWeight: '800' as const,
+    color: Colors.text,
+  },
+});

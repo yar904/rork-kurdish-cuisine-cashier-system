@@ -1,0 +1,500 @@
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Animated,
+  useWindowDimensions,
+  Image,
+} from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Colors } from '@/constants/colors';
+import { Language } from '@/constants/i18n';
+import Svg, { Path, Circle, G, Defs, Pattern, Rect } from 'react-native-svg';
+
+
+
+const LANGUAGES = [
+  { code: 'en' as Language, label: 'English', nativeLabel: 'English' },
+  { code: 'ar' as Language, label: 'عربي', nativeLabel: 'Arabic' },
+  { code: 'ku' as Language, label: 'کوردی', nativeLabel: 'Kurdish' },
+];
+
+export default function LandingPage() {
+  const router = useRouter();
+  const { language, setLanguage } = useLanguage();
+  const [selectedLang, setSelectedLang] = useState<Language>(language);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
+  const isLandscape = width > height;
+  const isSmallScreen = height < 700;
+
+  const handleLanguageSelect = (lang: Language) => {
+    setSelectedLang(lang);
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleContinue = async () => {
+    await setLanguage(selectedLang);
+    router.replace('/menu');
+  };
+
+  return (
+    <View style={[styles.container, { paddingTop: Platform.OS === 'web' ? 0 : insets.top, paddingBottom: Platform.OS === 'web' ? 0 : insets.bottom }]}>
+      <View style={styles.videoContainer}>
+        <Video
+          source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/w8l0zstikdx9psmvy7hjw' }}
+          style={styles.video}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay
+          isLooping
+          isMuted
+        />
+        <View style={styles.videoOverlay} />
+      </View>
+
+      <View style={styles.patternOverlay} pointerEvents="none">
+        <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <Pattern
+              id="kurdishPattern"
+              x="0"
+              y="0"
+              width="120"
+              height="120"
+              patternUnits="userSpaceOnUse"
+            >
+              <Path
+                d="M60 10 L70 30 L90 30 L75 45 L80 65 L60 50 L40 65 L45 45 L30 30 L50 30 Z"
+                fill="none"
+                stroke={Colors.gold}
+                strokeWidth="0.5"
+                opacity="0.08"
+              />
+              <Circle cx="20" cy="20" r="2" fill={Colors.gold} opacity="0.06" />
+              <Circle cx="100" cy="100" r="2" fill={Colors.gold} opacity="0.06" />
+              <Path
+                d="M10 60 Q20 50, 30 60 T50 60"
+                fill="none"
+                stroke={Colors.goldLight}
+                strokeWidth="0.5"
+                opacity="0.05"
+              />
+            </Pattern>
+          </Defs>
+          
+          <Rect width={width} height={height} fill="url(#kurdishPattern)" />
+          
+          <G opacity="0.04">
+            <Path
+              d="M0 ${height * 0.3} Q${width * 0.25} ${height * 0.25}, ${width * 0.5} ${height * 0.3} T${width} ${height * 0.3}"
+              fill="none"
+              stroke={Colors.gold}
+              strokeWidth="2"
+            />
+            <Path
+              d="M0 ${height * 0.7} Q${width * 0.25} ${height * 0.75}, ${width * 0.5} ${height * 0.7} T${width} ${height * 0.7}"
+              fill="none"
+              stroke={Colors.gold}
+              strokeWidth="2"
+            />
+          </G>
+          
+          <G opacity="0.06">
+            <Circle cx={width * 0.15} cy={height * 0.2} r="3" fill={Colors.goldLight} />
+            <Circle cx={width * 0.85} cy={height * 0.25} r="3" fill={Colors.goldLight} />
+            <Circle cx={width * 0.1} cy={height * 0.8} r="2.5" fill={Colors.goldLight} />
+            <Circle cx={width * 0.9} cy={height * 0.75} r="2.5" fill={Colors.goldLight} />
+            <Path
+              d="M${width * 0.05} ${height * 0.5} L${width * 0.08} ${height * 0.48} L${width * 0.11} ${height * 0.5} L${width * 0.08} ${height * 0.52} Z"
+              fill={Colors.gold}
+            />
+            <Path
+              d="M${width * 0.92} ${height * 0.4} L${width * 0.95} ${height * 0.38} L${width * 0.98} ${height * 0.4} L${width * 0.95} ${height * 0.42} Z"
+              fill={Colors.gold}
+            />
+          </G>
+        </Svg>
+      </View>
+
+      <LinearGradient
+        colors={['rgba(61, 1, 1, 0)', 'rgba(61, 1, 1, 0.85)', 'rgba(61, 1, 1, 0.98)']}
+        style={[styles.overlay, isLandscape && styles.overlayLandscape]}
+      >
+        <View style={[
+          styles.content,
+          (isTablet || isDesktop) && styles.contentTablet,
+          isDesktop && styles.contentDesktop,
+          isLandscape && styles.contentLandscape,
+          isSmallScreen && styles.contentSmall,
+        ]}>
+          <View style={[
+            styles.titleContainer,
+            (isTablet || isDesktop) && styles.titleContainerTablet,
+            isSmallScreen && styles.titleContainerSmall,
+          ]}>
+            <View style={styles.logoBackground}>
+              <Image
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+                style={[
+                  styles.logo,
+                  isTablet && styles.logoTablet,
+                  isDesktop && styles.logoDesktop,
+                  isSmallScreen && styles.logoSmall,
+                ]}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+
+          <View style={[styles.languageContainer, (isTablet || isDesktop) && styles.languageContainerTablet]}>
+            <Text style={[styles.languageTitle, isTablet && styles.languageTitleTablet, isDesktop && styles.languageTitleDesktop]}>Select Your Language</Text>
+            <Text style={[styles.languageSubtitle, isTablet && styles.languageSubtitleTablet, isDesktop && styles.languageSubtitleDesktop]}>اختر لغتك • زمانەکەت هەڵبژێرە</Text>
+
+            <View style={[styles.languageGrid, isLandscape && styles.languageGridLandscape]}>
+              {LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageButton,
+                    selectedLang === lang.code && styles.languageButtonActive,
+                    (isTablet || isDesktop) && styles.languageButtonTablet,
+                  ]}
+                  onPress={() => handleLanguageSelect(lang.code)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.languageLabel,
+                      selectedLang === lang.code && styles.languageLabelActive,
+                      isTablet && styles.languageLabelTablet,
+                      isDesktop && styles.languageLabelDesktop,
+                    ]}
+                  >
+                    {lang.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.languageNative,
+                      selectedLang === lang.code && styles.languageNativeActive,
+                      isTablet && styles.languageNativeTablet,
+                      isDesktop && styles.languageNativeDesktop,
+                    ]}
+                  >
+                    {lang.nativeLabel}
+                  </Text>
+                  {selectedLang === lang.code && (
+                    <View style={styles.selectedIndicator} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={[styles.continueButton, (isTablet || isDesktop) && styles.continueButtonTablet]}
+              onPress={handleContinue}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={[Colors.gold, Colors.goldDark]}
+                style={styles.continueButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={[styles.continueButtonText, isTablet && styles.continueButtonTextTablet, isDesktop && styles.continueButtonTextDesktop]}>Continue</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to authentic Kurdish dining</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+  },
+  videoContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.primaryDark,
+  },
+  videoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  patternOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  video: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
+    zIndex: 2,
+  },
+  overlayLandscape: {
+    justifyContent: 'center',
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    paddingTop: 40,
+    justifyContent: 'center',
+    flex: 1,
+  },
+  contentTablet: {
+    paddingHorizontal: 80,
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  contentDesktop: {
+    maxWidth: 1100,
+    paddingHorizontal: 100,
+  },
+  contentLandscape: {
+    paddingVertical: 20,
+  },
+  contentSmall: {
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    flexShrink: 0,
+  },
+  titleContainerTablet: {
+    marginBottom: 50,
+  },
+  titleContainerSmall: {
+    marginBottom: 20,
+  },
+  logoBackground: {
+    alignSelf: 'center',
+  },
+  logo: {
+    width: 140,
+    height: 140,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 10,
+    maxWidth: '100%',
+    aspectRatio: 1,
+  },
+  logoTablet: {
+    width: 140,
+    height: 140,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  logoDesktop: {
+    width: 140,
+    height: 140,
+    shadowRadius: 20,
+    elevation: 14,
+  },
+  logoSmall: {
+    width: 140,
+    height: 140,
+  },
+  languageContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 24,
+    backdropFilter: 'blur(20px)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    flexShrink: 0,
+  },
+  languageContainerTablet: {
+    padding: 32,
+    borderRadius: 28,
+    marginBottom: 32,
+  },
+  languageTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.cream,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  languageTitleTablet: {
+    fontSize: 26,
+    marginBottom: 6,
+  },
+  languageTitleDesktop: {
+    fontSize: 30,
+    marginBottom: 8,
+  },
+  languageSubtitle: {
+    fontSize: 14,
+    color: Colors.cream,
+    opacity: 0.7,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  languageSubtitleTablet: {
+    fontSize: 17,
+    marginBottom: 28,
+  },
+  languageSubtitleDesktop: {
+    fontSize: 19,
+    marginBottom: 32,
+  },
+  languageGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  languageGridLandscape: {
+    gap: 16,
+  },
+  languageButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 100,
+    justifyContent: 'center',
+    minWidth: 0,
+  },
+  languageButtonTablet: {
+    minHeight: 130,
+    padding: 28,
+    borderRadius: 20,
+  },
+  languageButtonActive: {
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  languageLabel: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: Colors.cream,
+    marginBottom: 4,
+  },
+  languageLabelTablet: {
+    fontSize: 32,
+    marginBottom: 6,
+  },
+  languageLabelDesktop: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  languageLabelActive: {
+    color: Colors.gold,
+  },
+  languageNative: {
+    fontSize: 12,
+    color: Colors.cream,
+    opacity: 0.6,
+  },
+  languageNativeTablet: {
+    fontSize: 15,
+  },
+  languageNativeDesktop: {
+    fontSize: 17,
+  },
+  languageNativeActive: {
+    opacity: 0.9,
+    color: Colors.goldLight,
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.gold,
+  },
+  continueButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  continueButtonTablet: {
+    borderRadius: 20,
+  },
+  continueButtonGradient: {
+    paddingVertical: 18,
+    paddingHorizontal: 48,
+    alignItems: 'center',
+  },
+  continueButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1,
+  },
+  continueButtonTextTablet: {
+    fontSize: 22,
+    letterSpacing: 1.5,
+  },
+  continueButtonTextDesktop: {
+    fontSize: 24,
+    letterSpacing: 2,
+  },
+  footer: {
+    fontSize: 14,
+    color: Colors.cream,
+    opacity: 0.6,
+    textAlign: 'center',
+    marginTop: 24,
+    letterSpacing: 0.5,
+  },
+  footerTablet: {
+    fontSize: 16,
+    marginTop: 32,
+  },
+  footerDesktop: {
+    fontSize: 18,
+    marginTop: 40,
+  },
+});

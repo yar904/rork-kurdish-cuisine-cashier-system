@@ -1,0 +1,156 @@
+import { useState, useCallback, useMemo } from 'react';
+import createContextHook from '@nkzw/create-context-hook';
+import { Order, OrderItem, OrderStatus } from '@/types/restaurant';
+import { MENU_ITEMS } from '@/constants/menu';
+import { useTables } from '@/contexts/TableContext';
+
+const generateDemoOrders = (): Order[] => {
+  const now = new Date();
+  return [
+    {
+      id: 'ORD-001',
+      tableNumber: 3,
+      items: [
+        { menuItem: MENU_ITEMS[6], quantity: 2, notes: undefined },
+        { menuItem: MENU_ITEMS[10], quantity: 1, notes: undefined },
+        { menuItem: MENU_ITEMS[22], quantity: 2, notes: undefined },
+      ],
+      status: 'new',
+      createdAt: new Date(now.getTime() - 2 * 60000),
+      updatedAt: new Date(now.getTime() - 2 * 60000),
+      waiterName: 'Sarah',
+      total: 2 * 16.99 + 22.99 + 2 * 2.50,
+    },
+    {
+      id: 'ORD-002',
+      tableNumber: 5,
+      items: [
+        { menuItem: MENU_ITEMS[7], quantity: 1, notes: undefined },
+        { menuItem: MENU_ITEMS[11], quantity: 1, notes: undefined },
+        { menuItem: MENU_ITEMS[23], quantity: 1, notes: undefined },
+      ],
+      status: 'preparing',
+      createdAt: new Date(now.getTime() - 8 * 60000),
+      updatedAt: new Date(now.getTime() - 5 * 60000),
+      waiterName: 'Ahmed',
+      total: 15.99 + 14.99 + 3.50,
+    },
+    {
+      id: 'ORD-003',
+      tableNumber: 2,
+      items: [
+        { menuItem: MENU_ITEMS[0], quantity: 1, notes: undefined },
+        { menuItem: MENU_ITEMS[4], quantity: 2, notes: undefined },
+        { menuItem: MENU_ITEMS[8], quantity: 2, notes: undefined },
+        { menuItem: MENU_ITEMS[19], quantity: 2, notes: undefined },
+      ],
+      status: 'ready',
+      createdAt: new Date(now.getTime() - 15 * 60000),
+      updatedAt: new Date(now.getTime() - 3 * 60000),
+      waiterName: 'Sarah',
+      total: 8.99 + 2 * 5.99 + 2 * 14.99 + 2 * 5.99,
+    },
+  ];
+};
+
+export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
+  const { assignOrderToTable, clearTable } = useTables();
+  const [orders, setOrders] = useState<Order[]>(generateDemoOrders());
+  const [currentOrder, setCurrentOrder] = useState<OrderItem[]>([]);
+  const [selectedTable, setSelectedTable] = useState<number>(1);
+
+  const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
+    const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+    if (!menuItem) return;
+
+    setCurrentOrder(prev => {
+      const existingIndex = prev.findIndex(
+        item => item.menuItem.id === itemId && item.notes === notes
+      );
+
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + quantity,
+        };
+        return updated;
+      }
+
+      return [...prev, { menuItem, quantity, notes }];
+    });
+  }, []);
+
+  const removeItemFromCurrentOrder = useCallback((index: number) => {
+    setCurrentOrder(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updateItemQuantity = useCallback((index: number, quantity: number) => {
+    if (quantity <= 0) {
+      removeItemFromCurrentOrder(index);
+      return;
+    }
+
+    setCurrentOrder(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], quantity };
+      return updated;
+    });
+  }, [removeItemFromCurrentOrder]);
+
+  const calculateTotal = useCallback((items: OrderItem[]) => {
+    return items.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
+  }, []);
+
+  const submitOrder = useCallback((waiterName?: string) => {
+    if (currentOrder.length === 0) return;
+
+    const newOrder: Order = {
+      id: `ORD-${Date.now()}`,
+      tableNumber: selectedTable,
+      items: currentOrder,
+      status: 'new',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      waiterName,
+      total: calculateTotal(currentOrder),
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+    assignOrderToTable(selectedTable, newOrder.id);
+    setCurrentOrder([]);
+    
+    console.log('Order submitted:', newOrder);
+  }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable]);
+
+  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
+    setOrders(prev => prev.map(order => {
+      if (order.id === orderId) {
+        if (status === 'paid') {
+          clearTable(order.tableNumber);
+        }
+        return { ...order, status, updatedAt: new Date() };
+      }
+      return order;
+    }));
+    console.log(`Order ${orderId} status updated to ${status}`);
+  }, [clearTable]);
+
+  const clearCurrentOrder = useCallback(() => {
+    setCurrentOrder([]);
+  }, []);
+
+  return useMemo(() => ({
+    orders,
+    currentOrder,
+    selectedTable,
+    setSelectedTable,
+    addItemToCurrentOrder,
+    removeItemFromCurrentOrder,
+    updateItemQuantity,
+    submitOrder,
+    updateOrderStatus,
+    clearCurrentOrder,
+    calculateTotal,
+  }), [orders, currentOrder, selectedTable, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal]);
+});
