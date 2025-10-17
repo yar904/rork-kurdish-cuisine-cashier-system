@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import { Language } from '@/constants/i18n';
 import Svg, { Path, Circle, G, Defs, Pattern, Rect } from 'react-native-svg';
-import { ChefHat, Sparkles, Users, Clock } from 'lucide-react-native';
+
 
 
 
@@ -175,41 +175,7 @@ export default function LandingPage() {
             <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>Experience the rich flavors and traditions of Kurdish hospitality</Text>
           </View>
 
-          <View style={[styles.featuresContainer, isTablet && styles.featuresContainerTablet]}>
-            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
-              <View style={styles.featureIconContainer}>
-                <ChefHat size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
-              </View>
-              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Master Chefs</Text>
-              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Traditional recipes passed down through generations</Text>
-            </View>
 
-            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
-              <View style={styles.featureIconContainer}>
-                <Sparkles size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
-              </View>
-              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Premium Quality</Text>
-              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Fresh ingredients and authentic spices</Text>
-            </View>
-
-            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
-              <View style={styles.featureIconContainer}>
-                <Users size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
-              </View>
-              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Family Atmosphere</Text>
-              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Warm hospitality in every visit</Text>
-            </View>
-
-            <View style={[styles.featureCard, isTablet && styles.featureCardTablet]}>
-              <View style={styles.featureIconContainer}>
-                <Clock size={isTablet ? 32 : 24} color={Colors.gold} strokeWidth={2} />
-              </View>
-              <Text style={[styles.featureTitle, isTablet && styles.featureTitleTablet]}>Quick Service</Text>
-              <Text style={[styles.featureText, isTablet && styles.featureTextTablet]}>Fresh meals prepared with care</Text>
-            </View>
-          </View>
-
-          <View style={[styles.divider, isTablet && styles.dividerTablet]} />
 
           <View style={[styles.languageContainer, (isTablet || isDesktop) && styles.languageContainerTablet]}>
             <Text style={[styles.languageTitle, isTablet && styles.languageTitleTablet, isDesktop && styles.languageTitleDesktop]}>Select Your Language</Text>
@@ -346,14 +312,14 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 48,
     flexShrink: 0,
   },
   titleContainerTablet: {
-    marginBottom: 40,
+    marginBottom: 56,
   },
   titleContainerSmall: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   logoBackground: {
     alignSelf: 'center',
@@ -415,74 +381,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     lineHeight: 28,
   },
-  featuresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 32,
-  },
-  featuresContainerTablet: {
-    gap: 16,
-    marginBottom: 40,
-  },
-  featureCard: {
-    width: '48%',
-    minWidth: 150,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.15)',
-  },
-  featureCardTablet: {
-    width: '48%',
-    minWidth: 200,
-    padding: 20,
-    borderRadius: 20,
-  },
-  featureIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.gold,
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  featureTitleTablet: {
-    fontSize: 17,
-    marginBottom: 8,
-  },
-  featureText: {
-    fontSize: 11,
-    color: Colors.cream,
-    textAlign: 'center',
-    opacity: 0.7,
-    lineHeight: 16,
-  },
-  featureTextTablet: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
-    marginVertical: 24,
-    marginHorizontal: 32,
-  },
-  dividerTablet: {
-    marginVertical: 32,
-    marginHorizontal: 64,
-  },
+
   languageContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 24,
