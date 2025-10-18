@@ -23,6 +23,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
+import { Colors } from '@/constants/colors';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -519,7 +520,7 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
       
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
         <View style={styles.headerContent}>
           <Image 
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
@@ -527,6 +528,7 @@ export default function PublicMenuScreen() {
             resizeMode="contain"
           />
           <View style={styles.welcomeContainer}>
+            <Text style={styles.restaurantName}>TAPSÉ</Text>
             <Text style={styles.welcomeText}>{t('welcome')}</Text>
           </View>
           <View style={styles.headerActions}>
@@ -694,42 +696,67 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#3d0101',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
   },
   welcomeContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  restaurantName: {
+    fontSize: 20,
+    fontWeight: '800' as const,
+    color: Colors.gold,
+    letterSpacing: 2,
+    textAlign: 'center' as const,
+    marginBottom: 2,
+    ...Platform.select({
+      web: {
+        fontSize: 24,
+      },
+    }),
   },
   welcomeText: {
-    fontWeight: '600' as const,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
+    fontWeight: '500' as const,
+    color: 'rgba(255, 255, 255, 0.85)',
+    letterSpacing: 0.3,
     textAlign: 'center' as const,
     ...Platform.select({
       default: {
-        fontSize: 14,
+        fontSize: 13,
       },
       web: {
-        fontSize: 18,
+        fontSize: 15,
       },
     }),
   },
   headerLogo: {
-    width: 60,
-    height: 60,
+    width: 56,
+    height: 56,
     ...Platform.select({
       web: {
-        width: 80,
-        height: 80,
+        width: 72,
+        height: 72,
       },
     }),
   },

@@ -17,6 +17,7 @@ import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
+import { Colors } from '@/constants/colors';
 
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
@@ -103,26 +104,28 @@ export default function CategoryDetailScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerContent}>
+      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+        <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
             <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>{tc(category)}</Text>
-            <Text style={styles.headerSubtitle}>
-              {filteredItems.length} {t('items')}
-            </Text>
-          </View>
+          <Text style={styles.restaurantName}>TAPSÉ</Text>
           <TouchableOpacity
             style={styles.languageButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
           >
             <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>{tc(category)}</Text>
+          <Text style={styles.headerSubtitle}>
+            {filteredItems.length} {t('items')}
+          </Text>
         </View>
 
         {showLanguageMenu && (
@@ -178,6 +181,11 @@ export default function CategoryDetailScreen() {
         )}
 
         <View style={styles.footer}>
+          <Image 
+            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+            style={styles.footerLogo}
+            resizeMode="contain"
+          />
           <Text style={styles.footerTitle}>TAPSÉ</Text>
           <Text style={styles.footerText}>{t('thankYou')}</Text>
           <View style={styles.footerDivider} />
@@ -219,17 +227,39 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    backgroundColor: '#4A1515',
+    backgroundColor: '#3d0101',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
-  headerContent: {
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  restaurantName: {
+    fontSize: 20,
+    fontWeight: '800' as const,
+    color: Colors.gold,
+    letterSpacing: 2,
+    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 24,
+      },
+    }),
   },
   backButton: {
     width: 40,
@@ -240,23 +270,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerCenter: {
-    flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700' as const,
+    fontSize: 28,
+    fontWeight: '800' as const,
     color: '#FFFFFF',
-    letterSpacing: 0,
-    marginBottom: 2,
+    letterSpacing: -0.5,
+    marginBottom: 4,
     textTransform: 'capitalize' as const,
+    textAlign: 'center' as const,
   },
   headerSubtitle: {
     fontSize: 14,
-    fontWeight: '400' as const,
-    color: 'rgba(255, 255, 255, 0.7)',
-    letterSpacing: 0,
+    fontWeight: '500' as const,
+    color: 'rgba(212, 175, 55, 0.9)',
+    letterSpacing: 0.5,
   },
   languageButton: {
     width: 40,
@@ -428,6 +459,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
     borderTopWidth: 1,
     borderTopColor: 'rgba(74, 21, 21, 0.15)',
+  },
+  footerLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: 12,
   },
   footerTitle: {
     fontSize: 24,
