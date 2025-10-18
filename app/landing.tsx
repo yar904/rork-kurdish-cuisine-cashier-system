@@ -13,6 +13,7 @@ import {
 import { Video, ResizeMode } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
@@ -59,6 +60,10 @@ export default function LandingPage() {
   const handleContinue = async () => {
     await setLanguage(selectedLang);
     router.replace('/menu');
+  };
+
+  const handleStaffAccess = () => {
+    router.push('/(tabs)/cashier');
   };
 
   return (
@@ -242,6 +247,15 @@ export default function LandingPage() {
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
+
+          <TouchableOpacity
+            style={[styles.staffButton, (isTablet || isDesktop) && styles.staffButtonTablet]}
+            onPress={handleStaffAccess}
+            activeOpacity={0.8}
+          >
+            <Users size={20} color={Colors.gold} />
+            <Text style={[styles.staffButtonText, isTablet && styles.staffButtonTextTablet]}>Staff Access</Text>
+          </TouchableOpacity>
 
           <View style={styles.footerContainer}>
             <View style={styles.footerLogoContainer}>
@@ -590,5 +604,32 @@ const styles = StyleSheet.create({
   },
   footerCopyrightTablet: {
     fontSize: 13,
+  },
+  staffButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  staffButtonTablet: {
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 16,
+  },
+  staffButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.gold,
+    letterSpacing: 0.5,
+  },
+  staffButtonTextTablet: {
+    fontSize: 18,
   },
 });
