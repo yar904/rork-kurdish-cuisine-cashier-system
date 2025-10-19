@@ -185,7 +185,7 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>Authentic Kurdish Cuisine</Text>
+            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>Tapse</Text>
             <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>Experience the rich flavors and traditions of Kurdish hospitality</Text>
           </View>
 
@@ -274,8 +274,8 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to authentic Kurdish dining</Text>
-            <Text style={[styles.footerCopyright, isTablet && styles.footerCopyrightTablet]}>© 2025 Tapse Restaurant. All rights reserved.</Text>
+            <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to Tapse</Text>
+            <Text style={[styles.footerCopyright, isTablet && styles.footerCopyrightTablet]}>© 2025 Tapse. All rights reserved.</Text>
           </View>
         </ScrollView>
       </LinearGradient>
