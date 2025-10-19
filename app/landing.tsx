@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   Animated,
-  useWindowDimensions,
+  Dimensions,
   Image,
   ScrollView,
 } from 'react-native';
@@ -35,7 +35,16 @@ export default function LandingPage() {
   const [selectedLang, setSelectedLang] = useState<Language>(language);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const [dimensions, setDimensions] = React.useState(() => Dimensions.get('window'));
+
+  React.useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
+
+  const { width, height } = dimensions;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
   const isLandscape = width > height;

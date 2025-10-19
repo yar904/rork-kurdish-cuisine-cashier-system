@@ -24,8 +24,17 @@ export default function StaffLoginScreen() {
   const router = useRouter();
   const { login } = useAuth();
   const insets = useSafeAreaInsets();
-  const { width } = Dimensions.get('window');
-  const isTablet = width >= 768;
+  const [dimensions, setDimensions] = React.useState(() => Dimensions.get('window'));
+
+  React.useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
+
+  const isTablet = dimensions.width >= 768;
+  const isDesktop = dimensions.width >= 1200;
 
   const handleLogin = async () => {
     if (!password.trim()) {
