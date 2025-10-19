@@ -267,17 +267,20 @@ const styles = StyleSheet.create({
   },
   statContent: {
     flex: 1,
+    minWidth: 0,
   },
   statLabel: {
     fontSize: 13,
     color: Colors.textSecondary,
     marginBottom: 4,
     fontWeight: '600' as const,
+    flexShrink: 1,
   },
   statValue: {
     fontSize: 22,
     fontWeight: '800' as const,
     color: Colors.text,
+    flexShrink: 1,
   },
   section: {
     paddingHorizontal: 16,
@@ -301,6 +304,7 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: Colors.text,
     marginBottom: 16,
+    flexShrink: 1,
   },
   card: {
     backgroundColor: Colors.background,
@@ -347,17 +351,20 @@ const styles = StyleSheet.create({
   },
   topItemInfo: {
     flex: 1,
+    minWidth: 0,
   },
   topItemName: {
     fontSize: 15,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 2,
+    flexShrink: 1,
   },
   topItemNameKurdish: {
     fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
+    flexShrink: 1,
   },
   topItemStats: {
     alignItems: 'flex-end',
@@ -383,12 +390,14 @@ const styles = StyleSheet.create({
   },
   categoryInfo: {
     flex: 1,
+    minWidth: 0,
   },
   categoryName: {
     fontSize: 15,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 8,
+    flexShrink: 1,
   },
   progressBarContainer: {
     height: 8,
