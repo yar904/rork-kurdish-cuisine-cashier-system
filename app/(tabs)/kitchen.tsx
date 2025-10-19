@@ -19,7 +19,7 @@ const getResponsiveLayout = () => {
 };
 
 export default function KitchenScreen() {
-  const { orders, updateOrderStatus } = useRestaurant();
+  const { orders, updateOrderStatus, readyNotification } = useRestaurant();
   const { t } = useLanguage();
   const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
 
@@ -157,6 +157,20 @@ export default function KitchenScreen() {
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
+      
+      {readyNotification && (() => {
+        const readyOrder = orders.find(o => o.id === readyNotification);
+        if (readyOrder) {
+          return (
+            <View style={styles.readyNotification}>
+              <Text style={styles.readyNotificationText}>
+                Order {readyOrder.id} for Table {readyOrder.tableNumber} is READY!
+              </Text>
+            </View>
+          );
+        }
+        return null;
+      })()}
 
       <ScrollView style={styles.content}>
         {activeOrders.length === 0 ? (
@@ -416,5 +430,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  readyNotification: {
+    backgroundColor: Colors.success,
+    padding: 16,
+    margin: 16,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.success,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  readyNotificationText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
   },
 });

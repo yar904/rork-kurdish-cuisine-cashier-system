@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert, TextInput, Modal } from 'react-native';
 import { Stack } from 'expo-router';
+import { formatPrice } from '@/constants/currency';
 import { ClipboardList, DollarSign, Users, X } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,7 +20,7 @@ const getResponsiveLayout = () => {
 };
 
 export default function WaiterScreen() {
-  const { orders, updateOrderStatus } = useRestaurant();
+  const { orders, updateOrderStatus, readyNotification } = useRestaurant();
   const { t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [splitBillModal, setSplitBillModal] = useState<{ visible: boolean; order: Order | null }>({ visible: false, order: null });
@@ -121,7 +122,7 @@ export default function WaiterScreen() {
               <Text style={styles.orderItemQuantity}>{item.quantity}x</Text>
               <Text style={styles.orderItemName}>{item.menuItem.name}</Text>
               <Text style={styles.orderItemPrice}>
-                ${(item.menuItem.price * item.quantity).toFixed(2)}
+                {formatPrice(item.menuItem.price * item.quantity)}
               </Text>
             </View>
           ))}
@@ -130,7 +131,7 @@ export default function WaiterScreen() {
         <View style={styles.orderFooter}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>{t('total')}:</Text>
-            <Text style={styles.totalAmount}>${order.total.toFixed(2)}</Text>
+            <Text style={styles.totalAmount}>{formatPrice(order.total)}</Text>
           </View>
           {canMarkPaid && (
             <View style={styles.orderActions}>
@@ -162,6 +163,20 @@ export default function WaiterScreen() {
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
+
+      {readyNotification && (() => {
+        const readyOrder = orders.find(o => o.id === readyNotification);
+        if (readyOrder) {
+          return (
+            <View style={styles.readyNotification}>
+              <Text style={styles.readyNotificationText}>
+                Order {readyOrder.id} for Table {readyOrder.tableNumber} is READY for serving!
+              </Text>
+            </View>
+          );
+        }
+        return null;
+      })()}
 
       <View style={styles.filterBar}>
         <TouchableOpacity
@@ -247,7 +262,7 @@ export default function WaiterScreen() {
             {splitBillModal.order && (
               <View style={styles.modalBody}>
                 <Text style={styles.modalLabel}>Order #{splitBillModal.order.id}</Text>
-                <Text style={styles.modalTotalLabel}>Total: ${splitBillModal.order.total.toFixed(2)}</Text>
+                <Text style={styles.modalTotalLabel}>Total: {formatPrice(splitBillModal.order.total)}</Text>
 
                 <Text style={styles.modalLabel}>Split among how many people?</Text>
                 <TextInput
@@ -263,7 +278,7 @@ export default function WaiterScreen() {
                   <View style={styles.splitResult}>
                     <Text style={styles.splitResultLabel}>Amount per person:</Text>
                     <Text style={styles.splitResultAmount}>
-                      ${calculateSplitAmount(splitBillModal.order.total, parseInt(splitPeople))}
+                      {formatPrice(parseFloat(calculateSplitAmount(splitBillModal.order.total, parseInt(splitPeople))))}
                     </Text>
                   </View>
                 )}
@@ -283,7 +298,7 @@ export default function WaiterScreen() {
                         const amountPerPerson = calculateSplitAmount(splitBillModal.order!.total, people);
                         Alert.alert(
                           'Bill Split',
-                          `Total: ${splitBillModal.order!.total.toFixed(2)}\nPeople: ${people}\nPer Person: ${amountPerPerson}`,
+                          `Total: ${formatPrice(splitBillModal.order!.total)}\nPeople: ${people}\nPer Person: ${formatPrice(parseFloat(amountPerPerson))}`,
                           [{ text: 'OK' }]
                         );
                         setSplitBillModal({ visible: false, order: null });
@@ -654,5 +669,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  readyNotification: {
+    backgroundColor: Colors.success,
+    padding: 16,
+    margin: 16,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.success,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  readyNotificationText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
   },
 });

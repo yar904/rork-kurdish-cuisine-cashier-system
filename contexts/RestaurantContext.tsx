@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -19,7 +19,7 @@ const generateDemoOrders = (): Order[] => {
       createdAt: new Date(now.getTime() - 2 * 60000),
       updatedAt: new Date(now.getTime() - 2 * 60000),
       waiterName: 'Sarah',
-      total: 2 * 16.99 + 22.99 + 2 * 2.50,
+      total: 2 * 25000 + 34000 + 2 * 4000,
     },
     {
       id: 'ORD-002',
@@ -33,7 +33,7 @@ const generateDemoOrders = (): Order[] => {
       createdAt: new Date(now.getTime() - 8 * 60000),
       updatedAt: new Date(now.getTime() - 5 * 60000),
       waiterName: 'Ahmed',
-      total: 15.99 + 14.99 + 3.50,
+      total: 23000 + 22000 + 5000,
     },
     {
       id: 'ORD-003',
@@ -48,7 +48,7 @@ const generateDemoOrders = (): Order[] => {
       createdAt: new Date(now.getTime() - 15 * 60000),
       updatedAt: new Date(now.getTime() - 3 * 60000),
       waiterName: 'Sarah',
-      total: 8.99 + 2 * 5.99 + 2 * 14.99 + 2 * 5.99,
+      total: 13000 + 2 * 9000 + 2 * 22000 + 2 * 9000,
     },
   ];
 };
@@ -58,6 +58,23 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const [orders, setOrders] = useState<Order[]>(generateDemoOrders());
   const [currentOrder, setCurrentOrder] = useState<OrderItem[]>([]);
   const [selectedTable, setSelectedTable] = useState<number>(1);
+  const [readyNotification, setReadyNotification] = useState<string | null>(null);
+  const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
+
+  useEffect(() => {
+    orders.forEach(order => {
+      const prevStatus = previousOrderStatuses.current[order.id];
+      if (prevStatus && prevStatus !== 'ready' && order.status === 'ready') {
+        setReadyNotification(order.id);
+        console.log(`Order ${order.id} is now READY for Table ${order.tableNumber}!`);
+        
+        setTimeout(() => {
+          setReadyNotification(null);
+        }, 10000);
+      }
+      previousOrderStatuses.current[order.id] = order.status;
+    });
+  }, [orders]);
 
   const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
     const menuItem = MENU_ITEMS.find(item => item.id === itemId);
@@ -144,6 +161,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     orders,
     currentOrder,
     selectedTable,
+    readyNotification,
     setSelectedTable,
     addItemToCurrentOrder,
     removeItemFromCurrentOrder,
@@ -152,5 +170,5 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     updateOrderStatus,
     clearCurrentOrder,
     calculateTotal,
-  }), [orders, currentOrder, selectedTable, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal]);
+  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal]);
 });

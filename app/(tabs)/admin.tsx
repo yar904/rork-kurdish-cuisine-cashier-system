@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert, Share } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { Stack, useRouter } from 'expo-router';
+import { formatPrice } from '@/constants/currency';
 import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
@@ -106,18 +107,18 @@ export default function AdminScreen() {
       
       order.items.forEach(item => {
         receipt += `${item.quantity}x ${item.menuItem.name}\n`;
-        receipt += `   $${item.menuItem.price.toFixed(2)} each\n`;
-        receipt += `   Subtotal: $${(item.menuItem.price * item.quantity).toFixed(2)}\n`;
+        receipt += `   ${formatPrice(item.menuItem.price)} each\n`;
+        receipt += `   Subtotal: ${formatPrice(item.menuItem.price * item.quantity)}\n`;
         if (item.notes) {
           receipt += `   Note: ${item.notes}\n`;
         }
       });
-      receipt += `\nOrder Total: $${order.total.toFixed(2)}\n`;
+      receipt += `\nOrder Total: ${formatPrice(order.total)}\n`;
       receipt += `${'-'.repeat(40)}\n\n`;
     });
 
     const grandTotal = tableOrders.reduce((sum, o) => sum + o.total, 0);
-    receipt += `\nGRAND TOTAL: $${grandTotal.toFixed(2)}\n`;
+    receipt += `\nGRAND TOTAL: ${formatPrice(grandTotal)}\n`;
     receipt += `${'='.repeat(40)}\n\n`;
     receipt += `Thank you for dining with us!\n`;
     receipt += `شكراً لزيارتكم - سوپاس\n\n`;

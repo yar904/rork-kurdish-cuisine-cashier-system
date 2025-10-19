@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, Dimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
+import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -132,7 +133,7 @@ export default function CashierScreen() {
                   <View style={styles.menuItemContent}>
                     <View style={styles.menuItemHeader}>
                       <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.menuItemPrice}>${item.price.toFixed(2)}</Text>
+                      <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
                     </View>
                     <Text style={styles.menuItemKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
                     <Text style={styles.menuItemDescription} numberOfLines={2}>
@@ -208,7 +209,7 @@ export default function CashierScreen() {
                   <View style={styles.orderItemInfo}>
                     <Text style={styles.orderItemName}>{item.menuItem.name}</Text>
                     <Text style={styles.orderItemPrice}>
-                      ${(item.menuItem.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.menuItem.price * item.quantity)}
                     </Text>
                   </View>
                   <View style={styles.orderItemControls}>
@@ -241,7 +242,7 @@ export default function CashierScreen() {
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>{t('total')}:</Text>
               <Text style={styles.totalAmount}>
-                ${calculateTotal(currentOrder).toFixed(2)}
+                {formatPrice(calculateTotal(currentOrder))}
               </Text>
             </View>
             <TouchableOpacity
