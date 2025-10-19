@@ -955,6 +955,12 @@ const styles = StyleSheet.create({
   categoryItemsScroll: {
     paddingHorizontal: 20,
     gap: 16,
+    ...Platform.select({
+      web: {
+        flexWrap: 'wrap',
+        flexDirection: 'row',
+      },
+    }),
   },
 
   content: {
@@ -966,6 +972,9 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         paddingHorizontal: 0,
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
       },
     }),
   },

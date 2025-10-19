@@ -375,11 +375,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
     gap: 16,
+    justifyContent: 'flex-start',
     ...Platform.select({
       web: {
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
+        justifyContent: 'center',
       },
     }),
   },

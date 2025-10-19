@@ -356,11 +356,6 @@ const styles = StyleSheet.create({
   },
   tablesContainer: {
     padding: 16,
-  },
-  tablesContainerTablet: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
     ...Platform.select({
       web: {
         maxWidth: 1600,
@@ -368,6 +363,11 @@ const styles = StyleSheet.create({
         width: '100%',
       },
     }),
+  },
+  tablesContainerTablet: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
   },
   tableSection: {
     marginBottom: 24,

@@ -1,5 +1,5 @@
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
-import { useMemo } from 'react';
 import { Stack } from 'expo-router';
 import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -7,12 +7,27 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import { MenuCategory } from '@/types/restaurant';
 
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
+const getResponsiveLayout = () => {
+  const { width } = Dimensions.get('window');
+  return {
+    isPhone: width < 768,
+    isTablet: width >= 768 && width < 1200,
+    isDesktop: width >= 1200,
+    width,
+  };
+};
 
 export default function AnalyticsScreen() {
   const { orders } = useRestaurant();
   const { t, tc } = useLanguage();
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>(() => Dimensions.get('window'));
+
+  React.useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
 
   const analytics = useMemo(() => {
     const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -73,9 +88,9 @@ export default function AnalyticsScreen() {
   }, [orders]);
 
   const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) => (
-    <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
+    <View style={[styles.statCard, dimensions.width >= 768 && styles.statCardTablet]}>
       <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
-        <Icon size={isTablet ? 28 : 24} color={color} />
+        <Icon size={dimensions.width >= 768 ? 28 : 24} color={color} />
       </View>
       <View style={styles.statContent}>
         <Text style={styles.statLabel}>{label}</Text>
@@ -208,9 +223,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statsGrid: {
-    flexDirection: isTablet ? 'row' : 'column',
+    flexDirection: 'column',
     padding: 16,
     gap: 16,
+    ...Platform.select({
+      web: {
+        flexDirection: 'row',
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
+      },
+    }),
   },
   statCard: {
     flex: 1,
@@ -236,9 +259,9 @@ const styles = StyleSheet.create({
     minWidth: 200,
   },
   statIconContainer: {
-    width: isTablet ? 56 : 48,
-    height: isTablet ? 56 : 48,
-    borderRadius: isTablet ? 28 : 24,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -246,19 +269,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    fontSize: isTablet ? 14 : 13,
+    fontSize: 13,
     color: Colors.textSecondary,
     marginBottom: 4,
     fontWeight: '600' as const,
   },
   statValue: {
-    fontSize: isTablet ? 26 : 22,
+    fontSize: 22,
     fontWeight: '800' as const,
     color: Colors.text,
   },
   section: {
     paddingHorizontal: 16,
     marginBottom: 24,
+    ...Platform.select({
+      web: {
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
+      },
+    }),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -267,7 +297,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: isTablet ? 22 : 20,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: Colors.text,
     marginBottom: 16,
@@ -319,13 +349,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topItemName: {
-    fontSize: isTablet ? 16 : 15,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 2,
   },
   topItemNameKurdish: {
-    fontSize: isTablet ? 14 : 13,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
   },
@@ -333,13 +363,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   topItemQuantity: {
-    fontSize: isTablet ? 16 : 15,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: Colors.primary,
     marginBottom: 2,
   },
   topItemRevenue: {
-    fontSize: isTablet ? 14 : 13,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
   },
@@ -355,7 +385,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryName: {
-    fontSize: isTablet ? 16 : 15,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 8,
@@ -374,13 +404,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   categoryRevenue: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 16,
     fontWeight: '800' as const,
     color: Colors.text,
     marginBottom: 2,
   },
   categoryPercentage: {
-    fontSize: isTablet ? 14 : 13,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
   },
@@ -391,7 +421,7 @@ const styles = StyleSheet.create({
   },
   statusCard: {
     flex: 1,
-    minWidth: isTablet ? 140 : 100,
+    minWidth: 100,
     backgroundColor: Colors.backgroundGray,
     borderRadius: 12,
     padding: 16,
@@ -404,13 +434,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   statusLabel: {
-    fontSize: isTablet ? 14 : 13,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
     textTransform: 'capitalize' as const,
   },
   statusCount: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: Colors.text,
   },

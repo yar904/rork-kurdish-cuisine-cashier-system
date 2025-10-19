@@ -8,10 +8,25 @@ import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
 import { TableStatus } from '@/types/restaurant';
 
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
+const getResponsiveLayout = () => {
+  const { width } = Dimensions.get('window');
+  return {
+    isPhone: width < 768,
+    isTablet: width >= 768 && width < 1200,
+    isDesktop: width >= 1200,
+    width,
+  };
+};
 
 export default function AdminScreen() {
+  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
   const { t } = useLanguage();
   const { tables, updateTableStatus } = useTables();
   const { orders } = useRestaurant();
@@ -169,7 +184,7 @@ export default function AdminScreen() {
                   style={[
                     styles.tableCard,
                     selectedTable === table.number && styles.tableCardSelected,
-                    isTablet && styles.tableCardTablet,
+                    dimensions.width >= 768 && styles.tableCardTablet,
                   ]}
                   onPress={() => setSelectedTable(selectedTable === table.number ? null : table.number)}
                   onLongPress={() => handleTableStatusChange(table.number)}
@@ -309,6 +324,13 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
+    ...Platform.select({
+      web: {
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
+      },
+    }),
   },
   section: {
     marginBottom: 32,
@@ -320,7 +342,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: Colors.text,
   },
@@ -328,9 +350,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 16,
+    justifyContent: 'flex-start',
   },
   tableCard: {
-    flexBasis: isTablet ? '23%' : '47%',
+    flexBasis: '47%',
     minWidth: 160,
     backgroundColor: Colors.background,
     borderRadius: 16,
@@ -351,6 +374,7 @@ const styles = StyleSheet.create({
   },
   tableCardTablet: {
     minWidth: 200,
+    flexBasis: '30%',
   },
   tableCardSelected: {
     borderColor: Colors.primary,
@@ -370,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tableNumber: {
-    fontSize: isTablet ? 22 : 20,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: Colors.text,
   },
@@ -416,8 +440,13 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   quickActions: {
-    flexDirection: isTablet ? 'row' : 'column',
+    flexDirection: 'column',
     gap: 16,
+    ...Platform.select({
+      web: {
+        flexDirection: 'row',
+      },
+    }),
   },
   quickActionCard: {
     flex: 1,

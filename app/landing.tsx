@@ -311,6 +311,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 50 : 30,
     paddingTop: 40,
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 32,
+      },
+    }),
   },
   contentTablet: {
     paddingHorizontal: 80,

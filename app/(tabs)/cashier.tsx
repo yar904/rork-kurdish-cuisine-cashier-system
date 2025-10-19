@@ -15,6 +15,8 @@ const getResponsiveLayout = () => {
     isTablet: width >= 768 && width < 1200,
     isDesktop: width >= 1200,
     width,
+    itemsPerRow: width < 768 ? 1 : width < 1200 ? 2 : 3,
+    orderSectionWidth: width < 768 ? width : width < 1200 ? 380 : 420,
   };
 };
 
@@ -72,12 +74,7 @@ export default function CashierScreen() {
     );
   };
 
-  const getItemsPerRow = () => {
-    const layout = getResponsiveLayout();
-    if (layout.isDesktop) return 3;
-    if (layout.isTablet) return 2;
-    return 1;
-  };
+
 
   return (
     <View style={styles.container}>
@@ -87,7 +84,7 @@ export default function CashierScreen() {
         headerTintColor: '#fff',
       }} />
 
-      <View style={styles.content}>
+      <View style={[styles.content, dimensions.width < 768 && styles.contentMobile]}>
         <View style={styles.menuSection}>
           <ScrollView 
             horizontal 
@@ -116,8 +113,8 @@ export default function CashierScreen() {
 
           <ScrollView style={styles.itemsScroll} contentContainerStyle={styles.itemsGrid}>
             {filteredItems.map(item => {
-              const itemsPerRow = getItemsPerRow();
-              const itemWidth = itemsPerRow === 1 ? '100%' : `${100 / itemsPerRow - 2}%`;
+              const layout = getResponsiveLayout();
+              const itemWidth = layout.itemsPerRow === 1 ? '100%' : `${100 / layout.itemsPerRow - 2}%`;
               
               return (
                 <TouchableOpacity
@@ -151,7 +148,12 @@ export default function CashierScreen() {
           </ScrollView>
         </View>
 
-        <View style={[styles.orderSection, dimensions.width >= 768 && styles.orderSectionTablet]}>
+        <View style={[
+          styles.orderSection,
+          dimensions.width >= 768 && styles.orderSectionTablet,
+          dimensions.width >= 1200 && styles.orderSectionDesktop,
+          dimensions.width < 768 && styles.orderSectionMobile,
+        ]}>
           <View style={styles.orderHeader}>
             <View style={styles.orderHeaderLeft}>
               <ShoppingCart size={24} color={Colors.primary} />
@@ -276,6 +278,9 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  contentMobile: {
+    flexDirection: 'column',
+  },
   menuSection: {
     flex: 2,
     backgroundColor: Colors.background,
@@ -389,7 +394,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   orderSectionTablet: {
-    width: 450,
+    width: 380,
+  },
+  orderSectionDesktop: {
+    width: 420,
+  },
+  orderSectionMobile: {
+    width: '100%',
+    maxHeight: '40%',
+    borderLeftWidth: 0,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   orderHeader: {
     flexDirection: 'row',
