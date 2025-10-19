@@ -5,6 +5,7 @@ import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native'
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
+import { formatPrice } from '@/constants/currency';
 import { MenuCategory } from '@/types/restaurant';
 
 const getResponsiveLayout = () => {
@@ -112,7 +113,7 @@ export default function AnalyticsScreen() {
           <StatCard
             icon={DollarSign}
             label={t('totalRevenue')}
-            value={`$${analytics.totalRevenue.toFixed(2)}`}
+            value={formatPrice(analytics.totalRevenue)}
             color={Colors.success}
           />
           <StatCard
@@ -124,7 +125,7 @@ export default function AnalyticsScreen() {
           <StatCard
             icon={TrendingUp}
             label={t('avgOrderValue')}
-            value={`$${analytics.avgOrderValue.toFixed(2)}`}
+            value={formatPrice(analytics.avgOrderValue)}
             color={Colors.warning}
           />
         </View>
@@ -149,7 +150,7 @@ export default function AnalyticsScreen() {
                   </View>
                   <View style={styles.topItemStats}>
                     <Text style={styles.topItemQuantity}>{data.quantity}x</Text>
-                    <Text style={styles.topItemRevenue}>${data.revenue.toFixed(2)}</Text>
+                    <Text style={styles.topItemRevenue}>{formatPrice(data.revenue)}</Text>
                   </View>
                 </View>
               ))
@@ -177,7 +178,7 @@ export default function AnalyticsScreen() {
                     </View>
                   </View>
                   <View style={styles.categoryStats}>
-                    <Text style={styles.categoryRevenue}>${revenue.toFixed(2)}</Text>
+                    <Text style={styles.categoryRevenue}>{formatPrice(revenue)}</Text>
                     <Text style={styles.categoryPercentage}>{percentage.toFixed(1)}%</Text>
                   </View>
                 </View>

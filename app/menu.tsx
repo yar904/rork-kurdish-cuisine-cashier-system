@@ -24,6 +24,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { Colors } from '@/constants/colors';
+import { formatPrice } from '@/constants/currency';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -82,7 +83,7 @@ export default function PublicMenuScreen() {
 
     Alert.alert(
       t('submitOrder'),
-      `${t('submitOrderConfirm')} ${selectedTable}?\n${t('total')}: ${calculateTotal(currentOrder).toFixed(2)}`,
+      `${t('submitOrderConfirm')} ${selectedTable}?\n${t('total')}: ${formatPrice(calculateTotal(currentOrder))}`,
       [
         { text: t('cancel'), style: 'cancel' },
         {
@@ -229,7 +230,7 @@ export default function PublicMenuScreen() {
             <Text style={styles.menuItemNameHorizontal} numberOfLines={1}>
               {getItemName(item)}
             </Text>
-            <Text style={styles.menuItemPriceHorizontal}>${item.price.toFixed(2)}</Text>
+            <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
           <Text style={styles.menuItemDescriptionHorizontal} numberOfLines={2}>
             {getItemDescription(item)}
@@ -299,7 +300,7 @@ export default function PublicMenuScreen() {
                 </TouchableOpacity>
 
                 <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
-                <Text style={styles.modalItemPrice}>${selectedItem?.price.toFixed(2)}</Text>
+                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
                 <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
 
                 <View style={styles.modalDivider} />
@@ -342,7 +343,7 @@ export default function PublicMenuScreen() {
                 >
                   <ShoppingCart size={20} color="#fff" />
                   <Text style={styles.modalAddButtonText}>
-                    {t('addToCart')} - ${((selectedItem?.price ?? 0) * itemQuantity).toFixed(2)}
+                    {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -381,7 +382,7 @@ export default function PublicMenuScreen() {
                       <Text style={styles.cartItemNotes}>{t('note')}: {item.notes}</Text>
                     )}
                     <Text style={styles.cartItemPrice}>
-                      ${item.menuItem.price.toFixed(2)} × {item.quantity} = ${(item.menuItem.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.menuItem.price)} × {item.quantity} = {formatPrice(item.menuItem.price * item.quantity)}
                     </Text>
                   </View>
                   <View style={styles.cartItemControls}>
@@ -430,7 +431,7 @@ export default function PublicMenuScreen() {
             )}
             <View style={styles.cartTotal}>
               <Text style={styles.cartTotalLabel}>{t('total')}:</Text>
-              <Text style={styles.cartTotalAmount}>${calculateTotal(currentOrder).toFixed(2)}</Text>
+              <Text style={styles.cartTotalAmount}>{formatPrice(calculateTotal(currentOrder))}</Text>
             </View>
             <TouchableOpacity
               style={[styles.cartSubmitButton, currentOrder.length === 0 && styles.cartSubmitButtonDisabled]}
@@ -724,15 +725,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   restaurantName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800' as const,
     color: Colors.gold,
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     textAlign: 'center' as const,
     marginBottom: 2,
+    flexShrink: 1,
     ...Platform.select({
       web: {
         fontSize: 24,
+        letterSpacing: 2,
       },
     }),
   },
@@ -741,18 +744,17 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
+    fontSize: 13,
+    flexShrink: 1,
     ...Platform.select({
-      default: {
-        fontSize: 13,
-      },
       web: {
         fontSize: 15,
       },
     }),
   },
   headerLogo: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     ...Platform.select({
       web: {
         width: 72,

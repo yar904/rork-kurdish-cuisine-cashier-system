@@ -18,6 +18,7 @@ import { MenuCategory } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { Colors } from '@/constants/colors';
+import { formatPrice } from '@/constants/currency';
 
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
@@ -93,7 +94,7 @@ export default function CategoryDetailScreen() {
             {getItemDescription(item)}
           </Text>
           <View style={styles.priceContainer}>
-            <Text style={styles.menuItemPrice}>${item.price.toFixed(2)}</Text>
+            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
           </View>
         </View>
       </TouchableOpacity>
