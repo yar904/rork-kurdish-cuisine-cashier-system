@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
-import { Order, OrderItem, OrderStatus } from '@/types/restaurant';
+import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
 import { useTables } from '@/contexts/TableContext';
 
@@ -157,6 +157,51 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     setCurrentOrder([]);
   }, []);
 
+  const getAIRecommendations = useCallback(async (tableNumber: number): Promise<MenuItem[]> => {
+    const itemSales: Record<string, { item: MenuItem; count: number; totalRevenue: number }> = {};
+    
+    orders.forEach(order => {
+      order.items.forEach(orderItem => {
+        const itemId = orderItem.menuItem.id;
+        if (!itemSales[itemId]) {
+          itemSales[itemId] = {
+            item: orderItem.menuItem,
+            count: 0,
+            totalRevenue: 0,
+          };
+        }
+        itemSales[itemId].count += orderItem.quantity;
+        itemSales[itemId].totalRevenue += orderItem.menuItem.price * orderItem.quantity;
+      });
+    });
+
+    const topItems = Object.values(itemSales)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+      .map(sale => sale.item)
+      .filter(item => item.available);
+
+    return topItems;
+  }, [orders]);
+
+  const optimizeKitchenQueue = useCallback((orders: Order[]) => {
+    const activeOrders = orders.filter(o => o.status === 'new' || o.status === 'preparing');
+    
+    return activeOrders.sort((a, b) => {
+      if (a.status === 'preparing' && b.status === 'new') return -1;
+      if (a.status === 'new' && b.status === 'preparing') return 1;
+      
+      const aItemCount = a.items.reduce((sum, item) => sum + item.quantity, 0);
+      const bItemCount = b.items.reduce((sum, item) => sum + item.quantity, 0);
+      
+      if (aItemCount !== bItemCount) {
+        return aItemCount - bItemCount;
+      }
+      
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+  }, []);
+
   return useMemo(() => ({
     orders,
     currentOrder,
@@ -170,5 +215,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     updateOrderStatus,
     clearCurrentOrder,
     calculateTotal,
-  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal]);
+    getAIRecommendations,
+    optimizeKitchenQueue,
+  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal, getAIRecommendations, optimizeKitchenQueue]);
 });

@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, Dimensions, Platform, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
+import VoiceOrderButton from '@/components/VoiceOrderButton';
+import AIRecommendations from '@/components/AIRecommendations';
+import AIChatbot from '@/components/AIChatbot';
 
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
@@ -37,6 +40,7 @@ export default function CashierScreen() {
   const { t, tc } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
+  const [showChatbot, setShowChatbot] = useState(false);
 
   const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
 
@@ -198,6 +202,27 @@ export default function CashierScreen() {
             placeholderTextColor={Colors.textLight}
           />
 
+          <AIRecommendations
+            tableNumber={selectedTable}
+            onSelectItem={(itemId) => addItemToCurrentOrder(itemId)}
+          />
+
+          <View style={styles.aiButtons}>
+            <VoiceOrderButton
+              onTranscript={(text) => {
+                console.log('Voice transcript:', text);
+                Alert.alert('Voice Order', text);
+              }}
+            />
+            <TouchableOpacity
+              style={styles.chatbotButton}
+              onPress={() => setShowChatbot(true)}
+            >
+              <MessageCircle size={20} color="#fff" />
+              <Text style={styles.chatbotButtonText}>AI Assistant</Text>
+            </TouchableOpacity>
+          </View>
+
           <ScrollView style={styles.orderItems}>
             {currentOrder.length === 0 ? (
               <View style={styles.emptyOrder}>
@@ -259,6 +284,18 @@ export default function CashierScreen() {
           </View>
         </View>
       </View>
+
+      <Modal
+        visible={showChatbot}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowChatbot(false)}
+      >
+        <AIChatbot
+          visible={showChatbot}
+          onClose={() => setShowChatbot(false)}
+        />
+      </Modal>
     </View>
   );
 }
@@ -478,6 +515,39 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     fontSize: 14,
     color: Colors.text,
+  },
+  aiButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  chatbotButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#8B4513',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  chatbotButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700' as const,
   },
   orderItems: {
     flex: 1,

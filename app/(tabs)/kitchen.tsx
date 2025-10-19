@@ -19,7 +19,7 @@ const getResponsiveLayout = () => {
 };
 
 export default function KitchenScreen() {
-  const { orders, updateOrderStatus, readyNotification } = useRestaurant();
+  const { orders, updateOrderStatus, readyNotification, optimizeKitchenQueue } = useRestaurant();
   const { t } = useLanguage();
   const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
 
@@ -31,10 +31,11 @@ export default function KitchenScreen() {
   }, []);
 
   const activeOrders = useMemo(() => {
-    return orders.filter(order => 
+    const filtered = orders.filter(order => 
       order.status === 'new' || order.status === 'preparing' || order.status === 'ready'
     );
-  }, [orders]);
+    return optimizeKitchenQueue(filtered);
+  }, [orders, optimizeKitchenQueue]);
 
   const newOrders = useMemo(() => 
     activeOrders.filter(o => o.status === 'new'), 
