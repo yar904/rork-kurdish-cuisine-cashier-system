@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert, Share } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
-import { Stack } from 'expo-router';
-import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock } from 'lucide-react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Colors } from '@/constants/colors';
 import { TableStatus } from '@/types/restaurant';
 
@@ -20,6 +21,8 @@ const getResponsiveLayout = () => {
 
 export default function AdminScreen() {
   const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
+  const router = useRouter();
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -145,17 +148,46 @@ export default function AdminScreen() {
     updateTableStatus(tableNumber, nextStatus);
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/landing');
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
         title: `${t('restaurantName')} - Admin`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
-        headerRight: () => newOrdersCount > 0 ? (
-          <View style={styles.headerBadge}>
-            <Text style={styles.headerBadgeText}>{newOrdersCount} New</Text>
+        headerRight: () => (
+          <View style={styles.headerRight}>
+            {newOrdersCount > 0 && (
+              <View style={styles.headerBadge}>
+                <Text style={styles.headerBadgeText}>{newOrdersCount} New</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              activeOpacity={0.7}
+            >
+              <LogOut size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
-        ) : null,
+        ),
       }} />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -308,6 +340,24 @@ export default function AdminScreen() {
             </View>
           </View>
           <Text style={styles.legendHint}>Long press on table to change status</Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.userInfoCard}>
+            <Users size={24} color={Colors.primary} />
+            <View style={styles.userInfo}>
+              <Text style={styles.userRole}>Logged in as: {user.role === 'admin' ? 'Super Admin' : 'Staff'}</Text>
+              <Text style={styles.userSubtext}>Password: {user.role === 'admin' ? 'farman12' : '123tapse'}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.logoutButtonCard}
+              onPress={handleLogout}
+              activeOpacity={0.7}
+            >
+              <LogOut size={20} color={Colors.error} />
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -551,5 +601,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700' as const,
     textAlign: 'center' as const,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginRight: 16,
+  },
+  logoutButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  userInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 20,
+    gap: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  userInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  userRole: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: Colors.text,
+  },
+  userSubtext: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  logoutButtonCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  logoutButtonText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: Colors.error,
   },
 });

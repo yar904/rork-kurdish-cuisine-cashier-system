@@ -63,7 +63,7 @@ export default function LandingPage() {
   };
 
   const handleStaffAccess = () => {
-    router.push('/(tabs)/cashier');
+    router.push('/staff-login');
   };
 
   return (

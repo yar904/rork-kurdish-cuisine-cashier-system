@@ -1,11 +1,33 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { ShoppingCart, ChefHat, ClipboardList, BarChart3, Settings } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 export default function TabLayout() {
   const { t } = useLanguage();
+  const { user, isLoading, hasAccess } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user.authenticated) {
+      router.replace('/staff-login');
+    }
+  }, [user.authenticated, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  if (!user.authenticated) {
+    return null;
+  }
   
   return (
     <Tabs
@@ -23,6 +45,7 @@ export default function TabLayout() {
         options={{
           title: t('cashier'),
           tabBarIcon: ({ color }) => <ShoppingCart size={24} color={color} />,
+          href: hasAccess('staff') ? '/(tabs)/cashier' : null,
         }}
       />
       <Tabs.Screen
@@ -30,6 +53,7 @@ export default function TabLayout() {
         options={{
           title: t('kitchen'),
           tabBarIcon: ({ color }) => <ChefHat size={24} color={color} />,
+          href: hasAccess('staff') ? '/(tabs)/kitchen' : null,
         }}
       />
       <Tabs.Screen
@@ -37,6 +61,7 @@ export default function TabLayout() {
         options={{
           title: t('waiter'),
           tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
+          href: hasAccess('staff') ? '/(tabs)/waiter' : null,
         }}
       />
       <Tabs.Screen
@@ -44,6 +69,7 @@ export default function TabLayout() {
         options={{
           title: t('analytics'),
           tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
+          href: hasAccess('staff') ? '/(tabs)/analytics' : null,
         }}
       />
       <Tabs.Screen
@@ -51,8 +77,18 @@ export default function TabLayout() {
         options={{
           title: 'Admin',
           tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+          href: user.role === 'admin' ? '/(tabs)/admin' : null,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+});
