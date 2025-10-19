@@ -515,6 +515,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.cream,
     marginBottom: 4,
+    textAlign: 'center',
   },
   languageLabelTablet: {
     fontSize: 32,
@@ -531,6 +532,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.cream,
     opacity: 0.6,
+    textAlign: 'center',
   },
   languageNativeTablet: {
     fontSize: 15,
