@@ -113,7 +113,7 @@ export default function CategoryDetailScreen() {
           >
             <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
-          <Text style={styles.restaurantName}>TAPSÉ</Text>
+          <Text style={styles.restaurantName}>Tapse</Text>
           <TouchableOpacity
             style={styles.languageButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
@@ -187,7 +187,7 @@ export default function CategoryDetailScreen() {
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerTitle}>TAPSÉ</Text>
+          <Text style={styles.footerTitle}>Tapse</Text>
           <Text style={styles.footerText}>{t('thankYou')}</Text>
           <View style={styles.footerDivider} />
           <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>

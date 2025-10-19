@@ -529,7 +529,7 @@ export default function PublicMenuScreen() {
             resizeMode="contain"
           />
           <View style={styles.welcomeContainer}>
-            <Text style={styles.restaurantName}>TAPSÉ</Text>
+            <Text style={styles.restaurantName}>Tapse</Text>
             <Text style={styles.welcomeText}>{t('welcome')}</Text>
           </View>
           <View style={styles.headerActions}>
@@ -671,7 +671,7 @@ export default function PublicMenuScreen() {
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerTitle}>TAPSÉ</Text>
+          <Text style={styles.footerTitle}>Tapse</Text>
           <Text style={styles.footerText}>{t('thankYou')}</Text>
           <View style={styles.footerDivider} />
           <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>
