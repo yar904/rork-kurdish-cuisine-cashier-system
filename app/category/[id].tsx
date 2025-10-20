@@ -9,16 +9,19 @@ import {
   TextInput,
   Dimensions,
   Platform,
+  Modal,
+  Alert,
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
-import { MenuCategory } from '@/types/restaurant';
+import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
+import { useRestaurant } from '@/contexts/RestaurantContext';
 
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
@@ -36,8 +39,12 @@ export default function CategoryDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { language, setLanguage, t, tc } = useLanguage();
+  const { addItemToCurrentOrder } = useRestaurant();
   const [searchQuery, setSearchQuery] = useState('');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [itemNotes, setItemNotes] = useState('');
+  const [itemQuantity, setItemQuantity] = useState(1);
 
   const category = id as MenuCategory;
 
@@ -63,6 +70,16 @@ export default function CategoryDetailScreen() {
     return item.description;
   };
 
+  const handleAddToCart = () => {
+    if (selectedItem) {
+      addItemToCurrentOrder(selectedItem.id, itemQuantity, itemNotes || undefined);
+      setSelectedItem(null);
+      setItemNotes('');
+      setItemQuantity(1);
+      Alert.alert(t('success'), t('itemAddedToCart'));
+    }
+  };
+
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const layout = getResponsiveLayout();
     const cardWidth = layout.isPhone
@@ -76,6 +93,11 @@ export default function CategoryDetailScreen() {
         key={item.id} 
         style={[styles.menuItemCard, { width: cardWidth }]}
         activeOpacity={0.95}
+        onPress={() => {
+          setSelectedItem(item);
+          setItemQuantity(1);
+          setItemNotes('');
+        }}
       >
         {item.image && (
           <View style={styles.imageContainer}>
@@ -104,6 +126,84 @@ export default function CategoryDetailScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+
+      <Modal
+        visible={selectedItem !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSelectedItem(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {selectedItem?.image && (
+                <Image 
+                  source={{ uri: selectedItem.image }} 
+                  style={styles.modalImage}
+                  resizeMode="cover"
+                />
+              )}
+              
+              <View style={styles.modalBody}>
+                <TouchableOpacity 
+                  style={styles.modalCloseButton}
+                  onPress={() => setSelectedItem(null)}
+                >
+                  <X size={24} color="#1A1A1A" />
+                </TouchableOpacity>
+
+                <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
+                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
+                <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
+
+                <View style={styles.modalDivider} />
+
+                <View style={styles.quantitySelector}>
+                  <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
+                  <View style={styles.quantityControls}>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                    >
+                      <Minus size={20} color="#3d0101" />
+                    </TouchableOpacity>
+                    <Text style={styles.quantityValue}>{itemQuantity}</Text>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => setItemQuantity(itemQuantity + 1)}
+                    >
+                      <Plus size={20} color="#3d0101" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.notesContainer}>
+                  <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
+                  <TextInput
+                    style={styles.notesInput}
+                    placeholder={t('anySpecialRequirements')}
+                    placeholderTextColor="rgba(26, 26, 26, 0.4)"
+                    value={itemNotes}
+                    onChangeText={setItemNotes}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.modalAddButton}
+                  onPress={handleAddToCart}
+                >
+                  <ShoppingCart size={20} color="#fff" />
+                  <Text style={styles.modalAddButtonText}>
+                    {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
       
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
         <View style={styles.headerTop}>
@@ -493,5 +593,160 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
     color: '#9CA3AF',
     marginBottom: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+    ...Platform.select({
+      web: {
+        maxWidth: 600,
+        alignSelf: 'center' as const,
+        width: '100%',
+        marginBottom: 0,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        maxHeight: '85%',
+        marginTop: 'auto' as const,
+      },
+    }),
+  },
+  modalImage: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#F9FAFB',
+  },
+  modalBody: {
+    padding: 24,
+  },
+  modalCloseButton: {
+    position: 'absolute' as const,
+    top: 24,
+    right: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  modalItemName: {
+    fontSize: 26,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  modalItemPrice: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#3d0101',
+    marginBottom: 12,
+  },
+  modalItemDescription: {
+    fontSize: 16,
+    color: '#6B7280',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 20,
+  },
+  quantitySelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  quantitySelectorLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  quantityButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFDD0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#3d0101',
+  },
+  quantityValue: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    minWidth: 40,
+    textAlign: 'center' as const,
+  },
+  notesContainer: {
+    marginBottom: 24,
+  },
+  notesLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  notesInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minHeight: 80,
+    textAlignVertical: 'top' as const,
+  },
+  modalAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#3d0101',
+    paddingVertical: 16,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  modalAddButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700' as const,
   },
 });
