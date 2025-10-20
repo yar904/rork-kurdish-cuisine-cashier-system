@@ -14,7 +14,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ShoppingCart, Plus, Minus, X, Send } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -652,7 +652,7 @@ export default function PublicMenuScreen() {
                   if (autoScrollInterval.current) {
                     clearInterval(autoScrollInterval.current);
                   }
-                  startAutoScroll();
+                  router.push(`/category/${category}`);
                 }}
               >
                 <View style={styles.categoryCardImageContainer}>
@@ -1077,7 +1077,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 100,
+    height: 180,
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
     overflow: 'hidden' as const,
