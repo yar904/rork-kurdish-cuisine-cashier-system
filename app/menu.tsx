@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,6 +25,8 @@ import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
+import AIChatbot from '@/components/AIChatbot';
+import { trpc } from '@/lib/trpc';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -39,6 +41,11 @@ export default function PublicMenuScreen() {
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
+  const [userRating, setUserRating] = useState(0);
+  const [ratingComment, setRatingComment] = useState('');
 
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
@@ -115,6 +122,42 @@ export default function PublicMenuScreen() {
   };
 
   const cartItemCount = currentOrder.reduce((sum, item) => sum + item.quantity, 0);
+
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
+  const ratingsStats = ratingsStatsQuery.data || {};
+
+  const createRatingMutation = trpc.ratings.create.useMutation({
+    onSuccess: () => {
+      Alert.alert(t('success'), t('ratingSubmitted'));
+      setShowRatingModal(false);
+      setRatingItem(null);
+      setUserRating(0);
+      setRatingComment('');
+      ratingsStatsQuery.refetch();
+    },
+    onError: () => {
+      Alert.alert(t('error'), t('failedToSubmitRequest'));
+    },
+  });
+
+  const handleSubmitRating = () => {
+    if (!ratingItem || !selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    if (userRating === 0) {
+      Alert.alert(t('error'), 'Please select a rating');
+      return;
+    }
+
+    createRatingMutation.mutate({
+      menuItemId: ratingItem.id,
+      tableNumber: selectedTable,
+      rating: userRating,
+      comment: ratingComment || undefined,
+    });
+  };
 
   const categories: MenuCategory[] = [
     'appetizers',
@@ -217,6 +260,8 @@ export default function PublicMenuScreen() {
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const isPremium = item.price > 25000;
+    const itemStats = ratingsStats[item.id];
+    const hasRatings = itemStats && itemStats.totalRatings > 0;
     
     return (
       <TouchableOpacity 
@@ -240,6 +285,14 @@ export default function PublicMenuScreen() {
             </View>
           )}
           
+          {hasRatings && (
+            <View style={styles.ratingBadge}>
+              <Star size={14} color="#D4AF37" fill="#D4AF37" />
+              <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
+              <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+            </View>
+          )}
+          
           <View style={styles.priceHighlight}>
             <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
@@ -258,17 +311,30 @@ export default function PublicMenuScreen() {
             </View>
           )}
           
-          <TouchableOpacity 
-            style={[styles.addToCartButton, isPremium && styles.addToCartButtonPremium]}
-            onPress={() => {
-              setSelectedItem(item);
-              setItemQuantity(1);
-              setItemNotes('');
-            }}
-          >
-            <Plus size={18} color="#fff" strokeWidth={2.5} />
-            <Text style={styles.addToCartButtonText}>{t('addToCart')}</Text>
-          </TouchableOpacity>
+          <View style={styles.menuItemActions}>
+            <TouchableOpacity 
+              style={styles.rateButton}
+              onPress={() => {
+                setRatingItem(item);
+                setUserRating(0);
+                setRatingComment('');
+                setShowRatingModal(true);
+              }}
+            >
+              <Star size={16} color="#D4AF37" strokeWidth={2} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.addToCartButton, isPremium && styles.addToCartButtonPremium]}
+              onPress={() => {
+                setSelectedItem(item);
+                setItemQuantity(1);
+                setItemNotes('');
+              }}
+            >
+              <Plus size={18} color="#fff" strokeWidth={2.5} />
+              <Text style={styles.addToCartButtonText}>{t('addToCart')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -557,6 +623,77 @@ export default function PublicMenuScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={showAIAssistant}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowAIAssistant(false)}
+      >
+        <AIChatbot visible={showAIAssistant} onClose={() => setShowAIAssistant(false)} />
+      </Modal>
+
+      <Modal
+        visible={showRatingModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowRatingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.ratingModalContent}>
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setShowRatingModal(false)}
+            >
+              <X size={24} color="#1A1A1A" />
+            </TouchableOpacity>
+
+            <Text style={styles.ratingModalTitle}>{t('rateThisDish')}</Text>
+            {ratingItem && (
+              <Text style={styles.ratingModalItemName}>{getItemName(ratingItem)}</Text>
+            )}
+
+            <View style={styles.starRatingContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setUserRating(star)}
+                  style={styles.starButton}
+                >
+                  <Star
+                    size={40}
+                    color="#D4AF37"
+                    fill={star <= userRating ? "#D4AF37" : "transparent"}
+                    strokeWidth={2}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.ratingModalLabel}>{t('addReview')}</Text>
+            <TextInput
+              style={styles.ratingInput}
+              placeholder={t('reviewOptional')}
+              placeholderTextColor="rgba(26, 26, 26, 0.4)"
+              value={ratingComment}
+              onChangeText={setRatingComment}
+              multiline
+              numberOfLines={4}
+            />
+
+            <TouchableOpacity
+              style={[styles.submitRatingButton, (userRating === 0 || createRatingMutation.isPending) && styles.submitRatingButtonDisabled]}
+              onPress={handleSubmitRating}
+              disabled={userRating === 0 || createRatingMutation.isPending}
+            >
+              <Star size={20} color="#fff" fill="#fff" />
+              <Text style={styles.submitRatingButtonText}>
+                {createRatingMutation.isPending ? t('submitting') : t('submitRating')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
         <View style={styles.headerContent}>
@@ -570,6 +707,12 @@ export default function PublicMenuScreen() {
             <Text style={styles.welcomeText}>{t('welcome')}</Text>
           </View>
           <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.aiButton}
+              onPress={() => setShowAIAssistant(true)}
+            >
+              <MessageCircle size={20} color="#FFFFFF" strokeWidth={1.5} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.cartIconButton}
               onPress={() => setShowCart(true)}
@@ -828,6 +971,14 @@ const styles = StyleSheet.create({
     color: '#3d0101',
     fontSize: 11,
     fontWeight: '700' as const,
+  },
+  aiButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   languageButton: {
     width: 40,
@@ -1150,7 +1301,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
-    width: '100%',
+    flex: 1,
     marginTop: 8,
     ...Platform.select({
       ios: {
@@ -1713,5 +1864,137 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignSelf: 'flex-start' as const,
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+  },
+  ratingCount: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+  },
+  menuItemActions: {
+    flexDirection: 'row',
+    gap: 8,
+    width: '100%',
+  },
+  rateButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  ratingModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 32,
+    maxHeight: '80%',
+    ...Platform.select({
+      web: {
+        maxWidth: 500,
+        alignSelf: 'center' as const,
+        width: '100%',
+        marginBottom: 0,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        maxHeight: '75%',
+        marginTop: 'auto' as const,
+      },
+    }),
+  },
+  ratingModalTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#3d0101',
+    textAlign: 'center' as const,
+    marginBottom: 12,
+  },
+  ratingModalItemName: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+    textAlign: 'center' as const,
+    marginBottom: 24,
+  },
+  starRatingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  starButton: {
+    padding: 4,
+  },
+  ratingModalLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  ratingInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minHeight: 100,
+    textAlignVertical: 'top' as const,
+    marginBottom: 24,
+  },
+  submitRatingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#3d0101',
+    paddingVertical: 16,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  submitRatingButtonDisabled: {
+    backgroundColor: 'rgba(61, 1, 1, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.1,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  submitRatingButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700' as const,
   },
 });

@@ -11,6 +11,9 @@ import { getAllServiceRequestsProcedure } from "./routes/service-requests/getAll
 import { updateServiceRequestStatusProcedure } from "./routes/service-requests/updateStatus/route";
 import { saveCustomerOrderHistoryProcedure } from "./routes/customer-history/save/route";
 import { getCustomerOrderHistoryProcedure } from "./routes/customer-history/getByTable/route";
+import { createRatingProcedure } from "./routes/ratings/create/route";
+import { getRatingsByMenuItemProcedure } from "./routes/ratings/getByMenuItem/route";
+import { getAllRatingsStatsProcedure } from "./routes/ratings/getAllStats/route";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -36,6 +39,11 @@ export const appRouter = createTRPCRouter({
   customerHistory: createTRPCRouter({
     save: saveCustomerOrderHistoryProcedure,
     getByTable: getCustomerOrderHistoryProcedure,
+  }),
+  ratings: createTRPCRouter({
+    create: createRatingProcedure,
+    getByMenuItem: getRatingsByMenuItemProcedure,
+    getAllStats: getAllRatingsStatsProcedure,
   }),
 });
 

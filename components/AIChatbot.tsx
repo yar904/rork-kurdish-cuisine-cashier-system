@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView } from 'react-native';
-import { Send, X, Sparkles } from 'lucide-react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
+import { Send, X, Sparkles, Info, Bell, Users, MessageCircle } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useRorkAgent, createRorkTool } from '@rork/toolkit-sdk';
 import { z } from 'zod';
+import { Language } from '@/constants/i18n';
 
 interface AIChatbotProps {
   onClose: () => void;
@@ -13,7 +14,7 @@ interface AIChatbotProps {
 }
 
 export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { addItemToCurrentOrder, selectedTable, currentOrder } = useRestaurant();
   const [input, setInput] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -36,15 +37,51 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
     },
   });
 
+  const getSystemPrompt = (lang: Language): string => {
+    const prompts = {
+      en: `You are Baran, a friendly AI assistant for Tapse, a Kurdish restaurant. Your role is to help customers:
+1. Navigate the platform and understand how to use it
+2. Explain how the ordering process works
+3. Help them understand the order tracking system
+4. Explain how to call for a waiter or request the bill
+5. Answer questions about their order status
+6. Add items to their order when requested
+7. Provide information about the menu and categories
+
+The current table is ${selectedTable}. Always be warm, helpful, and guide customers through their dining experience. When they want to add items, use the addToOrder tool. Keep responses concise but friendly. Respond in English.`,
+      ku: `تۆ بارانیت، یاریدەدەری AI ی دۆستانەی چێشتخانەی تاپسە، چێشتخانەیەکی کوردی. ئەرکەکەت یارمەتیدانی میوانانە:
+1. ڕێنمایی لە پلاتفۆرمەکە و تێگەیشتن لە چۆنیەتی بەکارهێنانی
+2. ڕوونکردنەوەی پرۆسەی داواکردن
+3. یارمەتیدان بۆ تێگەیشتن لە سیستەمی شوێنکەوتنی داواکاری
+4. ڕوونکردنەوەی چۆنیەتی بانگهێشتنی گارسۆن یان داواکردنی حساب
+5. وەڵامدانەوەی پرسیارەکان دەربارەی دۆخی داواکاریەکانیان
+6. زیادکردنی بڕگەکان بۆ داواکاریەکانیان کاتێک داوا دەکرێت
+7. زانیاری دابینکردن دەربارەی مینیو و جۆرەکان
+
+مێزی ئێستا ${selectedTable}. هەمیشە گەرم و یارمەتیدەر بە و ڕێنمایی میوانەکان بکە لە ئەزموونی خواردنیاندا. کاتێک دەیانەوێت بڕگەکان زیاد بکەن، ئامرازی addToOrder بەکاربهێنە. وەڵامەکان کورت و دۆستانە بهێڵەرەوە. وەڵامەکانت بە کوردی بدەرەوە.`,
+      ar: `أنت باران، مساعد الذكاء الاصطناعي الودود لمطعم تابسي، وهو مطعم كردي. دورك هو مساعدة العملاء في:
+1. التنقل في المنصة وفهم كيفية استخدامها
+2. شرح كيفية عمل عملية الطلب
+3. مساعدتهم على فهم نظام تتبع الطلبات
+4. شرح كيفية استدعاء النادل أو طلب الفاتورة
+5. الإجابة على الأسئلة حول حالة طلباتهم
+6. إضافة العناصر إلى طلباتهم عند الطلب
+7. توفير معلومات حول القائمة والفئات
+
+الطاولة الحالية هي ${selectedTable}. كن دائماً دافئاً ومفيداً وقم بإرشاد العملاء خلال تجربة تناول الطعام. عندما يريدون إضافة عناصر، استخدم أداة addToOrder. اجعل الردود موجزة وودية. استجب باللغة العربية.`,
+    };
+    return prompts[lang];
+  };
+
   useEffect(() => {
     if (visible && messages.length === 0) {
       sendMessage({
-        text: `You are an AI assistant for a Kurdish restaurant called Tapse. Help customers place orders. The current table is ${selectedTable}. Be friendly and helpful. When customers tell you what they want, use the addToOrder tool to add items.`,
+        text: getSystemPrompt(language),
         files: [],
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }, [visible, language]);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -67,8 +104,8 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
             <Sparkles size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.headerTitle}>AI Order Assistant</Text>
-            <Text style={styles.headerSubtitle}>Table {selectedTable}</Text>
+            <Text style={styles.headerTitle}>Baran AI Assistant</Text>
+            <Text style={styles.headerSubtitle}>{t('helpNavigateExperience')}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -76,63 +113,90 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.quickActions}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+          <TouchableOpacity style={styles.quickActionButton} onPress={() => sendMessage({ text: 'How do I order?', files: [] })}>
+            <MessageCircle size={16} color={Colors.primary} />
+            <Text style={styles.quickActionText}>{t('howToOrder')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionButton} onPress={() => sendMessage({ text: 'How do I track my order?', files: [] })}>
+            <Info size={16} color={Colors.primary} />
+            <Text style={styles.quickActionText}>{t('trackOrder')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionButton} onPress={() => sendMessage({ text: 'How do I call a waiter?', files: [] })}>
+            <Users size={16} color={Colors.primary} />
+            <Text style={styles.quickActionText}>{t('callWaiter')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionButton} onPress={() => sendMessage({ text: 'How do I request the bill?', files: [] })}>
+            <Bell size={16} color={Colors.primary} />
+            <Text style={styles.quickActionText}>{t('requestBill')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
       <ScrollView
         ref={scrollViewRef}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContent}
       >
-        {messages.map((m) => (
-          <View key={m.id} style={styles.messageGroup}>
-            {m.parts.map((part, i) => {
-              switch (part.type) {
-                case 'text':
-                  if (m.role === 'system') return null;
-                  return (
-                    <View
-                      key={`${m.id}-${i}`}
-                      style={[
-                        styles.messageBubble,
-                        m.role === 'user' ? styles.userMessage : styles.assistantMessage,
-                      ]}
-                    >
-                      <Text
+        {messages.map((m) => {
+          if (m.role === 'system') return null;
+          
+          return (
+            <View key={m.id} style={styles.messageGroup}>
+              {m.parts.map((part, i) => {
+                switch (part.type) {
+                  case 'text':
+                    return (
+                      <View
+                        key={`${m.id}-text-${i}`}
                         style={[
-                          styles.messageText,
-                          m.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
+                          styles.messageBubble,
+                          m.role === 'user' ? styles.userMessage : styles.assistantMessage,
                         ]}
                       >
-                        {part.text}
-                      </Text>
-                    </View>
-                  );
-                case 'tool':
-                  switch (part.state) {
-                    case 'input-streaming':
-                    case 'input-available':
-                      return (
-                        <View key={`${m.id}-${i}`} style={styles.toolMessage}>
-                          <Sparkles size={14} color={Colors.primary} />
-                          <Text style={styles.toolText}>Adding {part.toolName}...</Text>
-                        </View>
-                      );
-                    case 'output-available':
-                      return (
-                        <View key={`${m.id}-${i}`} style={styles.toolMessage}>
-                          <Sparkles size={14} color={Colors.success} />
-                          <Text style={styles.toolText}>Item added to order!</Text>
-                        </View>
-                      );
-                    case 'output-error':
-                      return (
-                        <View key={`${m.id}-${i}`} style={styles.toolErrorMessage}>
-                          <Text style={styles.toolErrorText}>Error: {part.errorText}</Text>
-                        </View>
-                      );
-                  }
-              }
-            })}
-          </View>
-        ))}
+                        <Text
+                          style={[
+                            styles.messageText,
+                            m.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
+                          ]}
+                        >
+                          {part.text}
+                        </Text>
+                      </View>
+                    );
+                  case 'tool':
+                    switch (part.state) {
+                      case 'input-streaming':
+                      case 'input-available':
+                        return (
+                          <View key={`${m.id}-tool-${i}-${part.state}`} style={styles.toolMessage}>
+                            <Sparkles size={14} color={Colors.primary} />
+                            <Text style={styles.toolText}>Adding {part.toolName}...</Text>
+                          </View>
+                        );
+                      case 'output-available':
+                        return (
+                          <View key={`${m.id}-tool-${i}-output`} style={styles.toolMessage}>
+                            <Sparkles size={14} color={Colors.success} />
+                            <Text style={styles.toolText}>Item added to order!</Text>
+                          </View>
+                        );
+                      case 'output-error':
+                        return (
+                          <View key={`${m.id}-tool-${i}-error`} style={styles.toolErrorMessage}>
+                            <Text style={styles.toolErrorText}>Error: {part.errorText}</Text>
+                          </View>
+                        );
+                    }
+                    return null;
+                  default:
+                    return null;
+                }
+              })}
+            </View>
+          );
+        })}
 
       </ScrollView>
 
@@ -142,7 +206,7 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
       >
         <TextInput
           style={styles.input}
-          placeholder="Ask AI to help with your order..."
+          placeholder={t('askBaran')}
           placeholderTextColor={Colors.textLight}
           value={input}
           onChangeText={setInput}
@@ -202,9 +266,35 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 11,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  quickActions: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.background,
+  },
+  quickActionsScroll: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  quickActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.cream,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  quickActionText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: Colors.text,
   },
   closeButton: {
     padding: 4,
