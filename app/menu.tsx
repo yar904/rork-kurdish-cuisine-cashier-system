@@ -205,10 +205,12 @@ export default function PublicMenuScreen() {
   };
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+    const isPremium = item.price > 25000;
+    
     return (
       <TouchableOpacity 
         key={item.id} 
-        style={styles.menuItemCardHorizontal}
+        style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
         activeOpacity={0.95}
         onPress={() => {
           setSelectedItem(item);
@@ -216,29 +218,46 @@ export default function PublicMenuScreen() {
           setItemNotes('');
         }}
       >
-        {item.image && (
-          <View style={styles.imageContainerHorizontal}>
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.menuItemImageHorizontal}
-              resizeMode="cover"
-            />
-          </View>
-        )}
         <View style={styles.menuItemContentHorizontal}>
-          <View style={styles.itemHeaderHorizontal}>
-            <Text style={styles.menuItemNameHorizontal} numberOfLines={1}>
-              {getItemName(item)}
-            </Text>
+          <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
+            {getItemName(item)}
+          </Text>
+          
+          {isPremium && (
+            <View style={styles.premiumBadge}>
+              <Text style={styles.premiumBadgeText}>✦ Premium</Text>
+            </View>
+          )}
+          
+          <View style={styles.priceHighlight}>
             <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
-          <Text style={styles.menuItemDescriptionHorizontal} numberOfLines={2}>
+          
+          <Text style={styles.menuItemDescriptionHorizontal} numberOfLines={3}>
             {getItemDescription(item)}
           </Text>
-          <View style={styles.addToCartButton}>
-            <Plus size={16} color="#fff" />
+          
+          {item.image && (
+            <View style={styles.imageContainerHorizontal}>
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.menuItemImageHorizontal}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          
+          <TouchableOpacity 
+            style={[styles.addToCartButton, isPremium && styles.addToCartButtonPremium]}
+            onPress={() => {
+              setSelectedItem(item);
+              setItemQuantity(1);
+              setItemNotes('');
+            }}
+          >
+            <Plus size={18} color="#fff" strokeWidth={2.5} />
             <Text style={styles.addToCartButtonText}>{t('addToCart')}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -258,7 +277,14 @@ export default function PublicMenuScreen() {
 
     return (
       <View key={category} style={styles.categorySection}>
-        <Text style={styles.categoryTitle}>{tc(category)}</Text>
+        <View style={styles.categoryHeader}>
+          <View style={styles.categoryTitleContainer}>
+            <View style={styles.categoryDecorLeft} />
+            <Text style={styles.categoryTitle}>{tc(category)}</Text>
+            <View style={styles.categoryDecorRight} />
+          </View>
+          <Text style={styles.categoryCount}>{categoryItems.length} {t('items')}</Text>
+        </View>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -943,20 +969,48 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   categorySection: {
-    marginBottom: 32,
+    marginBottom: 40,
+  },
+  categoryHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  categoryTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryDecorLeft: {
+    width: 4,
+    height: 28,
+    backgroundColor: '#D4AF37',
+    borderRadius: 2,
+    marginRight: 12,
+  },
+  categoryDecorRight: {
+    flex: 1,
+    height: 2,
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+    marginLeft: 16,
+    borderRadius: 1,
   },
   categoryTitle: {
-    fontSize: 24,
-    fontWeight: '700' as const,
+    fontSize: 28,
+    fontWeight: '800' as const,
     color: '#3d0101',
-    marginBottom: 16,
-    paddingHorizontal: 20,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
     textTransform: 'capitalize' as const,
+  },
+  categoryCount: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
   },
   categoryItemsScroll: {
     paddingHorizontal: 20,
-    gap: 16,
+    gap: 20,
     ...Platform.select({
       web: {
         flexWrap: 'wrap',
@@ -981,58 +1035,78 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: 280,
+    width: 300,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden' as const,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
+    marginBottom: 4,
     ...Platform.select({
       ios: {
         shadowColor: '#3d0101',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.12,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 3px 16px rgba(61, 1, 1, 0.15), 0 0 0 0.5px rgba(212, 175, 55, 0.1)',
+        boxShadow: '0 4px 20px rgba(61, 1, 1, 0.18), 0 0 0 1px rgba(212, 175, 55, 0.15)',
+      },
+    }),
+  },
+  premiumCard: {
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.3), 0 0 0 2px rgba(212, 175, 55, 0.2)',
       },
     }),
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 180,
+    height: 100,
     backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    overflow: 'hidden' as const,
+    marginTop: 12,
+    marginBottom: 16,
   },
   menuItemImageHorizontal: {
     width: '100%',
     height: '100%',
   },
   menuItemContentHorizontal: {
-    padding: 16,
-  },
-  itemHeaderHorizontal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    padding: 20,
   },
   menuItemNameHorizontal: {
-    fontSize: 18,
-    fontWeight: '600' as const,
+    fontSize: 22,
+    fontWeight: '700' as const,
     color: '#1A1A1A',
-    lineHeight: 22,
-    flex: 1,
-    marginRight: 12,
+    lineHeight: 28,
+    letterSpacing: -0.3,
+    marginBottom: 8,
+  },
+  priceHighlight: {
+    marginBottom: 12,
   },
   menuItemPriceHorizontal: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#3d0101',
-    letterSpacing: -0.5,
+    fontSize: 28,
+    fontWeight: '800' as const,
+    color: '#D4AF37',
+    letterSpacing: -0.8,
   },
   menuItemDescriptionHorizontal: {
     fontSize: 14,
@@ -1041,21 +1115,63 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
     marginBottom: 12,
   },
+  premiumBadge: {
+    backgroundColor: '#D4AF37',
+    alignSelf: 'flex-start' as const,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  premiumBadgeText: {
+    color: '#3d0101',
+    fontSize: 11,
+    fontWeight: '700' as const,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
   addToCartButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#3d0101',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: 'flex-start' as const,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    width: '100%',
+    marginTop: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  addToCartButtonPremium: {
+    backgroundColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   addToCartButtonText: {
     color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600' as const,
+    fontSize: 16,
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
   },
   modalOverlay: {
     flex: 1,
