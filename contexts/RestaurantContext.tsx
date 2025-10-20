@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
+import { Audio } from 'expo-av';
 import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -60,21 +62,122 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const [selectedTable, setSelectedTable] = useState<number>(1);
   const [readyNotification, setReadyNotification] = useState<string | null>(null);
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
+  const soundRefs = useRef<{ [key: string]: Audio.Sound }>({});
+
+  useEffect(() => {
+    const loadSounds = async () => {
+      if (Platform.OS === 'web') return;
+      
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+        });
+      } catch (error) {
+        console.log('Error setting audio mode:', error);
+      }
+    };
+    
+    loadSounds();
+    
+    return () => {
+      Object.values(soundRefs.current).forEach(sound => {
+        sound.unloadAsync().catch(console.error);
+      });
+    };
+  }, []);
+
+  const playSound = useCallback(async (soundType: 'new' | 'ready' | 'paid') => {
+    if (Platform.OS === 'web') {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        switch (soundType) {
+          case 'new':
+            oscillator.frequency.value = 800;
+            gainNode.gain.value = 0.3;
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+            break;
+          case 'ready':
+            oscillator.frequency.value = 1000;
+            gainNode.gain.value = 0.4;
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+            setTimeout(() => {
+              const osc2 = audioContext.createOscillator();
+              const gain2 = audioContext.createGain();
+              osc2.connect(gain2);
+              gain2.connect(audioContext.destination);
+              osc2.frequency.value = 1200;
+              gain2.gain.value = 0.4;
+              osc2.start(audioContext.currentTime);
+              osc2.stop(audioContext.currentTime + 0.15);
+            }, 150);
+            break;
+          case 'paid':
+            oscillator.frequency.value = 600;
+            gainNode.gain.value = 0.3;
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+            break;
+        }
+      } catch (error) {
+        console.log('Error playing web sound:', error);
+      }
+      return;
+    }
+
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        soundType === 'new' 
+          ? { uri: 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3' }
+          : soundType === 'ready'
+          ? { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' }
+          : { uri: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3' },
+        { shouldPlay: true, volume: 0.5 }
+      );
+      
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync().catch(console.error);
+        }
+      });
+    } catch (error) {
+      console.log(`Error playing ${soundType} sound:`, error);
+    }
+  }, []);
 
   useEffect(() => {
     orders.forEach(order => {
       const prevStatus = previousOrderStatuses.current[order.id];
-      if (prevStatus && prevStatus !== 'ready' && order.status === 'ready') {
-        setReadyNotification(order.id);
-        console.log(`Order ${order.id} is now READY for Table ${order.tableNumber}!`);
-        
-        setTimeout(() => {
-          setReadyNotification(null);
-        }, 10000);
+      
+      if (!prevStatus) {
+        if (order.status === 'new') {
+          playSound('new');
+        }
+      } else if (prevStatus !== order.status) {
+        if (order.status === 'ready') {
+          setReadyNotification(order.id);
+          playSound('ready');
+          console.log(`Order ${order.id} is now READY for Table ${order.tableNumber}!`);
+          
+          setTimeout(() => {
+            setReadyNotification(null);
+          }, 10000);
+        } else if (order.status === 'paid') {
+          playSound('paid');
+        }
       }
+      
       previousOrderStatuses.current[order.id] = order.status;
     });
-  }, [orders]);
+  }, [orders, playSound]);
 
   const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
     const menuItem = MENU_ITEMS.find(item => item.id === itemId);
