@@ -89,14 +89,25 @@ export default function PublicMenuScreen() {
         {
           text: t('submit'),
           style: 'default',
-          onPress: () => {
-            submitOrder();
+          onPress: async () => {
+            const result = await submitOrder();
             setShowCart(false);
-            Alert.alert(
-              t('success'),
-              t('orderSubmittedSuccess'),
-              [{ text: 'OK', style: 'default' }]
-            );
+            if (result?.orderId) {
+              router.push({
+                pathname: '/order-tracking',
+                params: {
+                  orderId: result.orderId,
+                  tableNumber: selectedTable?.toString() || '',
+                  total: calculateTotal(currentOrder).toString(),
+                },
+              });
+            } else {
+              Alert.alert(
+                t('success'),
+                t('orderSubmittedSuccess'),
+                [{ text: 'OK', style: 'default' }]
+              );
+            }
           },
         },
       ]

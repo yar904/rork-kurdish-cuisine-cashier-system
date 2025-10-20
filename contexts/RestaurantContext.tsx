@@ -241,6 +241,8 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     setCurrentOrder([]);
     
     console.log('Order submitted:', newOrder);
+    
+    return { orderId: newOrder.id, success: true };
   }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable]);
 
   const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
