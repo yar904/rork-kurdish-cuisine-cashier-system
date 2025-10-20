@@ -56,13 +56,13 @@ const generateDemoOrders = (): Order[] => {
 };
 
 export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
-  const { assignOrderToTable, clearTable } = useTables();
   const [orders, setOrders] = useState<Order[]>(generateDemoOrders());
   const [currentOrder, setCurrentOrder] = useState<OrderItem[]>([]);
   const [selectedTable, setSelectedTable] = useState<number>(1);
   const [readyNotification, setReadyNotification] = useState<string | null>(null);
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
   const soundRefs = useRef<{ [key: string]: Audio.Sound }>({});
+  const { assignOrderToTable, clearTable } = useTables();
 
   useEffect(() => {
     const loadSounds = async () => {
