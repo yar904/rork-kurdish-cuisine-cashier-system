@@ -1077,7 +1077,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 180,
+    height: 240,
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
     overflow: 'hidden' as const,
