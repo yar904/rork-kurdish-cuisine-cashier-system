@@ -55,3 +55,17 @@ export interface StaffActivity {
   timestamp: Date;
   details?: string;
 }
+
+export type ServiceRequestType = 'waiter' | 'bill' | 'wrong-order';
+export type ServiceRequestStatus = 'pending' | 'in-progress' | 'resolved';
+
+export interface TableServiceRequest {
+  id: string;
+  tableNumber: number;
+  requestType: ServiceRequestType;
+  status: ServiceRequestStatus;
+  message?: string;
+  createdAt: Date;
+  resolvedAt?: Date;
+  resolvedBy?: string;
+}

@@ -7,12 +7,17 @@ import {
   Platform,
   TouchableOpacity,
   Animated,
+  Alert,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CheckCircle, Clock, ChefHat, Bell, ArrowLeft } from 'lucide-react-native';
+import { CheckCircle, Clock, ChefHat, Bell, ArrowLeft, User, DollarSign, AlertCircle, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
+import { trpcClient } from '@/lib/trpc';
 
 type OrderStatusType = 'new' | 'preparing' | 'ready' | 'served';
 
@@ -26,13 +31,20 @@ export default function OrderTrackingScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { t, language } = useLanguage();
-  const [currentStatus, setCurrentStatus] = useState<OrderStatusType>('new');
+  const { orders } = useRestaurant();
   const [progress] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [serviceRequestType, setServiceRequestType] = useState<'waiter' | 'bill' | 'wrong-order' | null>(null);
+  const [serviceMessage, setServiceMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const orderId = params.orderId as string || 'N/A';
-  const tableNumber = params.tableNumber as string || 'N/A';
-  const total = params.total as string || '0';
+  
+  const order = orders.find(o => o.id === orderId);
+  const currentStatus: OrderStatusType = order?.status === 'paid' ? 'served' : (order?.status || 'new') as OrderStatusType;
+  const tableNumber = order?.tableNumber?.toString() || params.tableNumber as string || 'N/A';
+  const total = order?.total?.toString() || params.total as string || '0';
 
   const stages: OrderStage[] = [
     {
@@ -96,6 +108,44 @@ export default function OrderTrackingScreen() {
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
+
+  const handleServiceRequest = useCallback((type: 'waiter' | 'bill' | 'wrong-order') => {
+    setServiceRequestType(type);
+    setServiceMessage('');
+    setShowServiceModal(true);
+  }, []);
+
+  const submitServiceRequest = useCallback(async () => {
+    if (!serviceRequestType || !tableNumber || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await trpcClient.serviceRequests.create.mutate({
+        tableNumber: parseInt(tableNumber),
+        requestType: serviceRequestType,
+        message: serviceMessage || undefined,
+      });
+
+      Alert.alert(
+        t('success'),
+        serviceRequestType === 'waiter'
+          ? t('waiterNotified')
+          : serviceRequestType === 'bill'
+          ? t('billRequested')
+          : t('issueReported'),
+        [{ text: 'OK' }]
+      );
+
+      setShowServiceModal(false);
+      setServiceRequestType(null);
+      setServiceMessage('');
+    } catch (error) {
+      console.error('Error submitting service request:', error);
+      Alert.alert(t('error'), t('failedToSubmitRequest'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
 
   const renderStage = (stage: OrderStage, index: number) => {
     const isCompleted = index < currentStageIndex;
@@ -243,6 +293,42 @@ export default function OrderTrackingScreen() {
           {stages.map((stage, index) => renderStage(stage, index))}
         </View>
 
+        <View style={styles.serviceRequestsCard}>
+          <Text style={styles.serviceRequestsTitle}>{t('needHelp') || 'Need Help?'}</Text>
+          
+          <View style={styles.serviceButtons}>
+            <TouchableOpacity
+              style={styles.serviceButton}
+              onPress={() => handleServiceRequest('waiter')}
+            >
+              <View style={[styles.serviceButtonIcon, { backgroundColor: Colors.gold }]}>
+                <User size={24} color="#3d0101" />
+              </View>
+              <Text style={styles.serviceButtonLabel}>{t('callWaiter') || 'Call Waiter'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.serviceButton}
+              onPress={() => handleServiceRequest('bill')}
+            >
+              <View style={[styles.serviceButtonIcon, { backgroundColor: '#10B981' }]}>
+                <DollarSign size={24} color="#fff" />
+              </View>
+              <Text style={styles.serviceButtonLabel}>{t('requestBill') || 'Request Bill'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.serviceButton}
+              onPress={() => handleServiceRequest('wrong-order')}
+            >
+              <View style={[styles.serviceButtonIcon, { backgroundColor: '#EF4444' }]}>
+                <AlertCircle size={24} color="#fff" />
+              </View>
+              <Text style={styles.serviceButtonLabel}>{t('reportIssue') || 'Report Issue'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <View style={styles.infoCard}>
           <View style={styles.infoItem}>
             <Text style={styles.infoIcon}>📱</Text>
@@ -250,18 +336,6 @@ export default function OrderTrackingScreen() {
               <Text style={styles.infoTitle}>{t('stayUpdated') || 'Stay Updated'}</Text>
               <Text style={styles.infoDescription}>
                 {t('stayUpdatedDesc') || 'We\'ll notify you when your order status changes.'}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoDivider} />
-
-          <View style={styles.infoItem}>
-            <Text style={styles.infoIcon}>🔔</Text>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>{t('notifyWaiter') || 'Need Assistance?'}</Text>
-              <Text style={styles.infoDescription}>
-                {t('notifyWaiterDesc') || 'Press the call button to get help from our staff.'}
               </Text>
             </View>
           </View>
@@ -276,6 +350,68 @@ export default function OrderTrackingScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal
+        visible={showServiceModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowServiceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {serviceRequestType === 'waiter'
+                  ? t('callWaiter') || 'Call Waiter'
+                  : serviceRequestType === 'bill'
+                  ? t('requestBill') || 'Request Bill'
+                  : t('reportIssue') || 'Report Issue'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowServiceModal(false)}>
+                <X size={24} color="#1A1A1A" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalLabel}>
+                {t('additionalDetails') || 'Additional Details (Optional)'}
+              </Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder={
+                  serviceRequestType === 'wrong-order'
+                    ? t('describeIssue') || 'Describe the issue...'
+                    : t('additionalNotes') || 'Additional notes...'
+                }
+                placeholderTextColor="#9CA3AF"
+                value={serviceMessage}
+                onChangeText={setServiceMessage}
+                multiline
+                numberOfLines={4}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setShowServiceModal(false)}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.modalCancelButtonText}>{t('cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalSubmitButton, isSubmitting && styles.modalSubmitButtonDisabled]}
+                  onPress={submitServiceRequest}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.modalSubmitButtonText}>
+                    {isSubmitting ? t('submitting') || 'Submitting...' : t('submit')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -620,5 +756,147 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700' as const,
     letterSpacing: 0.5,
+  },
+  serviceRequestsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  serviceRequestsTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    marginBottom: 16,
+    textAlign: 'center' as const,
+  },
+  serviceButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  serviceButton: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  serviceButtonIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  serviceButtonLabel: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+    textAlign: 'center' as const,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minHeight: 100,
+    textAlignVertical: 'top' as const,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#6B7280',
+  },
+  modalSubmitButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#3d0101',
+    alignItems: 'center',
+  },
+  modalSubmitButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalSubmitButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#fff',
   },
 });

@@ -169,6 +169,61 @@ export interface Database {
           timestamp?: string;
         };
       };
+      table_service_requests: {
+        Row: {
+          id: string;
+          table_number: number;
+          request_type: string;
+          status: string;
+          message: string | null;
+          created_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          table_number: number;
+          request_type: string;
+          status?: string;
+          message?: string | null;
+          created_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          table_number?: number;
+          request_type?: string;
+          status?: string;
+          message?: string | null;
+          created_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+      };
+      customer_order_history: {
+        Row: {
+          id: string;
+          table_number: number;
+          order_id: string;
+          order_data: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          table_number: number;
+          order_id: string;
+          order_data: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          table_number?: number;
+          order_id?: string;
+          order_data?: Json;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

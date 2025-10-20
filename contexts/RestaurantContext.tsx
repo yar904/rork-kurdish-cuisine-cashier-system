@@ -5,6 +5,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
 import { useTables } from '@/contexts/TableContext';
+import { trpcClient } from '@/lib/trpc';
 
 const generateDemoOrders = (): Order[] => {
   const now = new Date();
@@ -222,27 +223,69 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     return items.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
   }, []);
 
-  const submitOrder = useCallback((waiterName?: string) => {
+  const submitOrder = useCallback(async (waiterName?: string) => {
     if (currentOrder.length === 0) return;
 
-    const newOrder: Order = {
-      id: `ORD-${Date.now()}`,
-      tableNumber: selectedTable,
-      items: currentOrder,
-      status: 'new',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      waiterName,
-      total: calculateTotal(currentOrder),
-    };
-
-    setOrders(prev => [newOrder, ...prev]);
-    assignOrderToTable(selectedTable, newOrder.id);
-    setCurrentOrder([]);
+    const total = calculateTotal(currentOrder);
     
-    console.log('Order submitted:', newOrder);
-    
-    return { orderId: newOrder.id, success: true };
+    try {
+      const result = await trpcClient.orders.create.mutate({
+        tableNumber: selectedTable,
+        items: currentOrder.map(item => ({
+          menuItemId: item.menuItem.id,
+          quantity: item.quantity,
+          notes: item.notes,
+        })),
+        waiterName,
+        total,
+      });
+      
+      console.log('Order submitted successfully:', result);
+      
+      const newOrder: Order = {
+        id: result.orderId,
+        tableNumber: selectedTable,
+        items: currentOrder,
+        status: 'new',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        waiterName,
+        total,
+      };
+      
+      setOrders(prev => [newOrder, ...prev]);
+      assignOrderToTable(selectedTable, newOrder.id);
+      
+      try {
+        await trpcClient.customerHistory.save.mutate({
+          tableNumber: selectedTable,
+          orderId: result.orderId,
+          orderData: {
+            id: result.orderId,
+            tableNumber: selectedTable,
+            items: currentOrder.map(item => ({
+              name: item.menuItem.name,
+              quantity: item.quantity,
+              price: item.menuItem.price,
+              notes: item.notes,
+            })),
+            total,
+            status: 'new',
+            createdAt: new Date().toISOString(),
+          },
+        });
+        console.log('Order history saved for customer');
+      } catch (historyError) {
+        console.error('Error saving order history:', historyError);
+      }
+      
+      setCurrentOrder([]);
+      
+      return { orderId: result.orderId, success: true };
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      throw error;
+    }
   }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable]);
 
   const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
