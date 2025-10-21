@@ -6,6 +6,8 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useFonts } from "expo-font";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,23 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'NRT-Regular': require('../assets/fonts/NRT-Regular.ttf'),
+    'NRT-Bold': require('../assets/fonts/NRT-Bold.ttf'),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      console.log('✅ Fonts loaded successfully');
+    } else {
+      console.log('⏳ Waiting for fonts...');
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
