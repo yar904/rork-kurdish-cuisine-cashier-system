@@ -297,36 +297,24 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8DCC8',
+    backgroundColor: '#D4C4A8',
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
         backgroundImage: `
-          repeating-linear-gradient(
-            0deg,
-            rgba(139, 90, 43, 0.08) 0px,
-            transparent 1px,
-            transparent 8px
-          ),
-          repeating-linear-gradient(
-            90deg,
-            rgba(101, 67, 33, 0.1) 0px,
-            rgba(101, 67, 33, 0.1) 2px,
-            transparent 2px,
-            transparent 80px
-          ),
+          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=1080&fit=crop&q=80'),
           linear-gradient(
             180deg,
-            #DCC9A8 0%,
-            #C9B693 20%,
-            #B8A481 40%,
-            #A89370 60%,
-            #9A8560 80%,
-            #8C7850 100%
+            rgba(212, 196, 168, 0.85) 0%,
+            rgba(201, 182, 147, 0.9) 50%,
+            rgba(184, 164, 129, 0.85) 100%
           )
         `,
+        backgroundBlendMode: 'overlay',
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
       },
     }),
   },
@@ -473,13 +461,8 @@ const styles = StyleSheet.create({
   },
   plaidPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: Platform.OS === 'web' ? 0 : 0.15,
+    opacity: 0,
     zIndex: 0,
-    ...Platform.select({
-      default: {
-        backgroundColor: '#B8A481',
-      },
-    }),
   },
   citadelPattern: {
     position: 'absolute' as const,

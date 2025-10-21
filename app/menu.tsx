@@ -786,7 +786,6 @@ export default function PublicMenuScreen() {
                     />
                   )}
                   <View style={styles.categoryCardOverlay} />
-                  <View style={styles.categoryCardShine} />
                 </View>
                 <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
               </TouchableOpacity>
@@ -839,7 +838,7 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8DCC8',
+    backgroundColor: '#D4C4A8',
     position: 'relative' as const,
     ...Platform.select({
       web: {
@@ -847,29 +846,17 @@ const styles = StyleSheet.create({
         alignSelf: 'center' as const,
         width: '100%',
         backgroundImage: `
-          repeating-linear-gradient(
-            0deg,
-            rgba(139, 90, 43, 0.08) 0px,
-            transparent 1px,
-            transparent 8px
-          ),
-          repeating-linear-gradient(
-            90deg,
-            rgba(101, 67, 33, 0.1) 0px,
-            rgba(101, 67, 33, 0.1) 2px,
-            transparent 2px,
-            transparent 80px
-          ),
+          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=1080&fit=crop&q=80'),
           linear-gradient(
             180deg,
-            #DCC9A8 0%,
-            #C9B693 20%,
-            #B8A481 40%,
-            #A89370 60%,
-            #9A8560 80%,
-            #8C7850 100%
+            rgba(212, 196, 168, 0.85) 0%,
+            rgba(201, 182, 147, 0.9) 50%,
+            rgba(184, 164, 129, 0.85) 100%
           )
         `,
+        backgroundBlendMode: 'overlay',
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
       },
     }),
   },
@@ -1049,11 +1036,25 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(232, 220, 200, 0.95)',
+    backgroundColor: 'rgba(212, 196, 168, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(139, 90, 43, 0.15)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        backgroundImage: `
+          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=200&fit=crop&q=80'),
+          linear-gradient(
+            180deg,
+            rgba(212, 196, 168, 0.95) 0%,
+            rgba(201, 182, 147, 0.97) 100%
+          )
+        `,
+        backgroundBlendMode: 'overlay',
+        backgroundSize: 'cover',
+      },
+    }),
   },
   categorySliderTitle: {
     fontSize: 16,
@@ -1083,25 +1084,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden' as const,
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 90, 43, 0.2)',
     ...Platform.select({
       ios: {
         shadowColor: '#8B5A2B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 4px 12px rgba(139, 90, 43, 0.15)',
+        boxShadow: '0 6px 16px rgba(139, 90, 43, 0.25)',
       },
     }),
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 100,
+    height: 90,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
   },
@@ -1111,12 +1113,9 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(61, 1, 1, 0.15)',
+    backgroundColor: 'rgba(61, 1, 1, 0.1)',
   },
-  categoryCardShine: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-  },
+
   categoryCardTitle: {
     fontSize: 16,
     fontWeight: '800' as const,
@@ -1223,13 +1222,8 @@ const styles = StyleSheet.create({
   },
   plaidPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: Platform.OS === 'web' ? 0 : 0.15,
+    opacity: 0,
     zIndex: 0,
-    ...Platform.select({
-      default: {
-        backgroundColor: '#B8A481',
-      },
-    }),
   },
   citadelPattern: {
     position: 'absolute' as const,
