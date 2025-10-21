@@ -9,9 +9,9 @@ import { trpc, trpcClient } from "@/lib/trpc";
 import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_500Medium, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient();
 
@@ -40,14 +40,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1a1a' }}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#3d0101' }}>
+        <ActivityIndicator size="large" color="#D4AF37" />
+        <Text style={{ color: '#D4AF37', marginTop: 16, fontSize: 16, fontFamily: 'System' }}>تەپسی سلێمانی</Text>
       </View>
     );
   }
