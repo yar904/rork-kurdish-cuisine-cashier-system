@@ -664,7 +664,7 @@ export default function PublicMenuScreen() {
         <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.push('/landing')}
           >
             <ArrowLeft size={20} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>

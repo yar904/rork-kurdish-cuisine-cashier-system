@@ -38,7 +38,7 @@ export default function LandingPage() {
   };
 
   const handleContinue = () => {
-    router.push('/menu');
+    router.replace('/menu');
   };
 
   const getMenuText = () => {
