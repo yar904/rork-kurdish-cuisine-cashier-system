@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, Dimensions, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle } from 'lucide-react-native';
@@ -12,17 +12,7 @@ import VoiceOrderButton from '@/components/VoiceOrderButton';
 import AIRecommendations from '@/components/AIRecommendations';
 import AIChatbot from '@/components/AIChatbot';
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1200,
-    isDesktop: width >= 1200,
-    width,
-    itemsPerRow: width < 768 ? 1 : width < 1200 ? 2 : 3,
-    orderSectionWidth: width < 768 ? width : width < 1200 ? 380 : 420,
-  };
-};
+
 
 export default function CashierScreen() {
   const {
@@ -41,21 +31,18 @@ export default function CashierScreen() {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
   const [showChatbot, setShowChatbot] = useState(false);
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
+  const itemsPerRow = isPhone ? 1 : isTablet ? 2 : 3;
 
   const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
 
   const filteredItems = useMemo(() => {
     return MENU_ITEMS.filter(item => item.category === selectedCategory && item.available);
   }, [selectedCategory]);
-
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
-
-  React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
 
   const handleSubmitOrder = () => {
     if (currentOrder.length === 0) {
@@ -89,7 +76,7 @@ export default function CashierScreen() {
         headerTintColor: '#fff',
       }} />
 
-      <View style={[styles.content, dimensions.width < 768 && styles.contentMobile]}>
+      <View style={[styles.content, isPhone && styles.contentMobile]}>
         <View style={styles.menuSection}>
           <ScrollView 
             horizontal 
@@ -118,13 +105,10 @@ export default function CashierScreen() {
 
           <ScrollView style={styles.itemsScroll} contentContainerStyle={styles.itemsGrid}>
             {filteredItems.map(item => {
-              const layout = getResponsiveLayout();
-              const itemWidth = layout.itemsPerRow === 1 ? '100%' : `${100 / layout.itemsPerRow - 2}%`;
-              
               return (
                 <TouchableOpacity
                   key={item.id}
-                  style={[styles.menuItem, { width: itemWidth }]}
+                  style={[styles.menuItem, isPhone && styles.menuItemPhone]}
                   onPress={() => addItemToCurrentOrder(item.id)}
                 >
                   {item.image && (
@@ -155,9 +139,9 @@ export default function CashierScreen() {
 
         <View style={[
           styles.orderSection,
-          dimensions.width >= 768 && styles.orderSectionTablet,
-          dimensions.width >= 1200 && styles.orderSectionDesktop,
-          dimensions.width < 768 && styles.orderSectionMobile,
+          isTablet && styles.orderSectionTablet,
+          isDesktop && styles.orderSectionDesktop,
+          isPhone && styles.orderSectionMobile,
         ]}>
           <View style={styles.orderHeader}>
             <View style={styles.orderHeaderLeft}>
@@ -307,7 +291,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     ...Platform.select({
       web: {
         maxWidth: 1920,
@@ -317,7 +301,7 @@ const styles = StyleSheet.create({
     }),
   },
   contentMobile: {
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
   },
   menuSection: {
     flex: 2,
@@ -356,12 +340,14 @@ const styles = StyleSheet.create({
   },
   itemsGrid: {
     padding: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
     gap: 12,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between' as const,
   },
   menuItem: {
+    width: '48%',
+    minWidth: 180,
     backgroundColor: Colors.background,
     borderRadius: 12,
     borderWidth: 1,
@@ -379,6 +365,9 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
     }),
+  },
+  menuItemPhone: {
+    width: '100%',
   },
   menuItemImage: {
     width: '100%',

@@ -13,6 +13,7 @@ import {
   NativeSyntheticEvent,
   Modal,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -46,6 +47,11 @@ export default function PublicMenuScreen() {
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
 
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
@@ -1175,8 +1181,9 @@ const styles = StyleSheet.create({
     gap: 20,
     ...Platform.select({
       web: {
-        flexWrap: 'wrap',
-        flexDirection: 'row',
+        flexWrap: 'wrap' as const,
+        flexDirection: 'row' as const,
+        justifyContent: 'center' as const,
       },
     }),
   },
@@ -1197,7 +1204,8 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: 300,
+    minWidth: 280,
+    maxWidth: 320,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: 20,
     overflow: 'hidden' as const,
@@ -1693,10 +1701,10 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   tableGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
     gap: 16,
-    justifyContent: 'center',
+    justifyContent: 'center' as const,
     paddingVertical: 12,
     paddingBottom: 24,
   },

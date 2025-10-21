@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, TextInput, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ClipboardList, DollarSign, Users, X } from 'lucide-react-native';
@@ -8,16 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1200,
-    isDesktop: width >= 1200,
-    columns: width < 768 ? 1 : width < 1200 ? 2 : 3,
-    width,
-  };
-};
+
 
 export default function WaiterScreen() {
   const { orders, updateOrderStatus, readyNotification } = useRestaurant();
@@ -25,14 +16,11 @@ export default function WaiterScreen() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [splitBillModal, setSplitBillModal] = useState<{ visible: boolean; order: Order | null }>({ visible: false, order: null });
   const [splitPeople, setSplitPeople] = useState<string>('2');
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
-
-  React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
 
   const filteredOrders = useMemo(() => {
     if (selectedFilter === 'all') return orders;
@@ -224,9 +212,9 @@ export default function WaiterScreen() {
             </Text>
           </View>
         ) : (
-          <View style={[styles.tablesContainer, dimensions.width >= 768 && styles.tablesContainerTablet]}>
+          <View style={[styles.tablesContainer, !isPhone && styles.tablesContainerTablet]}>
             {tableNumbers.map(tableNumber => (
-              <View key={tableNumber} style={[styles.tableSection, dimensions.width >= 768 && styles.tableSectionTablet]}>
+              <View key={tableNumber} style={[styles.tableSection, !isPhone && styles.tableSectionTablet]}>
                 <View style={styles.tableHeader}>
                   <Text style={styles.tableHeaderText}>{t('table')} {tableNumber}</Text>
                   <View style={styles.tableHeaderBadge}>
@@ -380,17 +368,18 @@ const styles = StyleSheet.create({
     }),
   },
   tablesContainerTablet: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
     gap: 16,
+    justifyContent: 'space-evenly' as const,
   },
   tableSection: {
     marginBottom: 24,
   },
   tableSectionTablet: {
     flex: 1,
-    minWidth: 300,
-    maxWidth: 500,
+    minWidth: 320,
+    maxWidth: 550,
     marginBottom: 0,
   },
   tableOrders: {
@@ -527,7 +516,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   orderActions: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     gap: 8,
   },
   splitButton: {

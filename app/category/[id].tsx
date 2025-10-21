@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  Dimensions,
+  useWindowDimensions,
   Platform,
   Modal,
   Alert,
@@ -23,16 +23,7 @@ import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1024,
-    isDesktop: width >= 1024,
-    isLarge: width >= 1440,
-    width,
-  };
-};
+
 
 export default function CategoryDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -45,6 +36,12 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
+  const columnsPerRow = isPhone ? 2 : isTablet ? 3 : 4;
 
   const category = id as MenuCategory;
 
@@ -81,17 +78,10 @@ export default function CategoryDetailScreen() {
   };
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
-    const layout = getResponsiveLayout();
-    const cardWidth = layout.isPhone
-      ? (layout.width - 48) / 2
-      : layout.isTablet
-      ? 220
-      : 240;
-
     return (
       <TouchableOpacity 
         key={item.id} 
-        style={[styles.menuItemCard, { width: cardWidth }]}
+        style={styles.menuItemCard}
         activeOpacity={0.95}
         onPress={() => {
           setSelectedItem(item);
@@ -471,22 +461,24 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
     paddingHorizontal: 16,
     paddingTop: 20,
     gap: 16,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-evenly' as const,
     ...Platform.select({
       web: {
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
-        justifyContent: 'center',
       },
     }),
   },
   menuItemCard: {
+    width: '47%',
+    minWidth: 160,
+    maxWidth: 240,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: 16,
     overflow: 'hidden' as const,

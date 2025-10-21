@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, ArrowRight } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -7,28 +7,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1200,
-    isDesktop: width >= 1200,
-    columns: width < 768 ? 1 : width < 1200 ? 2 : 3,
-    width,
-  };
-};
+
 
 export default function KitchenScreen() {
   const { orders, updateOrderStatus, readyNotification, optimizeKitchenQueue } = useRestaurant();
   const { t } = useLanguage();
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
-
-  React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
 
   const activeOrders = useMemo(() => {
     const filtered = orders.filter(order => 
@@ -250,10 +238,10 @@ const styles = StyleSheet.create({
   },
   columns: {
     padding: 16,
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     gap: 16,
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    flexWrap: 'wrap' as const,
+    justifyContent: 'space-evenly' as const,
     ...Platform.select({
       web: {
         maxWidth: 1920,
@@ -264,8 +252,8 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    minWidth: 280,
-    maxWidth: 450,
+    minWidth: 300,
+    maxWidth: 500,
     gap: 12,
   },
   columnHeader: {

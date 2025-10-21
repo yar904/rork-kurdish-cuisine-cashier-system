@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -9,27 +9,16 @@ import { formatPrice } from '@/constants/currency';
 import { MenuCategory } from '@/types/restaurant';
 import PredictiveAnalytics from '@/components/PredictiveAnalytics';
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1200,
-    isDesktop: width >= 1200,
-    width,
-  };
-};
+
 
 export default function AnalyticsScreen() {
   const { orders } = useRestaurant();
   const { t, tc } = useLanguage();
-  const [dimensions, setDimensions] = useState<{ width: number; height: number }>(() => Dimensions.get('window'));
-
-  React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
+  const { width } = useWindowDimensions();
+  
+  const isPhone = width < 768;
+  const isTablet = width >= 768 && width < 1200;
+  const isDesktop = width >= 1200;
 
   const analytics = useMemo(() => {
     const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -90,13 +79,13 @@ export default function AnalyticsScreen() {
   }, [orders]);
 
   const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) => (
-    <View style={[styles.statCard, dimensions.width >= 768 && styles.statCardTablet]}>
+    <View style={[styles.statCard, !isPhone && styles.statCardTablet]}>
       <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
-        <Icon size={dimensions.width >= 768 ? 28 : 24} color={color} />
+        <Icon size={!isPhone ? 28 : 24} color={color} />
       </View>
       <View style={styles.statContent}>
-        <Text style={styles.statLabel}>{label}</Text>
-        <Text style={styles.statValue}>{value}</Text>
+        <Text style={[styles.statLabel, !isPhone && styles.statLabelLarge]}>{label}</Text>
+        <Text style={[styles.statValue, !isPhone && styles.statValueLarge]}>{value}</Text>
       </View>
     </View>
   );
@@ -229,12 +218,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statsGrid: {
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
     padding: 16,
     gap: 16,
     ...Platform.select({
       web: {
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
+        flexWrap: 'wrap' as const,
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
@@ -262,7 +252,14 @@ const styles = StyleSheet.create({
     }),
   },
   statCardTablet: {
-    minWidth: 200,
+    minWidth: 220,
+    maxWidth: 450,
+  },
+  statLabelLarge: {
+    fontSize: 14,
+  },
+  statValueLarge: {
+    fontSize: 26,
   },
   statIconContainer: {
     width: 48,
@@ -430,8 +427,8 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
   statusGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
     gap: 12,
   },
   statusCard: {
