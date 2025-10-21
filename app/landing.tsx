@@ -24,9 +24,9 @@ import Svg, { Path, Circle, G, Defs, Pattern, Rect } from 'react-native-svg';
 
 
 const LANGUAGES = [
-  { code: 'en' as Language, label: 'English', nativeLabel: 'English' },
-  { code: 'ar' as Language, label: 'عربي', nativeLabel: 'Arabic' },
-  { code: 'ku' as Language, label: 'کوردی', nativeLabel: 'Kurdish' },
+  { code: 'ku' as Language, label: 'کوردی', nativeLabel: 'کوردی' },
+  { code: 'ar' as Language, label: 'عربي', nativeLabel: 'عەرەبی' },
+  { code: 'en' as Language, label: 'English', nativeLabel: 'ئینگلیزی' },
 ];
 
 export default function LandingPage() {
@@ -185,8 +185,8 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>Tapse</Text>
-            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>Experience the rich flavors and traditions of Kurdish hospitality</Text>
+            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>تاپسە</Text>
+            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>تامی خواردنی کوردی و میوانداری کوردی ڕەسەن تاقی بکەرەوە</Text>
           </View>
 
 
@@ -197,8 +197,8 @@ export default function LandingPage() {
                 <Path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="{Colors.gold}"/>
               </Svg>
             </View>
-            <Text style={[styles.languageTitle, isTablet && styles.languageTitleTablet, isDesktop && styles.languageTitleDesktop]}>Select Your Language</Text>
-            <Text style={[styles.languageSubtitle, isTablet && styles.languageSubtitleTablet, isDesktop && styles.languageSubtitleDesktop]}>اختر لغتك • زمانەکەت هەڵبژێرە</Text>
+            <Text style={[styles.languageTitle, isTablet && styles.languageTitleTablet, isDesktop && styles.languageTitleDesktop]}>زمانەکەت هەڵبژێرە</Text>
+            <Text style={[styles.languageSubtitle, isTablet && styles.languageSubtitleTablet, isDesktop && styles.languageSubtitleDesktop]}>Select Your Language • اختر لغتك</Text>
 
             <View style={[styles.languageGrid, isLandscape && styles.languageGridLandscape]}>
               {LANGUAGES.map((lang) => (
@@ -255,7 +255,7 @@ export default function LandingPage() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
-                <Text style={[styles.continueButtonText, isTablet && styles.continueButtonTextTablet, isDesktop && styles.continueButtonTextDesktop]}>Continue to Menu</Text>
+                <Text style={[styles.continueButtonText, isTablet && styles.continueButtonTextTablet, isDesktop && styles.continueButtonTextDesktop]}>{selectedLang === 'ku' ? 'بەردەوام بوون بۆ مینیو' : selectedLang === 'ar' ? 'الاستمرار إلى القائمة' : 'Continue to Menu'}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
@@ -266,7 +266,7 @@ export default function LandingPage() {
             activeOpacity={0.8}
           >
             <Users size={20} color={Colors.gold} />
-            <Text style={[styles.staffButtonText, isTablet && styles.staffButtonTextTablet]}>Staff Access</Text>
+            <Text style={[styles.staffButtonText, isTablet && styles.staffButtonTextTablet]}>{selectedLang === 'ku' ? 'دەستگەیشتنی ستاف' : selectedLang === 'ar' ? 'وصول الموظفين' : 'Staff Access'}</Text>
           </TouchableOpacity>
 
           <View style={styles.footerContainer}>
@@ -277,8 +277,8 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>Welcome to Tapse</Text>
-            <Text style={[styles.footerCopyright, isTablet && styles.footerCopyrightTablet]}>© 2025 Tapse. All rights reserved.</Text>
+            <Text style={[styles.footer, isTablet && styles.footerTablet, isDesktop && styles.footerDesktop]}>{selectedLang === 'ku' ? 'بەخێر بێن بۆ تاپسە' : selectedLang === 'ar' ? 'مرحباً بكم في تابسي' : 'Welcome to Tapse'}</Text>
+            <Text style={[styles.footerCopyright, isTablet && styles.footerCopyrightTablet]}>{selectedLang === 'ku' ? '© ٢٠٢٥ تاپسە. هەموو مافێک پارێزراوە.' : selectedLang === 'ar' ? '© ٢٠٢٥ تابسي. جميع الحقوق محفوظة.' : '© 2025 Tapse. All rights reserved.'}</Text>
           </View>
         </ScrollView>
       </LinearGradient>
