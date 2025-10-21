@@ -11,7 +11,6 @@ import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -23,43 +22,48 @@ function RootLayoutNav() {
       <Stack.Screen name="menu" options={{ headerShown: false }} />
       <Stack.Screen name="staff-login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="order-tracking" options={{ headerShown: false }} />
+      <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'NRT-Regular': require('../assets/fonts/NRT-Regular.ttf'),
     'NRT-Bold': require('../assets/fonts/NRT-Bold.ttf'),
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      (Text as any).defaultProps = (Text as any).defaultProps || {};
-      (Text as any).defaultProps.style = { fontFamily: 'NRT-Regular' };
+    if (fontsLoaded || fontError) {
+      if (fontsLoaded) {
+        (Text as any).defaultProps = (Text as any).defaultProps || {};
+        (Text as any).defaultProps.style = { fontFamily: 'NRT-Regular' };
+      }
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LanguageProvider>
-            <TableProvider>
-              <RestaurantProvider>
-                <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <LanguageProvider>
+              <TableProvider>
+                <RestaurantProvider>
                   <RootLayoutNav />
-                </GestureHandlerRootView>
-              </RestaurantProvider>
-            </TableProvider>
-          </LanguageProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </trpc.Provider>
+                </RestaurantProvider>
+              </TableProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </GestureHandlerRootView>
   );
 }

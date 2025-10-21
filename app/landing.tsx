@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   staffButtonText: {
+    fontFamily: 'NRT-Bold',
     fontSize: 16,
     fontWeight: '700' as const,
     color: Colors.gold,
@@ -176,6 +177,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   welcomeText: {
+    fontFamily: 'NRT-Regular',
     fontSize: 14,
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.5)',
@@ -187,6 +189,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
+    fontFamily: 'NRT-Bold',
     fontSize: 48,
     fontWeight: '700' as const,
     color: Colors.gold,
@@ -195,6 +198,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   subtitle: {
+    fontFamily: 'NRT-Regular',
     fontSize: 15,
     fontWeight: '400' as const,
     color: '#E5E5E5',
@@ -214,6 +218,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   languagePrompt: {
+    fontFamily: 'NRT-Bold',
     fontSize: 28,
     fontWeight: '700' as const,
     color: '#FFFFFF',
@@ -221,6 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   languageSubPrompt: {
+    fontFamily: 'NRT-Regular',
     fontSize: 14,
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
@@ -262,6 +268,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   languageLabel: {
+    fontFamily: 'NRT-Bold',
     fontSize: 24,
     fontWeight: '700' as const,
     color: '#FFFFFF',
@@ -272,6 +279,7 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
   languageSubtitle: {
+    fontFamily: 'NRT-Regular',
     fontSize: 12,
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
@@ -290,6 +298,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   continueText: {
+    fontFamily: 'NRT-Bold',
     fontSize: 18,
     fontWeight: '700' as const,
     color: '#3D0101',
