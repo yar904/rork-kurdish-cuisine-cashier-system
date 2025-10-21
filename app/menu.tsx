@@ -784,8 +784,14 @@ export default function PublicMenuScreen() {
           <TouchableOpacity
             style={styles.iconItem}
             onPress={() => {
-              setShowRatingModal(true);
-              setRatingItem(null);
+              if (Platform.OS === 'web') {
+                window.open('https://www.google.com/search?q=Tapsi+Sulaymaniyah+reviews', '_blank');
+              } else {
+                Alert.alert(
+                  language === 'en' ? 'Google Reviews' : language === 'ku' ? 'هەڵسەنگاندنی گووگڵ' : 'مراجعات جوجل',
+                  language === 'en' ? 'Please visit our Google page to leave a review' : language === 'ku' ? 'تکایە سەردانی پەڕەی گووگڵمان بکە بۆ هێشتنەوەی هەڵسەنگاندن' : 'يرجى زيارة صفحتنا على جوجل لترك تقييم'
+                );
+              }
             }}
             activeOpacity={0.7}
           >
@@ -937,7 +943,9 @@ export default function PublicMenuScreen() {
                   )}
                   <View style={styles.categoryCardOverlay} />
                 </View>
-                <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
+                <View style={styles.categoryCardFooter}>
+                  <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -1241,14 +1249,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(61, 1, 1, 0.1)',
   },
 
-  categoryCardTitle: {
-    fontSize: 16,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#1A1A1A',
-    textAlign: 'center' as const,
-    paddingVertical: 12,
+  categoryCardFooter: {
+    paddingVertical: 10,
     paddingHorizontal: 8,
-    letterSpacing: 0.3,
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    width: '100%',
+  },
+  categoryCardTitle: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.5,
   },
   menuSections: {
     paddingTop: 24,
@@ -1276,9 +1289,10 @@ const styles = StyleSheet.create({
   categoryDecorRight: {
     flex: 1,
     height: 2,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#A0753D',
     marginLeft: 16,
     borderRadius: 1,
+    opacity: 0.8,
   },
   categoryTitle: {
     fontSize: 28,
@@ -1288,10 +1302,10 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
   },
   categoryCount: {
-    fontSize: 28,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
     color: '#3d0101',
-    letterSpacing: 0.5,
+    opacity: 0.7,
   },
   categoryItemsScroll: {
     paddingHorizontal: 20,
@@ -1439,10 +1453,11 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   menuItemNameHorizontal: {
-    fontSize: 22,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 28,
+    lineHeight: 20,
     letterSpacing: 0.5,
     marginBottom: 8,
     marginTop: 12,
@@ -1454,9 +1469,10 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
   },
