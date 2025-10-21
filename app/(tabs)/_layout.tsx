@@ -1,5 +1,5 @@
 import { Tabs, useRouter } from "expo-router";
-import { ShoppingCart, ChefHat, ClipboardList, BarChart3, Settings } from "lucide-react-native";
+import { ShoppingCart, ChefHat, ClipboardList, BarChart3, Settings, FileText } from "lucide-react-native";
 import React, { useEffect } from "react";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -70,6 +70,14 @@ export default function TabLayout() {
           title: t('analytics'),
           tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/analytics' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="reports"
+        options={{
+          title: 'Reports',
+          tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
+          href: user.role === 'admin' ? '/(tabs)/reports' : null,
         }}
       />
       <Tabs.Screen
