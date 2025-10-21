@@ -1,3 +1,12 @@
+export const fonts = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semiBold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  kurdish: 'NRT-Regular',
+  kurdishBold: 'NRT-Bold',
+};
+
 export const Colors = {
   primary: '#3d0101',
   primaryDark: '#2d0000',

@@ -12,7 +12,7 @@ import { User } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Colors } from '@/constants/colors';
+import { Colors, fonts } from '@/constants/colors';
 import { Language } from '@/constants/i18n';
 
 
@@ -166,9 +166,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   staffButtonText: {
-    fontFamily: 'NRT-Bold',
+    fontFamily: fonts.bold,
     fontSize: 16,
-    fontWeight: '700' as const,
     color: Colors.gold,
   },
   bottomLogo: {
@@ -177,9 +176,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   welcomeText: {
-    fontFamily: 'NRT-Regular',
+    fontFamily: fonts.kurdish,
     fontSize: 14,
-    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
   },
@@ -189,18 +187,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontFamily: 'NRT-Bold',
+    fontFamily: fonts.kurdishBold,
     fontSize: 48,
-    fontWeight: '700' as const,
     color: Colors.gold,
     textAlign: 'center',
     marginBottom: 12,
     letterSpacing: 1,
   },
   subtitle: {
-    fontFamily: 'NRT-Regular',
+    fontFamily: fonts.kurdish,
     fontSize: 15,
-    fontWeight: '400' as const,
     color: '#E5E5E5',
     textAlign: 'center',
     marginBottom: 40,
@@ -218,17 +214,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   languagePrompt: {
-    fontFamily: 'NRT-Bold',
+    fontFamily: fonts.kurdishBold,
     fontSize: 28,
-    fontWeight: '700' as const,
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
   },
   languageSubPrompt: {
-    fontFamily: 'NRT-Regular',
+    fontFamily: fonts.regular,
     fontSize: 14,
-    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     marginBottom: 28,
@@ -268,9 +262,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   languageLabel: {
-    fontFamily: 'NRT-Bold',
+    fontFamily: fonts.bold,
     fontSize: 24,
-    fontWeight: '700' as const,
     color: '#FFFFFF',
     marginBottom: 6,
     textAlign: 'center',
@@ -279,9 +272,8 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
   languageSubtitle: {
-    fontFamily: 'NRT-Regular',
+    fontFamily: fonts.regular,
     fontSize: 12,
-    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
   },
@@ -298,9 +290,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   continueText: {
-    fontFamily: 'NRT-Bold',
+    fontFamily: fonts.bold,
     fontSize: 18,
-    fontWeight: '700' as const,
     color: '#3D0101',
     letterSpacing: 0.5,
   },
