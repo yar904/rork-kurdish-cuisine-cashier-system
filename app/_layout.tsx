@@ -27,8 +27,8 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'NRT-Regular': require('../assets/fonts/NRT-Regular.ttf'),
-    'NRT-Bold': require('../assets/fonts/NRT-Bold.ttf'),
+    'NRT-Regular': require('@/assets/fonts/NRT-Regular.ttf'),
+    'NRT-Bold': require('@/assets/fonts/NRT-Bold.ttf'),
   });
 
   useEffect(() => {
