@@ -111,10 +111,6 @@ export default function LandingPage() {
           )}
 
           <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.restaurantName}>تەپسی سلێمانی</Text>
-              <Text style={styles.subtitle}>Kurdish Cuisine</Text>
-            </View>
 
             <TouchableOpacity
               style={styles.menuButton}

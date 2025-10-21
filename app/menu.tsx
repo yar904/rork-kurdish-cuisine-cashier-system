@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -668,7 +668,6 @@ export default function PublicMenuScreen() {
             resizeMode="contain"
           />
           <View style={styles.welcomeContainer}>
-            <Text style={styles.restaurantName}>تەپسی سلێمانی</Text>
             <Text style={styles.welcomeText}>{t('welcome')}</Text>
           </View>
           <View style={styles.headerActions}>
@@ -682,7 +681,7 @@ export default function PublicMenuScreen() {
               style={styles.cartIconButton}
               onPress={() => setShowCart(true)}
             >
-              <ShoppingCart size={22} color="#FFFFFF" strokeWidth={1.5} />
+              <Utensils size={22} color="#FFFFFF" strokeWidth={1.5} />
               {cartItemCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
