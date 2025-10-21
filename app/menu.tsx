@@ -801,6 +801,20 @@ export default function PublicMenuScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        <View style={styles.baobabPattern}>
+          <View style={[styles.baobabTree, { top: 120, left: -60 }]}>
+            <Text style={{ fontSize: 180, color: '#8B5A2B', opacity: 0.5 }}>🌳</Text>
+          </View>
+          <View style={[styles.baobabTree, { top: 480, right: -50 }]}>
+            <Text style={{ fontSize: 160, color: '#A0753D', opacity: 0.4 }}>🌴</Text>
+          </View>
+          <View style={[styles.baobabTree, { top: 900, left: -40 }]}>
+            <Text style={{ fontSize: 170, color: '#8B5A2B', opacity: 0.45 }}>🌳</Text>
+          </View>
+          <View style={[styles.baobabTree, { top: 1300, right: -60 }]}>
+            <Text style={{ fontSize: 190, color: '#A0753D', opacity: 0.4 }}>🌴</Text>
+          </View>
+        </View>
         <View style={styles.menuSections}>
           {filteredCategories.map(renderCategorySection)}
         </View>
@@ -831,7 +845,8 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFDD0',
+    backgroundColor: '#F5E6D3',
+    position: 'relative' as const,
     ...Platform.select({
       web: {
         maxWidth: 1920,
@@ -1016,9 +1031,9 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(255, 253, 208, 0.95)',
+    backgroundColor: 'rgba(245, 230, 211, 0.95)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(61, 1, 1, 0.1)',
+    borderBottomColor: 'rgba(139, 90, 43, 0.15)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
   },
@@ -1035,7 +1050,7 @@ const styles = StyleSheet.create({
   luxuryAccent: {
     width: 40,
     height: 2,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#A0753D',
     marginLeft: 20,
     marginBottom: 12,
     borderRadius: 1,
@@ -1051,10 +1066,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden' as const,
     borderWidth: 1,
-    borderColor: '#D4AF37',
+    borderColor: '#A0753D',
     ...Platform.select({
       ios: {
-        shadowColor: '#D4AF37',
+        shadowColor: '#8B5A2B',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 12,
@@ -1063,7 +1078,7 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
       web: {
-        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.25), 0 0 0 1px rgba(212, 175, 55, 0.1)',
+        boxShadow: '0 4px 16px rgba(139, 90, 43, 0.2), 0 0 0 1px rgba(160, 117, 61, 0.15)',
       },
     }),
   },
@@ -1117,14 +1132,14 @@ const styles = StyleSheet.create({
   categoryDecorLeft: {
     width: 4,
     height: 28,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#8B5A2B',
     borderRadius: 2,
     marginRight: 12,
   },
   categoryDecorRight: {
     flex: 1,
     height: 2,
-    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+    backgroundColor: 'rgba(139, 90, 43, 0.3)',
     marginLeft: 16,
     borderRadius: 1,
   },
@@ -1174,6 +1189,18 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: 'transparent',
+    position: 'relative' as const,
+  },
+  baobabPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.08,
+    zIndex: 0,
+  },
+  baobabTree: {
+    position: 'absolute' as const,
+    width: 220,
+    height: 280,
+    opacity: 0.12,
   },
   contentContainer: {
     paddingBottom: 32,
@@ -1192,7 +1219,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden' as const,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.2)',
+    borderColor: 'rgba(139, 90, 43, 0.25)',
     marginBottom: 4,
     ...Platform.select({
       ios: {
@@ -1205,7 +1232,7 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        maxWidth: 480,
+        maxWidth: 420,
       },
     }),
   },
