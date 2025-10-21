@@ -280,32 +280,6 @@ export default function PublicMenuScreen() {
         }}
       >
         <View style={styles.menuItemContentHorizontal}>
-          <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
-            {getItemName(item)}
-          </Text>
-          
-          {isPremium && (
-            <View style={styles.premiumBadge}>
-              <Text style={styles.premiumBadgeText}>✦ Premium</Text>
-            </View>
-          )}
-          
-          {hasRatings && (
-            <View style={styles.ratingBadge}>
-              <Star size={14} color="#D4AF37" fill="#D4AF37" />
-              <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
-              <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
-            </View>
-          )}
-          
-          <View style={styles.priceHighlight}>
-            <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
-          </View>
-          
-          <Text style={styles.menuItemDescriptionHorizontal} numberOfLines={3}>
-            {getItemDescription(item)}
-          </Text>
-          
           {item.image && (
             <View style={styles.imageContainerHorizontal}>
               <Image 
@@ -316,30 +290,21 @@ export default function PublicMenuScreen() {
             </View>
           )}
           
-          <View style={styles.menuItemActions}>
-            <TouchableOpacity 
-              style={styles.rateButton}
-              onPress={() => {
-                setRatingItem(item);
-                setUserRating(0);
-                setRatingComment('');
-                setShowRatingModal(true);
-              }}
-            >
-              <Star size={16} color="#D4AF37" strokeWidth={2} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.addToCartButton, isPremium && styles.addToCartButtonPremium]}
-              onPress={() => {
-                setSelectedItem(item);
-                setItemQuantity(1);
-                setItemNotes('');
-              }}
-            >
-              <Plus size={18} color="#fff" strokeWidth={2.5} />
-              <Text style={styles.addToCartButtonText}>{t('addToCart')}</Text>
-            </TouchableOpacity>
+          <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
+            {getItemName(item)}
+          </Text>
+          
+          <View style={styles.priceHighlight}>
+            <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
+          
+          {hasRatings && (
+            <View style={styles.ratingBadgeCentered}>
+              <Star size={16} color="#D4AF37" fill="#D4AF37" />
+              <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
+              <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+            </View>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -930,7 +895,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         fontSize: 15,
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1129,7 +1094,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1171,7 +1136,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1194,11 +1159,16 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 16,
-    justifyContent: 'center' as const,
+    gap: 12,
+    justifyContent: 'space-between' as const,
+    ...Platform.select({
+      web: {
+        justifyContent: 'center' as const,
+      },
+    }),
   },
 
   content: {
@@ -1218,8 +1188,6 @@ const styles = StyleSheet.create({
   },
   menuItemCardHorizontal: {
     width: '48%' as const,
-    minWidth: 280,
-    maxWidth: 500,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: 20,
     overflow: 'hidden' as const,
@@ -1235,6 +1203,9 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 6,
+      },
+      web: {
+        maxWidth: 480,
       },
     }),
   },
@@ -1258,51 +1229,54 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    aspectRatio: 1,
+    aspectRatio: 1.2,
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
     overflow: 'hidden' as const,
-    marginTop: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   menuItemImageHorizontal: {
     width: '100%',
     height: '100%',
   },
   menuItemContentHorizontal: {
-    padding: 20,
+    padding: 16,
   },
   menuItemNameHorizontal: {
-    fontSize: 26,
-    fontWeight: '700' as const,
+    fontSize: 28,
+    fontWeight: '800' as const,
     color: '#1A1A1A',
-    lineHeight: 32,
-    letterSpacing: -0.3,
-    marginBottom: 8,
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    marginBottom: 12,
+    textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Arabic", "Noto Sans Kurdish", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
   priceHighlight: {
-    marginBottom: 12,
+    marginBottom: 16,
+    alignItems: 'center' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700' as const,
-    color: '#D4AF37',
-    letterSpacing: -0.4,
+    color: '#3d0101',
+    letterSpacing: 0.3,
+    textAlign: 'center' as const,
   },
   menuItemDescriptionHorizontal: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
-    lineHeight: 20,
+    lineHeight: 18,
     fontWeight: '400' as const,
     marginBottom: 12,
+    textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1365,7 +1339,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1430,7 +1404,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1447,7 +1421,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1584,7 +1558,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1737,7 +1711,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1920,7 +1894,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1933,6 +1907,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     alignSelf: 'flex-start' as const,
+    gap: 4,
+  },
+  ratingBadgeCentered: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'center' as const,
     gap: 4,
   },
   ratingText: {
@@ -1987,7 +1972,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1999,7 +1984,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
