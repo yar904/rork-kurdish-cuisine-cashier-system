@@ -7,6 +7,6 @@ export function Text({ style, ...props }: TextProps) {
 
 const styles = StyleSheet.create({
   defaultFont: {
-    fontFamily: 'NRT-Regular',
+    fontFamily: 'System',
   },
 });
