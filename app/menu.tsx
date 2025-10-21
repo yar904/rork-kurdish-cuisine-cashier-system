@@ -189,7 +189,7 @@ export default function PublicMenuScreen() {
       clearInterval(autoScrollInterval.current);
     }
     
-    autoScrollInterval.current = setInterval(() => {
+    const interval = setInterval(() => {
       const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
       const cardWidth = 140;
       const gap = 12;
@@ -202,6 +202,8 @@ export default function PublicMenuScreen() {
       
       currentSlideIndex.current = nextIndex;
     }, 3000);
+    
+    autoScrollInterval.current = interval;
   }, [availableCategories.length]);
 
   useEffect(() => {
@@ -845,7 +847,7 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5E6D3',
+    backgroundColor: '#E8DCC8',
     position: 'relative' as const,
     ...Platform.select({
       web: {
@@ -910,7 +912,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         fontSize: 15,
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1031,7 +1033,7 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(245, 230, 211, 0.95)',
+    backgroundColor: 'rgba(232, 220, 200, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(139, 90, 43, 0.15)',
     overflow: 'hidden' as const,
@@ -1063,28 +1065,27 @@ const styles = StyleSheet.create({
   categoryCard: {
     width: 140,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden' as const,
-    borderWidth: 1,
-    borderColor: '#A0753D',
+    borderWidth: 0,
     ...Platform.select({
       ios: {
         shadowColor: '#8B5A2B',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.15,
         shadowRadius: 12,
       },
       android: {
-        elevation: 5,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 4px 16px rgba(139, 90, 43, 0.2), 0 0 0 1px rgba(160, 117, 61, 0.15)',
+        boxShadow: '0 4px 12px rgba(139, 90, 43, 0.15)',
       },
     }),
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 90,
+    height: 100,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
   },
@@ -1101,15 +1102,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   categoryCardTitle: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#3d0101',
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
     textAlign: 'center' as const,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1151,7 +1152,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1193,7 +1194,7 @@ const styles = StyleSheet.create({
   },
   baobabPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
+    opacity: 0.06,
     zIndex: 0,
   },
   baobabTree: {
@@ -1215,24 +1216,24 @@ const styles = StyleSheet.create({
   },
   menuItemCardHorizontal: {
     width: '48%' as const,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     overflow: 'hidden' as const,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 90, 43, 0.25)',
+    borderWidth: 0,
     marginBottom: 4,
     ...Platform.select({
       ios: {
-        shadowColor: '#3d0101',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
+        shadowColor: '#8B5A2B',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
         shadowRadius: 16,
       },
       android: {
-        elevation: 6,
+        elevation: 5,
       },
       web: {
         maxWidth: 420,
+        boxShadow: '0 6px 20px rgba(139, 90, 43, 0.12)',
       },
     }),
   },
@@ -1256,42 +1257,44 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    aspectRatio: 1.2,
+    aspectRatio: 1,
     backgroundColor: '#F9FAFB',
-    borderRadius: 12,
+    borderRadius: 0,
     overflow: 'hidden' as const,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   menuItemImageHorizontal: {
     width: '100%',
     height: '100%',
   },
   menuItemContentHorizontal: {
-    padding: 16,
+    padding: 0,
   },
   menuItemNameHorizontal: {
-    fontSize: 28,
-    fontWeight: '800' as const,
+    fontSize: 20,
+    fontWeight: '700' as const,
     color: '#1A1A1A',
-    lineHeight: 36,
-    letterSpacing: -0.5,
-    marginBottom: 12,
+    lineHeight: 26,
+    letterSpacing: -0.3,
+    marginBottom: 8,
+    marginTop: 12,
     textAlign: 'center' as const,
+    paddingHorizontal: 12,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
   priceHighlight: {
-    marginBottom: 16,
+    marginBottom: 12,
     alignItems: 'center' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 22,
-    fontWeight: '700' as const,
-    color: '#3d0101',
-    letterSpacing: 0.3,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+    letterSpacing: 0.2,
     textAlign: 'center' as const,
   },
   menuItemDescriptionHorizontal: {
@@ -1431,7 +1434,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1448,7 +1451,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1585,7 +1588,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1738,7 +1741,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1921,7 +1924,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1999,7 +2002,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -2011,7 +2014,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
