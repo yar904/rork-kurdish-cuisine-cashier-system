@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -26,9 +27,20 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    NRTRegular: require('../assets/fonts/NRT-Regular.ttf'),
+    NRTBold: require('../assets/fonts/NRT-Bold.ttf'),
+  });
+
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
