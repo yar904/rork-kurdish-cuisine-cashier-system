@@ -36,10 +36,10 @@ export default function RootLayout() {
     NotoNaskhArabic_700Bold,
   });
 
-
-
   useEffect(() => {
     if (fontsLoaded) {
+      (Text as any).defaultProps = (Text as any).defaultProps || {};
+      (Text as any).defaultProps.style = { fontFamily: 'NotoNaskhArabic_400Regular' };
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded]);
