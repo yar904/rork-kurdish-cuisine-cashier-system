@@ -390,6 +390,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
     letterSpacing: 1,
     paddingHorizontal: 16,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   taglineTablet: {
     fontSize: 32,
@@ -407,6 +412,11 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     paddingHorizontal: 20,
     lineHeight: 20,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   subtitleTablet: {
     fontSize: 17,
@@ -455,6 +465,11 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     textAlign: 'center',
     marginBottom: 4,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   languageTitleTablet: {
     fontSize: 26,
@@ -470,6 +485,11 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     textAlign: 'center',
     marginBottom: 20,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   languageSubtitleTablet: {
     fontSize: 17,
@@ -521,6 +541,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     textAlign: 'center',
     width: '100%',
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   languageLabelTablet: {
     fontSize: 32,
@@ -539,6 +564,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     textAlign: 'center',
     width: '100%',
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   languageNativeTablet: {
     fontSize: 15,
@@ -581,6 +611,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.primary,
     letterSpacing: 1,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   continueButtonTextTablet: {
     fontSize: 22,
@@ -612,6 +647,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
     marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   footerTablet: {
     fontSize: 15,
@@ -624,6 +664,11 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     opacity: 0.4,
     textAlign: 'center',
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   footerCopyrightTablet: {
     fontSize: 13,
@@ -651,6 +696,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.gold,
     letterSpacing: 0.5,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   staffButtonTextTablet: {
     fontSize: 18,

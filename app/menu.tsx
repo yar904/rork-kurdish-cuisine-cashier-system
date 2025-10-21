@@ -935,6 +935,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         fontSize: 15,
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
       },
     }),
   },
@@ -1131,6 +1132,11 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     paddingVertical: 10,
     paddingHorizontal: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   menuSections: {
     paddingTop: 24,
@@ -1168,6 +1174,11 @@ const styles = StyleSheet.create({
     color: '#3d0101',
     letterSpacing: -0.8,
     textTransform: 'capitalize' as const,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   categoryCount: {
     fontSize: 13,
@@ -1289,6 +1300,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: '400' as const,
     marginBottom: 12,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   premiumBadge: {
     backgroundColor: '#D4AF37',
@@ -1347,6 +1363,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700' as const,
     letterSpacing: 0.3,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   modalOverlay: {
     flex: 1,
@@ -1407,6 +1428,11 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   modalItemPrice: {
     fontSize: 24,
@@ -1419,6 +1445,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     lineHeight: 24,
     marginBottom: 24,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   modalDivider: {
     height: 1,
@@ -1551,6 +1582,11 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#FFFFFF',
     marginBottom: 4,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   cartItemNotes: {
     fontSize: 14,
@@ -1699,6 +1735,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center' as const,
     letterSpacing: -0.5,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   tableSelectorSubtitle: {
     fontSize: 15,
@@ -1877,6 +1918,11 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -1939,6 +1985,11 @@ const styles = StyleSheet.create({
     color: '#3d0101',
     textAlign: 'center' as const,
     marginBottom: 12,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   ratingModalItemName: {
     fontSize: 18,
@@ -1946,6 +1997,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center' as const,
     marginBottom: 24,
+    ...Platform.select({
+      web: {
+        fontFamily: '"Noto Sans Arabic", "Rudaw", "Rabar", "Kurdish Kufi", sans-serif',
+      },
+    }),
   },
   starRatingContainer: {
     flexDirection: 'row',
