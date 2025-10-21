@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Instagram, Globe } from 'lucide-react-native';
+import { Instagram, Globe, MessageCircle, Music, Send } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -36,6 +36,15 @@ export default function LandingPage() {
 
   const handleContinue = () => {
     router.replace('/menu');
+  };
+
+  const getMenuText = () => {
+    switch(selectedLang) {
+      case 'en': return 'Menu';
+      case 'ku': return 'مینۆ';
+      case 'ar': return 'القائمة';
+      default: return 'مینۆ';
+    }
   };
 
   React.useEffect(() => {
@@ -112,15 +121,35 @@ export default function LandingPage() {
               onPress={handleContinue}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuButtonText}>مینۆ</Text>
+              <Text style={styles.menuButtonText}>{getMenuText()}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.socialButton}
-              activeOpacity={0.7}
-            >
-              <Instagram size={24} color={Colors.gold} strokeWidth={1.8} />
-            </TouchableOpacity>
+            <View style={styles.socialContainer}>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Instagram size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <MessageCircle size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Music size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Send size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+            </View>
           </View>
         </LinearGradient>
       </ImageBackground>
@@ -239,13 +268,13 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     backgroundColor: Colors.primary,
-    paddingVertical: 20,
-    paddingHorizontal: 60,
-    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: Colors.gold,
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 280,
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -254,10 +283,15 @@ const styles = StyleSheet.create({
   },
   menuButtonText: {
     fontFamily: fonts.kurdishBold,
-    fontSize: 24,
+    fontSize: 28,
     color: Colors.gold,
     textAlign: 'center',
     letterSpacing: 1.5,
+  },
+  socialContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
   },
   socialButton: {
     padding: 12,
