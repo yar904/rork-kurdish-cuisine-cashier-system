@@ -261,6 +261,12 @@ export default function CategoryDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
+        <View style={styles.plaidPattern} />
+        <View style={styles.citadelPattern}>
+          <View style={styles.citadelSilhouette}>
+            <Text style={styles.citadelText}>🏰</Text>
+          </View>
+        </View>
         <View style={styles.menuGrid}>
           {filteredItems.map(renderMenuItem)}
         </View>
@@ -291,27 +297,41 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5E6D3',
+    backgroundColor: '#E8DCC8',
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
         backgroundImage: `
-          linear-gradient(
-            135deg,
-            #F5E6D3 0%,
-            #E8D4B8 25%,
-            #F5E6D3 50%,
-            #E8D4B8 75%,
-            #F5E6D3 100%
+          repeating-linear-gradient(
+            0deg,
+            #8B2E2E 0px,
+            #8B2E2E 2px,
+            transparent 2px,
+            transparent 40px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            #8B2E2E 0px,
+            #8B2E2E 2px,
+            transparent 2px,
+            transparent 40px
           ),
           repeating-linear-gradient(
             45deg,
-            transparent,
-            transparent 100px,
-            rgba(74, 21, 21, 0.02) 100px,
-            rgba(74, 21, 21, 0.02) 200px
+            transparent 0px,
+            transparent 38px,
+            #4A1515 38px,
+            #4A1515 40px
+          ),
+          linear-gradient(
+            180deg,
+            #A54141 0%,
+            #8B2E2E 25%,
+            #6B1F1F 50%,
+            #4A1515 75%,
+            #2E0909 100%
           )
         `,
       },
@@ -369,10 +389,15 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800' as const,
     color: '#FFFFFF',
-    letterSpacing: -0.5,
+    letterSpacing: 0.5,
     marginBottom: 4,
     textTransform: 'capitalize' as const,
     textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
   },
   headerSubtitle: {
     fontSize: 14,
@@ -451,6 +476,41 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: 'transparent',
+    position: 'relative' as const,
+  },
+  plaidPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: Platform.OS === 'web' ? 1 : 0.25,
+    zIndex: 0,
+    ...Platform.select({
+      default: {
+        backgroundColor: '#8B2E2E',
+      },
+    }),
+  },
+  citadelPattern: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 300,
+    opacity: 0.12,
+    zIndex: 1,
+    overflow: 'hidden' as const,
+  },
+  citadelSilhouette: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: '50%' as const,
+    transform: [{ translateX: -75 }],
+    width: 150,
+    height: 150,
+  },
+  citadelText: {
+    fontSize: 150,
+    color: '#1A1A1A',
+    opacity: 0.3,
+    textAlign: 'center' as const,
   },
   contentContainer: {
     paddingBottom: 32,
@@ -513,11 +573,17 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   menuItemName: {
-    fontSize: 15,
-    fontWeight: '600' as const,
+    fontSize: 16,
+    fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 6,
-    lineHeight: 18,
+    lineHeight: 20,
+    letterSpacing: 0.3,
+    ...Platform.select({
+      web: {
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
   },
   menuItemDescription: {
     fontSize: 12,
@@ -645,6 +711,11 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
   },
   modalItemPrice: {
     fontSize: 24,

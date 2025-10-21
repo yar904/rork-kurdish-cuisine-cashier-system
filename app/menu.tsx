@@ -803,18 +803,10 @@ export default function PublicMenuScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View style={styles.baobabPattern}>
-          <View style={[styles.baobabTree, { top: 120, left: -60 }]}>
-            <Text style={{ fontSize: 180, color: '#8B5A2B', opacity: 0.5 }}>🌳</Text>
-          </View>
-          <View style={[styles.baobabTree, { top: 480, right: -50 }]}>
-            <Text style={{ fontSize: 160, color: '#A0753D', opacity: 0.4 }}>🌴</Text>
-          </View>
-          <View style={[styles.baobabTree, { top: 900, left: -40 }]}>
-            <Text style={{ fontSize: 170, color: '#8B5A2B', opacity: 0.45 }}>🌳</Text>
-          </View>
-          <View style={[styles.baobabTree, { top: 1300, right: -60 }]}>
-            <Text style={{ fontSize: 190, color: '#A0753D', opacity: 0.4 }}>🌴</Text>
+        <View style={styles.plaidPattern} />
+        <View style={styles.citadelPattern}>
+          <View style={styles.citadelSilhouette}>
+            <Text style={styles.citadelText}>🏰</Text>
           </View>
         </View>
         <View style={styles.menuSections}>
@@ -854,6 +846,37 @@ const styles = StyleSheet.create({
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
+        backgroundImage: `
+          repeating-linear-gradient(
+            0deg,
+            #8B2E2E 0px,
+            #8B2E2E 2px,
+            transparent 2px,
+            transparent 40px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            #8B2E2E 0px,
+            #8B2E2E 2px,
+            transparent 2px,
+            transparent 40px
+          ),
+          repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            transparent 38px,
+            #4A1515 38px,
+            #4A1515 40px
+          ),
+          linear-gradient(
+            180deg,
+            #A54141 0%,
+            #8B2E2E 25%,
+            #6B1F1F 50%,
+            #4A1515 75%,
+            #2E0909 100%
+          )
+        `,
       },
     }),
   },
@@ -1102,12 +1125,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   categoryCardTitle: {
-    fontSize: 15,
-    fontWeight: '700' as const,
+    fontSize: 16,
+    fontWeight: '800' as const,
     color: '#1A1A1A',
     textAlign: 'center' as const,
     paddingVertical: 12,
     paddingHorizontal: 8,
+    letterSpacing: 0.3,
     ...Platform.select({
       web: {
         fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
@@ -1148,7 +1172,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800' as const,
     color: '#3d0101',
-    letterSpacing: -0.8,
+    letterSpacing: 0.5,
     textTransform: 'capitalize' as const,
     ...Platform.select({
       web: {
@@ -1194,14 +1218,49 @@ const styles = StyleSheet.create({
   },
   baobabPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.06,
+    opacity: 0.08,
     zIndex: 0,
   },
   baobabTree: {
     position: 'absolute' as const,
     width: 220,
     height: 280,
+    opacity: 0.15,
+    transform: [{ rotate: '0deg' }],
+  },
+  plaidPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: Platform.OS === 'web' ? 1 : 0.25,
+    zIndex: 0,
+    ...Platform.select({
+      default: {
+        backgroundColor: '#8B2E2E',
+      },
+    }),
+  },
+  citadelPattern: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 300,
     opacity: 0.12,
+    zIndex: 1,
+    overflow: 'hidden' as const,
+  },
+  citadelSilhouette: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: '50%' as const,
+    transform: [{ translateX: -75 }],
+    width: 150,
+    height: 150,
+  },
+  citadelText: {
+    fontSize: 150,
+    color: '#1A1A1A',
+    opacity: 0.3,
+    textAlign: 'center' as const,
   },
   contentContainer: {
     paddingBottom: 32,
@@ -1271,11 +1330,11 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   menuItemNameHorizontal: {
-    fontSize: 20,
-    fontWeight: '700' as const,
+    fontSize: 22,
+    fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 26,
-    letterSpacing: -0.3,
+    lineHeight: 28,
+    letterSpacing: 0.5,
     marginBottom: 8,
     marginTop: 12,
     textAlign: 'center' as const,
@@ -1291,10 +1350,10 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: 'rgba(255, 255, 255, 0.85)',
-    letterSpacing: 0.2,
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: 'rgba(255, 255, 255, 0.75)',
+    letterSpacing: 0.3,
     textAlign: 'center' as const,
   },
   menuItemDescriptionHorizontal: {
