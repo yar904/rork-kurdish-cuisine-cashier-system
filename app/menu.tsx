@@ -49,7 +49,6 @@ export default function PublicMenuScreen() {
   const [ratingComment, setRatingComment] = useState('');
   const { width } = useWindowDimensions();
   
-  const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
 
@@ -368,13 +367,9 @@ export default function PublicMenuScreen() {
           </View>
           <Text style={styles.categoryCount}>{categoryItems.length} {t('items')}</Text>
         </View>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryItemsScroll}
-        >
+        <View style={styles.categoryItemsGrid}>
           {categoryItems.map(renderMenuItem)}
-        </ScrollView>
+        </View>
       </View>
     );
   };
@@ -1198,6 +1193,13 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  categoryItemsGrid: {
+    paddingHorizontal: 20,
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 16,
+    justifyContent: 'center' as const,
+  },
 
   content: {
     flex: 1,
@@ -1215,8 +1217,9 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
+    width: '48%' as const,
     minWidth: 280,
-    maxWidth: 320,
+    maxWidth: 500,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: 20,
     overflow: 'hidden' as const,
@@ -1232,9 +1235,6 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 6,
-      },
-      web: {
-        boxShadow: '0 4px 20px rgba(61, 1, 1, 0.18), 0 0 0 1px rgba(212, 175, 55, 0.15)',
       },
     }),
   },
@@ -1258,7 +1258,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 240,
+    aspectRatio: 1,
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
     overflow: 'hidden' as const,
