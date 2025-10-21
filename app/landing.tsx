@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   staffButtonText: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontWeight: '700' as const,
     color: Colors.gold,
   },
   bottomLogo: {
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 48,
-    fontFamily: 'NRTBold',
+    fontWeight: '700' as const,
     color: Colors.gold,
     textAlign: 'center',
     marginBottom: 12,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    fontFamily: 'NRTRegular',
+    fontWeight: '400' as const,
     color: '#E5E5E5',
     textAlign: 'center',
     marginBottom: 40,
@@ -215,14 +215,14 @@ const styles = StyleSheet.create({
   },
   languagePrompt: {
     fontSize: 28,
-    fontFamily: 'NRTBold',
+    fontWeight: '700' as const,
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
   },
   languageSubPrompt: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     marginBottom: 28,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   languageLabel: {
     fontSize: 24,
-    fontFamily: 'NRTBold',
+    fontWeight: '700' as const,
     color: '#FFFFFF',
     marginBottom: 6,
     textAlign: 'center',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   },
   languageSubtitle: {
     fontSize: 12,
-    fontFamily: 'NRTRegular',
+    fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontWeight: '700' as const,
     color: '#3D0101',
     letterSpacing: 0.5,
   },

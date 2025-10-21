@@ -27,16 +27,11 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    NRTRegular: require('../assets/fonts/NRT-Regular.ttf'),
-    NRTBold: require('../assets/fonts/NRT-Bold.ttf'),
-  });
+  const [fontsLoaded] = useFonts({});
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+    SplashScreen.hideAsync();
+  }, []);
 
   if (!fontsLoaded) {
     return null;
