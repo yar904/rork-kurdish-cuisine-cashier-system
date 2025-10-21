@@ -206,28 +206,53 @@ Designed for restaurant staff on iPads or Android tablets.
   - System configuration
   - Staff logout
 
-### **2. Customer Mobile Menu** 📱
+### **2. Customer Self-Ordering System** 📱
 
-**Purpose**: Self-service menu viewing (view-only, no ordering)
+**Purpose**: Complete self-service ordering via mobile devices
 
-**Access Method**: QR code scanning at tables
+**Access Method**: QR code scanning at tables or direct web link
 
 **Features**:
-- Responsive mobile design
-- Category browsing
-- Item details with images
-- Multi-language support
-- Price display in local currency (IQD)
-- Dietary information
-- Allergen warnings
+- **Full Self-Ordering**: Customers can place orders directly
+- Responsive mobile design (works on all devices)
+- Real-time cart management
+- Table selection (auto-filled from QR code)
+- Special requests and notes
+- Order tracking with live status updates
+- Multi-language support (Kurdish, English, Arabic)
+- AI chatbot assistance
+- Voice ordering capabilities
+- Menu item ratings and reviews
+- Service request system (call waiter, request bill, report issues)
+- Category browsing with auto-scrolling
 - Beautiful food photography
+- Price display in local currency (IQD)
 
-**User Flow**:
-1. Scan QR code at table
-2. View menu in preferred language
-3. Browse categories
-4. View item details
-5. Call waiter to place order (no self-ordering)
+**User Flow - Self Ordering**:
+1. Scan QR code at table (e.g., `/menu?table=5`)
+2. Select language preference
+3. Browse menu by categories
+4. Tap items to view details
+5. Add items to cart with quantities and notes
+6. Review cart and edit as needed
+7. Submit order directly to kitchen
+8. Receive order confirmation
+9. Track order progress in real-time
+10. Request service (waiter, bill) when needed
+11. Rate dishes after dining
+
+**Customer Features**:
+- **Shopping Cart**: Full cart management with add/edit/remove
+- **Order Tracking**: Real-time status updates (New → Preparing → Ready → Served)
+- **Service Requests**: 
+  - Call waiter for assistance
+  - Request bill
+  - Report wrong order or issues
+- **AI Assistant**: Ask questions about menu items, ingredients, recommendations
+- **Voice Ordering**: Speak your order instead of typing
+- **Rating System**: Rate dishes and leave reviews
+- **Order History**: View past orders (per table)
+- **Estimated Wait Times**: See how long until food is ready
 
 ---
 
@@ -301,14 +326,14 @@ New → Preparing → Ready → Served → Paid
 
 ### **4. QR Code Integration** 📱
 
-**Purpose**: Contactless menu access
+**Purpose**: Contactless self-ordering system
 
 **How It Works**:
-1. Admin generates QR code for each table
+1. Admin generates QR code for each table (in Admin tab)
 2. QR code printed and placed on table
 3. Customer scans with phone camera
-4. Opens web menu with table context
-5. Customer views menu (no ordering)
+4. Opens web menu with table number pre-filled
+5. Customer orders directly (self-service ordering)
 
 **URL Format**:
 ```
@@ -916,17 +941,19 @@ Tapse is a **complete, production-ready restaurant management platform** that co
 **What's Ready**:
 - ✅ Full order management system
 - ✅ Multi-role staff interface
+- ✅ **Customer self-ordering system** (complete with cart & checkout)
 - ✅ Customer menu with QR codes
+- ✅ Order tracking for customers
 - ✅ Real-time analytics
 - ✅ Comprehensive reporting
 - ✅ AI features (voice, recommendations, chatbot)
-- ✅ Multi-language support
+- ✅ Multi-language support (Kurdish, English, Arabic)
 - ✅ Bill splitting
 - ✅ Receipt generation
 - ✅ Table management
-- ✅ Admin panel
-- ✅ Customer service requests
-- ✅ Rating system
+- ✅ Admin panel with QR generation
+- ✅ Customer service requests (call waiter, bill, issues)
+- ✅ Rating & review system
 
 **What's Needed**:
 - ⚠️ Backend deployment (1 day)
