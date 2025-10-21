@@ -9,6 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { User } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -50,12 +51,25 @@ export default function LandingPage() {
     router.replace('/menu');
   };
 
+  const handleStaffLogin = () => {
+    router.push('/staff-login');
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <LinearGradient
         colors={['#3D0101', '#4D1515', '#3D0101']}
         style={styles.gradient}
       >
+        <TouchableOpacity 
+          style={[styles.staffButton, { top: insets.top + 16 }]}
+          onPress={handleStaffLogin}
+          activeOpacity={0.7}
+        >
+          <User size={20} color={Colors.gold} />
+          <Text style={styles.staffButtonText}>Staff/Admin</Text>
+        </TouchableOpacity>
+
         <View style={[styles.content, isSmallScreen && styles.contentSmall]}>
           <Image
             source={require('@/assets/images/adaptive-icon.png')}
@@ -64,6 +78,9 @@ export default function LandingPage() {
           />
           <Text style={styles.title}>تەپسی سلێمانی</Text>
           <Text style={styles.subtitle}>تامو چێژێکی رەسەنی کوردی لە تەپسی سلێمانی بچێژە</Text>
+          
+          <View style={styles.divider} />
+          
           <Text style={styles.languagePrompt}>زمانەکەت هەڵبژێرە</Text>
           <Text style={styles.languageSubPrompt}>Select Your Language • اختر لغتك</Text>
 
@@ -138,13 +155,69 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     maxWidth: 360,
   },
+  staffButton: {
+    position: 'absolute',
+    right: 24,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  staffButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.gold,
+  },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 16,
+    width: 120,
+    height: 120,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 38,
+    fontSize: 42,
+    fontWeight: '700',
+    color: Colors.gold,
+    textAlign: 'center',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(212, 175, 55, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#E5E5E5',
+    textAlign: 'center',
+    marginBottom: 28,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+    ...Platform.select({
+      web: {
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
+  },
+  divider: {
+    width: 80,
+    height: 3,
+    backgroundColor: Colors.gold,
+    borderRadius: 2,
+    marginBottom: 32,
+    opacity: 0.6,
+  },
+  languagePrompt: {
+    fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -155,34 +228,12 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#CCCCCC',
-    textAlign: 'center',
-    marginBottom: 32,
-    ...Platform.select({
-      web: {
-        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
-  },
-  languagePrompt: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 6,
-    ...Platform.select({
-      web: {
-        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
-  },
   languageSubPrompt: {
     fontSize: 14,
-    color: '#CCCCCC',
+    color: 'rgba(255, 255, 255, 0.65)',
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 32,
+    lineHeight: 20,
     ...Platform.select({
       web: {
         fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
@@ -203,14 +254,19 @@ const styles = StyleSheet.create({
   languageCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     paddingVertical: 20,
     paddingHorizontal: 24,
     minWidth: 110,
     maxWidth: 130,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   languageCardSmall: {
     minWidth: 95,
@@ -219,9 +275,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   languageCardActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     borderColor: Colors.gold,
-    borderWidth: 3,
+    borderWidth: 2.5,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   languageLabel: {
     fontSize: 26,
@@ -259,16 +320,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     width: '100%',
     maxWidth: 300,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
   },
   continueGradient: {
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 48,
     alignItems: 'center',
   },
   continueText: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '700',
     color: '#3D0101',
+    letterSpacing: 0.5,
     ...Platform.select({
       web: {
         fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
