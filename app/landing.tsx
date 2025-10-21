@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User } from 'lucide-react-native';
@@ -26,7 +27,7 @@ const LANGUAGES = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, isLoading } = useLanguage();
   const [selectedLang, setSelectedLang] = useState<Language>(language);
   const insets = useSafeAreaInsets();
   const [dimensions, setDimensions] = React.useState(() => Dimensions.get('window'));
@@ -50,9 +51,28 @@ export default function LandingPage() {
     router.replace('/menu');
   };
 
+  React.useEffect(() => {
+    if (!isLoading) {
+      setSelectedLang(language);
+    }
+  }, [language, isLoading]);
+
   const handleStaffLogin = () => {
     router.push('/staff-login');
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <LinearGradient
+          colors={['#3D0101', '#4D1515', '#3D0101']}
+          style={styles.gradient}
+        >
+          <ActivityIndicator size="large" color={Colors.gold} />
+        </LinearGradient>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
