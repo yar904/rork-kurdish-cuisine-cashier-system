@@ -348,7 +348,6 @@ export default function PublicMenuScreen() {
             <Text style={styles.categoryTitle}>{tc(category)}</Text>
             <View style={styles.categoryDecorRight} />
           </View>
-          <Text style={styles.categoryCount}>{categoryItems.length} {t('items')}</Text>
         </View>
         <View style={styles.categoryItemsGrid}>
           {categoryItems.map(renderMenuItem)}
