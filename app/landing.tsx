@@ -185,8 +185,8 @@ export default function LandingPage() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>تاپسە</Text>
-            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>تامی خواردنی کوردی و میوانداری کوردی ڕەسەن تاقی بکەرەوە</Text>
+            <Text style={[styles.tagline, isTablet && styles.taglineTablet, isDesktop && styles.taglineDesktop]}>تەپسی سلێمانی</Text>
+            <Text style={[styles.subtitle, isTablet && styles.subtitleTablet, isDesktop && styles.subtitleDesktop]}>تامو چێژێکی رەسەنی کوردی لە تەپسی سلێمانی بچێژە</Text>
           </View>
 
 
