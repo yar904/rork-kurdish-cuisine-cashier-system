@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Instagram } from 'lucide-react-native';
+import { Instagram, Globe } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -67,12 +67,13 @@ export default function LandingPage() {
           colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
           style={styles.overlay}
         >
-          <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
+          <View style={[styles.topBar, { paddingTop: insets.top + 16 }]}>
             <TouchableOpacity 
               style={styles.languageButton}
               onPress={() => setShowLanguages(!showLanguages)}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
+              <Globe size={20} color="#FFFFFF" strokeWidth={2} />
               <Text style={styles.languageButtonText}>{currentLanguage?.label}</Text>
             </TouchableOpacity>
           </View>
@@ -100,11 +101,16 @@ export default function LandingPage() {
             </View>
           )}
 
-          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 24 }]}>
+          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.restaurantName}>تەپسی سلێمانی</Text>
+              <Text style={styles.subtitle}>Kurdish Cuisine</Text>
+            </View>
+
             <TouchableOpacity
               style={styles.menuButton}
               onPress={handleContinue}
-              activeOpacity={0.85}
+              activeOpacity={0.7}
             >
               <Text style={styles.menuButtonText}>مینۆ</Text>
             </TouchableOpacity>
@@ -113,11 +119,8 @@ export default function LandingPage() {
               style={styles.socialButton}
               activeOpacity={0.7}
             >
-              <Instagram size={28} color="#FFFFFF" strokeWidth={1.5} />
+              <Instagram size={24} color={Colors.gold} strokeWidth={1.8} />
             </TouchableOpacity>
-
-            <Text style={styles.tagline}>بەشێکی، کراوە لەلایەن</Text>
-            <Text style={styles.brandText}>mynu</Text>
           </View>
         </LinearGradient>
       </ImageBackground>
@@ -152,41 +155,55 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   languageButton: {
-    backgroundColor: 'rgba(139, 69, 19, 0.85)',
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(61, 1, 1, 0.75)',
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.gold + '40',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   languageButtonText: {
-    fontFamily: fonts.kurdishBold,
-    fontSize: 15,
+    fontFamily: fonts.kurdish,
+    fontSize: 14,
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   languageDropdown: {
     position: 'absolute',
     left: 20,
-    backgroundColor: 'rgba(139, 69, 19, 0.95)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(61, 1, 1, 0.97)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: Colors.gold + '40',
     overflow: 'hidden',
     zIndex: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   languageOption: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.15)',
   },
   languageOptionActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    backgroundColor: Colors.gold + '20',
   },
   languageOptionText: {
     fontFamily: fonts.kurdish,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   languageOptionTextActive: {
     fontFamily: fonts.kurdishBold,
@@ -194,40 +211,59 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
+    gap: 20,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  restaurantName: {
+    fontFamily: fonts.kurdishBold,
+    fontSize: 40,
+    color: Colors.gold,
+    textAlign: 'center',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  subtitle: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
   },
   menuButton: {
-    backgroundColor: 'rgba(139, 69, 19, 0.85)',
-    paddingVertical: 18,
-    paddingHorizontal: 80,
-    borderRadius: 12,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: Colors.primary,
+    paddingVertical: 20,
+    paddingHorizontal: 60,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: Colors.gold,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 320,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   menuButtonText: {
     fontFamily: fonts.kurdishBold,
-    fontSize: 22,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  socialButton: {
-    marginBottom: 16,
-    padding: 8,
-  },
-  tagline: {
-    fontFamily: fonts.kurdish,
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.5)',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  brandText: {
-    fontFamily: fonts.bold,
-    fontSize: 18,
+    fontSize: 24,
     color: Colors.gold,
     textAlign: 'center',
+    letterSpacing: 1.5,
+  },
+  socialButton: {
+    padding: 12,
+    backgroundColor: 'rgba(61, 1, 1, 0.5)',
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: Colors.gold + '40',
   },
 });
