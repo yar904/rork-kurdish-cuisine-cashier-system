@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Text } from "react-native";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
@@ -27,11 +28,18 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({});
+  const [fontsLoaded] = useFonts({
+    'NRT-Regular': require('../assets/fonts/NRT-Regular.ttf'),
+    'NRT-Bold': require('../assets/fonts/NRT-Bold.ttf'),
+  });
 
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) {
+      (Text as any).defaultProps = (Text as any).defaultProps || {};
+      (Text as any).defaultProps.style = { fontFamily: 'NRT-Regular' };
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;
