@@ -48,9 +48,6 @@ export default function PublicMenuScreen() {
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
   const { width } = useWindowDimensions();
-  
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
 
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
@@ -884,7 +881,7 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.gold,
     letterSpacing: 1.5,
     textAlign: 'center' as const,
@@ -898,7 +895,7 @@ const styles = StyleSheet.create({
     }),
   },
   welcomeText: {
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
@@ -1042,7 +1039,7 @@ const styles = StyleSheet.create({
   },
   categorySliderTitle: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#3d0101',
     marginTop: 16,
     marginLeft: 20,
@@ -1102,7 +1099,7 @@ const styles = StyleSheet.create({
 
   categoryCardTitle: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#1A1A1A',
     textAlign: 'center' as const,
     paddingVertical: 12,
@@ -1141,14 +1138,14 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 28,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#3d0101',
     letterSpacing: 0.5,
     textTransform: 'capitalize' as const,
   },
   categoryCount: {
     fontSize: 13,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
     letterSpacing: 0.5,
     textTransform: 'uppercase' as const,
@@ -1300,7 +1297,7 @@ const styles = StyleSheet.create({
   },
   menuItemNameHorizontal: {
     fontSize: 22,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#E8C968',
     lineHeight: 28,
     letterSpacing: 0.5,
@@ -1315,7 +1312,7 @@ const styles = StyleSheet.create({
   },
   menuItemPriceHorizontal: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(255, 255, 255, 0.75)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
@@ -1329,7 +1326,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
@@ -1392,7 +1389,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     ...Platform.select({
       web: {
-        fontFamily: '"Rudaw", "Rabar_021", "NRT", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
@@ -1452,7 +1449,7 @@ const styles = StyleSheet.create({
   },
   modalItemName: {
     fontSize: 26,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#1A1A1A',
     marginBottom: 8,
   },
@@ -1464,7 +1461,7 @@ const styles = StyleSheet.create({
   },
   modalItemDescription: {
     fontSize: 16,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
     lineHeight: 24,
     marginBottom: 24,
@@ -1597,7 +1594,7 @@ const styles = StyleSheet.create({
   },
   cartItemName: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#FFFFFF',
     marginBottom: 4,
   },
@@ -1743,7 +1740,7 @@ const styles = StyleSheet.create({
   },
   tableSelectorTitle: {
     fontSize: 26,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#3d0101',
     marginBottom: 8,
     textAlign: 'center' as const,
@@ -1923,7 +1920,7 @@ const styles = StyleSheet.create({
   },
   footerTextSecondary: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
   },
@@ -1995,14 +1992,14 @@ const styles = StyleSheet.create({
   },
   ratingModalTitle: {
     fontSize: 24,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#3d0101',
     textAlign: 'center' as const,
     marginBottom: 12,
   },
   ratingModalItemName: {
     fontSize: 18,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
     textAlign: 'center' as const,
     marginBottom: 24,

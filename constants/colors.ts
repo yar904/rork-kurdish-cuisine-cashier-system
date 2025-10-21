@@ -1,10 +1,10 @@
 export const fonts = {
-  regular: 'NRT-Regular',
-  medium: 'NRT-Regular',
-  semiBold: 'NRT-Bold',
-  bold: 'NRT-Bold',
-  kurdish: 'NRT-Regular',
-  kurdishBold: 'NRT-Bold',
+  regular: 'NotoNaskhArabic_400Regular',
+  medium: 'NotoNaskhArabic_500Medium',
+  semiBold: 'NotoNaskhArabic_700Bold',
+  bold: 'NotoNaskhArabic_700Bold',
+  kurdish: 'NotoNaskhArabic_400Regular',
+  kurdishBold: 'NotoNaskhArabic_700Bold',
 };
 
 export const Colors = {

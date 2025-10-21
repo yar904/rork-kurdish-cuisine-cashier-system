@@ -36,7 +36,6 @@ export default function CashierScreen() {
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
-  const itemsPerRow = isPhone ? 1 : isTablet ? 2 : 3;
 
   const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
 
@@ -329,7 +328,7 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
   categoryButtonTextActive: {
@@ -385,24 +384,24 @@ const styles = StyleSheet.create({
   },
   menuItemName: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     flex: 1,
   },
   menuItemPrice: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
   },
   menuItemKurdish: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.textSecondary,
     marginBottom: 6,
   },
   menuItemDescription: {
     fontSize: 13,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.textSecondary,
     lineHeight: 18,
   },
@@ -450,12 +449,12 @@ const styles = StyleSheet.create({
   },
   orderTitle: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
   clearButton: {
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.error,
   },
   tableSelector: {
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
   },
   tableSelectorLabel: {
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     marginBottom: 8,
   },
@@ -490,7 +489,7 @@ const styles = StyleSheet.create({
   },
   tableButtonText: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
   tableButtonTextActive: {
@@ -505,7 +504,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.text,
   },
   aiButtons: {
@@ -539,7 +538,7 @@ const styles = StyleSheet.create({
   chatbotButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
   },
   orderItems: {
     flex: 1,
@@ -553,7 +552,7 @@ const styles = StyleSheet.create({
   },
   emptyOrderText: {
     fontSize: 14,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.textLight,
   },
   orderItem: {
@@ -569,13 +568,13 @@ const styles = StyleSheet.create({
   },
   orderItemName: {
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
   },
   orderItemControls: {
@@ -595,7 +594,7 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     minWidth: 30,
     textAlign: 'center' as const,
@@ -625,12 +624,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
   totalAmount: {
     fontSize: 24,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
   },
   submitButton: {
@@ -647,7 +646,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#fff',
   },
 });

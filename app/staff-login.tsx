@@ -34,7 +34,6 @@ export default function StaffLoginScreen() {
   }, []);
 
   const isTablet = dimensions.width >= 768;
-  const isDesktop = dimensions.width >= 1200;
 
   const handleLogin = async () => {
     if (!password.trim()) {
@@ -195,7 +194,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.gold,
     marginBottom: 8,
     textAlign: 'center',
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.cream,
     textAlign: 'center',
     opacity: 0.8,
@@ -236,7 +235,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     fontSize: 16,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.cream,
   },
   inputTablet: {
@@ -265,7 +264,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 18,
-    fontFamily: 'NRTBold',
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
     letterSpacing: 1,
   },
@@ -283,7 +282,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    fontFamily: 'NRTRegular',
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.cream,
     opacity: 0.7,
     textAlign: 'center',

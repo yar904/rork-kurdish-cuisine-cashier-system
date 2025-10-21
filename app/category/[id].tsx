@@ -38,10 +38,7 @@ export default function CategoryDetailScreen() {
   const [itemQuantity, setItemQuantity] = useState(1);
   const { width } = useWindowDimensions();
   
-  const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
-  const columnsPerRow = isPhone ? 2 : isTablet ? 3 : 4;
+
 
   const category = id as MenuCategory;
 
@@ -368,7 +365,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
@@ -549,7 +546,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
@@ -681,7 +678,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
