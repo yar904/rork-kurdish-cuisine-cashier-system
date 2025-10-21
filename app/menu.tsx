@@ -838,7 +838,7 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4C4A8',
+    backgroundColor: '#8B6F47',
     position: 'relative' as const,
     ...Platform.select({
       web: {
@@ -846,12 +846,12 @@ const styles = StyleSheet.create({
         alignSelf: 'center' as const,
         width: '100%',
         backgroundImage: `
-          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=1080&fit=crop&q=80'),
+          url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=1080&fit=crop&q=90'),
           linear-gradient(
             180deg,
-            rgba(212, 196, 168, 0.85) 0%,
-            rgba(201, 182, 147, 0.9) 50%,
-            rgba(184, 164, 129, 0.85) 100%
+            rgba(139, 111, 71, 0.7) 0%,
+            rgba(120, 94, 60, 0.75) 50%,
+            rgba(101, 77, 49, 0.7) 100%
           )
         `,
         backgroundBlendMode: 'overlay',
@@ -1036,19 +1036,19 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(212, 196, 168, 0.95)',
+    backgroundColor: 'rgba(139, 111, 71, 0.92)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(139, 90, 43, 0.15)',
+    borderBottomColor: 'rgba(61, 1, 1, 0.2)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
     ...Platform.select({
       web: {
         backgroundImage: `
-          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=200&fit=crop&q=80'),
+          url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=200&fit=crop&q=90'),
           linear-gradient(
             180deg,
-            rgba(212, 196, 168, 0.95) 0%,
-            rgba(201, 182, 147, 0.97) 100%
+            rgba(139, 111, 71, 0.92) 0%,
+            rgba(120, 94, 60, 0.95) 100%
           )
         `,
         backgroundBlendMode: 'overlay',
@@ -1205,8 +1205,15 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#8B6F47',
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        backgroundImage: `url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=1080&fit=crop&q=90')`,
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
+      },
+    }),
   },
   baobabPattern: {
     ...StyleSheet.absoluteFillObject,
