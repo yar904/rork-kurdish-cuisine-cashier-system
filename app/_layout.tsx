@@ -6,12 +6,6 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useFonts } from 'expo-font';
-import { View, ActivityIndicator } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-
-SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
@@ -30,28 +24,6 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    'NRTRegular': require('../assets/fonts/NRT-Regular.ttf'),
-    'NRTBold': require('../assets/fonts/NRT-Bold.ttf'),
-  });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      console.log('✅ Fonts loaded successfully');
-      SplashScreen.hideAsync();
-    } else {
-      console.log('⏳ Waiting for fonts...');
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#3D0101' }}>
-        <ActivityIndicator size="large" color="#D4AF37" />
-      </View>
-    );
-  }
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
