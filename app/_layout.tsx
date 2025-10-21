@@ -6,7 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -31,10 +31,8 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    'NRTRegular': require('../assets/fonts/NRT-Regular.ttf'),
+    'NRTBold': require('../assets/fonts/NRT-Bold.ttf'),
   });
 
   useEffect(() => {
