@@ -19,7 +19,7 @@ import { Language } from '@/constants/i18n';
 
 
 const LANGUAGES = [
-  { code: 'ku' as Language, label: 'کوردی', subtitle: 'کوردی' },
+  { code: 'ku' as Language, label: 'کوردی', subtitle: 'کوردی', isPrimary: true },
   { code: 'ar' as Language, label: 'عربي', subtitle: 'عەرەبی' },
   { code: 'en' as Language, label: 'En...', subtitle: 'ئینگلیزی' },
 ];
@@ -144,48 +144,48 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 32,
+    fontSize: 38,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#CCCCCC',
     textAlign: 'center',
     marginBottom: 32,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
   languagePrompt: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 6,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
   languageSubPrompt: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#CCCCCC',
     textAlign: 'center',
     marginBottom: 28,
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   languageCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: 'rgba(255, 255, 255, 0.15)',
     paddingVertical: 20,
     paddingHorizontal: 24,
@@ -221,16 +221,17 @@ const styles = StyleSheet.create({
   languageCardActive: {
     backgroundColor: 'rgba(212, 175, 55, 0.12)',
     borderColor: Colors.gold,
+    borderWidth: 3,
   },
   languageLabel: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 6,
     textAlign: 'center',
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -241,12 +242,12 @@ const styles = StyleSheet.create({
     color: Colors.gold,
   },
   languageSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -265,12 +266,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueText: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '700',
     color: '#3D0101',
     ...Platform.select({
       web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"NRT Bold", "NRT", "peshang des 2", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },

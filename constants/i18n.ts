@@ -2,7 +2,7 @@ export type Language = 'en' | 'ku' | 'ar';
 
 export const translations = {
   en: {
-    restaurantName: 'Tapse',
+    restaurantName: 'تەپسی سلێمانی',
     restaurantSubtitle: 'Kurdish Cuisine',
     
     cashier: 'Cashier',
@@ -145,7 +145,7 @@ export const translations = {
     beTheFirst: 'Be the first to rate this dish!',
   },
   ku: {
-    restaurantName: 'تاپسە',
+    restaurantName: 'تەپسی سلێمانی',
     restaurantSubtitle: 'خواردنی کوردی',
     
     cashier: 'کاشێر',
@@ -288,7 +288,7 @@ export const translations = {
     beTheFirst: 'یەکەم کەس بە بۆ هەڵسەنگاندنی ئەم خواردنە!',
   },
   ar: {
-    restaurantName: 'تابسي',
+    restaurantName: 'تەپسی سلێمانی',
     restaurantSubtitle: 'المطبخ الكردي',
     
     cashier: 'الكاشير',
