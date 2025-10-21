@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, StyleSheet, type TextProps } from 'react-native';
+import { Text as RNText, type TextProps, StyleSheet } from 'react-native';
 
 export function Text({ style, ...props }: TextProps) {
   return <RNText style={[styles.defaultFont, style]} {...props} />;
@@ -7,6 +7,6 @@ export function Text({ style, ...props }: TextProps) {
 
 const styles = StyleSheet.create({
   defaultFont: {
-    fontFamily: 'System',
+    fontFamily: 'NotoNaskhArabic-Regular',
   },
 });
