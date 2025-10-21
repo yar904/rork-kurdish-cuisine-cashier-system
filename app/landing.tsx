@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   ImageBackground,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { Instagram, Globe, MessageCircle, Music, Send } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,7 +37,7 @@ export default function LandingPage() {
   };
 
   const handleContinue = () => {
-    router.replace('/menu');
+    router.push('/menu');
   };
 
   const getMenuText = () => {
@@ -67,11 +69,21 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
-        style={styles.background}
-        resizeMode="cover"
-      >
+      {Platform.OS === 'web' ? (
+        <View style={styles.background}>
+          <View style={styles.videoPlaceholder}>
+            <Text style={styles.videoPlaceholderText}>🎬</Text>
+            <Text style={styles.videoPlaceholderSubtext}>Video Background</Text>
+          </View>
+        </View>
+      ) : (
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+          style={styles.background}
+          resizeMode="cover"
+        />
+      )}
+      <View style={styles.absoluteOverlay}>
         <LinearGradient
           colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
           style={styles.overlay}
@@ -111,6 +123,11 @@ export default function LandingPage() {
           )}
 
           <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
+            <View style={styles.welcomeSection}>
+              <Text style={styles.welcomeTitle}>بەخێربێن</Text>
+              <Text style={styles.welcomeSubtitle}>Welcome to our restaurant</Text>
+              <Text style={styles.welcomeSubtitle}>مرحباً بكم في مطعمنا</Text>
+            </View>
 
             <TouchableOpacity
               style={styles.menuButton}
@@ -148,7 +165,7 @@ export default function LandingPage() {
             </View>
           </View>
         </LinearGradient>
-      </ImageBackground>
+      </View>
     </View>
   );
 }
@@ -159,9 +176,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   background: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
+  },
+  videoPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+  },
+  videoPlaceholderText: {
+    fontSize: 80,
+    marginBottom: 16,
+  },
+  videoPlaceholderSubtext: {
+    fontFamily: fonts.kurdishBold,
+    fontSize: 18,
+    color: Colors.gold,
+    letterSpacing: 2,
+  },
+  absoluteOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   overlay: {
     flex: 1,
@@ -262,9 +298,31 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
   },
+  welcomeSection: {
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontFamily: fonts.kurdishBold,
+    fontSize: 32,
+    color: Colors.gold,
+    textAlign: 'center',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  welcomeSubtitle: {
+    fontFamily: fonts.kurdish,
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
   menuButton: {
     backgroundColor: Colors.primary,
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 48,
     borderRadius: 14,
     borderWidth: 2,

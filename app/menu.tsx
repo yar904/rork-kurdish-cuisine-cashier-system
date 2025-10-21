@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -672,6 +672,12 @@ export default function PublicMenuScreen() {
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <ArrowLeft size={20} color="#FFFFFF" strokeWidth={1.5} />
+            </TouchableOpacity>
+            <TouchableOpacity
               style={styles.aiButton}
               onPress={() => setShowAIAssistant(true)}
             >
@@ -945,6 +951,14 @@ const styles = StyleSheet.create({
     color: '#3d0101',
     fontSize: 11,
     fontWeight: '700' as const,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   aiButton: {
     width: 40,
