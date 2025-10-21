@@ -270,44 +270,61 @@ export default function PublicMenuScreen() {
     const hasRatings = itemStats && itemStats.totalRatings > 0;
     
     return (
-      <TouchableOpacity 
+      <View 
         key={item.id} 
         style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
-        activeOpacity={0.95}
-        onPress={() => {
-          setSelectedItem(item);
-          setItemQuantity(1);
-          setItemNotes('');
-        }}
       >
-        <View style={styles.menuItemContentHorizontal}>
-          {item.image && (
-            <View style={styles.imageContainerHorizontal}>
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.menuItemImageHorizontal}
-                resizeMode="cover"
-              />
+        <TouchableOpacity
+          style={styles.menuItemTouchable}
+          activeOpacity={0.95}
+          onPress={() => {
+            setSelectedItem(item);
+            setItemQuantity(1);
+            setItemNotes('');
+          }}
+        >
+          <View style={styles.menuItemContentHorizontal}>
+            {item.image && (
+              <View style={styles.imageContainerHorizontal}>
+                <Image 
+                  source={{ uri: item.image }} 
+                  style={styles.menuItemImageHorizontal}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+            
+            <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
+              {getItemName(item)}
+            </Text>
+            
+            <View style={styles.priceHighlight}>
+              <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
             </View>
-          )}
-          
-          <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
-            {getItemName(item)}
-          </Text>
-          
-          <View style={styles.priceHighlight}>
-            <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
+            
+            {hasRatings && (
+              <View style={styles.ratingBadgeCentered}>
+                <Star size={16} color="#D4AF37" fill="#D4AF37" />
+                <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+              </View>
+            )}
           </View>
-          
-          {hasRatings && (
-            <View style={styles.ratingBadgeCentered}>
-              <Star size={16} color="#D4AF37" fill="#D4AF37" />
-              <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
-              <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.rateButtonOnCard}
+          onPress={(e) => {
+            setRatingItem(item);
+            setUserRating(0);
+            setRatingComment('');
+            setShowRatingModal(true);
+          }}
+          activeOpacity={0.7}
+        >
+          <Star size={18} color="#D4AF37" strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -615,12 +632,56 @@ export default function PublicMenuScreen() {
               <X size={24} color="#1A1A1A" />
             </TouchableOpacity>
 
-            <Text style={styles.ratingModalTitle}>{t('rateThisDish')}</Text>
+            <Text style={styles.ratingModalTitle}>
+              {ratingItem ? t('rateThisDish') : (language === 'en' ? 'All Reviews' : language === 'ku' ? 'هەموو هەڵسەنگاندنەکان' : 'جميع التقييمات')}
+            </Text>
             {ratingItem && (
               <Text style={styles.ratingModalItemName}>{getItemName(ratingItem)}</Text>
             )}
+            
+            {!ratingItem && (
+              <ScrollView style={styles.reviewsList} showsVerticalScrollIndicator={false}>
+                {Object.entries(ratingsStats).map(([itemId, stats]) => {
+                  const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+                  if (!menuItem || stats.totalRatings === 0) return null;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={itemId}
+                      style={styles.reviewItem}
+                      onPress={() => {
+                        setRatingItem(menuItem);
+                        setUserRating(0);
+                        setRatingComment('');
+                      }}
+                    >
+                      <View style={styles.reviewItemHeader}>
+                        <Text style={styles.reviewItemName} numberOfLines={1}>{getItemName(menuItem)}</Text>
+                        <View style={styles.reviewItemRating}>
+                          <Star size={16} color="#D4AF37" fill="#D4AF37" />
+                          <Text style={styles.reviewItemRatingText}>{stats.averageRating.toFixed(1)}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.reviewItemCount}>
+                        {stats.totalRatings} {language === 'en' ? 'reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'تقييم'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                
+                {Object.keys(ratingsStats).length === 0 && (
+                  <View style={styles.noReviewsContainer}>
+                    <Star size={48} color="rgba(212, 175, 55, 0.3)" />
+                    <Text style={styles.noReviewsText}>
+                      {language === 'en' ? 'No reviews yet' : language === 'ku' ? 'هێشتا هەڵسەنگاندن نییە' : 'لا توجد تقييمات بعد'}
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            )}
 
-            <View style={styles.starRatingContainer}>
+            {ratingItem && (
+              <View style={styles.starRatingContainer}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <TouchableOpacity
                   key={star}
@@ -635,29 +696,34 @@ export default function PublicMenuScreen() {
                   />
                 </TouchableOpacity>
               ))}
-            </View>
+              </View>
+            )}
 
-            <Text style={styles.ratingModalLabel}>{t('addReview')}</Text>
-            <TextInput
-              style={styles.ratingInput}
-              placeholder={t('reviewOptional')}
-              placeholderTextColor="rgba(26, 26, 26, 0.4)"
-              value={ratingComment}
-              onChangeText={setRatingComment}
-              multiline
-              numberOfLines={4}
-            />
+            {ratingItem && <Text style={styles.ratingModalLabel}>{t('addReview')}</Text>}
+            {ratingItem && (
+              <>
+                <TextInput
+                  style={styles.ratingInput}
+                  placeholder={t('reviewOptional')}
+                  placeholderTextColor="rgba(26, 26, 26, 0.4)"
+                  value={ratingComment}
+                  onChangeText={setRatingComment}
+                  multiline
+                  numberOfLines={4}
+                />
 
-            <TouchableOpacity
-              style={[styles.submitRatingButton, (userRating === 0 || createRatingMutation.isPending) && styles.submitRatingButtonDisabled]}
-              onPress={handleSubmitRating}
-              disabled={userRating === 0 || createRatingMutation.isPending}
-            >
-              <Star size={20} color="#fff" fill="#fff" />
-              <Text style={styles.submitRatingButtonText}>
-                {createRatingMutation.isPending ? t('submitting') : t('submitRating')}
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.submitRatingButton, (userRating === 0 || createRatingMutation.isPending) && styles.submitRatingButtonDisabled]}
+                  onPress={handleSubmitRating}
+                  disabled={userRating === 0 || createRatingMutation.isPending}
+                >
+                  <Star size={20} color="#fff" fill="#fff" />
+                  <Text style={styles.submitRatingButtonText}>
+                    {createRatingMutation.isPending ? t('submitting') : t('submitRating')}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -690,7 +756,7 @@ export default function PublicMenuScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.iconCircle}>
-              <MessageCircle size={24} color="#D4AF37" strokeWidth={1.8} />
+              <MessageCircle size={22} color="#D4AF37" strokeWidth={1.8} />
             </View>
             <Text style={styles.iconLabel}>
               {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
@@ -703,7 +769,7 @@ export default function PublicMenuScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.iconCircle}>
-              <Utensils size={24} color="#D4AF37" strokeWidth={1.8} />
+              <Utensils size={22} color="#D4AF37" strokeWidth={1.8} />
               {cartItemCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
@@ -712,6 +778,22 @@ export default function PublicMenuScreen() {
             </View>
             <Text style={styles.iconLabel}>
               {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconItem}
+            onPress={() => {
+              setShowRatingModal(true);
+              setRatingItem(null);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Star size={22} color="#D4AF37" strokeWidth={1.8} />
+            </View>
+            <Text style={styles.iconLabel}>
+              {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
             </Text>
           </TouchableOpacity>
           
@@ -730,7 +812,7 @@ export default function PublicMenuScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.iconCircle}>
-              <Search size={24} color="#D4AF37" strokeWidth={1.8} />
+              <Search size={22} color="#D4AF37" strokeWidth={1.8} />
             </View>
             <Text style={styles.iconLabel}>
               {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
@@ -2127,5 +2209,86 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700' as const,
+  },
+  menuItemTouchable: {
+    flex: 1,
+  },
+  rateButtonOnCard: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  reviewsList: {
+    maxHeight: 400,
+    marginVertical: 12,
+  },
+  reviewItem: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  reviewItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewItemName: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#1A1A1A',
+    flex: 1,
+    marginRight: 12,
+  },
+  reviewItemRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  reviewItemRatingText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+  },
+  reviewItemCount: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500' as const,
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center' as const,
   },
 });
