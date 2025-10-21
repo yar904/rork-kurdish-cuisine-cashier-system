@@ -3,8 +3,8 @@ export const fonts = {
   medium: 'Inter_500Medium',
   semiBold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
-  kurdish: 'NRT-Regular',
-  kurdishBold: 'NRT-Bold',
+  kurdish: 'Inter_400Regular',
+  kurdishBold: 'Inter_700Bold',
 };
 
 export const Colors = {
