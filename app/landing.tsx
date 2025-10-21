@@ -123,12 +123,6 @@ export default function LandingPage() {
           )}
 
           <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeTitle}>بەخێربێن</Text>
-              <Text style={styles.welcomeSubtitle}>Welcome to our restaurant</Text>
-              <Text style={styles.welcomeSubtitle}>مرحباً بكم في مطعمنا</Text>
-            </View>
-
             <TouchableOpacity
               style={styles.menuButton}
               onPress={handleContinue}
@@ -298,28 +292,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
   },
-  welcomeSection: {
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 24,
-  },
-  welcomeTitle: {
-    fontFamily: fonts.kurdishBold,
-    fontSize: 32,
-    color: Colors.gold,
-    textAlign: 'center',
-    letterSpacing: 1,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  welcomeSubtitle: {
-    fontFamily: fonts.kurdish,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
+
   menuButton: {
     backgroundColor: Colors.primary,
     paddingVertical: 12,

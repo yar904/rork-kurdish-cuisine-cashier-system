@@ -200,20 +200,18 @@ export default function CategoryDetailScreen() {
           >
             <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
-          <Text style={styles.restaurantName}>Tapse</Text>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{tc(category)}</Text>
+            <Text style={styles.headerSubtitle}>
+              {filteredItems.length} {t('items')}
+            </Text>
+          </View>
           <TouchableOpacity
             style={styles.languageButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
           >
             <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{tc(category)}</Text>
-          <Text style={styles.headerSubtitle}>
-            {filteredItems.length} {t('items')}
-          </Text>
         </View>
 
         {showLanguageMenu && (
@@ -328,19 +326,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  restaurantName: {
-    fontSize: 20,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    letterSpacing: 2,
-    textAlign: 'center' as const,
-    ...Platform.select({
-      web: {
-        fontSize: 24,
-      },
-    }),
+    paddingVertical: 16,
+    gap: 12,
   },
   backButton: {
     width: 40,
@@ -351,29 +338,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerCenter: {
+    flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 8,
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '800' as const,
+    fontSize: 22,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#FFFFFF',
     letterSpacing: 0.5,
-    marginBottom: 4,
+    marginBottom: 2,
     textTransform: 'capitalize' as const,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
+        fontSize: 26,
       },
     }),
   },
   headerSubtitle: {
-    fontSize: 14,
-    fontWeight: '500' as const,
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(212, 175, 55, 0.9)',
     letterSpacing: 0.5,
+    textAlign: 'center' as const,
   },
   languageButton: {
     width: 40,

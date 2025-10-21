@@ -661,46 +661,81 @@ export default function PublicMenuScreen() {
       </Modal>
       
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <View style={styles.headerContent}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={20} color="#FFFFFF" strokeWidth={1.5} />
+          </TouchableOpacity>
           <Image 
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeText}>{t('welcome')}</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <ArrowLeft size={20} color="#FFFFFF" strokeWidth={1.5} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.aiButton}
-              onPress={() => setShowAIAssistant(true)}
-            >
-              <MessageCircle size={20} color="#FFFFFF" strokeWidth={1.5} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cartIconButton}
-              onPress={() => setShowCart(true)}
-            >
-              <Utensils size={22} color="#FFFFFF" strokeWidth={1.5} />
+          <TouchableOpacity
+            style={styles.languageButton}
+            onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+          >
+            <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.iconRow}>
+          <TouchableOpacity
+            style={styles.iconItem}
+            onPress={() => setShowAIAssistant(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <MessageCircle size={24} color="#D4AF37" strokeWidth={1.8} />
+            </View>
+            <Text style={styles.iconLabel}>
+              {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconItem}
+            onPress={() => setShowCart(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Utensils size={24} color="#D4AF37" strokeWidth={1.8} />
               {cartItemCount > 0 && (
                 <View style={styles.cartBadge}>
                   <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
                 </View>
               )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.languageButton}
-              onPress={() => setShowLanguageMenu(!showLanguageMenu)}
-            >
-              <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
-            </TouchableOpacity>
-          </View>
+            </View>
+            <Text style={styles.iconLabel}>
+              {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Star size={24} color="#D4AF37" strokeWidth={1.8} />
+            </View>
+            <Text style={styles.iconLabel}>
+              {language === 'en' ? 'Favorites' : language === 'ku' ? 'دڵخوازەکان' : 'المفضلة'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconItem}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Search size={24} color="#D4AF37" strokeWidth={1.8} />
+            </View>
+            <Text style={styles.iconLabel}>
+              {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {showLanguageMenu && (
@@ -870,51 +905,16 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  headerContent: {
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    gap: 8,
-  },
-  welcomeContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  restaurantName: {
-    fontSize: 18,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: Colors.gold,
-    letterSpacing: 1.5,
-    textAlign: 'center' as const,
-    marginBottom: 2,
-    flexShrink: 1,
-    ...Platform.select({
-      web: {
-        fontSize: 24,
-        letterSpacing: 2,
-      },
-    }),
-  },
-  welcomeText: {
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.85)',
-    letterSpacing: 0.3,
-    textAlign: 'center' as const,
-    fontSize: 13,
-    flexShrink: 1,
-    ...Platform.select({
-      web: {
-        fontSize: 15,
-      },
-    }),
   },
   headerLogo: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     ...Platform.select({
       web: {
         width: 72,
@@ -922,27 +922,47 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  headerActions: {
+  iconRow: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
   },
-  cartIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  iconItem: {
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  iconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     position: 'relative' as const,
   },
+  iconLabel: {
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+  },
+
   cartBadge: {
     position: 'absolute' as const,
-    top: -4,
-    right: -4,
+    top: -2,
+    right: -2,
     backgroundColor: '#D4AF37',
     borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    minWidth: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
@@ -960,14 +980,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  aiButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(212, 175, 55, 0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
   languageButton: {
     width: 40,
     height: 40,
