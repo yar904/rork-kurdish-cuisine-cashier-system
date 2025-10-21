@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
+    fontFamily: 'NRTBold',
     color: Colors.gold,
     marginBottom: 8,
     textAlign: 'center',
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+    fontFamily: 'NRTRegular',
     color: Colors.cream,
     textAlign: 'center',
     opacity: 0.8,
@@ -235,8 +236,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     fontSize: 16,
+    fontFamily: 'NRTRegular',
     color: Colors.cream,
-    fontWeight: '600',
   },
   inputTablet: {
     height: 64,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'NRTBold',
     color: Colors.primary,
     letterSpacing: 1,
   },
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
+    fontFamily: 'NRTRegular',
     color: Colors.cream,
     opacity: 0.7,
     textAlign: 'center',

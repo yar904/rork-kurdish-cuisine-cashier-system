@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 14,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
   },
   categoryButtonTextActive: {
@@ -385,22 +385,24 @@ const styles = StyleSheet.create({
   },
   menuItemName: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
     flex: 1,
   },
   menuItemPrice: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.primary,
   },
   menuItemKurdish: {
     fontSize: 14,
+    fontFamily: 'NRTRegular',
     color: Colors.textSecondary,
     marginBottom: 6,
   },
   menuItemDescription: {
     fontSize: 13,
+    fontFamily: 'NRTRegular',
     color: Colors.textSecondary,
     lineHeight: 18,
   },
@@ -448,13 +450,13 @@ const styles = StyleSheet.create({
   },
   orderTitle: {
     fontSize: 18,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
   },
   clearButton: {
     fontSize: 14,
+    fontFamily: 'NRTBold',
     color: Colors.error,
-    fontWeight: '600' as const,
   },
   tableSelector: {
     padding: 16,
@@ -463,7 +465,7 @@ const styles = StyleSheet.create({
   },
   tableSelectorLabel: {
     fontSize: 14,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
     marginBottom: 8,
   },
@@ -488,7 +490,7 @@ const styles = StyleSheet.create({
   },
   tableButtonText: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
   },
   tableButtonTextActive: {
@@ -503,6 +505,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     fontSize: 14,
+    fontFamily: 'NRTRegular',
     color: Colors.text,
   },
   aiButtons: {
@@ -536,7 +539,7 @@ const styles = StyleSheet.create({
   chatbotButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
   },
   orderItems: {
     flex: 1,
@@ -550,6 +553,7 @@ const styles = StyleSheet.create({
   },
   emptyOrderText: {
     fontSize: 14,
+    fontFamily: 'NRTRegular',
     color: Colors.textLight,
   },
   orderItem: {
@@ -565,13 +569,13 @@ const styles = StyleSheet.create({
   },
   orderItemName: {
     fontSize: 14,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.primary,
   },
   orderItemControls: {
@@ -591,7 +595,7 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
     minWidth: 30,
     textAlign: 'center' as const,
@@ -621,12 +625,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 18,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.text,
   },
   totalAmount: {
     fontSize: 24,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: Colors.primary,
   },
   submitButton: {
@@ -643,7 +647,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: '#fff',
   },
 });
