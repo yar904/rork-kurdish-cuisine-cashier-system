@@ -1,10 +1,10 @@
 export const fonts = {
-  regular: 'Inter_400Regular',
-  medium: 'Inter_500Medium',
-  semiBold: 'Inter_600SemiBold',
-  bold: 'Inter_700Bold',
-  kurdish: 'Inter_400Regular',
-  kurdishBold: 'Inter_700Bold',
+  regular: 'NRT-Regular',
+  medium: 'NRT-Regular',
+  semiBold: 'NRT-Bold',
+  bold: 'NRT-Bold',
+  kurdish: 'NRT-Regular',
+  kurdishBold: 'NRT-Bold',
 };
 
 export const Colors = {
