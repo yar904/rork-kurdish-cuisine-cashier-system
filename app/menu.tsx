@@ -1262,21 +1262,26 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   menuItemNameHorizontal: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700' as const,
     color: '#1A1A1A',
-    lineHeight: 28,
+    lineHeight: 32,
     letterSpacing: -0.3,
     marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Arabic", "Noto Sans Kurdish", sans-serif',
+      },
+    }),
   },
   priceHighlight: {
     marginBottom: 12,
   },
   menuItemPriceHorizontal: {
-    fontSize: 28,
-    fontWeight: '800' as const,
+    fontSize: 20,
+    fontWeight: '700' as const,
     color: '#D4AF37',
-    letterSpacing: -0.8,
+    letterSpacing: -0.4,
   },
   menuItemDescriptionHorizontal: {
     fontSize: 14,
