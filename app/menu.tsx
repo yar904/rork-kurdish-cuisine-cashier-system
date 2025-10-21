@@ -838,24 +838,16 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#8B6F47',
+    backgroundColor: '#D4C5A9',
     position: 'relative' as const,
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
-        backgroundImage: `
-          url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=1080&fit=crop&q=90'),
-          linear-gradient(
-            180deg,
-            rgba(139, 111, 71, 0.7) 0%,
-            rgba(120, 94, 60, 0.75) 50%,
-            rgba(101, 77, 49, 0.7) 100%
-          )
-        `,
-        backgroundBlendMode: 'overlay',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       },
     }),
@@ -1036,23 +1028,16 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(139, 111, 71, 0.92)',
+    backgroundColor: '#D4C5A9',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(61, 1, 1, 0.2)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        backgroundImage: `
-          url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=200&fit=crop&q=90'),
-          linear-gradient(
-            180deg,
-            rgba(139, 111, 71, 0.92) 0%,
-            rgba(120, 94, 60, 0.95) 100%
-          )
-        `,
-        backgroundBlendMode: 'overlay',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
       },
     }),
   },
@@ -1205,12 +1190,13 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    backgroundColor: '#8B6F47',
+    backgroundColor: '#D4C5A9',
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        backgroundImage: `url('https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1920&h=1080&fit=crop&q=90')`,
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       },
     }),

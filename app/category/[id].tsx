@@ -297,23 +297,15 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4C4A8',
+    backgroundColor: '#D4C5A9',
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
-        backgroundImage: `
-          url('https://images.unsplash.com/photo-1595275688756-e14e29742c67?w=1920&h=1080&fit=crop&q=80'),
-          linear-gradient(
-            180deg,
-            rgba(212, 196, 168, 0.85) 0%,
-            rgba(201, 182, 147, 0.9) 50%,
-            rgba(184, 164, 129, 0.85) 100%
-          )
-        `,
-        backgroundBlendMode: 'overlay',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       },
     }),
