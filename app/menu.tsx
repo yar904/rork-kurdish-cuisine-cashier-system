@@ -849,32 +849,25 @@ const styles = StyleSheet.create({
         backgroundImage: `
           repeating-linear-gradient(
             0deg,
-            #8B2E2E 0px,
-            #8B2E2E 2px,
-            transparent 2px,
-            transparent 40px
+            rgba(139, 90, 43, 0.08) 0px,
+            transparent 1px,
+            transparent 8px
           ),
           repeating-linear-gradient(
             90deg,
-            #8B2E2E 0px,
-            #8B2E2E 2px,
+            rgba(101, 67, 33, 0.1) 0px,
+            rgba(101, 67, 33, 0.1) 2px,
             transparent 2px,
-            transparent 40px
-          ),
-          repeating-linear-gradient(
-            45deg,
-            transparent 0px,
-            transparent 38px,
-            #4A1515 38px,
-            #4A1515 40px
+            transparent 80px
           ),
           linear-gradient(
             180deg,
-            #A54141 0%,
-            #8B2E2E 25%,
-            #6B1F1F 50%,
-            #4A1515 75%,
-            #2E0909 100%
+            #DCC9A8 0%,
+            #C9B693 20%,
+            #B8A481 40%,
+            #A89370 60%,
+            #9A8560 80%,
+            #8C7850 100%
           )
         `,
       },
@@ -1230,11 +1223,11 @@ const styles = StyleSheet.create({
   },
   plaidPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: Platform.OS === 'web' ? 1 : 0.25,
+    opacity: Platform.OS === 'web' ? 0 : 0.15,
     zIndex: 0,
     ...Platform.select({
       default: {
-        backgroundColor: '#8B2E2E',
+        backgroundColor: '#B8A481',
       },
     }),
   },
