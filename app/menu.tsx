@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         fontSize: 15,
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1110,7 +1110,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1152,7 +1152,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1282,7 +1282,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1434,7 +1434,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1451,7 +1451,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1588,7 +1588,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1741,7 +1741,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1924,7 +1924,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -2002,7 +2002,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -2014,7 +2014,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       web: {
-        fontFamily: '"NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
