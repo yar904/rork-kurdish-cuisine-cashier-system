@@ -19,9 +19,9 @@ import { Language } from '@/constants/i18n';
 
 
 const LANGUAGES = [
-  { code: 'en' as Language, label: 'English', subtitle: 'English' },
-  { code: 'ar' as Language, label: 'عربي', subtitle: 'Arabic' },
-  { code: 'ku' as Language, label: 'کوردی', subtitle: 'Kurdish' },
+  { code: 'ku' as Language, label: 'کوردی', subtitle: 'NRT' },
+  { code: 'en' as Language, label: 'English', subtitle: 'ENG' },
+  { code: 'ar' as Language, label: 'عربي', subtitle: 'AR' },
 ];
 
 export default function LandingPage() {
@@ -66,12 +66,12 @@ export default function LandingPage() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>Tapse</Text>
-          <Text style={styles.subtitle}>Experience the rich flavors and{"\n"}traditions of Kurdish hospitality</Text>
+          <Text style={styles.title}>تەپسی سلێمانی</Text>
+          <Text style={styles.subtitle}>تامو چێژێکی رەسەنی کوردی لە تەپسی سلێمانی بچێژە</Text>
           
           <View style={styles.languageContainer}>
-            <Text style={styles.languagePrompt}>Select Your Language</Text>
-            <Text style={styles.languageSubPrompt}>اختر لغتك • زمانەکەت هەڵبژێرە</Text>
+            <Text style={styles.languagePrompt}>زمانەکەت هەڵبژێرە</Text>
+            <Text style={styles.languageSubPrompt}>Select Your Language • اختر لغتك</Text>
 
             <View style={[styles.languageGrid, isSmallScreen && styles.languageGridSmall]}>
               {LANGUAGES.map((lang) => (
@@ -124,7 +124,7 @@ export default function LandingPage() {
             style={styles.bottomLogo}
             resizeMode="contain"
           />
-          <Text style={styles.welcomeText}>Welcome to Tapse</Text>
+          <Text style={styles.welcomeText}>تەپسی سلێمانی</Text>
         </View>
       </LinearGradient>
     </View>

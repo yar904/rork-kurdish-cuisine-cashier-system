@@ -671,7 +671,7 @@ export default function PublicMenuScreen() {
             resizeMode="contain"
           />
           <View style={styles.welcomeContainer}>
-            <Text style={styles.restaurantName}>Tapse</Text>
+            <Text style={styles.restaurantName}>تەپسی سلێمانی</Text>
             <Text style={styles.welcomeText}>{t('welcome')}</Text>
           </View>
           <View style={styles.headerActions}>
@@ -824,7 +824,7 @@ export default function PublicMenuScreen() {
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerTitle}>Tapse</Text>
+          <Text style={styles.footerTitle}>تەپسی سلێمانی</Text>
           <Text style={styles.footerText}>{t('thankYou')}</Text>
           <View style={styles.footerDivider} />
           <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>
@@ -884,7 +884,7 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontSize: 18,
-    fontWeight: '800' as const,
+    fontFamily: 'NRTBold',
     color: Colors.gold,
     letterSpacing: 1.5,
     textAlign: 'center' as const,
@@ -898,7 +898,7 @@ const styles = StyleSheet.create({
     }),
   },
   welcomeText: {
-    fontWeight: '500' as const,
+    fontFamily: 'NRTRegular',
     color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
@@ -907,7 +907,6 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         fontSize: 15,
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
       },
     }),
   },
@@ -1043,7 +1042,7 @@ const styles = StyleSheet.create({
   },
   categorySliderTitle: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: '#3d0101',
     marginTop: 16,
     marginLeft: 20,
@@ -1103,17 +1102,12 @@ const styles = StyleSheet.create({
 
   categoryCardTitle: {
     fontSize: 16,
-    fontWeight: '800' as const,
+    fontFamily: 'NRTBold',
     color: '#1A1A1A',
     textAlign: 'center' as const,
     paddingVertical: 12,
     paddingHorizontal: 8,
     letterSpacing: 0.3,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   menuSections: {
     paddingTop: 24,
@@ -1147,19 +1141,14 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 28,
-    fontWeight: '800' as const,
+    fontFamily: 'NRTBold',
     color: '#3d0101',
     letterSpacing: 0.5,
     textTransform: 'capitalize' as const,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   categoryCount: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTRegular',
     color: '#6B7280',
     letterSpacing: 0.5,
     textTransform: 'uppercase' as const,
@@ -1311,7 +1300,7 @@ const styles = StyleSheet.create({
   },
   menuItemNameHorizontal: {
     fontSize: 22,
-    fontWeight: '800' as const,
+    fontFamily: 'NRTBold',
     color: '#E8C968',
     lineHeight: 28,
     letterSpacing: 0.5,
@@ -1319,11 +1308,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     textAlign: 'center' as const,
     paddingHorizontal: 12,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   priceHighlight: {
     marginBottom: 12,
@@ -1331,7 +1315,7 @@ const styles = StyleSheet.create({
   },
   menuItemPriceHorizontal: {
     fontSize: 14,
-    fontWeight: '500' as const,
+    fontFamily: 'NRTRegular',
     color: 'rgba(255, 255, 255, 0.75)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
@@ -1468,14 +1452,9 @@ const styles = StyleSheet.create({
   },
   modalItemName: {
     fontSize: 26,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: '#1A1A1A',
     marginBottom: 8,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   modalItemPrice: {
     fontSize: 24,
@@ -1485,14 +1464,10 @@ const styles = StyleSheet.create({
   },
   modalItemDescription: {
     fontSize: 16,
+    fontFamily: 'NRTRegular',
     color: '#6B7280',
     lineHeight: 24,
     marginBottom: 24,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   modalDivider: {
     height: 1,
@@ -1622,14 +1597,9 @@ const styles = StyleSheet.create({
   },
   cartItemName: {
     fontSize: 18,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTBold',
     color: '#FFFFFF',
     marginBottom: 4,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   cartItemNotes: {
     fontSize: 14,
@@ -1773,16 +1743,11 @@ const styles = StyleSheet.create({
   },
   tableSelectorTitle: {
     fontSize: 26,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: '#3d0101',
     marginBottom: 8,
     textAlign: 'center' as const,
     letterSpacing: -0.5,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   tableSelectorSubtitle: {
     fontSize: 15,
@@ -1958,14 +1923,9 @@ const styles = StyleSheet.create({
   },
   footerTextSecondary: {
     fontSize: 14,
-    fontWeight: '400' as const,
+    fontFamily: 'NRTRegular',
     color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -2035,27 +1995,17 @@ const styles = StyleSheet.create({
   },
   ratingModalTitle: {
     fontSize: 24,
-    fontWeight: '700' as const,
+    fontFamily: 'NRTBold',
     color: '#3d0101',
     textAlign: 'center' as const,
     marginBottom: 12,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   ratingModalItemName: {
     fontSize: 18,
-    fontWeight: '600' as const,
+    fontFamily: 'NRTRegular',
     color: '#6B7280',
     textAlign: 'center' as const,
     marginBottom: 24,
-    ...Platform.select({
-      web: {
-        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
-      },
-    }),
   },
   starRatingContainer: {
     flexDirection: 'row',
