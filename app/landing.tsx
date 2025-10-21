@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+
 import { useRouter } from 'expo-router';
 import { Instagram, Globe, MessageCircle, Music, Send } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,6 +28,7 @@ export default function LandingPage() {
   const { language, setLanguage, isLoading } = useLanguage();
   const [selectedLang, setSelectedLang] = useState<Language>(language);
   const [showLanguages, setShowLanguages] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const insets = useSafeAreaInsets();
 
   const handleLanguageSelect = async (lang: Language) => {
@@ -52,10 +53,21 @@ export default function LandingPage() {
   React.useEffect(() => {
     if (!isLoading) {
       setSelectedLang(language);
+      setIsReady(true);
     }
   }, [language, isLoading]);
 
-  if (isLoading) {
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!isReady) {
+        setIsReady(true);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [isReady]);
+
+  if (!isReady) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>

@@ -21,9 +21,8 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
       }
     } catch (error) {
       console.error('Failed to load language:', error);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const setLanguage = useCallback(async (lang: Language) => {
