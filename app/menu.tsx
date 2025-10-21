@@ -1216,7 +1216,7 @@ const styles = StyleSheet.create({
   },
   menuItemCardHorizontal: {
     width: '48%' as const,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#3d0101',
     borderRadius: 20,
     overflow: 'hidden' as const,
     borderWidth: 0,
@@ -1273,7 +1273,7 @@ const styles = StyleSheet.create({
   menuItemNameHorizontal: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: '#1A1A1A',
+    color: '#E8C968',
     lineHeight: 26,
     letterSpacing: -0.3,
     marginBottom: 8,
@@ -1293,7 +1293,7 @@ const styles = StyleSheet.create({
   menuItemPriceHorizontal: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.2,
     textAlign: 'center' as const,
   },
