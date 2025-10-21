@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   Dimensions,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -56,8 +57,15 @@ export default function LandingPage() {
         style={styles.gradient}
       >
         <View style={[styles.content, isSmallScreen && styles.contentSmall]}>
-          <Text style={styles.title}>زمانەکەت هەڵبژێرە</Text>
-          <Text style={styles.subtitle}>Select Your Language • اختر لغتك</Text>
+          <Image
+            source={require('@/assets/images/adaptive-icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>تەپسی سلێمانی</Text>
+          <Text style={styles.subtitle}>تامو چێژێکی رەسەنی کوردی لە تەپسی سلێمانی بچێژە</Text>
+          <Text style={styles.languagePrompt}>زمانەکەت هەڵبژێرە</Text>
+          <Text style={styles.languageSubPrompt}>Select Your Language • اختر لغتك</Text>
 
           <View style={[styles.languageGrid, isSmallScreen && styles.languageGridSmall]}>
             {LANGUAGES.map((lang) => (
@@ -130,8 +138,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     maxWidth: 360,
   },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -143,10 +156,33 @@ const styles = StyleSheet.create({
     }),
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#CCCCCC',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
+    ...Platform.select({
+      web: {
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
+  },
+  languagePrompt: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 6,
+    ...Platform.select({
+      web: {
+        fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
+      },
+    }),
+  },
+  languageSubPrompt: {
+    fontSize: 13,
+    color: '#CCCCCC',
+    textAlign: 'center',
+    marginBottom: 28,
     ...Platform.select({
       web: {
         fontFamily: '"peshang des 2", "NRT", "Rudaw", "Rabar_021", "Kurdish Kufi", "Noto Sans Arabic", sans-serif',
