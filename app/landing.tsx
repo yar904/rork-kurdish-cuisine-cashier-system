@@ -4,50 +4,37 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
-  Image,
+  ImageBackground,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User } from 'lucide-react-native';
+import { Instagram } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors, fonts } from '@/constants/colors';
 import { Language } from '@/constants/i18n';
 
-
-
-
 const LANGUAGES = [
-  { code: 'ku' as Language, label: 'کوردی', subtitle: 'NRT' },
-  { code: 'en' as Language, label: 'English', subtitle: 'ENG' },
-  { code: 'ar' as Language, label: 'عربي', subtitle: 'AR' },
+  { code: 'ku' as Language, label: 'کوردی' },
+  { code: 'en' as Language, label: 'English' },
+  { code: 'ar' as Language, label: 'عربي' },
 ];
 
 export default function LandingPage() {
   const router = useRouter();
   const { language, setLanguage, isLoading } = useLanguage();
   const [selectedLang, setSelectedLang] = useState<Language>(language);
+  const [showLanguages, setShowLanguages] = useState(false);
   const insets = useSafeAreaInsets();
-  const [dimensions, setDimensions] = React.useState(() => Dimensions.get('window'));
 
-  React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
-
-  const { width } = dimensions;
-  const isSmallScreen = width < 380;
-
-  const handleLanguageSelect = (lang: Language) => {
+  const handleLanguageSelect = async (lang: Language) => {
     setSelectedLang(lang);
+    await setLanguage(lang);
+    setShowLanguages(false);
   };
 
-  const handleContinue = async () => {
-    await setLanguage(selectedLang);
+  const handleContinue = () => {
     router.replace('/menu');
   };
 
@@ -57,96 +44,83 @@ export default function LandingPage() {
     }
   }, [language, isLoading]);
 
-  const handleStaffLogin = () => {
-    router.push('/staff-login');
-  };
-
   if (isLoading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <LinearGradient
-          colors={['#3D0101', '#4D1515', '#3D0101']}
-          style={styles.gradient}
-        >
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.gold} />
-        </LinearGradient>
+        </View>
       </View>
     );
   }
 
-  return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <LinearGradient
-        colors={['#3D0101', '#4D1515', '#3D0101']}
-        style={styles.gradient}
-      >
-        <View style={[styles.content, isSmallScreen && styles.contentSmall]}>
-          <Image
-            source={require('@/assets/images/adaptive-icon.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>تەپسی سلێمانی</Text>
-          <Text style={styles.subtitle}>تامو چێژێکی رەسەنی کوردی لە تەپسی سلێمانی بچێژە</Text>
-          
-          <View style={styles.languageContainer}>
-            <Text style={styles.languagePrompt}>زمانەکەت هەڵبژێرە</Text>
-            <Text style={styles.languageSubPrompt}>Select Your Language • اختر لغتك</Text>
+  const currentLanguage = LANGUAGES.find(l => l.code === selectedLang);
 
-            <View style={[styles.languageGrid, isSmallScreen && styles.languageGridSmall]}>
+  return (
+    <View style={styles.container}>
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <LinearGradient
+          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
+          style={styles.overlay}
+        >
+          <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
+            <TouchableOpacity 
+              style={styles.languageButton}
+              onPress={() => setShowLanguages(!showLanguages)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.languageButtonText}>{currentLanguage?.label}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {showLanguages && (
+            <View style={[styles.languageDropdown, { top: insets.top + 60 }]}>
               {LANGUAGES.map((lang) => (
                 <TouchableOpacity
                   key={lang.code}
                   style={[
-                    styles.languageCard,
-                    selectedLang === lang.code && styles.languageCardActive,
-                    isSmallScreen && styles.languageCardSmall,
+                    styles.languageOption,
+                    selectedLang === lang.code && styles.languageOptionActive,
                   ]}
                   onPress={() => handleLanguageSelect(lang.code)}
                   activeOpacity={0.7}
                 >
                   <Text style={[
-                    styles.languageLabel,
-                    selectedLang === lang.code && styles.languageLabelActive,
+                    styles.languageOptionText,
+                    selectedLang === lang.code && styles.languageOptionTextActive,
                   ]}>
                     {lang.label}
-                  </Text>
-                  <Text style={[
-                    styles.languageSubtitle,
-                    selectedLang === lang.code && styles.languageSubtitleActive,
-                  ]}>
-                    {lang.subtitle}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
+          )}
+
+          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 24 }]}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={handleContinue}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.menuButtonText}>مینۆ</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.socialButton}
+              activeOpacity={0.7}
+            >
+              <Instagram size={28} color="#FFFFFF" strokeWidth={1.5} />
+            </TouchableOpacity>
+
+            <Text style={styles.tagline}>بەشێکی، کراوە لەلایەن</Text>
+            <Text style={styles.brandText}>mynu</Text>
           </View>
-
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueText}>Continue to Menu</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.staffButton}
-            onPress={handleStaffLogin}
-            activeOpacity={0.7}
-          >
-            <User size={24} color={Colors.gold} />
-            <Text style={styles.staffButtonText}>Staff Access</Text>
-          </TouchableOpacity>
-
-          <Image
-            source={require('@/assets/images/adaptive-icon.png')}
-            style={styles.bottomLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.welcomeText}>تەپسی سلێمانی</Text>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      </ImageBackground>
     </View>
   );
 }
@@ -154,165 +128,106 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3D0101',
+    backgroundColor: '#000',
   },
-  gradient: {
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#000',
   },
-  content: {
-    width: '100%',
-    maxWidth: 440,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  contentSmall: {
-    paddingHorizontal: 16,
-    maxWidth: 360,
-  },
-  staffButton: {
+  topBar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-    width: '100%',
-    marginBottom: 40,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    zIndex: 10,
   },
-  staffButtonText: {
-    fontFamily: fonts.bold,
-    fontSize: 16,
-    color: Colors.gold,
+  languageButton: {
+    backgroundColor: 'rgba(139, 69, 19, 0.85)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  bottomLogo: {
-    width: 80,
-    height: 80,
-    marginBottom: 8,
-  },
-  welcomeText: {
-    fontFamily: fonts.kurdish,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.5)',
-    textAlign: 'center',
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-  },
-  title: {
+  languageButtonText: {
     fontFamily: fonts.kurdishBold,
-    fontSize: 48,
-    color: Colors.gold,
-    textAlign: 'center',
-    marginBottom: 12,
-    letterSpacing: 1,
+    fontSize: 15,
+    color: '#FFFFFF',
   },
-  subtitle: {
+  languageDropdown: {
+    position: 'absolute',
+    left: 20,
+    backgroundColor: 'rgba(139, 69, 19, 0.95)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    overflow: 'hidden',
+    zIndex: 100,
+  },
+  languageOption: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  languageOptionActive: {
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  languageOptionText: {
     fontFamily: fonts.kurdish,
     fontSize: 15,
-    color: '#E5E5E5',
-    textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
-    paddingHorizontal: 20,
+    color: '#FFFFFF',
   },
-  languageContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 24,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    width: '100%',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  languagePrompt: {
+  languageOptionTextActive: {
     fontFamily: fonts.kurdishBold,
-    fontSize: 28,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  languageSubPrompt: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    textAlign: 'center',
-    marginBottom: 28,
-    lineHeight: 20,
-  },
-  languageGrid: {
-    flexDirection: 'row',
-    gap: 16,
-    width: '100%',
-    marginBottom: 40,
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-  },
-  languageGridSmall: {
-    gap: 12,
-  },
-  languageCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    flex: 1,
-    minWidth: 90,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  languageCardSmall: {
-    paddingVertical: 20,
-    paddingHorizontal: 12,
-    minWidth: 80,
-  },
-  languageCardActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
-    borderColor: Colors.gold,
-    borderWidth: 3,
-  },
-  languageLabel: {
-    fontFamily: fonts.bold,
-    fontSize: 24,
-    color: '#FFFFFF',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  languageLabelActive: {
     color: Colors.gold,
   },
-  languageSubtitle: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
+  bottomSection: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  menuButton: {
+    backgroundColor: 'rgba(139, 69, 19, 0.85)',
+    paddingVertical: 18,
+    paddingHorizontal: 80,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    width: '100%',
+    maxWidth: 400,
+  },
+  menuButtonText: {
+    fontFamily: fonts.kurdishBold,
+    fontSize: 22,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
-  languageSubtitleActive: {
-    color: 'rgba(212, 175, 55, 0.8)',
+  socialButton: {
+    marginBottom: 16,
+    padding: 8,
   },
-  continueButton: {
-    backgroundColor: Colors.gold,
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 48,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
+  tagline: {
+    fontFamily: fonts.kurdish,
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  continueText: {
+  brandText: {
     fontFamily: fonts.bold,
     fontSize: 18,
-    color: '#3D0101',
-    letterSpacing: 0.5,
+    color: Colors.gold,
+    textAlign: 'center',
   },
 });
