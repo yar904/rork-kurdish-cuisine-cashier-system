@@ -36,6 +36,8 @@ export default function PublicMenuScreen() {
   const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const searchSlideAnim = useRef(new Animated.Value(0)).current;
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
@@ -715,18 +717,16 @@ export default function PublicMenuScreen() {
           
           <TouchableOpacity
             style={styles.iconItem}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Star size={24} color="#D4AF37" strokeWidth={1.8} />
-            </View>
-            <Text style={styles.iconLabel}>
-              {language === 'en' ? 'Favorites' : language === 'ku' ? 'دڵخوازەکان' : 'المفضلة'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.iconItem}
+            onPress={() => {
+              const toValue = showSearch ? 0 : 1;
+              setShowSearch(!showSearch);
+              Animated.spring(searchSlideAnim, {
+                toValue,
+                useNativeDriver: true,
+                damping: 15,
+                stiffness: 120,
+              }).start();
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.iconCircle}>
@@ -762,8 +762,25 @@ export default function PublicMenuScreen() {
             ))}
           </View>
         )}
+      </View>
 
-        <View style={styles.searchContainer}>
+      {showSearch && (
+        <Animated.View
+          style={[
+            styles.searchContainer,
+            {
+              transform: [
+                {
+                  translateY: searchSlideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-60, 0],
+                  }),
+                },
+              ],
+              opacity: searchSlideAnim,
+            },
+          ]}
+        >
           <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
@@ -771,9 +788,23 @@ export default function PublicMenuScreen() {
             placeholderTextColor="rgba(255, 255, 255, 0.5)"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            autoFocus
           />
-        </View>
-      </View>
+          <TouchableOpacity
+            onPress={() => {
+              setSearchQuery('');
+              setShowSearch(false);
+              Animated.spring(searchSlideAnim, {
+                toValue: 0,
+                useNativeDriver: true,
+              }).start();
+            }}
+            style={styles.closeSearchButton}
+          >
+            <X size={18} color="rgba(255, 255, 255, 0.7)" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       <Animated.View style={[
         styles.categorySliderContainer,
@@ -1035,10 +1066,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     marginHorizontal: 20,
+    marginTop: 8,
     marginBottom: 16,
     paddingHorizontal: 12,
     borderRadius: 10,
     height: 44,
+  },
+  closeSearchButton: {
+    padding: 4,
+    marginLeft: 8,
   },
   searchIcon: {
     marginRight: 8,
@@ -1151,14 +1187,14 @@ const styles = StyleSheet.create({
   categoryDecorLeft: {
     width: 4,
     height: 28,
-    backgroundColor: '#8B5A2B',
+    backgroundColor: '#3d0101',
     borderRadius: 2,
     marginRight: 12,
   },
   categoryDecorRight: {
     flex: 1,
     height: 2,
-    backgroundColor: 'rgba(139, 90, 43, 0.3)',
+    backgroundColor: '#3d0101',
     marginLeft: 16,
     borderRadius: 1,
   },
@@ -1170,11 +1206,10 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
   },
   categoryCount: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#6B7280',
+    fontSize: 28,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#3d0101',
     letterSpacing: 0.5,
-    textTransform: 'uppercase' as const,
   },
   categoryItemsScroll: {
     paddingHorizontal: 20,

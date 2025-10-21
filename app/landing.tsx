@@ -307,13 +307,13 @@ const styles = StyleSheet.create({
 
   menuButton: {
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 48,
-    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 32,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: Colors.gold,
     width: '100%',
-    maxWidth: 280,
+    maxWidth: 220,
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -322,10 +322,10 @@ const styles = StyleSheet.create({
   },
   menuButtonText: {
     fontFamily: fonts.kurdishBold,
-    fontSize: 28,
+    fontSize: 20,
     color: Colors.gold,
     textAlign: 'center',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
   },
   socialContainer: {
     flexDirection: 'row',
