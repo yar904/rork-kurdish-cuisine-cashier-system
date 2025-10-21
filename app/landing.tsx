@@ -213,6 +213,8 @@ export default function LandingPage() {
                   activeOpacity={0.8}
                 >
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                     style={[
                       styles.languageLabel,
                       selectedLang === lang.code && styles.languageLabelActive,
@@ -223,6 +225,7 @@ export default function LandingPage() {
                     {lang.label}
                   </Text>
                   <Text
+                    numberOfLines={1}
                     style={[
                       styles.languageNative,
                       selectedLang === lang.code && styles.languageNativeActive,
@@ -494,7 +497,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
     minHeight: 90,
     justifyContent: 'center',
-    minWidth: 0,
+    minWidth: 90,
+    maxWidth: 140,
   },
   languageButtonTablet: {
     minHeight: 130,
@@ -516,6 +520,7 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     marginBottom: 4,
     textAlign: 'center',
+    width: '100%',
   },
   languageLabelTablet: {
     fontSize: 32,
@@ -533,6 +538,7 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     opacity: 0.6,
     textAlign: 'center',
+    width: '100%',
   },
   languageNativeTablet: {
     fontSize: 15,
