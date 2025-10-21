@@ -75,8 +75,14 @@ The current table is ${selectedTable}. Always be warm, helpful, and guide custom
 
   useEffect(() => {
     if (visible && messages.length === 0) {
+      const greetings = {
+        en: "Hello! 👋 I'm Baran, your friendly assistant at Tapse Kurdish restaurant. I'm here to help you with ordering, tracking your order, calling a waiter, or answering any questions. How can I help you today?",
+        ku: "سڵاو! 👋 من بارانم، یاریدەدەری دۆستانەی تۆم لە چێشتخانەی تاپسە. لێرەم بۆ یارمەتیدانت لە داواکردن، شوێنکەوتنی داواکاری، بانگهێشتنی گارسۆن، یان وەڵامدانەوەی هەر پرسیارێک. چۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟",
+        ar: "مرحباً! 👋 أنا باران، مساعدك الودود في مطعم تابسي الكردي. أنا هنا لمساعدتك في الطلب، أو تتبع طلبك، أو استدعاء النادل، أو الإجابة على أي أسئلة. كيف يمكنني مساعدتك اليوم؟"
+      };
+      
       sendMessage({
-        text: getSystemPrompt(language),
+        text: `SYSTEM: ${getSystemPrompt(language)}\n\nUSER_GREETING: ${greetings[language]}`,
         files: [],
       });
     }
@@ -147,6 +153,13 @@ The current table is ${selectedTable}. Always be warm, helpful, and guide custom
               {m.parts.map((part, i) => {
                 switch (part.type) {
                   case 'text':
+                    const isFirstMessage = m === messages[0];
+                    const displayText = isFirstMessage && m.role === 'user' && part.text.includes('USER_GREETING:') 
+                      ? part.text.split('USER_GREETING:')[1]?.trim() || part.text
+                      : part.text;
+                    
+                    if (isFirstMessage && m.role === 'user' && !displayText) return null;
+                    
                     return (
                       <View
                         key={`${m.id}-text-${i}`}
@@ -161,7 +174,7 @@ The current table is ${selectedTable}. Always be warm, helpful, and guide custom
                             m.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
                           ]}
                         >
-                          {part.text}
+                          {displayText}
                         </Text>
                       </View>
                     );
