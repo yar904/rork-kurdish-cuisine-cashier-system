@@ -9,7 +9,7 @@ import { trpc, trpcClient } from "@/lib/trpc";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 
 const queryClient = new QueryClient();
 
@@ -41,11 +41,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  useEffect(() => {
-    if (Text.defaultProps) {
-      Text.defaultProps.style = { fontFamily: 'PeshangDes5-Regular' };
-    }
-  }, [fontsLoaded]);
+
 
   if (!fontsLoaded) {
     return (
