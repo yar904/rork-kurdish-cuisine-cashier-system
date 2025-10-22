@@ -163,6 +163,21 @@ export default function PublicMenuScreen() {
     });
   };
 
+  const restaurantCategories = [
+    { id: 1, name: 'دەستپێکی سارد', en: 'Cold Starters', category: 'salads' as MenuCategory, image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop' },
+    { id: 2, name: 'دەستپێکی گەرم', en: 'Hot Starters', category: 'appetizers' as MenuCategory, image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop' },
+    { id: 3, name: 'سوپەکان', en: 'Soups', category: 'soups' as MenuCategory, image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop' },
+    { id: 4, name: 'خواردنی سەرەکی', en: 'Main Courses', category: 'kebabs' as MenuCategory, image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop' },
+    { id: 5, name: 'برنج', en: 'Rice Dishes', category: 'rice-dishes' as MenuCategory, image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop' },
+    { id: 6, name: 'خواردنی شیرین', en: 'Desserts', category: 'desserts' as MenuCategory, image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop' },
+    { id: 7, name: 'چا و قاوە', en: 'Tea & Coffee', category: 'hot-drinks' as MenuCategory, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
+    { id: 8, name: 'خواردنی سارد', en: 'Cold Beverages', category: 'drinks' as MenuCategory, image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop' },
+    { id: 9, name: 'شیەشە', en: 'Shisha', category: 'shisha' as MenuCategory, image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop' },
+    { id: 10, name: 'نان', en: 'Breads', category: 'breads' as MenuCategory, image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop' },
+  ];
+
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+
   const categories: MenuCategory[] = [
     'appetizers',
     'soups',
@@ -183,13 +198,18 @@ export default function PublicMenuScreen() {
     return categoryItems.length > 0;
   });
 
+  const availableRestaurantCategories = restaurantCategories.filter((restCat) => {
+    const categoryItems = MENU_ITEMS.filter(item => item.category === restCat.category && item.available);
+    return categoryItems.length > 0;
+  });
+
   const startAutoScroll = useCallback(() => {
     if (autoScrollInterval.current) {
       clearInterval(autoScrollInterval.current);
     }
     
     const interval = setInterval(() => {
-      const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
+      const nextIndex = (currentSlideIndex.current + 1) % availableRestaurantCategories.length;
       const cardWidth = 140;
       const gap = 12;
       const scrollPosition = nextIndex * (cardWidth + gap);
@@ -203,7 +223,25 @@ export default function PublicMenuScreen() {
     }, 3000);
     
     autoScrollInterval.current = interval;
-  }, [availableCategories.length]);
+  }, [availableRestaurantCategories.length]);
+
+  const handleCategoryPress = (restCat: typeof restaurantCategories[0]) => {
+    if (autoScrollInterval.current) {
+      clearInterval(autoScrollInterval.current);
+    }
+    setActiveCategoryId(restCat.id);
+    
+    const sectionIndex = filteredCategories.findIndex(cat => cat === restCat.category);
+    if (sectionIndex !== -1 && contentScrollRef.current) {
+      const yOffset = sectionIndex * 500;
+      contentScrollRef.current.scrollTo({ y: yOffset, animated: true });
+    }
+    
+    setTimeout(() => {
+      setActiveCategoryId(null);
+      startAutoScroll();
+    }, 2000);
+  };
 
   useEffect(() => {
     startAutoScroll();
@@ -917,33 +955,29 @@ export default function PublicMenuScreen() {
           }}
           onScrollEndDrag={startAutoScroll}
         >
-          {availableCategories.map((category) => {
-            const categoryItems = MENU_ITEMS.filter(item => item.category === category && item.available);
+          {availableRestaurantCategories.map((restCat) => {
+            const isActive = activeCategoryId === restCat.id;
+            const displayName = language === 'en' ? restCat.en : restCat.name;
             
             return (
               <TouchableOpacity
-                key={category}
-                style={styles.categoryCard}
+                key={restCat.id}
+                style={[styles.categoryCard, isActive && styles.categoryCardActive]}
                 activeOpacity={0.9}
-                onPress={() => {
-                  if (autoScrollInterval.current) {
-                    clearInterval(autoScrollInterval.current);
-                  }
-                  router.push(`/category/${category}`);
-                }}
+                onPress={() => handleCategoryPress(restCat)}
               >
                 <View style={styles.categoryCardImageContainer}>
-                  {categoryItems[0]?.image && (
-                    <Image 
-                      source={{ uri: categoryItems[0].image }} 
-                      style={styles.categoryCardImage}
-                      resizeMode="cover"
-                    />
-                  )}
+                  <Image 
+                    source={{ uri: restCat.image }} 
+                    style={styles.categoryCardImage}
+                    resizeMode="cover"
+                  />
                   <View style={styles.categoryCardOverlay} />
-                </View>
-                <View style={styles.categoryCardFooter}>
-                  <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
+                  <View style={styles.categoryCardTextOverlay}>
+                    <Text style={styles.categoryCardTitleOverlay} numberOfLines={2}>
+                      {displayName}
+                    </Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             );
@@ -1213,7 +1247,8 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: 140,
-    backgroundColor: '#FFFFFF',
+    height: 140,
+    backgroundColor: '#4C1C1A',
     borderRadius: 16,
     overflow: 'hidden' as const,
     borderWidth: 1,
@@ -1233,11 +1268,29 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  categoryCardActive: {
+    borderWidth: 2,
+    borderColor: '#EBC968',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#EBC968',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 6px 20px rgba(235, 201, 104, 0.4)',
+      },
+    }),
+  },
   categoryCardImageContainer: {
     width: '100%',
-    height: 90,
+    height: '100%',
     position: 'relative' as const,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#4C1C1A',
   },
   categoryCardImage: {
     width: '100%',
@@ -1245,23 +1298,30 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(61, 1, 1, 0.1)',
+    backgroundColor: 'rgba(76, 28, 26, 0.7)',
   },
-
-  categoryCardFooter: {
+  categoryCardTextOverlay: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(76, 28, 26, 0.85)',
     paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: 'rgba(61, 1, 1, 0.9)',
-    width: '100%',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
-  categoryCardTitle: {
+  categoryCardTitleOverlay: {
     fontSize: 13,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: '#E8C968',
+    color: '#F4E4C1',
     textAlign: 'center' as const,
     letterSpacing: 0.5,
+    lineHeight: 16,
   },
+
+
   menuSections: {
     paddingTop: 24,
     paddingBottom: 24,
