@@ -2,34 +2,24 @@ import { Platform } from 'react-native';
 
 export const fonts = {
   regular: Platform.select({
-    ios: 'System',
-    android: 'Roboto',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    ios: 'San Francisco',
+    android: 'sans-serif',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
   }),
   medium: Platform.select({
-    ios: 'System',
-    android: 'Roboto-Medium',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    ios: 'San Francisco',
+    android: 'sans-serif-medium',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
   }),
   semiBold: Platform.select({
-    ios: 'System',
-    android: 'Roboto-Medium',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    ios: 'San Francisco',
+    android: 'sans-serif-medium',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
   }),
   bold: Platform.select({
-    ios: 'System',
-    android: 'Roboto-Bold',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
-  }),
-  kurdish: Platform.select({
-    ios: 'System',
-    android: 'Roboto',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
-  }),
-  kurdishBold: Platform.select({
-    ios: 'System',
-    android: 'Roboto-Bold',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    ios: 'San Francisco',
+    android: 'sans-serif',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
   }),
 };
 
