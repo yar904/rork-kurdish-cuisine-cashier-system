@@ -1,6 +1,9 @@
 import { createTRPCRouter } from "./create-context";
 import hiRoute from "./routes/example/hi/route";
 import menuGetAllRoute from "./routes/menu/getAll/route";
+import menuCreateRoute from "./routes/menu/create/route";
+import menuUpdateRoute from "./routes/menu/update/route";
+import menuDeleteRoute from "./routes/menu/delete/route";
 import tablesGetAllRoute from "./routes/tables/getAll/route";
 import tablesUpdateStatusRoute from "./routes/tables/updateStatus/route";
 import ordersCreateRoute from "./routes/orders/create/route";
@@ -23,6 +26,9 @@ export const appRouter = createTRPCRouter({
   }),
   menu: createTRPCRouter({
     getAll: menuGetAllRoute,
+    create: menuCreateRoute,
+    update: menuUpdateRoute,
+    delete: menuDeleteRoute,
   }),
   tables: createTRPCRouter({
     getAll: tablesGetAllRoute,

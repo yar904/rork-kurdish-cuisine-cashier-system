@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platf
 import { useState, useEffect, useRef } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff } from 'lucide-react-native';
+import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -343,6 +343,27 @@ export default function AdminScreen() {
           </View>
           <Text style={styles.legendHint}>Long press on table to change status</Text>
         </View>
+
+        {user.role === 'admin' && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MenuSquare size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>Menu Management</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.menuManagementCard}
+              onPress={() => router.push('/menu-management')}
+              activeOpacity={0.7}
+            >
+              <MenuSquare size={48} color={Colors.primary} />
+              <Text style={styles.menuManagementTitle}>Manage Menu Items</Text>
+              <Text style={styles.menuManagementSubtitle}>
+                Add, edit, or remove menu items. Update prices, descriptions, and availability.
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {user.role === 'admin' && (
           <View style={styles.section}>
@@ -1127,5 +1148,37 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center' as const,
     fontWeight: '600' as const,
+  },
+  menuManagementCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 3,
+    borderColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  menuManagementTitle: {
+    fontSize: 22,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  menuManagementSubtitle: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
   },
 });
