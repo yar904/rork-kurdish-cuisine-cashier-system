@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 48,
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#3d0101',
     marginTop: 32,
     borderTopWidth: 0,
   },
