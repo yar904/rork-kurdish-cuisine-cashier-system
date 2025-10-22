@@ -1360,12 +1360,13 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(61, 1, 1, 0.2)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
-    paddingBottom: 8,
+    paddingBottom: 16,
     ...Platform.select({
       web: {
         backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        paddingBottom: 24,
       },
     }),
   },
@@ -1378,6 +1379,15 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: 1,
     textTransform: 'uppercase' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 18,
+        marginTop: 20,
+        marginLeft: 24,
+        textAlign: 'center' as const,
+        marginRight: 24,
+      },
+    }),
   },
   luxuryAccent: {
     width: 40,
@@ -1386,11 +1396,29 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginBottom: 12,
     borderRadius: 1,
+    ...Platform.select({
+      web: {
+        width: 60,
+        height: 3,
+        alignSelf: 'center' as const,
+        marginLeft: 0,
+        marginBottom: 16,
+      },
+    }),
   },
   categorySlider: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     gap: 12,
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 24,
+        gap: 16,
+        flexDirection: 'row' as const,
+        flexWrap: 'wrap' as const,
+        justifyContent: 'center' as const,
+      },
+    }),
   },
   categoryCard: {
     width: 160,
@@ -1410,7 +1438,11 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        boxShadow: '0 6px 16px rgba(139, 90, 43, 0.25)',
+        width: 220,
+        minHeight: 200,
+        boxShadow: '0 8px 24px rgba(139, 90, 43, 0.3)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        cursor: 'pointer',
       },
     }),
   },
@@ -1419,6 +1451,11 @@ const styles = StyleSheet.create({
     height: 120,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
+    ...Platform.select({
+      web: {
+        height: 160,
+      },
+    }),
   },
   categoryCardImage: {
     width: '100%',
@@ -1439,6 +1476,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: 'rgba(61, 1, 1, 0.1)',
+    ...Platform.select({
+      web: {
+        paddingVertical: 16,
+        paddingHorizontal: 12,
+        minHeight: 70,
+      },
+    }),
   },
   categoryCardTitle: {
     fontSize: 14,
@@ -1448,6 +1492,13 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     letterSpacing: 0.3,
     lineHeight: 20,
+    ...Platform.select({
+      web: {
+        fontSize: 17,
+        lineHeight: 24,
+        letterSpacing: 0.5,
+      },
+    }),
   },
   menuSections: {
     paddingTop: 24,
