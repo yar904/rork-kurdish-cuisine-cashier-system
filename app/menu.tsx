@@ -17,7 +17,8 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Instagram } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { MessageCircle as WhatsApp, Camera as Snapchat, Music as TikTok, Instagram } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -1147,28 +1148,16 @@ export default function PublicMenuScreen() {
           
           <View style={styles.socialIconsRow}>
             <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Instagram size={22} color="#D4AF37" strokeWidth={1.8} />
+              <Instagram size={24} color="#D4AF37" strokeWidth={2} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Image 
-                source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg' }}
-                style={styles.socialIconImage}
-                resizeMode="contain"
-              />
+              <WhatsApp size={24} color="#D4AF37" strokeWidth={2} fill="#D4AF37" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Image 
-                source={{ uri: 'https://upload.wikimedia.org/wikipedia/en/a/ad/Snapchat_logo.svg' }}
-                style={styles.socialIconImage}
-                resizeMode="contain"
-              />
+              <Snapchat size={24} color="#D4AF37" strokeWidth={2} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Image 
-                source={{ uri: 'https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg' }}
-                style={styles.socialIconImage}
-                resizeMode="contain"
-              />
+              <TikTok size={24} color="#D4AF37" strokeWidth={2} />
             </TouchableOpacity>
           </View>
           
