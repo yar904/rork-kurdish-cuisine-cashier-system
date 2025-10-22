@@ -1,8 +1,8 @@
 export const fonts = {
-  regular: 'NotoNaskhArabic_400Regular',
-  medium: 'NotoNaskhArabic_500Medium',
-  semiBold: 'NotoNaskhArabic_700Bold',
-  bold: 'NotoNaskhArabic_700Bold',
+  regular: 'PeshangDes5-Regular',
+  medium: 'PeshangDes5-Regular',
+  semiBold: 'PeshangDes5-Bold',
+  bold: 'PeshangDes5-Bold',
   kurdish: 'PeshangDes5-Regular',
   kurdishBold: 'PeshangDes5-Bold',
 };
