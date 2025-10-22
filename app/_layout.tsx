@@ -6,7 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_500Medium, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
@@ -31,15 +31,11 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    NotoNaskhArabic_400Regular,
-    NotoNaskhArabic_500Medium,
-    NotoNaskhArabic_700Bold,
+    'PeshangDes5-Bold': require('../assets/fonts/Peshang_Des_5_Bold.ttf'),
   });
 
   useEffect(() => {
     if (fontsLoaded) {
-      (Text as any).defaultProps = (Text as any).defaultProps || {};
-      (Text as any).defaultProps.style = { fontFamily: 'NotoNaskhArabic_400Regular' };
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded]);

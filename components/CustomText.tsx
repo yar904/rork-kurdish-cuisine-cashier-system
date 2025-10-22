@@ -1,12 +1,13 @@
-import React from 'react';
-import { Text as RNText, type TextProps, StyleSheet } from 'react-native';
+import { Text as RNText, TextProps } from 'react-native';
 
-export function Text({ style, ...props }: TextProps) {
-  return <RNText style={[styles.defaultFont, style]} {...props} />;
+export function Text(props: TextProps) {
+  return (
+    <RNText
+      {...props}
+      style={[
+        { fontFamily: 'PeshangDes5-Bold' },
+        props.style,
+      ]}
+    />
+  );
 }
-
-const styles = StyleSheet.create({
-  defaultFont: {
-    fontFamily: 'NotoNaskhArabic-Regular',
-  },
-});
