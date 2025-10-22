@@ -2,24 +2,24 @@ import { Platform } from 'react-native';
 
 export const fonts = {
   regular: Platform.select({
-    ios: 'Helvetica Neue',
-    android: 'sans-serif',
-    default: 'Montserrat, "Segoe UI", Roboto, sans-serif',
+    ios: 'System',
+    android: 'sans-serif-medium',
+    default: 'system-ui, -apple-system, sans-serif',
   }),
   medium: Platform.select({
-    ios: 'Helvetica Neue',
-    android: 'sans-serif-medium',
-    default: 'Montserrat, "Segoe UI", Roboto, sans-serif',
+    ios: 'System',
+    android: 'sans-serif-black',
+    default: 'system-ui, -apple-system, sans-serif',
   }),
   semiBold: Platform.select({
-    ios: 'Helvetica Neue',
+    ios: 'System',
     android: 'sans-serif-black',
-    default: 'Montserrat, "Segoe UI", Roboto, sans-serif',
+    default: 'system-ui, -apple-system, sans-serif',
   }),
   bold: Platform.select({
-    ios: 'Helvetica Neue',
+    ios: 'System',
     android: 'sans-serif-black',
-    default: 'Montserrat, "Segoe UI", Roboto, sans-serif',
+    default: 'system-ui, -apple-system, sans-serif',
   }),
 };
 

@@ -7,7 +7,7 @@ interface CustomTextProps extends TextProps {
 
 export function Text({ variant = 'regular', style, ...props }: CustomTextProps) {
   const fontFamily = fonts[variant] || fonts.regular;
-  const fontWeight = variant === 'bold' ? '900' as const : variant === 'semiBold' ? '700' as const : variant === 'medium' ? '600' as const : '500' as const;
+  const fontWeight = variant === 'bold' ? '900' as const : variant === 'semiBold' ? '800' as const : variant === 'medium' ? '700' as const : '600' as const;
   
   return (
     <RNText
