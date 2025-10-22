@@ -136,8 +136,9 @@ export default function CategoryDetailScreen() {
                 <TouchableOpacity 
                   style={styles.modalCloseButton}
                   onPress={() => setSelectedItem(null)}
+                  activeOpacity={0.8}
                 >
-                  <X size={24} color="#1A1A1A" />
+                  <X size={22} color="#FFFFFF" strokeWidth={2.5} />
                 </TouchableOpacity>
 
                 <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
@@ -675,24 +676,29 @@ const styles = StyleSheet.create({
   },
   modalCloseButton: {
     position: 'absolute' as const,
-    top: 24,
-    right: 24,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    top: 16,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#3d0101',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 3px 12px rgba(61, 1, 1, 0.4)',
       },
     }),
   },
