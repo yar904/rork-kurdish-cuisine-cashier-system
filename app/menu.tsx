@@ -45,6 +45,7 @@ export default function PublicMenuScreen() {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
@@ -619,6 +620,123 @@ export default function PublicMenuScreen() {
       </Modal>
 
       <Modal
+        visible={showSearchModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowSearchModal(false)}
+      >
+        <View style={[styles.searchModalContainer, { paddingTop: insets.top }]}>
+          <View style={styles.searchModalHeader}>
+            <TouchableOpacity
+              style={styles.searchModalBackButton}
+              onPress={() => {
+                setShowSearchModal(false);
+                setSearchQuery('');
+              }}
+            >
+              <ArrowLeft size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.searchModalTitle}>
+              {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان بکە' : 'ابحث'}
+            </Text>
+            <TouchableOpacity
+              style={styles.searchModalSearchIcon}
+              onPress={() => {}}
+            >
+              <Search size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.searchModalInputContainer}>
+            <Search size={20} color="rgba(255, 255, 255, 0.7)" style={styles.searchModalInputIcon} />
+            <TextInput
+              style={styles.searchModalInput}
+              placeholder={language === 'en' ? 'Search for dishes...' : language === 'ku' ? 'گەڕان لە خواردن...' : 'ابحث عن الأطباق...'}
+              placeholderTextColor="rgba(255, 255, 255, 0.5)"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+            />
+            {searchQuery !== '' && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                style={styles.searchModalClearButton}
+              >
+                <X size={18} color="rgba(255, 255, 255, 0.7)" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <ScrollView style={styles.searchModalResults} showsVerticalScrollIndicator={false}>
+            {searchQuery === '' ? (
+              <View style={styles.searchModalEmpty}>
+                <Search size={64} color="rgba(255, 255, 255, 0.3)" />
+                <Text style={styles.searchModalEmptyText}>
+                  {language === 'en' ? 'Start typing to search' : language === 'ku' ? 'دەستبکە بە نووسین بۆ گەڕان' : 'ابدأ الكتابة للبحث'}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.searchResultsList}>
+                {MENU_ITEMS.filter((item) => {
+                  const matchesSearch =
+                    getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+                  return matchesSearch && item.available;
+                }).map((item) => {
+                  const itemStats = ratingsStats[item.id];
+                  const hasRatings = itemStats && itemStats.totalRatings > 0;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.searchResultItem}
+                      onPress={() => {
+                        setSelectedItem(item);
+                        setItemQuantity(1);
+                        setItemNotes('');
+                        setShowSearchModal(false);
+                        setSearchQuery('');
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.searchResultItemContent}>
+                        <View style={styles.searchResultItemInfo}>
+                          <Text style={styles.searchResultItemName} numberOfLines={2}>
+                            {getItemName(item)}
+                          </Text>
+                          {hasRatings && (
+                            <View style={styles.searchResultRatingBadge}>
+                              <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                              <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+                
+                {MENU_ITEMS.filter((item) => {
+                  const matchesSearch =
+                    getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+                  return matchesSearch && item.available;
+                }).length === 0 && (
+                  <View style={styles.searchModalEmpty}>
+                    <Search size={64} color="rgba(255, 255, 255, 0.3)" />
+                    <Text style={styles.searchModalEmptyText}>
+                      {t('noItemsFound')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
         visible={showRatingModal}
         animationType="slide"
         transparent={true}
@@ -806,16 +924,7 @@ export default function PublicMenuScreen() {
           
           <TouchableOpacity
             style={styles.iconItem}
-            onPress={() => {
-              const toValue = showSearch ? 0 : 1;
-              setShowSearch(!showSearch);
-              Animated.spring(searchSlideAnim, {
-                toValue,
-                useNativeDriver: true,
-                damping: 15,
-                stiffness: 120,
-              }).start();
-            }}
+            onPress={() => setShowSearchModal(true)}
             activeOpacity={0.7}
           >
             <View style={styles.iconCircle}>
@@ -2367,5 +2476,127 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginTop: 16,
     textAlign: 'center' as const,
+  },
+  searchModalContainer: {
+    flex: 1,
+    backgroundColor: '#8B5A2B',
+  },
+  searchModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#8B5A2B',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  searchModalBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchModalTitle: {
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center' as const,
+    marginHorizontal: 12,
+  },
+  searchModalSearchIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchModalInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    height: 50,
+  },
+  searchModalInputIcon: {
+    marginRight: 12,
+  },
+  searchModalInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '400' as const,
+  },
+  searchModalClearButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  searchModalResults: {
+    flex: 1,
+  },
+  searchModalEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 120,
+  },
+  searchModalEmptyText: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginTop: 16,
+    textAlign: 'center' as const,
+  },
+  searchResultsList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  searchResultItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  searchResultItemContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  searchResultItemInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  searchResultItemName: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#FFFFFF',
+    marginBottom: 6,
+    lineHeight: 24,
+  },
+  searchResultItemPrice: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
+  searchResultRatingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  searchResultRatingText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#D4AF37',
   },
 });
