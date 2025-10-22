@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
-    direction: 'ltr' as const,
+    writingDirection: 'ltr' as const,
     ...Platform.select({
       web: {
         maxWidth: 600,
