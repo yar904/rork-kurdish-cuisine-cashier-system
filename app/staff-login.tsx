@@ -47,7 +47,7 @@ export default function StaffLoginScreen() {
 
     if (result.success) {
       setPassword('');
-      if (result.role === 'admin') {
+      if (result.role === 'admin' || result.role === 'manager') {
         router.replace('/(tabs)/admin');
       } else {
         router.replace('/(tabs)/cashier');
@@ -139,7 +139,8 @@ export default function StaffLoginScreen() {
 
             <View style={styles.infoContainer}>
               <Text style={styles.infoText}>Staff: Kitchen, Cashier, Waiter, Analytics</Text>
-              <Text style={styles.infoText}>Admin: All permissions + Admin panel</Text>
+              <Text style={styles.infoText}>Manager: Table Management, Reports & QR Codes</Text>
+              <Text style={styles.infoText}>Super Admin: Full system access</Text>
             </View>
           </View>
         </View>

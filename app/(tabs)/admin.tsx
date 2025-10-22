@@ -171,7 +171,7 @@ export default function AdminScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - Admin`,
+        title: `${t('restaurantName')} - ${user.role === 'admin' ? 'Super Admin' : 'Manager'}`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerRight: () => (
@@ -344,104 +344,192 @@ export default function AdminScreen() {
           <Text style={styles.legendHint}>Long press on table to change status</Text>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Shield size={24} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>Access Credentials</Text>
-          </View>
+        {user.role === 'admin' && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Shield size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>Access Credentials</Text>
+            </View>
 
-          <View style={styles.credentialsContainer}>
-            <View style={styles.credentialCard}>
-              <View style={styles.credentialHeader}>
-                <Shield size={20} color={Colors.warning} />
-                <Text style={styles.credentialRole}>Admin Access</Text>
+            <View style={styles.credentialsContainer}>
+              <View style={styles.credentialCard}>
+                <View style={styles.credentialHeader}>
+                  <Shield size={20} color={Colors.warning} />
+                  <Text style={styles.credentialRole}>Super Admin Access</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowPasswords(!showPasswords)}
+                    style={styles.eyeButton}
+                  >
+                    {showPasswords ? <EyeOff size={18} color={Colors.textSecondary} /> : <Eye size={18} color={Colors.textSecondary} />}
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.credentialContent}>
+                  <Text style={styles.credentialLabel}>Password:</Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      value="farman12"
+                      secureTextEntry={!showPasswords}
+                      editable={false}
+                      selectTextOnFocus
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (Platform.OS === 'web') {
+                          navigator.clipboard.writeText('farman12');
+                          Alert.alert('Copied', 'Admin password copied to clipboard');
+                        } else {
+                          Alert.alert('Admin Password', 'farman12');
+                        }
+                      }}
+                      style={styles.copyButton}
+                    >
+                      <Text style={styles.copyButtonText}>Copy</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={styles.credentialDescription}>
+                  Full access to all features, reports, and system settings
+                </Text>
+              </View>
+
+              <View style={styles.credentialCard}>
+                <View style={styles.credentialHeader}>
+                  <Shield size={20} color={Colors.success} />
+                  <Text style={styles.credentialRole}>Manager Access</Text>
+                </View>
+                <View style={styles.credentialContent}>
+                  <Text style={styles.credentialLabel}>Password:</Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      value="manager99"
+                      secureTextEntry={!showPasswords}
+                      editable={false}
+                      selectTextOnFocus
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (Platform.OS === 'web') {
+                          navigator.clipboard.writeText('manager99');
+                          Alert.alert('Copied', 'Manager password copied to clipboard');
+                        } else {
+                          Alert.alert('Manager Password', 'manager99');
+                        }
+                      }}
+                      style={styles.copyButton}
+                    >
+                      <Text style={styles.copyButtonText}>Copy</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={styles.credentialDescription}>
+                  Access to Table Management, Reports & QR Codes
+                </Text>
+              </View>
+
+              <View style={styles.credentialCard}>
+                <View style={styles.credentialHeader}>
+                  <Users size={20} color={Colors.info} />
+                  <Text style={styles.credentialRole}>Staff Access</Text>
+                </View>
+                <View style={styles.credentialContent}>
+                  <Text style={styles.credentialLabel}>Password:</Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      value="123tapse"
+                      secureTextEntry={!showPasswords}
+                      editable={false}
+                      selectTextOnFocus
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (Platform.OS === 'web') {
+                          navigator.clipboard.writeText('123tapse');
+                          Alert.alert('Copied', 'Staff password copied to clipboard');
+                        } else {
+                          Alert.alert('Staff Password', '123tapse');
+                        }
+                      }}
+                      style={styles.copyButton}
+                    >
+                      <Text style={styles.copyButtonText}>Copy</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={styles.credentialDescription}>
+                  Access to Kitchen, Cashier, Waiter, and Analytics
+                </Text>
+              </View>
+
+              <View style={styles.currentUserBadge}>
+                <Text style={styles.currentUserText}>
+                  Currently logged in as: <Text style={styles.currentUserRole}>Super Admin</Text>
+                </Text>
                 <TouchableOpacity
-                  onPress={() => setShowPasswords(!showPasswords)}
-                  style={styles.eyeButton}
+                  style={styles.logoutButtonInline}
+                  onPress={handleLogout}
+                  activeOpacity={0.7}
                 >
-                  {showPasswords ? <EyeOff size={18} color={Colors.textSecondary} /> : <Eye size={18} color={Colors.textSecondary} />}
+                  <LogOut size={18} color="#fff" />
+                  <Text style={styles.logoutButtonInlineText}>Logout</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.credentialContent}>
-                <Text style={styles.credentialLabel}>Password:</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    value="farman12"
-                    secureTextEntry={!showPasswords}
-                    editable={false}
-                    selectTextOnFocus
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (Platform.OS === 'web') {
-                        navigator.clipboard.writeText('farman12');
-                        Alert.alert('Copied', 'Admin password copied to clipboard');
-                      } else {
-                        Alert.alert('Admin Password', 'farman12');
-                      }
-                    }}
-                    style={styles.copyButton}
-                  >
-                    <Text style={styles.copyButtonText}>Copy</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Text style={styles.credentialDescription}>
-                Full access to all features, reports, and settings
-              </Text>
-            </View>
-
-            <View style={styles.credentialCard}>
-              <View style={styles.credentialHeader}>
-                <Users size={20} color={Colors.info} />
-                <Text style={styles.credentialRole}>Staff Access</Text>
-              </View>
-              <View style={styles.credentialContent}>
-                <Text style={styles.credentialLabel}>Password:</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    value="123tapse"
-                    secureTextEntry={!showPasswords}
-                    editable={false}
-                    selectTextOnFocus
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (Platform.OS === 'web') {
-                        navigator.clipboard.writeText('123tapse');
-                        Alert.alert('Copied', 'Staff password copied to clipboard');
-                      } else {
-                        Alert.alert('Staff Password', '123tapse');
-                      }
-                    }}
-                    style={styles.copyButton}
-                  >
-                    <Text style={styles.copyButtonText}>Copy</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Text style={styles.credentialDescription}>
-                Access to Kitchen, Cashier, Waiter, and Analytics
-              </Text>
-            </View>
-
-            <View style={styles.currentUserBadge}>
-              <Text style={styles.currentUserText}>
-                Currently logged in as: <Text style={styles.currentUserRole}>{user.role === 'admin' ? 'Admin' : 'Staff'}</Text>
-              </Text>
-              <TouchableOpacity
-                style={styles.logoutButtonInline}
-                onPress={handleLogout}
-                activeOpacity={0.7}
-              >
-                <LogOut size={18} color="#fff" />
-                <Text style={styles.logoutButtonInlineText}>Logout</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </View>
+        )}
+
+        {user.role === 'manager' && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Shield size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>Your Access Level</Text>
+            </View>
+
+            <View style={styles.credentialsContainer}>
+              <View style={styles.managerInfoCard}>
+                <Shield size={40} color={Colors.success} />
+                <Text style={styles.managerInfoTitle}>Restaurant Manager</Text>
+                <Text style={styles.managerInfoDescription}>
+                  You have access to table management, QR code generation, order receipts, and reports.
+                </Text>
+                <View style={styles.managerPermissions}>
+                  <View style={styles.permissionItem}>
+                    <CheckCircle size={16} color={Colors.success} />
+                    <Text style={styles.permissionText}>Table Management</Text>
+                  </View>
+                  <View style={styles.permissionItem}>
+                    <CheckCircle size={16} color={Colors.success} />
+                    <Text style={styles.permissionText}>QR Code Generation</Text>
+                  </View>
+                  <View style={styles.permissionItem}>
+                    <CheckCircle size={16} color={Colors.success} />
+                    <Text style={styles.permissionText}>Reports & Analytics</Text>
+                  </View>
+                  <View style={styles.permissionItem}>
+                    <CheckCircle size={16} color={Colors.success} />
+                    <Text style={styles.permissionText}>Export Data</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.currentUserBadge}>
+                <Text style={styles.currentUserText}>
+                  Currently logged in as: <Text style={styles.currentUserRole}>Restaurant Manager</Text>
+                </Text>
+                <TouchableOpacity
+                  style={styles.logoutButtonInline}
+                  onPress={handleLogout}
+                  activeOpacity={0.7}
+                >
+                  <LogOut size={18} color="#fff" />
+                  <Text style={styles.logoutButtonInlineText}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -944,6 +1032,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  managerInfoCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 2,
+    borderColor: Colors.success,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.success,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  managerInfoTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  managerInfoDescription: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  managerPermissions: {
+    width: '100%',
+    gap: 12,
+    marginTop: 8,
+  },
+  permissionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  permissionText: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: Colors.text,
   },
   exportGrid: {
     flexDirection: 'row',

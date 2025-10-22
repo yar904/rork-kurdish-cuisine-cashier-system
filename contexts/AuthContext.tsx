@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type UserRole = 'guest' | 'staff' | 'admin';
+export type UserRole = 'guest' | 'staff' | 'manager' | 'admin';
 
 interface User {
   role: UserRole;
@@ -13,6 +13,7 @@ const AUTH_STORAGE_KEY = '@tapse_auth';
 
 const ROLE_PASSWORDS = {
   staff: '123tapse',
+  manager: 'manager99',
   admin: 'farman12',
 };
 
@@ -47,6 +48,11 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
       setUser(newUser);
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
       return { success: true, role: 'admin' };
+    } else if (password === ROLE_PASSWORDS.manager) {
+      const newUser: User = { role: 'manager', authenticated: true };
+      setUser(newUser);
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
+      return { success: true, role: 'manager' };
     } else if (password === ROLE_PASSWORDS.staff) {
       const newUser: User = { role: 'staff', authenticated: true };
       setUser(newUser);
@@ -67,6 +73,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     if (!user.authenticated) return false;
     if (requiredRole === 'guest') return true;
     if (user.role === 'admin') return true;
+    if (user.role === 'manager' && (requiredRole === 'manager' || requiredRole === 'staff')) return true;
     if (requiredRole === 'staff' && user.role === 'staff') return true;
     return false;
   }, [user]);
