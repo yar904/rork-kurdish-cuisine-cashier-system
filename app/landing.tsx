@@ -7,7 +7,6 @@ import {
   ImageBackground,
   ActivityIndicator,
   Platform,
-  Image,
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
@@ -135,7 +134,7 @@ export default function LandingPage() {
             </View>
           )}
 
-          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 20 }]}>
+          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
             <TouchableOpacity
               style={styles.menuButton}
               onPress={handleContinue}
@@ -144,45 +143,31 @@ export default function LandingPage() {
               <Text style={styles.menuButtonText}>{getMenuText()}</Text>
             </TouchableOpacity>
 
-            <View style={styles.footerSection}>
-              <Image 
-                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
-                style={styles.footerLogoBottom}
-                resizeMode="contain"
-              />
-              <Text style={styles.footerTitleBottom}>تەپسی سلێمانی</Text>
-              <View style={styles.footerDividerBottom} />
-              <View style={styles.footerTextContainer}>
-                <Text style={styles.footerTextBottom}>Thank you for visiting!</Text>
-                <Text style={styles.footerTextBottom}>سوپاس بۆ سەردانیکردنتان</Text>
-                <Text style={styles.footerTextBottom}>شكراً لزيارتكم</Text>
-              </View>
-              <View style={styles.socialContainer}>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                >
-                  <Instagram size={22} color={Colors.gold} strokeWidth={1.8} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                >
-                  <MessageCircle size={22} color={Colors.gold} strokeWidth={1.8} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                >
-                  <Music size={22} color={Colors.gold} strokeWidth={1.8} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  activeOpacity={0.7}
-                >
-                  <Send size={22} color={Colors.gold} strokeWidth={1.8} />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.socialContainer}>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Instagram size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <MessageCircle size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Music size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                activeOpacity={0.7}
+              >
+                <Send size={22} color={Colors.gold} strokeWidth={1.8} />
+              </TouchableOpacity>
             </View>
           </View>
         </LinearGradient>
@@ -293,8 +278,8 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     alignItems: 'center',
-    paddingHorizontal: 24,
-    gap: 24,
+    paddingHorizontal: 32,
+    gap: 20,
   },
   titleContainer: {
     alignItems: 'center',
@@ -334,7 +319,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-    marginBottom: 24,
   },
   menuButtonText: {
     fontFamily: fonts.kurdishBold,
@@ -343,47 +327,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1,
   },
-  footerSection: {
-    width: '100%',
-    backgroundColor: Colors.primary,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderTopWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-    alignItems: 'center',
-  },
-  footerLogoBottom: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
-  },
-  footerTitleBottom: {
-    fontFamily: fonts.kurdishBold,
-    fontSize: 20,
-    color: '#FFFFFF',
-    marginBottom: 12,
-    letterSpacing: 0.5,
-  },
-  footerDividerBottom: {
-    width: 50,
-    height: 2,
-    backgroundColor: Colors.gold,
-    marginBottom: 12,
-    borderRadius: 1,
-  },
-  footerTextContainer: {
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 20,
-  },
-  footerTextBottom: {
-    fontFamily: fonts.kurdish,
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center' as const,
-  },
   socialContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -391,7 +334,7 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     padding: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    backgroundColor: 'rgba(61, 1, 1, 0.5)',
     borderRadius: 50,
     borderWidth: 1,
     borderColor: Colors.gold + '40',
