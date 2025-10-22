@@ -7,6 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   Platform,
+  ScrollView,
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
@@ -100,6 +101,11 @@ export default function LandingPage() {
           colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
           style={styles.overlay}
         >
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
           <View style={[styles.topBar, { paddingTop: insets.top + 16 }]}>
             <TouchableOpacity 
               style={styles.languageButton}
@@ -143,48 +149,51 @@ export default function LandingPage() {
             </View>
           )}
 
-          <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 32 }]}>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={handleContinue}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.menuButtonText}>{getMenuText()}</Text>
-            </TouchableOpacity>
+            <View style={styles.spacer} />
+            
+            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={handleContinue}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.menuButtonText}>{getMenuText()}</Text>
+              </TouchableOpacity>
 
-            <View style={styles.socialContainer}>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                activeOpacity={0.7}
-              >
-                <Instagram size={22} color={Colors.gold} strokeWidth={1.8} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                activeOpacity={0.7}
-              >
-                <MessageCircle size={22} color={Colors.gold} strokeWidth={1.8} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                activeOpacity={0.7}
-              >
-                <Music size={22} color={Colors.gold} strokeWidth={1.8} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                activeOpacity={0.7}
-              >
-                <Send size={22} color={Colors.gold} strokeWidth={1.8} />
-              </TouchableOpacity>
-            </View>
+              <View style={styles.socialContainer}>
+                <TouchableOpacity 
+                  style={styles.socialButton}
+                  activeOpacity={0.7}
+                >
+                  <Instagram size={20} color={Colors.gold} strokeWidth={1.8} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.socialButton}
+                  activeOpacity={0.7}
+                >
+                  <MessageCircle size={20} color={Colors.gold} strokeWidth={1.8} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.socialButton}
+                  activeOpacity={0.7}
+                >
+                  <Music size={20} color={Colors.gold} strokeWidth={1.8} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.socialButton}
+                  activeOpacity={0.7}
+                >
+                  <Send size={20} color={Colors.gold} strokeWidth={1.8} />
+                </TouchableOpacity>
+              </View>
 
-            <View style={styles.footerContainer}>
-              <Text style={styles.footerText}>
-                {translations[selectedLang].footerText}
-              </Text>
+              <View style={styles.footerContainer}>
+                <Text style={styles.footerText}>
+                  {translations[selectedLang].footerText}
+                </Text>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </LinearGradient>
       </View>
     </View>
@@ -222,7 +231,18 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'space-between',
+    minHeight: '100%',
+  },
+  spacer: {
+    flex: 1,
+    minHeight: 100,
   },
   loadingContainer: {
     flex: 1,
@@ -366,23 +386,35 @@ const styles = StyleSheet.create({
   },
   socialContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
   },
   socialButton: {
-    padding: 12,
-    backgroundColor: 'rgba(61, 1, 1, 0.5)',
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: Colors.gold + '40',
+    width: 52,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(61, 1, 1, 0.6)',
+    borderRadius: 26,
+    borderWidth: 1.5,
+    borderColor: Colors.gold + '50',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   footerContainer: {
-    marginTop: 28,
-    paddingTop: 20,
+    marginTop: 32,
+    paddingTop: 24,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: Colors.gold + '30',
     alignItems: 'center',
     gap: 8,
+    width: '100%',
   },
   footerText: {
     fontFamily: fonts.regular,
