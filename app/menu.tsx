@@ -18,7 +18,7 @@ import {
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
-import { MessageCircle as WhatsApp, Camera as Snapchat, Music as TikTok, Instagram } from 'lucide-react-native';
+
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -1147,21 +1147,6 @@ export default function PublicMenuScreen() {
           />
           <Text style={styles.footerTitle}>تەپسی سلێمانی</Text>
           <View style={styles.footerDivider} />
-          
-          <View style={styles.socialIconsRow}>
-            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Instagram size={24} color="#D4AF37" strokeWidth={2} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <WhatsApp size={24} color="#D4AF37" strokeWidth={2} fill="#D4AF37" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <Snapchat size={24} color="#D4AF37" strokeWidth={2} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
-              <TikTok size={24} color="#D4AF37" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
           
           <Text style={styles.footerText}>
             {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
@@ -2314,28 +2299,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     lineHeight: 22,
   },
-  socialIconsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    marginTop: 16,
-  },
-  socialIconButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-  },
-  socialIconImage: {
-    width: 22,
-    height: 22,
-    tintColor: '#D4AF37',
-  },
+
   footerDivider: {
     width: 60,
     height: 2,

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { Instagram, Globe, MessageCircle, Music, Send, Settings } from 'lucide-react-native';
+import { Globe, Settings } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -159,33 +159,6 @@ export default function LandingPage() {
               >
                 <Text style={styles.menuButtonText}>{getMenuText()}</Text>
               </TouchableOpacity>
-
-              <View style={styles.socialContainer}>
-                <TouchableOpacity 
-                  style={[styles.socialButton, styles.instagramButton]}
-                  activeOpacity={0.7}
-                >
-                  <Instagram size={22} color="#FFFFFF" strokeWidth={2} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialButton, styles.whatsappButton]}
-                  activeOpacity={0.7}
-                >
-                  <MessageCircle size={22} color="#FFFFFF" strokeWidth={2} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialButton, styles.tiktokButton]}
-                  activeOpacity={0.7}
-                >
-                  <Music size={22} color="#FFFFFF" strokeWidth={2} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialButton, styles.snapchatButton]}
-                  activeOpacity={0.7}
-                >
-                  <Send size={22} color="#000000" strokeWidth={2} />
-                </TouchableOpacity>
-              </View>
 
               <View style={styles.footerContainer}>
                 <Text style={styles.footerText}>
@@ -384,39 +357,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1,
   },
-  socialContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  socialButton: {
-    width: 52,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 26,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  instagramButton: {
-    backgroundColor: '#E4405F',
-  },
-  whatsappButton: {
-    backgroundColor: '#25D366',
-  },
-  tiktokButton: {
-    backgroundColor: '#000000',
-    borderWidth: 1.5,
-    borderColor: '#00F2EA',
-  },
-  snapchatButton: {
-    backgroundColor: '#FFFC00',
-  },
+
   footerContainer: {
     marginTop: 32,
     paddingTop: 24,
