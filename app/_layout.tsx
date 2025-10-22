@@ -6,8 +6,14 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { Text, View, ActivityIndicator } from 'react-native';
 
 const queryClient = new QueryClient();
+
+SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   return (
@@ -24,6 +30,30 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'PeshangDes5-Regular': require('../assets/fonts/Peshang_Des_5_Regular.ttf'),
+    'PeshangDes5-Bold': require('../assets/fonts/Peshang_Des_5_Bold.ttf'),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (Text.defaultProps) {
+      Text.defaultProps.style = { fontFamily: 'PeshangDes5-Regular' };
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
