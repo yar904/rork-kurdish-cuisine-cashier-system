@@ -1,68 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Mic, X, CheckCircle } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio';
 import { Colors } from '@/constants/colors';
-import { useLanguage } from '@/contexts/LanguageContext';
+
 
 interface VoiceOrderButtonProps {
   onTranscript: (text: string) => void;
 }
 
 export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps) {
-  const { t } = useLanguage();
-  const [isRecording, setIsRecording] = useState(false);
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [transcript, setTranscript] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      AudioModule.requestRecordingPermissionsAsync().catch(console.error);
+    }
+  }, []);
+
   const startRecordingMobile = async () => {
     try {
-      console.log('Requesting permissions...');
-      const permission = await Audio.requestPermissionsAsync();
-      
-      if (!permission.granted) {
-        alert('Permission to access microphone is required!');
-        return;
-      }
-
-      console.log('Setting audio mode...');
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
       console.log('Starting recording...');
-      const { recording: newRecording } = await Audio.Recording.createAsync({
-        android: {
-          extension: '.m4a',
-          outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-          audioEncoder: Audio.AndroidAudioEncoder.AAC,
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitRate: 128000,
-        },
-        ios: {
-          extension: '.wav',
-          outputFormat: Audio.IOSOutputFormat.LINEARPCM,
-          audioQuality: Audio.IOSAudioQuality.HIGH,
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitRate: 128000,
-          linearPCMBitDepth: 16,
-          linearPCMIsBigEndian: false,
-          linearPCMIsFloat: false,
-        },
-        web: {
-          mimeType: 'audio/webm',
-          bitsPerSecond: 128000,
-        },
-      });
-
-      setRecording(newRecording);
-      setIsRecording(true);
+      await recorder.record();
       console.log('Recording started');
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -71,23 +34,18 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
   };
 
   const stopRecordingMobile = async () => {
-    if (!recording) return;
-
-    console.log('Stopping recording...');
-    setIsRecording(false);
-    await recording.stopAndUnloadAsync();
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-    });
-
-    const uri = recording.getURI();
-    console.log('Recording stopped, stored at', uri);
-    
-    if (uri) {
-      await processAudio(uri);
+    try {
+      console.log('Stopping recording...');
+      await recorder.stop();
+      const uri = recorder.uri;
+      console.log('Recording stopped, stored at', uri);
+      
+      if (uri) {
+        await processAudio(uri);
+      }
+    } catch (err) {
+      console.error('Failed to stop recording', err);
     }
-    
-    setRecording(null);
   };
 
   const startRecordingWeb = async () => {
@@ -108,7 +66,6 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
 
       recorder.start();
       setMediaRecorder(recorder);
-      setIsRecording(true);
       console.log('Web recording started');
     } catch (err) {
       console.error('Failed to start web recording', err);
@@ -120,7 +77,6 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
     if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
       setMediaRecorder(null);
-      setIsRecording(false);
       console.log('Web recording stopped');
     }
   };
@@ -195,6 +151,10 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
   };
 
   const handlePress = async () => {
+    const isRecording = Platform.OS === 'web' 
+      ? mediaRecorder?.state === 'recording'
+      : recorder.isRecording;
+      
     if (isRecording) {
       if (Platform.OS === 'web') {
         stopRecordingWeb();
@@ -215,7 +175,7 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
       <TouchableOpacity
         style={[
           styles.button,
-          isRecording && styles.buttonRecording,
+          (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : recorder.isRecording) && styles.buttonRecording,
           isProcessing && styles.buttonDisabled,
         ]}
         onPress={handlePress}
@@ -227,7 +187,7 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
           <Mic size={20} color="#fff" />
         )}
         <Text style={styles.buttonText}>
-          {isProcessing ? 'Processing...' : isRecording ? 'Stop Recording' : 'Voice Order'}
+          {isProcessing ? 'Processing...' : (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : recorder.isRecording) ? 'Stop Recording' : 'Voice Order'}
         </Text>
       </TouchableOpacity>
 

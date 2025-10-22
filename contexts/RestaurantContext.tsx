@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import { Audio } from 'expo-av';
+
 import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -63,30 +63,9 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const [selectedTable, setSelectedTable] = useState<number>(1);
   const [readyNotification, setReadyNotification] = useState<string | null>(null);
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
-  const soundRefs = useRef<{ [key: string]: Audio.Sound }>({});
 
-  useEffect(() => {
-    const loadSounds = async () => {
-      if (Platform.OS === 'web') return;
-      
-      try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-        });
-      } catch (error) {
-        console.log('Error setting audio mode:', error);
-      }
-    };
-    
-    loadSounds();
-    
-    return () => {
-      Object.values(soundRefs.current).forEach(sound => {
-        sound.unloadAsync().catch(console.error);
-      });
-    };
-  }, []);
+
+
 
   const playSound = useCallback(async (soundType: 'new' | 'ready' | 'paid') => {
     if (Platform.OS === 'web') {
@@ -134,24 +113,8 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       return;
     }
 
-    try {
-      const { sound } = await Audio.Sound.createAsync(
-        soundType === 'new' 
-          ? { uri: 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3' }
-          : soundType === 'ready'
-          ? { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' }
-          : { uri: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3' },
-        { shouldPlay: true, volume: 0.5 }
-      );
-      
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync().catch(console.error);
-        }
-      });
-    } catch (error) {
-      console.log(`Error playing ${soundType} sound:`, error);
-    }
+    console.log(`Playing ${soundType} sound on mobile is not implemented in this version`);
+    console.log('You can play sounds using useAudioPlayer hook at the component level');
   }, []);
 
   useEffect(() => {
