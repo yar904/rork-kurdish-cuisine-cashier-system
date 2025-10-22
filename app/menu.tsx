@@ -1926,7 +1926,7 @@ const styles = StyleSheet.create({
   },
   tableCard: {
     width: 90,
-    height: 100,
+    height: 90,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden' as const,
