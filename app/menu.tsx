@@ -166,12 +166,16 @@ export default function PublicMenuScreen() {
   const categories = [
     { id: 'appetizers', nameKu: 'دەستپێکەکان', nameEn: 'Starters', nameAr: 'مقبلات' },
     { id: 'soups', nameKu: 'سوپەکان', nameEn: 'Soups', nameAr: 'شوربات' },
-    { id: 'kebabs', nameKu: 'کەبابەکان', nameEn: 'Main Courses', nameAr: 'أطباق رئيسية' },
+    { id: 'salads', nameKu: 'زەڵاتە', nameEn: 'Salads', nameAr: 'سلطات' },
+    { id: 'kebabs', nameKu: 'کەبابەکان', nameEn: 'Kebabs', nameAr: 'كباب' },
+    { id: 'rice-dishes', nameKu: 'خواردنی برنج', nameEn: 'Rice Dishes', nameAr: 'أطباق أرز' },
+    { id: 'stews', nameKu: 'خۆراک', nameEn: 'Stews', nameAr: 'يخنات' },
+    { id: 'seafood', nameKu: 'ماسی', nameEn: 'Seafood', nameAr: 'مأكولات بحرية' },
+    { id: 'breads', nameKu: 'نان', nameEn: 'Breads', nameAr: 'خبز' },
     { id: 'desserts', nameKu: 'خواردنی شیرین', nameEn: 'Desserts', nameAr: 'حلويات' },
     { id: 'hot-drinks', nameKu: 'چا و قاوە', nameEn: 'Tea & Coffee', nameAr: 'شاي وقهوة' },
     { id: 'drinks', nameKu: 'خواردنی سارد', nameEn: 'Cold Beverages', nameAr: 'مشروبات باردة' },
     { id: 'shisha', nameKu: 'شیەشە', nameEn: 'Shisha', nameAr: 'شيشة' },
-    { id: 'rice-dishes', nameKu: 'زیادکراوەکان', nameEn: 'Extras', nameAr: 'إضافات' },
   ];
 
   const availableCategories = categories.filter((category) => {
