@@ -164,7 +164,7 @@ export default function PublicMenuScreen() {
   };
 
   const categories = [
-    { id: 'appetizers', nameKu: 'دەستپێکەکان', nameEn: 'Starters', nameAr: 'مقبلات' },
+    { id: 'appetizers', nameKu: 'دەستپێکەکان', nameEn: 'Appetizers', nameAr: 'مقبلات' },
     { id: 'soups', nameKu: 'سوپەکان', nameEn: 'Soups', nameAr: 'شوربات' },
     { id: 'salads', nameKu: 'زەڵاتە', nameEn: 'Salads', nameAr: 'سلطات' },
     { id: 'kebabs', nameKu: 'کەبابەکان', nameEn: 'Kebabs', nameAr: 'كباب' },
@@ -174,7 +174,7 @@ export default function PublicMenuScreen() {
     { id: 'breads', nameKu: 'نان', nameEn: 'Breads', nameAr: 'خبز' },
     { id: 'desserts', nameKu: 'خواردنی شیرین', nameEn: 'Desserts', nameAr: 'حلويات' },
     { id: 'hot-drinks', nameKu: 'چا و قاوە', nameEn: 'Tea & Coffee', nameAr: 'شاي وقهوة' },
-    { id: 'drinks', nameKu: 'خواردنی سارد', nameEn: 'Cold Beverages', nameAr: 'مشروبات باردة' },
+    { id: 'drinks', nameKu: 'خواردنی سارد', nameEn: 'Cold Drinks', nameAr: 'مشروبات باردة' },
     { id: 'shisha', nameKu: 'شیەشە', nameEn: 'Shisha', nameAr: 'شيشة' },
   ];
 
@@ -1211,6 +1211,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(61, 1, 1, 0.2)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
+    paddingBottom: 8,
     ...Platform.select({
       web: {
         backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
@@ -1266,7 +1267,7 @@ const styles = StyleSheet.create({
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 90,
+    height: 110,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
   },
@@ -1276,26 +1277,28 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(61, 1, 1, 0.1)',
+    backgroundColor: 'rgba(61, 1, 1, 0.08)',
   },
 
   categoryCardFooter: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#FFFFFF',
     width: '100%',
-    minHeight: 44,
+    minHeight: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(61, 1, 1, 0.1)',
   },
   categoryCardTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '800' as const,
-    color: '#FFFFFF',
+    fontWeight: '700' as const,
+    color: '#3d0101',
     textAlign: 'center' as const,
-    letterSpacing: 0.3,
-    lineHeight: 20,
+    letterSpacing: 0.2,
+    lineHeight: 18,
   },
   menuSections: {
     paddingTop: 24,
