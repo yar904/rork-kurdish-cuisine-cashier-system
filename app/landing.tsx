@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { Instagram, Globe, MessageCircle, Music, Send } from 'lucide-react-native';
+import { Instagram, Globe, MessageCircle, Music, Send, Settings } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -109,6 +109,15 @@ export default function LandingPage() {
               <Globe size={20} color="#FFFFFF" strokeWidth={2} />
               <Text style={styles.languageButtonText}>{currentLanguage?.label}</Text>
             </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.staffButton}
+              onPress={() => router.push('/staff-login')}
+              activeOpacity={0.7}
+            >
+              <Settings size={20} color="#FFFFFF" strokeWidth={2} />
+              <Text style={styles.staffButtonText}>Staff</Text>
+            </TouchableOpacity>
           </View>
 
           {showLanguages && (
@@ -203,7 +212,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   videoPlaceholderSubtext: {
-    fontFamily: fonts.kurdishBold,
+    fontFamily: fonts.bold,
     fontSize: 18,
     color: Colors.gold,
     letterSpacing: 2,
@@ -223,7 +232,7 @@ const styles = StyleSheet.create({
   },
   topBar: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     zIndex: 10,
   },
@@ -244,7 +253,29 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   languageButtonText: {
-    fontFamily: fonts.kurdish,
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  staffButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(61, 1, 1, 0.75)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.gold + '40',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  staffButtonText: {
+    fontFamily: fonts.regular,
     fontSize: 14,
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -274,12 +305,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold + '20',
   },
   languageOptionText: {
-    fontFamily: fonts.kurdish,
+    fontFamily: fonts.regular,
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.9)',
   },
   languageOptionTextActive: {
-    fontFamily: fonts.kurdishBold,
+    fontFamily: fonts.bold,
     color: Colors.gold,
   },
   bottomSection: {
@@ -293,7 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   restaurantName: {
-    fontFamily: fonts.kurdishBold,
+    fontFamily: fonts.bold,
     fontSize: 40,
     color: Colors.gold,
     textAlign: 'center',
@@ -327,7 +358,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   menuButtonText: {
-    fontFamily: fonts.kurdishBold,
+    fontFamily: fonts.bold,
     fontSize: 20,
     color: Colors.gold,
     textAlign: 'center',
@@ -362,7 +393,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   footerTagline: {
-    fontFamily: fonts.kurdishBold,
+    fontFamily: fonts.bold,
     fontSize: 12,
     color: Colors.gold,
     textAlign: 'center',
