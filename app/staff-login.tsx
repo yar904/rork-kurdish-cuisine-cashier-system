@@ -137,11 +137,7 @@ export default function StaffLoginScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>Staff: Kitchen, Cashier, Waiter, Analytics</Text>
-              <Text style={styles.infoText}>Manager: Table Management, Reports & QR Codes</Text>
-              <Text style={styles.infoText}>Super Admin: Full system access</Text>
-            </View>
+
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -272,21 +268,5 @@ const styles = StyleSheet.create({
   loginButtonTextTablet: {
     fontSize: 20,
   },
-  infoContainer: {
-    marginTop: 16,
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.2)',
-    gap: 8,
-  },
-  infoText: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: Colors.cream,
-    opacity: 0.7,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
+
 });

@@ -162,28 +162,28 @@ export default function LandingPage() {
 
               <View style={styles.socialContainer}>
                 <TouchableOpacity 
-                  style={styles.socialButton}
+                  style={[styles.socialButton, styles.instagramButton]}
                   activeOpacity={0.7}
                 >
-                  <Instagram size={20} color={Colors.gold} strokeWidth={1.8} />
+                  <Instagram size={22} color="#FFFFFF" strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.socialButton}
+                  style={[styles.socialButton, styles.whatsappButton]}
                   activeOpacity={0.7}
                 >
-                  <MessageCircle size={20} color={Colors.gold} strokeWidth={1.8} />
+                  <MessageCircle size={22} color="#FFFFFF" strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.socialButton}
+                  style={[styles.socialButton, styles.tiktokButton]}
                   activeOpacity={0.7}
                 >
-                  <Music size={20} color={Colors.gold} strokeWidth={1.8} />
+                  <Music size={22} color="#FFFFFF" strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.socialButton}
+                  style={[styles.socialButton, styles.snapchatButton]}
                   activeOpacity={0.7}
                 >
-                  <Send size={20} color={Colors.gold} strokeWidth={1.8} />
+                  <Send size={22} color="#000000" strokeWidth={2} />
                 </TouchableOpacity>
               </View>
 
@@ -396,15 +396,26 @@ const styles = StyleSheet.create({
     height: 52,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(61, 1, 1, 0.6)',
     borderRadius: 26,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  instagramButton: {
+    backgroundColor: '#E4405F',
+  },
+  whatsappButton: {
+    backgroundColor: '#25D366',
+  },
+  tiktokButton: {
+    backgroundColor: '#000000',
     borderWidth: 1.5,
-    borderColor: Colors.gold + '50',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    borderColor: '#00F2EA',
+  },
+  snapchatButton: {
+    backgroundColor: '#FFFC00',
   },
   footerContainer: {
     marginTop: 32,
