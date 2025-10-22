@@ -187,8 +187,8 @@ export const translations = {
     sold: 'sold',
     
     footerThankYou: 'Thank you for visiting!',
-    footerKurdish: 'Thank you for your visit',
-    footerArabic: 'Thank you for your visit',
+    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
+    footerArabic: 'شكراً لزيارتكم',
   },
   ku: {
     restaurantName: 'تەپسی سلێمانی',
