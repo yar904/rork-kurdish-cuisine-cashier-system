@@ -3,8 +3,8 @@ export const fonts = {
   medium: 'NotoNaskhArabic_500Medium',
   semiBold: 'NotoNaskhArabic_700Bold',
   bold: 'NotoNaskhArabic_700Bold',
-  kurdish: 'NotoNaskhArabic_400Regular',
-  kurdishBold: 'NotoNaskhArabic_700Bold',
+  kurdish: 'PeshangDes5-Regular',
+  kurdishBold: 'PeshangDes5-Bold',
 };
 
 export const Colors = {
