@@ -163,23 +163,19 @@ export default function PublicMenuScreen() {
     });
   };
 
-  const categories: MenuCategory[] = [
-    'appetizers',
-    'soups',
-    'salads',
-    'kebabs',
-    'rice-dishes',
-    'stews',
-    'seafood',
-    'breads',
-    'desserts',
-    'drinks',
-    'shisha',
-    'hot-drinks',
+  const categories = [
+    { id: 'appetizers', nameKu: 'دەستپێکەکان', nameEn: 'Starters', nameAr: 'مقبلات' },
+    { id: 'soups', nameKu: 'سوپەکان', nameEn: 'Soups', nameAr: 'شوربات' },
+    { id: 'kebabs', nameKu: 'کەبابەکان', nameEn: 'Main Courses', nameAr: 'أطباق رئيسية' },
+    { id: 'desserts', nameKu: 'خواردنی شیرین', nameEn: 'Desserts', nameAr: 'حلويات' },
+    { id: 'hot-drinks', nameKu: 'چا و قاوە', nameEn: 'Tea & Coffee', nameAr: 'شاي وقهوة' },
+    { id: 'drinks', nameKu: 'خواردنی سارد', nameEn: 'Cold Beverages', nameAr: 'مشروبات باردة' },
+    { id: 'shisha', nameKu: 'شیەشە', nameEn: 'Shisha', nameAr: 'شيشة' },
+    { id: 'rice-dishes', nameKu: 'زیادکراوەکان', nameEn: 'Extras', nameAr: 'إضافات' },
   ];
 
   const availableCategories = categories.filter((category) => {
-    const categoryItems = MENU_ITEMS.filter(item => item.category === category && item.available);
+    const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
     return categoryItems.length > 0;
   });
 
@@ -240,7 +236,9 @@ export default function PublicMenuScreen() {
     lastScrollY.current = currentScrollY;
   };
 
-  const filteredCategories = categories.filter((category) => {
+  const menuCategoryIds: MenuCategory[] = categories.map(c => c.id as MenuCategory);
+  
+  const filteredCategories = menuCategoryIds.filter((category) => {
     if (searchQuery === '') return true;
     const categoryName = tc(category).toLowerCase();
     const categoryItems = MENU_ITEMS.filter(item => item.category === category);
@@ -918,18 +916,19 @@ export default function PublicMenuScreen() {
           onScrollEndDrag={startAutoScroll}
         >
           {availableCategories.map((category) => {
-            const categoryItems = MENU_ITEMS.filter(item => item.category === category && item.available);
+            const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
+            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             
             return (
               <TouchableOpacity
-                key={category}
+                key={category.id}
                 style={styles.categoryCard}
                 activeOpacity={0.9}
                 onPress={() => {
                   if (autoScrollInterval.current) {
                     clearInterval(autoScrollInterval.current);
                   }
-                  router.push(`/category/${category}`);
+                  router.push(`/category/${category.id}`);
                 }}
               >
                 <View style={styles.categoryCardImageContainer}>
@@ -943,7 +942,7 @@ export default function PublicMenuScreen() {
                   <View style={styles.categoryCardOverlay} />
                 </View>
                 <View style={styles.categoryCardFooter}>
-                  <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
+                  <Text style={styles.categoryCardTitle}>{categoryName}</Text>
                 </View>
               </TouchableOpacity>
             );
