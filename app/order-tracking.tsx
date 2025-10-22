@@ -15,6 +15,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CheckCircle, Clock, ChefHat, Bell, ArrowLeft, User, DollarSign, AlertCircle, X } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
 import { trpcClient } from '@/lib/trpc';
@@ -30,7 +31,7 @@ interface OrderStage {
 export default function OrderTrackingScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { orders } = useRestaurant();
   const [progress] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
@@ -42,9 +43,9 @@ export default function OrderTrackingScreen() {
   const orderId = params.orderId as string || 'N/A';
   
   const order = orders.find(o => o.id === orderId);
-  const currentStatus: OrderStatusType = order?.status === 'paid' ? 'served' : (order?.status || 'new') as OrderStatusType;
+  const mappedStatus = order?.status === 'paid' ? 'served' : (order?.status || 'new');
+  const currentStatus = mappedStatus as OrderStatusType;
   const tableNumber = order?.tableNumber?.toString() || params.tableNumber as string || 'N/A';
-  const total = order?.total?.toString() || params.total as string || '0';
 
   const stages: OrderStage[] = [
     {
@@ -146,6 +147,40 @@ export default function OrderTrackingScreen() {
       setIsSubmitting(false);
     }
   }, [serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
+
+  if (currentStatus === 'served') {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <Stack.Screen options={{ headerShown: false }} />
+
+        <View style={styles.thankYouContainer}>
+          <View style={styles.thankYouContent}>
+            <View style={styles.chefHatIcon}>
+              <ChefHat size={64} color="#D4AF37" strokeWidth={2} />
+            </View>
+            
+            <Text style={styles.restaurantName}>تەپسی سلێمانی</Text>
+            <Text style={styles.thankYouTitle}>{t('thankYou')}</Text>
+            
+            <View style={styles.languageTexts}>
+              <Text style={styles.languageText}>{translations.en.thankYou}</Text>
+              <Text style={styles.languageText}>{translations.ku.thankYou}</Text>
+              <Text style={styles.languageText}>{translations.ar.thankYou}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.backToMenuButtonFull}
+              onPress={() => router.replace('/menu')}
+            >
+              <Text style={styles.backToMenuButtonTextFull}>
+                {t('backToMenu')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   const renderStage = (stage: OrderStage, index: number) => {
     const isCompleted = index < currentStageIndex;
@@ -251,15 +286,13 @@ export default function OrderTrackingScreen() {
           <View style={styles.progressHeader}>
             <Bell size={24} color={Colors.gold} />
             <Text style={styles.progressTitle}>
-              {currentStatus === 'served'
-                ? t('orderComplete') || 'Order Complete!'
-                : t('orderInProgress') || 'Order in Progress'}
+              {t('orderInProgress') || 'Order in Progress'}
             </Text>
           </View>
 
-          {currentStatus !== 'served' && (
+          {(
             <View style={styles.estimatedTimeCard}>
-              <ChefHat size={28} color="#3d0101" />
+              <ChefHat size={28} color={Colors.primary} />
               <View style={styles.estimatedTimeInfo}>
                 <Text style={styles.estimatedTimeLabel}>
                   {t('estimatedTime') || 'Estimated Time'}
@@ -302,7 +335,7 @@ export default function OrderTrackingScreen() {
               onPress={() => handleServiceRequest('waiter')}
             >
               <View style={[styles.serviceButtonIcon, { backgroundColor: Colors.gold }]}>
-                <User size={24} color="#3d0101" />
+                <User size={24} color={Colors.primary} />
               </View>
               <Text style={styles.serviceButtonLabel}>{t('callWaiter') || 'Call Waiter'}</Text>
             </TouchableOpacity>
@@ -419,7 +452,7 @@ export default function OrderTrackingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFDD0',
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -427,7 +460,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#3d0101',
+    backgroundColor: Colors.primary,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
@@ -489,7 +522,7 @@ const styles = StyleSheet.create({
   orderInfoValue: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: '#3d0101',
+    color: Colors.primary,
     textAlign: 'center' as const,
   },
   orderInfoDivider: {
@@ -534,7 +567,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: '#FFFDD0',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
@@ -550,10 +583,70 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     marginBottom: 4,
   },
+  thankYouContainer: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thankYouContent: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  chefHatIcon: {
+    marginBottom: 32,
+  },
+  restaurantName: {
+    fontSize: 32,
+    fontWeight: '700' as const,
+    color: Colors.gold,
+    marginBottom: 16,
+    textAlign: 'center' as const,
+  },
+  thankYouTitle: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    color: '#fff',
+    marginBottom: 32,
+    textAlign: 'center' as const,
+  },
+  languageTexts: {
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 48,
+  },
+  languageText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center' as const,
+  },
+  backToMenuButtonFull: {
+    backgroundColor: Colors.gold,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.gold,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  backToMenuButtonTextFull: {
+    color: Colors.primary,
+    fontSize: 18,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
+  },
   estimatedTimeValue: {
     fontSize: 28,
     fontWeight: '800' as const,
-    color: '#3d0101',
+    color: Colors.primary,
     letterSpacing: -0.5,
   },
   progressBarContainer: {
@@ -576,7 +669,7 @@ const styles = StyleSheet.create({
   progressPercentage: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: '#3d0101',
+    color: Colors.primary,
     minWidth: 45,
     textAlign: 'right' as const,
   },
@@ -735,13 +828,13 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   backToMenuButton: {
-    backgroundColor: '#3d0101',
+    backgroundColor: Colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#3d0101',
+        shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -888,7 +981,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#3d0101',
+    backgroundColor: Colors.primary,
     alignItems: 'center',
   },
   modalSubmitButtonDisabled: {
