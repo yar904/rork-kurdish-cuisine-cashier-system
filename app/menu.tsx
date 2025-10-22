@@ -1036,12 +1036,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   headerLogo: {
-    width: 56,
-    height: 56,
+    width: 80,
+    height: 80,
     ...Platform.select({
       web: {
-        width: 72,
-        height: 72,
+        width: 96,
+        height: 96,
       },
     }),
   },

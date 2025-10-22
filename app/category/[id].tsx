@@ -615,6 +615,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
+    direction: 'ltr' as const,
     ...Platform.select({
       web: {
         maxWidth: 600,
@@ -664,6 +665,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 8,
+    textAlign: 'left' as const,
     ...Platform.select({
       web: {
         fontFamily: 'NotoNaskhArabic_400Regular',
@@ -675,12 +677,14 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#3d0101',
     marginBottom: 12,
+    textAlign: 'left' as const,
   },
   modalItemDescription: {
     fontSize: 16,
     color: '#6B7280',
     lineHeight: 24,
     marginBottom: 24,
+    textAlign: 'left' as const,
   },
   modalDivider: {
     height: 1,
@@ -697,6 +701,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600' as const,
     color: '#1A1A1A',
+    textAlign: 'left' as const,
   },
   quantityControls: {
     flexDirection: 'row',
@@ -728,6 +733,7 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#1A1A1A',
     marginBottom: 8,
+    textAlign: 'left' as const,
   },
   notesInput: {
     backgroundColor: '#F9FAFB',
@@ -739,6 +745,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     minHeight: 80,
     textAlignVertical: 'top' as const,
+    textAlign: 'left' as const,
   },
   modalAddButton: {
     flexDirection: 'row',
