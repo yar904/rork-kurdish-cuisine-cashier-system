@@ -279,10 +279,10 @@ export default function CategoryDetailScreen() {
             resizeMode="contain"
           />
           <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
-          <Text style={styles.footerSubtitle}>{t('footerThankYou')}</Text>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerTextSecondary}>{t('footerKurdish')}</Text>
-          <Text style={styles.footerTextSecondary}>{t('footerArabic')}</Text>
+          <Text style={styles.footerSubtitle}>Thank you for visiting!</Text>
+          <Text style={styles.footerSubtitle}>سوپاس بۆ سەردانیکردنتان</Text>
+          <Text style={styles.footerSubtitle}>شكراً لزيارتكم</Text>
         </View>
       </ScrollView>
     </View>
@@ -571,39 +571,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#3d0101',
     marginTop: 32,
-    borderTopWidth: 0,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   footerLogo: {
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
     marginBottom: 16,
-    tintColor: '#FFFFFF',
   },
   footerBrandName: {
     fontSize: 26,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 16,
     letterSpacing: 0.5,
   },
   footerSubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#FFFFFF',
-    marginBottom: 12,
+    fontWeight: '400' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 16,
   },
   footerDivider: {
     width: 60,
-    height: 3,
+    height: 2,
     backgroundColor: '#D4AF37',
     marginBottom: 16,
-    borderRadius: 1.5,
-  },
-  footerTextSecondary: {
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: 6,
+    borderRadius: 1,
   },
   modalOverlay: {
     flex: 1,
