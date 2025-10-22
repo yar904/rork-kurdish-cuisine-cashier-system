@@ -2,24 +2,24 @@ import { Platform } from 'react-native';
 
 export const fonts = {
   regular: Platform.select({
-    ios: 'San Francisco',
+    ios: 'Avenir',
     android: 'sans-serif',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+    default: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   }),
   medium: Platform.select({
-    ios: 'San Francisco',
+    ios: 'Avenir-Medium',
     android: 'sans-serif-medium',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    default: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   }),
   semiBold: Platform.select({
-    ios: 'San Francisco',
-    android: 'sans-serif-medium',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    ios: 'Avenir-Heavy',
+    android: 'sans-serif-black',
+    default: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   }),
   bold: Platform.select({
-    ios: 'San Francisco',
-    android: 'sans-serif',
-    default: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    ios: 'Avenir-Black',
+    android: 'sans-serif-black',
+    default: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   }),
 };
 
