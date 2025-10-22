@@ -1248,18 +1248,22 @@ const styles = StyleSheet.create({
   },
 
   categoryCardFooter: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 8,
-    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    backgroundColor: '#3d0101',
     width: '100%',
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryCardTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: '#E8C968',
+    color: '#FFFFFF',
     textAlign: 'center' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    lineHeight: 20,
   },
   menuSections: {
     paddingTop: 24,
