@@ -669,67 +669,116 @@ export default function PublicMenuScreen() {
 
           <ScrollView style={styles.searchModalResults} showsVerticalScrollIndicator={false}>
             {searchQuery === '' ? (
-              <View style={styles.searchModalEmpty}>
-                <Search size={64} color="rgba(255, 255, 255, 0.3)" />
-                <Text style={styles.searchModalEmptyText}>
-                  {language === 'en' ? 'Start typing to search' : language === 'ku' ? 'دەستبکە بە نووسین بۆ گەڕان' : 'ابدأ الكتابة للبحث'}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.searchResultsList}>
-                {MENU_ITEMS.filter((item) => {
-                  const matchesSearch =
-                    getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                  return matchesSearch && item.available;
-                }).map((item) => {
-                  const itemStats = ratingsStats[item.id];
-                  const hasRatings = itemStats && itemStats.totalRatings > 0;
+              <View style={styles.searchModalContent}>
+                {availableCategories.map((category) => {
+                  const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
+                  if (categoryItems.length === 0) return null;
+                  
+                  const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
                   
                   return (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={styles.searchResultItem}
-                      onPress={() => {
-                        setSelectedItem(item);
-                        setItemQuantity(1);
-                        setItemNotes('');
-                        setShowSearchModal(false);
-                        setSearchQuery('');
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.searchResultItemContent}>
-                        <View style={styles.searchResultItemInfo}>
-                          <Text style={styles.searchResultItemName} numberOfLines={2}>
-                            {getItemName(item)}
-                          </Text>
-                          {hasRatings && (
-                            <View style={styles.searchResultRatingBadge}>
-                              <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                              <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                            </View>
-                          )}
-                        </View>
-                        <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
+                    <View key={category.id} style={styles.searchCategorySection}>
+                      <View style={styles.searchCategoryHeader}>
+                        <View style={styles.searchCategoryDecorLeft} />
+                        <Text style={styles.searchCategoryTitle}>{categoryName}</Text>
+                        <View style={styles.searchCategoryDecorRight} />
                       </View>
-                    </TouchableOpacity>
+                      
+                      {categoryItems.map((item) => {
+                        const itemStats = ratingsStats[item.id];
+                        const hasRatings = itemStats && itemStats.totalRatings > 0;
+                        
+                        return (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={styles.searchResultItem}
+                            onPress={() => {
+                              setSelectedItem(item);
+                              setItemQuantity(1);
+                              setItemNotes('');
+                              setShowSearchModal(false);
+                              setSearchQuery('');
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <View style={styles.searchResultItemContent}>
+                              <View style={styles.searchResultItemInfo}>
+                                <Text style={styles.searchResultItemName} numberOfLines={2}>
+                                  {getItemName(item)}
+                                </Text>
+                                {hasRatings && (
+                                  <View style={styles.searchResultRatingBadge}>
+                                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                                    <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
                   );
                 })}
-                
-                {MENU_ITEMS.filter((item) => {
-                  const matchesSearch =
-                    getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                  return matchesSearch && item.available;
-                }).length === 0 && (
-                  <View style={styles.searchModalEmpty}>
-                    <Search size={64} color="rgba(255, 255, 255, 0.3)" />
-                    <Text style={styles.searchModalEmptyText}>
-                      {t('noItemsFound')}
-                    </Text>
-                  </View>
-                )}
+              </View>
+            ) : (
+              <View style={styles.searchModalContent}>
+                <View style={styles.searchResultsList}>
+                  {MENU_ITEMS.filter((item) => {
+                    const matchesSearch =
+                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesSearch && item.available;
+                  }).map((item) => {
+                    const itemStats = ratingsStats[item.id];
+                    const hasRatings = itemStats && itemStats.totalRatings > 0;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={styles.searchResultItem}
+                        onPress={() => {
+                          setSelectedItem(item);
+                          setItemQuantity(1);
+                          setItemNotes('');
+                          setShowSearchModal(false);
+                          setSearchQuery('');
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.searchResultItemContent}>
+                          <View style={styles.searchResultItemInfo}>
+                            <Text style={styles.searchResultItemName} numberOfLines={2}>
+                              {getItemName(item)}
+                            </Text>
+                            {hasRatings && (
+                              <View style={styles.searchResultRatingBadge}>
+                                <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                                <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                  
+                  {MENU_ITEMS.filter((item) => {
+                    const matchesSearch =
+                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesSearch && item.available;
+                  }).length === 0 && (
+                    <View style={styles.searchModalEmpty}>
+                      <Search size={64} color="rgba(255, 255, 255, 0.3)" />
+                      <Text style={styles.searchModalEmptyText}>
+                        {t('noItemsFound')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
             )}
           </ScrollView>
@@ -2479,7 +2528,7 @@ const styles = StyleSheet.create({
   },
   searchModalContainer: {
     flex: 1,
-    backgroundColor: '#8B5A2B',
+    backgroundColor: '#3d0101',
   },
   searchModalHeader: {
     flexDirection: 'row',
@@ -2487,9 +2536,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#8B5A2B',
+    backgroundColor: '#3d0101',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
   searchModalBackButton: {
     width: 40,
@@ -2541,11 +2590,44 @@ const styles = StyleSheet.create({
   searchModalResults: {
     flex: 1,
   },
+  searchModalContent: {
+    paddingVertical: 8,
+  },
   searchModalEmpty: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 120,
+  },
+  searchCategorySection: {
+    marginBottom: 24,
+  },
+  searchCategoryHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  searchCategoryDecorLeft: {
+    width: 4,
+    height: 20,
+    backgroundColor: '#D4AF37',
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  searchCategoryDecorRight: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+    marginLeft: 12,
+    borderRadius: 1,
+  },
+  searchCategoryTitle: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    letterSpacing: 0.5,
   },
   searchModalEmptyText: {
     fontSize: 16,
