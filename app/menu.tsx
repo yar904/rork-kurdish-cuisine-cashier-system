@@ -1286,7 +1286,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryDecorLeft: {
-    width: 4,
+    width: 6,
     height: 28,
     backgroundColor: '#3d0101',
     borderRadius: 2,
