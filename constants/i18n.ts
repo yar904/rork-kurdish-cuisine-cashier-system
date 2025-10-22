@@ -186,9 +186,9 @@ export const translations = {
     dailySalesTrend: 'Daily Sales Trend',
     sold: 'sold',
     
+    footerText: 'Experience authentic Kurdish cuisine crafted with passion and tradition',
+    footerTagline: 'تەپسی سلێمانی - Where Tradition Meets Excellence',
     footerThankYou: 'Thank you for visiting!',
-    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
-    footerArabic: 'شكراً لزيارتكم',
   },
   ku: {
     restaurantName: 'تەپسی سلێمانی',
@@ -375,9 +375,9 @@ export const translations = {
     dailySalesTrend: 'ڕەوتی فرۆشتنی ڕۆژانە',
     sold: 'فرۆشرا',
     
+    footerText: 'تامی خواردنی کوردی بە دڵسۆزی و نەریتی ڕەسەن',
+    footerTagline: 'تەپسی سلێمانی - شوێنی کۆبوونەوەی نەریت و باشترین',
     footerThankYou: 'سوپاس بۆ سەردانیکردنتان!',
-    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
-    footerArabic: 'شكراً لزيارتكم',
   },
   ar: {
     restaurantName: 'تەپسی سلێمانی',
@@ -564,9 +564,9 @@ export const translations = {
     dailySalesTrend: 'اتجاه المبيعات اليومية',
     sold: 'مباع',
     
+    footerText: 'تجربة المطبخ الكردي الأصيل المُعد بشغف وتقاليد عريقة',
+    footerTagline: 'تەپسی سلێمانی - حيث يلتقي التقليد بالتميز',
     footerThankYou: 'شكراً لزيارتكم!',
-    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
-    footerArabic: 'شكراً لزيارتكم',
   },
 };
 

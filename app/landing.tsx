@@ -15,7 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors, fonts } from '@/constants/colors';
-import { Language } from '@/constants/i18n';
+import { Language, translations } from '@/constants/i18n';
 
 const LANGUAGES = [
   { code: 'ku' as Language, label: 'کوردی' },
@@ -168,6 +168,15 @@ export default function LandingPage() {
               >
                 <Send size={22} color={Colors.gold} strokeWidth={1.8} />
               </TouchableOpacity>
+            </View>
+
+            <View style={styles.footerContainer}>
+              <Text style={styles.footerText}>
+                {translations[selectedLang].footerText}
+              </Text>
+              <Text style={styles.footerTagline}>
+                {translations[selectedLang].footerTagline}
+              </Text>
             </View>
           </View>
         </LinearGradient>
@@ -338,5 +347,28 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 1,
     borderColor: Colors.gold + '40',
+  },
+  footerContainer: {
+    marginTop: 28,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gold + '30',
+    alignItems: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.75)',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 20,
+  },
+  footerTagline: {
+    fontFamily: fonts.kurdishBold,
+    fontSize: 12,
+    color: Colors.gold,
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
 });
