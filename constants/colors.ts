@@ -1,10 +1,44 @@
+import { Platform } from 'react-native';
+
 export const fonts = {
-  regular: 'PeshangDes5-Regular',
-  medium: 'PeshangDes5-Regular',
-  semiBold: 'PeshangDes5-Bold',
-  bold: 'PeshangDes5-Bold',
-  kurdish: 'PeshangDes5-Regular',
-  kurdishBold: 'PeshangDes5-Bold',
+  regular: Platform.select({
+    ios: 'PeshangDes5-Regular',
+    android: 'PeshangDes5-Regular',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+  medium: Platform.select({
+    ios: 'PeshangDes5-Regular',
+    android: 'PeshangDes5-Regular',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+  semiBold: Platform.select({
+    ios: 'PeshangDes5-Bold',
+    android: 'PeshangDes5-Bold',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+  bold: Platform.select({
+    ios: 'PeshangDes5-Bold',
+    android: 'PeshangDes5-Bold',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+  kurdish: Platform.select({
+    ios: 'PeshangDes5-Regular',
+    android: 'PeshangDes5-Regular',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+  kurdishBold: Platform.select({
+    ios: 'PeshangDes5-Bold',
+    android: 'PeshangDes5-Bold',
+    default: 'Inter, system-ui, -apple-system, sans-serif',
+  }),
+};
+
+export const fontSizes = {
+  small: 14,
+  normal: 16,
+  large: 20,
+  title: 24,
+  header: 32,
 };
 
 export const Colors = {

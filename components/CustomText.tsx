@@ -1,11 +1,12 @@
 import { Text as RNText, TextProps } from 'react-native';
+import { fonts } from '@/constants/colors';
 
 interface CustomTextProps extends TextProps {
-  variant?: 'regular' | 'bold';
+  variant?: 'regular' | 'bold' | 'medium' | 'semiBold';
 }
 
 export function Text({ variant = 'regular', style, ...props }: CustomTextProps) {
-  const fontFamily = variant === 'bold' ? 'PeshangDes5-Bold' : 'PeshangDes5-Regular';
+  const fontFamily = fonts[variant] || fonts.regular;
   
   return (
     <RNText
