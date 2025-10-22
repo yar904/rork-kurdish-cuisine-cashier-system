@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Instagram } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -986,9 +986,37 @@ export default function PublicMenuScreen() {
           />
           <Text style={styles.footerTitle}>تەپسی سلێمانی</Text>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerText}>Thank you for visiting!</Text>
-          <Text style={styles.footerText}>سوپاس بۆ سەردانیکردنتان</Text>
-          <Text style={styles.footerText}>شكراً لزيارتكم</Text>
+          
+          <View style={styles.socialIconsRow}>
+            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
+              <Instagram size={22} color="#D4AF37" strokeWidth={1.8} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
+              <Image 
+                source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg' }}
+                style={styles.socialIconImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
+              <Image 
+                source={{ uri: 'https://upload.wikimedia.org/wikipedia/en/a/ad/Snapchat_logo.svg' }}
+                style={styles.socialIconImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIconButton} activeOpacity={0.7}>
+              <Image 
+                source={{ uri: 'https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg' }}
+                style={styles.socialIconImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.footerText}>
+            {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
+          </Text>
         </View>
       </ScrollView>
     </View>
@@ -2074,7 +2102,31 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400' as const,
     color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 16,
+    marginTop: 16,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+  },
+  socialIconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 16,
+  },
+  socialIconButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  socialIconImage: {
+    width: 22,
+    height: 22,
+    tintColor: '#D4AF37',
   },
   footerDivider: {
     width: 60,
