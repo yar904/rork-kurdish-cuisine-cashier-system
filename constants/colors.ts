@@ -2,34 +2,34 @@ import { Platform } from 'react-native';
 
 export const fonts = {
   regular: Platform.select({
-    ios: 'PeshangDes5-Regular',
-    android: 'PeshangDes5-Regular',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
   medium: Platform.select({
-    ios: 'PeshangDes5-Regular',
-    android: 'PeshangDes5-Regular',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto-Medium',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
   semiBold: Platform.select({
-    ios: 'PeshangDes5-Bold',
-    android: 'PeshangDes5-Bold',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto-Medium',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
   bold: Platform.select({
-    ios: 'PeshangDes5-Bold',
-    android: 'PeshangDes5-Bold',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto-Bold',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
   kurdish: Platform.select({
-    ios: 'PeshangDes5-Regular',
-    android: 'PeshangDes5-Regular',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
   kurdishBold: Platform.select({
-    ios: 'PeshangDes5-Bold',
-    android: 'PeshangDes5-Bold',
-    default: 'Inter, system-ui, -apple-system, sans-serif',
+    ios: 'System',
+    android: 'Roboto-Bold',
+    default: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   }),
 };
 
