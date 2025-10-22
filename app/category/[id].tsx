@@ -292,12 +292,16 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#D4C5A9',
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       },
     }),
   },
@@ -429,7 +433,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor: '#3d0101',
+    backgroundColor: 'transparent',
     position: 'relative' as const,
   },
   plaidPattern: {
@@ -565,10 +569,10 @@ const styles = StyleSheet.create({
   footer: {
     padding: 48,
     alignItems: 'center',
-    backgroundColor: '#3d0101',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginTop: 32,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(74, 21, 21, 0.15)',
   },
   footerLogo: {
     width: 80,
@@ -578,14 +582,14 @@ const styles = StyleSheet.create({
   footerTitle: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     marginBottom: 8,
     letterSpacing: 1,
   },
   footerText: {
     fontSize: 15,
     fontWeight: '400' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6B7280',
     marginBottom: 16,
   },
   footerDivider: {
@@ -597,8 +601,8 @@ const styles = StyleSheet.create({
   },
   footerTextSecondary: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '400' as const,
+    color: '#9CA3AF',
     marginBottom: 4,
   },
   modalOverlay: {

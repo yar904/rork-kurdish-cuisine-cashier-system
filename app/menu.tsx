@@ -995,13 +995,17 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#D4C5A9',
     position: 'relative' as const,
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       },
     }),
   },
@@ -1171,16 +1175,23 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: '#3d0101',
+    backgroundColor: '#D4C5A9',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+    borderBottomColor: 'rgba(61, 1, 1, 0.2)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      },
+    }),
   },
   categorySliderTitle: {
     fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#FFFFFF',
+    color: '#3d0101',
     marginTop: 16,
     marginLeft: 20,
     marginBottom: 4,
@@ -1190,7 +1201,7 @@ const styles = StyleSheet.create({
   luxuryAccent: {
     width: 40,
     height: 2,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#A0753D',
     marginLeft: 20,
     marginBottom: 12,
     borderRadius: 1,
@@ -1270,14 +1281,14 @@ const styles = StyleSheet.create({
   categoryDecorLeft: {
     width: 4,
     height: 28,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#3d0101',
     borderRadius: 2,
     marginRight: 12,
   },
   categoryDecorRight: {
     flex: 1,
     height: 2,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#A0753D',
     marginLeft: 16,
     borderRadius: 1,
     opacity: 0.8,
@@ -1285,14 +1296,14 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 28,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#FFFFFF',
+    color: '#3d0101',
     letterSpacing: 0.5,
     textTransform: 'capitalize' as const,
   },
   categoryCount: {
     fontSize: 12,
     fontFamily: 'NotoNaskhArabic_600SemiBold',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#3d0101',
     opacity: 0.7,
   },
   categoryItemsScroll: {
@@ -1321,8 +1332,16 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#D4C5A9',
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      },
+    }),
   },
   baobabPattern: {
     ...StyleSheet.absoluteFillObject,
