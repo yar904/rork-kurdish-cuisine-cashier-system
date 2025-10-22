@@ -163,19 +163,6 @@ export default function PublicMenuScreen() {
     });
   };
 
-  const restaurantCategories = [
-    { id: 'appetizers', name: 'دەستپێکەکان', en: 'Starters', category: 'appetizers' as MenuCategory, slug: 'starters', image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop' },
-    { id: 'soups', name: 'سوپەکان', en: 'Soups', category: 'soups' as MenuCategory, slug: 'soups', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop' },
-    { id: 'kebabs', name: 'خواردنی سەرەکی', en: 'Main Courses', category: 'kebabs' as MenuCategory, slug: 'main', image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop' },
-    { id: 'desserts', name: 'خواردنی شیرین', en: 'Desserts', category: 'desserts' as MenuCategory, slug: 'dessert', image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop' },
-    { id: 'hot-drinks', name: 'چا و قاوە', en: 'Tea & Coffee', category: 'hot-drinks' as MenuCategory, slug: 'tea', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
-    { id: 'drinks', name: 'خواردنی سارد', en: 'Cold Beverages', category: 'drinks' as MenuCategory, slug: 'cold', image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop' },
-    { id: 'shisha', name: 'شیەشە', en: 'Shisha', category: 'shisha' as MenuCategory, slug: 'shisha', image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop' },
-    { id: 'breads', name: 'زیادکراوەکان', en: 'Extras', category: 'breads' as MenuCategory, slug: 'extra', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop' },
-  ];
-
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
-
   const categories: MenuCategory[] = [
     'appetizers',
     'soups',
@@ -196,18 +183,13 @@ export default function PublicMenuScreen() {
     return categoryItems.length > 0;
   });
 
-  const availableRestaurantCategories = restaurantCategories.filter((restCat) => {
-    const categoryItems = MENU_ITEMS.filter(item => item.category === restCat.category && item.available);
-    return categoryItems.length > 0;
-  });
-
   const startAutoScroll = useCallback(() => {
     if (autoScrollInterval.current) {
       clearInterval(autoScrollInterval.current);
     }
     
     const interval = setInterval(() => {
-      const nextIndex = (currentSlideIndex.current + 1) % availableRestaurantCategories.length;
+      const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
       const cardWidth = 140;
       const gap = 12;
       const scrollPosition = nextIndex * (cardWidth + gap);
@@ -221,16 +203,7 @@ export default function PublicMenuScreen() {
     }, 3000);
     
     autoScrollInterval.current = interval;
-  }, [availableRestaurantCategories.length]);
-
-  const handleCategoryPress = (restCat: typeof restaurantCategories[0]) => {
-    if (autoScrollInterval.current) {
-      clearInterval(autoScrollInterval.current);
-    }
-    setActiveCategoryId(restCat.id);
-    
-    router.push(`/category/${restCat.category}`);
-  };
+  }, [availableCategories.length]);
 
   useEffect(() => {
     startAutoScroll();
@@ -944,30 +917,35 @@ export default function PublicMenuScreen() {
           }}
           onScrollEndDrag={startAutoScroll}
         >
-          {availableRestaurantCategories.map((restCat) => {
-            const isActive = activeCategoryId === restCat.id;
-            const displayName = language === 'en' ? restCat.en : restCat.name;
+          {availableCategories.map((category) => {
+            const categoryItems = MENU_ITEMS.filter(item => item.category === category && item.available);
             
             return (
-              <View key={restCat.id} style={styles.categoryCardContainer}>
-                <TouchableOpacity
-                  style={[styles.categoryCard, isActive && styles.categoryCardActive]}
-                  activeOpacity={0.9}
-                  onPress={() => handleCategoryPress(restCat)}
-                >
-                  <View style={styles.categoryCardImageContainer}>
+              <TouchableOpacity
+                key={category}
+                style={styles.categoryCard}
+                activeOpacity={0.9}
+                onPress={() => {
+                  if (autoScrollInterval.current) {
+                    clearInterval(autoScrollInterval.current);
+                  }
+                  router.push(`/category/${category}`);
+                }}
+              >
+                <View style={styles.categoryCardImageContainer}>
+                  {categoryItems[0]?.image && (
                     <Image 
-                      source={{ uri: restCat.image }} 
+                      source={{ uri: categoryItems[0].image }} 
                       style={styles.categoryCardImage}
                       resizeMode="cover"
                     />
-                    <View style={styles.categoryCardOverlay} />
-                  </View>
-                </TouchableOpacity>
-                <Text style={styles.categoryCardName} numberOfLines={2}>
-                  {displayName}
-                </Text>
-              </View>
+                  )}
+                  <View style={styles.categoryCardOverlay} />
+                </View>
+                <View style={styles.categoryCardFooter}>
+                  <Text style={styles.categoryCardTitle}>{tc(category)}</Text>
+                </View>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>
@@ -1233,56 +1211,33 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 12,
   },
-  categoryCardContainer: {
-    alignItems: 'center',
-    width: 140,
-  },
   categoryCard: {
     width: 140,
-    height: 140,
-    backgroundColor: '#4C1C1A',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 90, 43, 0.2)',
     ...Platform.select({
       ios: {
-        shadowColor: '#3d0101',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 12px rgba(61, 1, 1, 0.2)',
-      },
-    }),
-  },
-  categoryCardActive: {
-    borderWidth: 3,
-    borderColor: '#EBC968',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#EBC968',
+        shadowColor: '#8B5A2B',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.45,
+        shadowOpacity: 0.2,
         shadowRadius: 16,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 6px 20px rgba(235, 201, 104, 0.5)',
+        boxShadow: '0 6px 16px rgba(139, 90, 43, 0.25)',
       },
     }),
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: '100%',
+    height: 90,
     position: 'relative' as const,
-    backgroundColor: '#4C1C1A',
+    backgroundColor: '#F9FAFB',
   },
   categoryCardImage: {
     width: '100%',
@@ -1290,21 +1245,23 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(61, 1, 1, 0.35)',
+    backgroundColor: 'rgba(61, 1, 1, 0.1)',
   },
-  categoryCardName: {
-    marginTop: 10,
-    fontSize: 14,
+
+  categoryCardFooter: {
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    width: '100%',
+  },
+  categoryCardTitle: {
+    fontSize: 13,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '700' as const,
-    color: '#3d0101',
+    fontWeight: '800' as const,
+    color: '#E8C968',
     textAlign: 'center' as const,
-    letterSpacing: 0.3,
-    lineHeight: 18,
-    paddingHorizontal: 4,
+    letterSpacing: 0.5,
   },
-
-
   menuSections: {
     paddingTop: 24,
     paddingBottom: 24,
