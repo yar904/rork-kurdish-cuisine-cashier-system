@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { Platform } from "react-native";
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
@@ -24,6 +25,17 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  if (Platform.OS === 'web') {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+      * {
+        font-family: 'Montserrat', 'Segoe UI', Roboto, sans-serif;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
