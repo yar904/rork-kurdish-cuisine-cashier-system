@@ -190,7 +190,7 @@ export default function PublicMenuScreen() {
     
     const interval = setInterval(() => {
       const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 140;
+      const cardWidth = 160;
       const gap = 12;
       const scrollPosition = nextIndex * (cardWidth + gap);
       
@@ -1244,7 +1244,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   categoryCard: {
-    width: 140,
+    width: 160,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden' as const,
@@ -1267,7 +1267,7 @@ const styles = StyleSheet.create({
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 110,
+    height: 120,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
   },
@@ -1281,24 +1281,24 @@ const styles = StyleSheet.create({
   },
 
   categoryCardFooter: {
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
     backgroundColor: '#FFFFFF',
     width: '100%',
-    minHeight: 50,
+    minHeight: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: 'rgba(61, 1, 1, 0.1)',
   },
   categoryCardTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#3d0101',
     textAlign: 'center' as const,
-    letterSpacing: 0.2,
-    lineHeight: 18,
+    letterSpacing: 0.3,
+    lineHeight: 20,
   },
   menuSections: {
     paddingTop: 24,
