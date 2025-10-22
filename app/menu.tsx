@@ -2059,8 +2059,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   footerLogo: {
-    width: 140,
-    height: 140,
+    width: 90,
+    height: 90,
     marginBottom: 16,
   },
   footerTitle: {
