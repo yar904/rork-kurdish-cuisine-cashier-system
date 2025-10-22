@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
-import { ChefHat, Clock, ArrowRight } from 'lucide-react-native';
+import { ChefHat, Clock, ArrowRight, Printer } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
+import { printKitchenTicket } from '@/lib/printer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Order, OrderStatus } from '@/types/restaurant';
+import { Alert } from 'react-native';
 import { Colors } from '@/constants/colors';
 
 
@@ -76,6 +78,15 @@ export default function KitchenScreen() {
     }
   };
 
+  const handlePrintKitchen = async (order: Order) => {
+    try {
+      await printKitchenTicket(order, t('restaurantName'));
+    } catch (error) {
+      console.error('Print error:', error);
+      Alert.alert('Error', 'Failed to print kitchen ticket');
+    }
+  };
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const diff = Math.floor((now.getTime() - new Date(date).getTime()) / 1000 / 60);
@@ -107,6 +118,14 @@ export default function KitchenScreen() {
       {order.waiterName && (
         <Text style={styles.waiterName}>{t('waiter')}: {order.waiterName}</Text>
       )}
+
+      <TouchableOpacity
+        style={styles.printButton}
+        onPress={() => handlePrintKitchen(order)}
+      >
+        <Printer size={16} color={Colors.primary} />
+        <Text style={styles.printButtonText}>Print</Text>
+      </TouchableOpacity>
 
       <View style={styles.orderItems}>
         {order.items.map((item, index) => (
@@ -362,7 +381,25 @@ const styles = StyleSheet.create({
   waiterName: {
     fontSize: 13,
     color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  printButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignSelf: 'flex-start',
     marginBottom: 12,
+  },
+  printButtonText: {
+    fontSize: 13,
+    color: Colors.text,
+    fontWeight: '600' as const,
   },
   orderItems: {
     gap: 8,

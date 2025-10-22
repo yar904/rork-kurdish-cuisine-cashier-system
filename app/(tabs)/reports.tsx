@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Share, Alert } from 'react-native';
 import { Stack } from 'expo-router';
-import { Calendar, TrendingUp, TrendingDown, Download, FileText, BarChart3, DollarSign, ShoppingBag, Clock } from 'lucide-react-native';
+import { Calendar, TrendingUp, TrendingDown, Download, FileText, BarChart3, DollarSign, ShoppingBag, Clock, Printer } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { printDailyReport } from '@/lib/printer';
 
 type ReportPeriod = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom';
 
@@ -111,6 +112,25 @@ export default function ReportsScreen() {
       })),
     };
   }, [selectedPeriod, customStartDate, customEndDate]);
+
+  const handlePrintReport = async () => {
+    const range = getDateRange(selectedPeriod);
+    
+    try {
+      await printDailyReport({
+        title: 'Tapse Restaurant Sales Report',
+        period: range.label,
+        dateRange: `${range.start.toLocaleDateString()} - ${range.end.toLocaleDateString()}`,
+        summary: mockReportData.summary,
+        items: mockReportData.topItems,
+        categories: mockReportData.categoryBreakdown,
+        peakHours: mockReportData.peakHours,
+      });
+    } catch (error) {
+      console.error('Print error:', error);
+      Alert.alert('Error', 'Failed to print report');
+    }
+  };
 
   const exportReport = async (format: 'pdf' | 'csv') => {
     let reportContent = '';
@@ -268,6 +288,14 @@ export default function ReportsScreen() {
             <BarChart3 size={24} color={Colors.primary} />
             <Text style={styles.sectionTitle}>Summary</Text>
             <View style={styles.exportButtons}>
+              <TouchableOpacity
+                style={styles.exportButton}
+                onPress={handlePrintReport}
+                activeOpacity={0.7}
+              >
+                <Printer size={18} color={Colors.primary} />
+                <Text style={styles.exportButtonText}>Print</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.exportButton}
                 onPress={() => exportReport('csv')}

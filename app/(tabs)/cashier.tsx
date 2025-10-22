@@ -2,12 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle, Printer } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
+import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
 import VoiceOrderButton from '@/components/VoiceOrderButton';
 import AIRecommendations from '@/components/AIRecommendations';
 import AIChatbot from '@/components/AIChatbot';
@@ -25,6 +26,7 @@ export default function CashierScreen() {
     submitOrder,
     clearCurrentOrder,
     calculateTotal,
+    orders,
   } = useRestaurant();
 
   const { t, tc } = useLanguage();
@@ -43,7 +45,7 @@ export default function CashierScreen() {
     return MENU_ITEMS.filter(item => item.category === selectedCategory && item.available);
   }, [selectedCategory]);
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     if (currentOrder.length === 0) {
       Alert.alert(t('emptyOrder'), t('pleaseAddItems'));
       return;
@@ -56,13 +58,64 @@ export default function CashierScreen() {
         { text: t('cancel'), style: 'cancel' },
         {
           text: t('submit'),
-          onPress: () => {
-            submitOrder(waiterName || undefined);
-            Alert.alert(t('success'), t('orderSubmitted'));
+          onPress: async () => {
+            try {
+              const result = await submitOrder(waiterName || undefined);
+              if (result?.orderId) {
+                Alert.alert(
+                  t('success'),
+                  t('orderSubmitted'),
+                  [
+                    {
+                      text: 'Print Receipt',
+                      onPress: () => handlePrintReceipt(result.orderId),
+                    },
+                    {
+                      text: 'Print Kitchen',
+                      onPress: () => handlePrintKitchen(result.orderId),
+                    },
+                    { text: 'OK' },
+                  ]
+                );
+              } else {
+                Alert.alert(t('success'), t('orderSubmitted'));
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to submit order');
+            }
           },
         },
       ]
     );
+  };
+
+  const handlePrintReceipt = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    try {
+      await printOrderReceipt(order, {
+        name: t('restaurantName'),
+        address: 'Erbil, Kurdistan Region, Iraq',
+        phone: '+964 750 123 4567',
+        taxId: 'TAX-12345',
+      });
+    } catch (error) {
+      console.error('Print error:', error);
+      Alert.alert('Error', 'Failed to print receipt');
+    }
+  };
+
+  const handlePrintKitchen = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    try {
+      await printKitchenTicket(order, t('restaurantName'));
+    } catch (error) {
+      console.error('Print error:', error);
+      Alert.alert('Error', 'Failed to print kitchen ticket');
+    }
   };
 
 
