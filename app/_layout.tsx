@@ -18,6 +18,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="order-tracking" options={{ headerShown: false }} />
       <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="font-preview" options={{ headerShown: true, title: 'Kurdish Fonts' }} />
     </Stack>
   );
 }
