@@ -164,19 +164,17 @@ export default function PublicMenuScreen() {
   };
 
   const restaurantCategories = [
-    { id: 1, name: 'دەستپێکی سارد', en: 'Cold Starters', category: 'salads' as MenuCategory, image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop' },
-    { id: 2, name: 'دەستپێکی گەرم', en: 'Hot Starters', category: 'appetizers' as MenuCategory, image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop' },
-    { id: 3, name: 'سوپەکان', en: 'Soups', category: 'soups' as MenuCategory, image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop' },
-    { id: 4, name: 'خواردنی سەرەکی', en: 'Main Courses', category: 'kebabs' as MenuCategory, image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop' },
-    { id: 5, name: 'برنج', en: 'Rice Dishes', category: 'rice-dishes' as MenuCategory, image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop' },
-    { id: 6, name: 'خواردنی شیرین', en: 'Desserts', category: 'desserts' as MenuCategory, image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop' },
-    { id: 7, name: 'چا و قاوە', en: 'Tea & Coffee', category: 'hot-drinks' as MenuCategory, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
-    { id: 8, name: 'خواردنی سارد', en: 'Cold Beverages', category: 'drinks' as MenuCategory, image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop' },
-    { id: 9, name: 'شیەشە', en: 'Shisha', category: 'shisha' as MenuCategory, image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop' },
-    { id: 10, name: 'نان', en: 'Breads', category: 'breads' as MenuCategory, image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop' },
+    { id: 'appetizers', name: 'دەستپێکەکان', en: 'Starters', category: 'appetizers' as MenuCategory, slug: 'starters', image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop' },
+    { id: 'soups', name: 'سوپەکان', en: 'Soups', category: 'soups' as MenuCategory, slug: 'soups', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop' },
+    { id: 'kebabs', name: 'خواردنی سەرەکی', en: 'Main Courses', category: 'kebabs' as MenuCategory, slug: 'main', image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop' },
+    { id: 'desserts', name: 'خواردنی شیرین', en: 'Desserts', category: 'desserts' as MenuCategory, slug: 'dessert', image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop' },
+    { id: 'hot-drinks', name: 'چا و قاوە', en: 'Tea & Coffee', category: 'hot-drinks' as MenuCategory, slug: 'tea', image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
+    { id: 'drinks', name: 'خواردنی سارد', en: 'Cold Beverages', category: 'drinks' as MenuCategory, slug: 'cold', image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop' },
+    { id: 'shisha', name: 'شیەشە', en: 'Shisha', category: 'shisha' as MenuCategory, slug: 'shisha', image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop' },
+    { id: 'breads', name: 'زیادکراوەکان', en: 'Extras', category: 'breads' as MenuCategory, slug: 'extra', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop' },
   ];
 
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
   const categories: MenuCategory[] = [
     'appetizers',
@@ -231,16 +229,7 @@ export default function PublicMenuScreen() {
     }
     setActiveCategoryId(restCat.id);
     
-    const sectionIndex = filteredCategories.findIndex(cat => cat === restCat.category);
-    if (sectionIndex !== -1 && contentScrollRef.current) {
-      const yOffset = sectionIndex * 500;
-      contentScrollRef.current.scrollTo({ y: yOffset, animated: true });
-    }
-    
-    setTimeout(() => {
-      setActiveCategoryId(null);
-      startAutoScroll();
-    }, 2000);
+    router.push(`/category/${restCat.category}`);
   };
 
   useEffect(() => {
@@ -960,26 +949,25 @@ export default function PublicMenuScreen() {
             const displayName = language === 'en' ? restCat.en : restCat.name;
             
             return (
-              <TouchableOpacity
-                key={restCat.id}
-                style={[styles.categoryCard, isActive && styles.categoryCardActive]}
-                activeOpacity={0.9}
-                onPress={() => handleCategoryPress(restCat)}
-              >
-                <View style={styles.categoryCardImageContainer}>
-                  <Image 
-                    source={{ uri: restCat.image }} 
-                    style={styles.categoryCardImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.categoryCardOverlay} />
-                  <View style={styles.categoryCardTextOverlay}>
-                    <Text style={styles.categoryCardTitleOverlay} numberOfLines={2}>
-                      {displayName}
-                    </Text>
+              <View key={restCat.id} style={styles.categoryCardContainer}>
+                <TouchableOpacity
+                  style={[styles.categoryCard, isActive && styles.categoryCardActive]}
+                  activeOpacity={0.9}
+                  onPress={() => handleCategoryPress(restCat)}
+                >
+                  <View style={styles.categoryCardImageContainer}>
+                    <Image 
+                      source={{ uri: restCat.image }} 
+                      style={styles.categoryCardImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.categoryCardOverlay} />
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+                <Text style={styles.categoryCardName} numberOfLines={2}>
+                  {displayName}
+                </Text>
+              </View>
             );
           })}
         </ScrollView>
@@ -1245,44 +1233,48 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 12,
   },
+  categoryCardContainer: {
+    alignItems: 'center',
+    width: 140,
+  },
   categoryCard: {
     width: 140,
     height: 140,
     backgroundColor: '#4C1C1A',
     borderRadius: 16,
     overflow: 'hidden' as const,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 90, 43, 0.2)',
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     ...Platform.select({
       ios: {
-        shadowColor: '#8B5A2B',
-        shadowOffset: { width: 0, height: 6 },
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
-        shadowRadius: 16,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 6,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 6px 16px rgba(139, 90, 43, 0.25)',
+        boxShadow: '0 4px 12px rgba(61, 1, 1, 0.2)',
       },
     }),
   },
   categoryCardActive: {
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#EBC968',
     ...Platform.select({
       ios: {
         shadowColor: '#EBC968',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 20,
+        shadowOpacity: 0.45,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 10,
+        elevation: 8,
       },
       web: {
-        boxShadow: '0 6px 20px rgba(235, 201, 104, 0.4)',
+        boxShadow: '0 6px 20px rgba(235, 201, 104, 0.5)',
       },
     }),
   },
@@ -1298,27 +1290,18 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(76, 28, 26, 0.7)',
+    backgroundColor: 'rgba(61, 1, 1, 0.35)',
   },
-  categoryCardTextOverlay: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(76, 28, 26, 0.85)',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  categoryCardTitleOverlay: {
-    fontSize: 13,
+  categoryCardName: {
+    marginTop: 10,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '800' as const,
-    color: '#F4E4C1',
+    fontWeight: '700' as const,
+    color: '#3d0101',
     textAlign: 'center' as const,
-    letterSpacing: 0.5,
-    lineHeight: 16,
+    letterSpacing: 0.3,
+    lineHeight: 18,
+    paddingHorizontal: 4,
   },
 
 
