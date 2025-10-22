@@ -292,16 +292,12 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4C5A9',
+    backgroundColor: '#3d0101',
     ...Platform.select({
       web: {
         maxWidth: 1920,
         alignSelf: 'center' as const,
         width: '100%',
-        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
       },
     }),
   },
@@ -433,7 +429,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#3d0101',
     position: 'relative' as const,
   },
   plaidPattern: {
@@ -569,10 +565,10 @@ const styles = StyleSheet.create({
   footer: {
     padding: 48,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: '#3d0101',
     marginTop: 32,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(74, 21, 21, 0.15)',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   footerLogo: {
     width: 80,
@@ -582,14 +578,14 @@ const styles = StyleSheet.create({
   footerTitle: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     marginBottom: 8,
     letterSpacing: 1,
   },
   footerText: {
     fontSize: 15,
     fontWeight: '400' as const,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 16,
   },
   footerDivider: {
@@ -601,8 +597,8 @@ const styles = StyleSheet.create({
   },
   footerTextSecondary: {
     fontSize: 14,
-    fontWeight: '400' as const,
-    color: '#9CA3AF',
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
   },
   modalOverlay: {
