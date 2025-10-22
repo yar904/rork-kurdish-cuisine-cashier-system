@@ -278,11 +278,11 @@ export default function CategoryDetailScreen() {
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerTitle}>Tapse</Text>
-          <Text style={styles.footerText}>{t('thankYou')}</Text>
+          <Text style={styles.footerBrandName}>تەپسی سەلیمانی</Text>
+          <Text style={styles.footerSubtitle}>سووپاس بۆ سەردانیکردنتانا!</Text>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>
-          <Text style={styles.footerTextSecondary}>شكراً لزيارتكم</Text>
+          <Text style={styles.footerTextSecondary}>سووپاس بۆ سەردانیکردنتان</Text>
+          <Text style={styles.footerTextSecondary}>شکرًا لزیارتکم</Text>
         </View>
       </ScrollView>
     </View>
@@ -574,35 +574,36 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
   },
   footerLogo: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
-  },
-  footerTitle: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#1A1A1A',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  footerText: {
-    fontSize: 15,
-    fontWeight: '400' as const,
-    color: '#6B7280',
+    width: 100,
+    height: 100,
     marginBottom: 16,
+    tintColor: '#FFFFFF',
+  },
+  footerBrandName: {
+    fontSize: 26,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  footerSubtitle: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#FFFFFF',
+    marginBottom: 12,
   },
   footerDivider: {
     width: 60,
-    height: 2,
+    height: 3,
     backgroundColor: '#D4AF37',
     marginBottom: 16,
-    borderRadius: 1,
+    borderRadius: 1.5,
   },
   footerTextSecondary: {
     fontSize: 14,
-    fontWeight: '400' as const,
-    color: '#9CA3AF',
-    marginBottom: 4,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: 6,
   },
   modalOverlay: {
     flex: 1,
