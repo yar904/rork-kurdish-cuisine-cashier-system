@@ -28,9 +28,10 @@ export default function RootLayout() {
   if (Platform.OS === 'web') {
     const style = document.createElement('style');
     style.innerHTML = `
-      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
       * {
         font-family: 'Montserrat', 'Segoe UI', Roboto, sans-serif;
+        font-weight: 600;
       }
     `;
     document.head.appendChild(style);
