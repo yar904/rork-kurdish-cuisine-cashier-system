@@ -174,9 +174,6 @@ export default function LandingPage() {
               <Text style={styles.footerText}>
                 {translations[selectedLang].footerText}
               </Text>
-              <Text style={styles.footerTagline}>
-                {translations[selectedLang].footerTagline}
-              </Text>
             </View>
           </View>
         </LinearGradient>
