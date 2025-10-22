@@ -185,6 +185,10 @@ export const translations = {
     peakHours: 'Peak Hours',
     dailySalesTrend: 'Daily Sales Trend',
     sold: 'sold',
+    
+    footerThankYou: 'Thank you for visiting!',
+    footerKurdish: 'Thank you for your visit',
+    footerArabic: 'Thank you for your visit',
   },
   ku: {
     restaurantName: 'تەپسی سلێمانی',
@@ -370,6 +374,10 @@ export const translations = {
     peakHours: 'کاتەکانی لوتکە',
     dailySalesTrend: 'ڕەوتی فرۆشتنی ڕۆژانە',
     sold: 'فرۆشرا',
+    
+    footerThankYou: 'سوپاس بۆ سەردانیکردنتان!',
+    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
+    footerArabic: 'شكراً لزيارتكم',
   },
   ar: {
     restaurantName: 'تەپسی سلێمانی',
@@ -555,6 +563,10 @@ export const translations = {
     peakHours: 'ساعات الذروة',
     dailySalesTrend: 'اتجاه المبيعات اليومية',
     sold: 'مباع',
+    
+    footerThankYou: 'شكراً لزيارتكم!',
+    footerKurdish: 'سوپاس بۆ سەردانیکردنتان',
+    footerArabic: 'شكراً لزيارتكم',
   },
 };
 

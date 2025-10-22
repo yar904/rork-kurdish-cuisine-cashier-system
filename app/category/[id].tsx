@@ -278,11 +278,11 @@ export default function CategoryDetailScreen() {
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerBrandName}>تەپسی سەلیمانی</Text>
-          <Text style={styles.footerSubtitle}>سووپاس بۆ سەردانیکردنتانا!</Text>
+          <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
+          <Text style={styles.footerSubtitle}>{t('footerThankYou')}</Text>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerTextSecondary}>سووپاس بۆ سەردانیکردنتان</Text>
-          <Text style={styles.footerTextSecondary}>شکرًا لزیارتکم</Text>
+          <Text style={styles.footerTextSecondary}>{t('footerKurdish')}</Text>
+          <Text style={styles.footerTextSecondary}>{t('footerArabic')}</Text>
         </View>
       </ScrollView>
     </View>

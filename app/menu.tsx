@@ -985,10 +985,10 @@ export default function PublicMenuScreen() {
             resizeMode="contain"
           />
           <Text style={styles.footerTitle}>تەپسی سلێمانی</Text>
-          <Text style={styles.footerText}>{t('thankYou')}</Text>
+          <Text style={styles.footerText}>{t('footerThankYou')}</Text>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerTextSecondary}>سوپاس بۆ سەردانیکردنتان</Text>
-          <Text style={styles.footerTextSecondary}>شكراً لزيارتكم</Text>
+          <Text style={styles.footerTextSecondary}>{t('footerKurdish')}</Text>
+          <Text style={styles.footerTextSecondary}>{t('footerArabic')}</Text>
         </View>
       </ScrollView>
     </View>
