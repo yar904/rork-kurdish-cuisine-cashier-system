@@ -1,3 +1,4 @@
+// backend/hono.ts
 import { Hono } from "hono";
 import { trpcServer } from "@hono/trpc-server";
 import { cors } from "hono/cors";
@@ -6,8 +7,10 @@ import { createContext } from "./trpc/create-context";
 
 const app = new Hono();
 
+// Enable CORS for all routes
 app.use("*", cors());
 
+// Mount tRPC API routes
 app.use(
   "/trpc/*",
   trpcServer({
@@ -17,19 +20,24 @@ app.use(
   })
 );
 
+// Simple health check route
 app.get("/", (c) => {
   return c.json({ status: "ok", message: "API is running" });
 });
 
 export default app;
+
 /**
- * --- RORK VERCEL DEPLOYMENT CONFIGURATION ---
- * This section ensures that when deployed to Vercel,
- * Rork builds with the correct backend setup.
- * You can copy this JSON into local files if you export later.
+ * ============================================================
+ * === RORK + VERCEL DEPLOYMENT CONFIGURATION (REFERENCE) ===
+ * ============================================================
+ * These exports are used only for build metadata within Rork.
+ * When deployed to Vercel, your backend will use this setup.
+ * If you export later or move to manual deployment, create
+ * actual files using this configuration.
  */
 
-// === backend/package.json ===
+// === backend/package.json (auto reference) ===
 export const backendPackageJson = `
 {
   "name": "restaurant-backend",
@@ -55,9 +63,9 @@ export const backendPackageJson = `
     "typescript": "^5.8.3"
   }
 }
-`
+`;
 
-// === backend/tsconfig.json ===
+// === backend/tsconfig.json (auto reference) ===
 export const backendTsConfig = `
 {
   "compilerOptions": {
@@ -79,4 +87,4 @@ export const backendTsConfig = `
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
-`
+`;
