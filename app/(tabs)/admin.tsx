@@ -171,7 +171,7 @@ export default function AdminScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - ${user.role === 'admin' ? 'Super Admin' : 'Manager'}`,
+        title: user.role === 'admin' ? 'Super Admin' : 'Restaurant Manager',
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
         headerRight: () => (
@@ -486,7 +486,9 @@ export default function AdminScreen() {
 
               <View style={styles.currentUserBadge}>
                 <Text style={styles.currentUserText}>
-                  Currently logged in as: <Text style={styles.currentUserRole}>Super Admin</Text>
+                  <Text style={styles.currentUserText}>
+  Currently logged in as: <Text style={styles.currentUserRole}>{user.role === 'admin' ? 'Super Admin' : 'Restaurant Manager'}</Text>
+</Text>
                 </Text>
                 <TouchableOpacity
                   style={styles.logoutButtonInline}
