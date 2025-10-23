@@ -28,6 +28,81 @@ export default function TabLayout() {
   if (!user.authenticated) {
     return null;
   }
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors.primary,
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: Colors.background,
+          borderTopColor: Colors.border,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="cashier"
+        options={{
+          title: t('cashier'),
+          tabBarIcon: ({ color }) => <ShoppingCart size={24} color={color} />,
+          href: user.role === 'staff' ? '/(tabs)/cashier' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="kitchen"
+        options={{
+          title: t('kitchen'),
+          tabBarIcon: ({ color }) => <ChefHat size={24} color={color} />,
+          href: user.role === 'staff' ? '/(tabs)/kitchen' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="waiter"
+        options={{
+          title: t('waiter'),
+          tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
+          href: user.role === 'staff' ? '/(tabs)/waiter' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: t('analytics'),
+          tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
+          href: user.role === 'staff' ? '/(tabs)/analytics' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="reports"
+        options={{
+          title: 'Reports',
+          tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
+          href: (user.role === 'admin' || user.role === 'manager') ? '/(tabs)/reports' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: user.role === 'admin' ? 'Super Admin' : 'Manager',
+          tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+          href: (user.role === 'admin' || user.role === 'manager') ? '/(tabs)/admin' : null,
+        }}
+      />
+    </Tabs>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+});
+  if (!user.authenticated) {
+    return null;
+  }
   
   return (
     <Tabs
