@@ -59,7 +59,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
       return { success: true, role: 'staff' };
     }
-    
+
     return { success: false, error: 'Invalid password' };
   }, []);
 
