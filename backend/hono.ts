@@ -1,4 +1,3 @@
-// backend/hono.ts
 import { Hono } from "hono";
 import { trpcServer } from "@hono/trpc-server";
 import { cors } from "hono/cors";
@@ -7,12 +6,11 @@ import { createContext } from "./trpc/create-context";
 
 const app = new Hono();
 
-// Enable CORS for all routes
 app.use("*", cors());
 
-// Mount tRPC API routes
+// Attach tRPC routes
 app.use(
-  "/trpc/*",
+  "/api/trpc/*",
   trpcServer({
     endpoint: "/api/trpc",
     router: appRouter,
@@ -20,11 +18,10 @@ app.use(
   })
 );
 
-// Simple health check route
-app.get("/", (c) => {
-  return c.json({ status: "ok", message: "API is running" });
-});
+// Health check route
+app.get("/", (c) => c.json({ status: "ok", message: "API is running" }));
 
+export default app;
 export default app;
 
 /**
