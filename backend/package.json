@@ -1,0 +1,27 @@
+{
+    "name": "restaurant-backend",
+    "version": "1.0.0",
+    "description": "Backend for Rork Kurdish Cuisine Cashier System",
+    "main": "dist/index.js",
+    "scripts": {
+      "dev": "tsx watch --env-file=.env index.ts",
+      "build": "tsc",
+      "start": "node dist/index.js"
+    },
+    "dependencies": {
+      "@hono/node-server": "^1.12.0",
+      "@hono/trpc-server": "^0.3.0",
+      "@supabase/supabase-js": "^2.43.0",
+      "@trpc/server": "^10.45.0",
+      "dotenv": "^16.4.5",
+      "hono": "^4.5.0",
+      "zod": "^3.23.0"
+    },
+    "devDependencies": {
+      "@types/node": "^20.11.24",
+      "tsx": "^4.7.0",
+      "typescript": "^5.4.0"
+    },
+    "author": "Yar Khader",
+    "license": "MIT"
+  }

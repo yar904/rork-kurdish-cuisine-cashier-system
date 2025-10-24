@@ -1,12 +1,13 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { RestaurantProvider } from "@/contexts/RestaurantContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { trpc, trpcClient } from "@/lib/trpc";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { trpc, trpcClient } from "@/lib/trpc";
-import { Platform } from "react-native";
+import { RestaurantProvider } from "@/contexts/RestaurantContext";
+
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
@@ -19,14 +20,18 @@ function RootLayoutNav() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="order-tracking" options={{ headerShown: false }} />
       <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="font-preview" options={{ headerShown: true, title: 'Kurdish Fonts' }} />
+      <Stack.Screen
+        name="font-preview"
+        options={{ headerShown: true, title: "Kurdish Fonts" }}
+      />
     </Stack>
   );
 }
 
 export default function RootLayout() {
-  if (Platform.OS === 'web') {
-    const style = document.createElement('style');
+  // Apply web font styling
+  if (Platform.OS === "web") {
+    const style = document.createElement("style");
     style.innerHTML = `
       @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
       * {
