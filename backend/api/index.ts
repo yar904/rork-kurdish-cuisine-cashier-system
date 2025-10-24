@@ -1,34 +1,28 @@
-import { Hono } from 'hono';
-import { handle } from 'hono/vercel';
-import { cors } from 'hono/cors';
-import { trpcServer } from '@hono/trpc-server';
-import { appRouter } from '../trpc/app-router';
-import { createContext } from '../trpc/create-context';
+import { Hono } from 'hono'
+import { handle } from 'hono/vercel'
+import { cors } from 'hono/cors'
+import { appRouter } from '../trpc/app-router'
+import { createContext } from '../trpc/create-context'
 
 export const config = {
   runtime: 'edge',
-};
+}
 
-const app = new Hono().basePath('/api');
+const app = new Hono().basePath('/api')
 
 app.use('*', cors({
-  origin: ['http://localhost:8081', 'http://localhost:3000', process.env.FRONTEND_URL || '*'],
+  origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
   credentials: true,
-}));
+}))
 
-app.use(
-  '/trpc/*',
-  trpcServer({
-    router: appRouter,
-    createContext,
-  })
-);
+// tRPC integration (optional for Rork)
+app.use('/trpc/*', appRouter, createContext)
 
-app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
-app.get('/', (c) => c.text('✅ Kurdish Cuisine API is running on Vercel Edge Runtime'));
+// Health check
+app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }))
 
-export const GET = handle(app);
-export const POST = handle(app);
-export const PUT = handle(app);
-export const DELETE = handle(app);
-export const PATCH = handle(app);
+// Root route
+app.get('/', (c) => c.text('✅ Kurdish Cuisine API running on Vercel Edge Runtime'))
+
+export const GET = handle(app)
+export const POST = handle(app)
