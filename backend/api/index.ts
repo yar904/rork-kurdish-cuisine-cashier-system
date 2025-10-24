@@ -10,12 +10,13 @@ export const config = {
 
 const app = new Hono().basePath('/api')
 
+// Enable CORS
 app.use('*', cors({
   origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
   credentials: true,
 }))
 
-// tRPC integration (optional for Rork)
+// tRPC route (optional)
 app.use('/trpc/*', appRouter, createContext)
 
 // Health check
