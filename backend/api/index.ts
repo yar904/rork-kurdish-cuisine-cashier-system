@@ -4,19 +4,16 @@ import { cors } from 'hono/cors'
 import { appRouter } from '../trpc/app-router'
 import { createContext } from '../trpc/create-context'
 
-export const config = {
-  runtime: 'edge',
-}
+export const config = { runtime: 'edge' }
 
 const app = new Hono().basePath('/api')
 
-// Enable CORS
 app.use('*', cors({
   origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
   credentials: true,
 }))
 
-// tRPC route (optional)
+// Optional TRPC routes
 app.use('/trpc/*', appRouter, createContext)
 
 // Health check
