@@ -1,12 +1,5 @@
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 
 export default function HomeScreen() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/landing');
-  }, []);
-
-  return null;
+  return <Redirect href="/landing" />;
 }
