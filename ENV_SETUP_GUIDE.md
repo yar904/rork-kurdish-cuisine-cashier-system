@@ -1,199 +1,211 @@
-# 🔐 Environment Variables Setup Guide
+# 🔐 Environment Setup Guide - Kurdish Cuisine Cashier System
 
-## Overview
+## 📦 Quick Setup
 
-This guide helps you configure environment variables for both local development and production deployment.
-
----
-
-## 📁 Local Development Setup
-
-### 1. Root `.env` (Frontend)
-
-Update your root `.env` file:
+### 1. **Copy Environment Files**
 
 ```bash
-# Backend API URL (for tRPC)
-EXPO_PUBLIC_RORK_API_BASE_URL=http://localhost:3000
-
-# Supabase
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# AI Features (Optional)
-EXPO_PUBLIC_OPENAI_API_KEY=sk-xxxx
-EXPO_PUBLIC_AI_API_URL=https://api.openai.com/v1/chat/completions
+# Root project .env is already configured
+# Backend .env is already configured
+# Just verify they exist:
+ls -la .env backend/.env
 ```
 
-### 2. `backend/.env` (Backend)
+### 2. **Verify Supabase Connection**
 
-Create or update `backend/.env`:
+Your Supabase project: https://oqspnszwjxzyvwqjvjiy.supabase.co
+
+- ✅ Database is set up
+- ✅ Tables created (menu_items, orders, order_items, tables, etc.)
+- ✅ RLS policies enabled
+
+### 3. **Update Vercel Environment Variables**
+
+#### **Option A: Via Vercel Dashboard** (Recommended)
+
+1. Go to: https://vercel.com/your-username/rork-kurdish-cuisine-cashier-system/settings/environment-variables
+
+2. Add each variable below for **ALL environments** (Production, Preview, Development):
+
+```
+NODE_ENV = production
+SUPABASE_URL = https://oqspnszwjxzyvwqjvjiy.supabase.co
+SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (get from Supabase)
+SUPABASE_SERVICE_ROLE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (get from Supabase)
+DATABASE_URL = postgresql://Farman12Tapse@db.oqspnszwjxzyvwqjvjiy.supabase.co:5432/postgres
+FRONTEND_URL = https://rork-kurdish-cuisine-cashier-system.vercel.app
+EXPO_PUBLIC_SUPABASE_URL = https://oqspnszwjxzyvwqjvjiy.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY = (same as SUPABASE_ANON_KEY)
+EXPO_PUBLIC_API_BASE_URL = https://rork-kurdish-cuisine-cashier-system.vercel.app
+EXPO_PUBLIC_RORK_API_BASE_URL = https://rork-kurdish-cuisine-cashier-system.vercel.app
+```
+
+3. Click **Save**
+
+#### **Option B: Via Vercel CLI**
 
 ```bash
-# Supabase
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# Server
-PORT=3000
-NODE_ENV=development
-
-# Frontend URL (for CORS)
-FRONTEND_URL=http://localhost:8081
+vercel env pull .env.local
+vercel env add NODE_ENV production
+vercel env add SUPABASE_URL production
+# ... (add all variables above)
 ```
 
----
-
-## 🚀 Production Setup
-
-### Vercel Backend Environment Variables
-
-In your Vercel Backend project settings, add:
+### 4. **Deploy**
 
 ```bash
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-FRONTEND_URL=https://your-frontend-domain.vercel.app
-NODE_ENV=production
+vercel --prod
 ```
 
-### Vercel Frontend Environment Variables
+---
 
-In your Vercel Frontend project settings, add:
+## 🔍 Get Your Supabase Keys
+
+1. Go to: https://supabase.com/dashboard/project/oqspnszwjxzyvwqjvjiy/settings/api
+
+2. Copy:
+   - **URL**: `https://oqspnszwjxzyvwqjvjiy.supabase.co`
+   - **anon/public key**: Under "Project API keys" → `anon` `public`
+   - **service_role key**: Under "Project API keys" → `service_role` (⚠️ Keep secret!)
+
+3. Copy **Database URL**:
+   - Go to: https://supabase.com/dashboard/project/oqspnszwjxzyvwqjvjiy/settings/database
+   - Copy the connection string
+
+---
+
+## 🧪 Test Your Setup
+
+### **Local Testing**
 
 ```bash
-# Point to your deployed backend
-EXPO_PUBLIC_RORK_API_BASE_URL=https://your-backend.vercel.app
+# Start both backend and frontend
+npm run start:fullstack
 
-# Supabase
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Or manually:
+# Terminal 1
+cd backend && npx tsx --env-file=.env api/index.ts
 
-# AI Features (if using)
-EXPO_PUBLIC_OPENAI_API_KEY=sk-xxxx
-EXPO_PUBLIC_AI_API_URL=https://api.openai.com/v1/chat/completions
+# Terminal 2
+npx expo start
 ```
 
----
-
-## 🔄 How It Works
-
-### Frontend → Backend Communication
-
-1. **Frontend** uses `EXPO_PUBLIC_RORK_API_BASE_URL` to connect to backend
-2. **tRPC Client** automatically appends `/api/trpc` to the base URL
-3. **Backend** receives requests at `/api/trpc/*` routes
-4. **Backend** responds with data from Supabase
-
-### Example Flow:
-```
-Frontend: EXPO_PUBLIC_RORK_API_BASE_URL=https://backend.vercel.app
-↓
-tRPC constructs: https://backend.vercel.app/api/trpc/menu.getAll
-↓
-Backend receives: POST /api/trpc/menu.getAll
-↓
-Backend queries Supabase using SUPABASE_SERVICE_ROLE_KEY
-↓
-Backend returns data to frontend
-```
-
----
-
-## ✅ Verification Checklist
-
-### Local Development
-- [ ] Root `.env` has `EXPO_PUBLIC_RORK_API_BASE_URL=http://localhost:3000`
-- [ ] `backend/.env` has all Supabase credentials
-- [ ] `backend/.env` has `FRONTEND_URL=http://localhost:8081`
-- [ ] Run `npm run start:fullstack` - both servers start
-- [ ] Open `http://localhost:8081` - app loads without errors
-- [ ] Check Network tab - API calls go to `localhost:3000/api/trpc/*`
-
-### Production
-- [ ] Vercel Backend has all environment variables set
-- [ ] Vercel Frontend has `EXPO_PUBLIC_RORK_API_BASE_URL` pointing to backend URL
-- [ ] Both projects deployed successfully
-- [ ] Frontend can fetch data from backend
-- [ ] CORS configured correctly (no CORS errors in console)
-- [ ] Health check works: `curl https://backend.vercel.app/api/health`
-
----
-
-## 🐛 Common Issues
-
-### Issue: "No base url found"
-**Cause:** Missing `EXPO_PUBLIC_RORK_API_BASE_URL` in frontend ENV
-**Fix:** Add the variable to root `.env` and restart Expo
-
-### Issue: "Network request failed"
-**Cause:** Backend not running or wrong URL
-**Fix:** 
-- Check backend is running: `curl http://localhost:3000/api/health`
-- Verify `EXPO_PUBLIC_RORK_API_BASE_URL` matches backend URL
-
-### Issue: "CORS error"
-**Cause:** Frontend domain not allowed in backend CORS config
-**Fix:** Add frontend URL to `FRONTEND_URL` in backend ENV and update CORS origins in `backend/api/index.ts`
-
-### Issue: "Supabase error: Invalid API key"
-**Cause:** Wrong Supabase keys or missing keys
-**Fix:** Double-check keys in Supabase Dashboard → Project Settings → API
-
----
-
-## 📋 Quick Setup Commands
-
+Test backend:
 ```bash
-# Setup backend
-cd backend
-npm install superjson
-cp ../.env .env  # Copy and modify as needed
-
-# Test backend locally
-npm run dev
-# Should see: "Backend running on http://localhost:3000"
-
-# In another terminal, test health
 curl http://localhost:3000/api/health
-# Should return: {"status":"ok","timestamp":"..."}
+```
 
-# Test frontend
-cd ..
-npm run start
-# Open http://localhost:8081
+### **Production Testing**
+
+```bash
+curl https://rork-kurdish-cuisine-cashier-system.vercel.app/api/health
+```
+
+Expected response:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-15T12:00:00.000Z"
+}
 ```
 
 ---
 
-## 🎯 Production Deployment Flow
+## 🔐 Security Notes
 
-1. **Deploy Backend First:**
-   - Push backend to GitHub
-   - Connect to Vercel
-   - Set environment variables
-   - Deploy and note the URL (e.g., `https://backend.vercel.app`)
+### **Never commit:**
+- `.env`
+- `backend/.env`
+- Any file containing `SUPABASE_SERVICE_ROLE_KEY`
 
-2. **Update Frontend ENV:**
-   - Set `EXPO_PUBLIC_RORK_API_BASE_URL=https://backend.vercel.app`
-   - Add to Vercel Frontend project settings
+### **Safe to commit:**
+- `.env.example`
+- Documentation files
 
-3. **Deploy Frontend:**
-   - Push frontend to GitHub (or same repo)
-   - Connect to Vercel
-   - Deploy
-
-4. **Update Backend CORS:**
-   - Add frontend URL to `FRONTEND_URL` in Vercel Backend settings
-   - Redeploy backend
-
-5. **Test Everything:**
-   - Open frontend app
-   - Check Network tab for successful API calls
-   - Verify data loads from Supabase
+### **Environment Variable Rules:**
+- `EXPO_PUBLIC_*` → Visible to users (bundled in frontend)
+- `SUPABASE_SERVICE_ROLE_KEY` → Backend only, never expose!
+- `SUPABASE_ANON_KEY` → Safe for frontend (limited permissions)
 
 ---
 
-**✅ You're all set! Your Kurdish Cuisine system is now production-ready.**
+## 📱 Local Development Setup
+
+### **For Development:**
+
+1. Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+2. Update `.env` with your values:
+```bash
+EXPO_PUBLIC_RORK_API_BASE_URL=http://localhost:3000
+EXPO_PUBLIC_SUPABASE_URL=https://oqspnszwjxzyvwqjvjiy.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+```
+
+3. Copy to backend:
+```bash
+cp .env backend/.env
+```
+
+4. Start dev server:
+```bash
+npm run start:fullstack
+```
+
+---
+
+## ✅ Environment Variables Checklist
+
+### **Root `.env`** (Frontend - Expo)
+- [x] EXPO_PUBLIC_RORK_API_BASE_URL
+- [x] EXPO_PUBLIC_SUPABASE_URL
+- [x] EXPO_PUBLIC_SUPABASE_ANON_KEY
+- [x] FRONTEND_URL
+
+### **`backend/.env`** (Backend - Hono + tRPC)
+- [x] NODE_ENV
+- [x] SUPABASE_URL
+- [x] SUPABASE_ANON_KEY
+- [x] SUPABASE_SERVICE_ROLE_KEY
+- [x] DATABASE_URL
+- [x] FRONTEND_URL
+- [x] EXPO_PUBLIC_SUPABASE_URL
+- [x] EXPO_PUBLIC_SUPABASE_ANON_KEY
+- [x] EXPO_PUBLIC_API_BASE_URL
+
+### **Vercel Environment Variables**
+- [x] All variables from `backend/.env`
+- [x] Applied to Production environment
+- [x] Applied to Preview environment
+- [x] Applied to Development environment
+
+---
+
+## 🚨 Common Issues
+
+### **Issue: Backend returns 500**
+**Fix**: Check Vercel logs and verify `SUPABASE_SERVICE_ROLE_KEY` is set correctly.
+
+### **Issue: Frontend can't connect to backend**
+**Fix**: Verify `EXPO_PUBLIC_RORK_API_BASE_URL` matches your Vercel URL.
+
+### **Issue: CORS errors**
+**Fix**: Ensure `FRONTEND_URL` is set in backend environment variables.
+
+### **Issue: Database connection fails**
+**Fix**: Check `DATABASE_URL` format and credentials in Supabase settings.
+
+---
+
+## 📚 Additional Resources
+
+- [Vercel Environment Variables Docs](https://vercel.com/docs/environment-variables)
+- [Supabase Environment Variables](https://supabase.com/docs/guides/getting-started/environment-variables)
+- [Expo Environment Variables](https://docs.expo.dev/guides/environment-variables/)
+
+---
+
+**✅ Setup Complete!** Your environment is now configured for production deployment.
