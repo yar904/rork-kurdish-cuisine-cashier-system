@@ -1,76 +1,42 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
-import { trpcServer } from "@hono/trpc-server";
 import { createClient } from "@supabase/supabase-js";
-import { appRouter } from "./trpc/app-router";
-import { createContext } from "./trpc/create-context";
 import "dotenv/config";
 
 const app = new Hono();
+app.use("/*", cors());
 
-app.use("*", cors({
-  origin: process.env.FRONTEND_URL || "*",
-  credentials: true,
-}));
-
+// ✅ Initialize Supabase Client
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_ANON_KEY!
 );
 
-app.use(
-  "/trpc/*",
-  trpcServer({
-    router: appRouter,
-    createContext,
-  })
-);
+// ✅ Root route
+app.get("/", (c) => c.text("Backend is running ✅"));
 
-app.get("/", (c) => 
-  c.json({ 
-    status: "✅ Backend is running", 
-    version: "1.0.0",
-    environment: process.env.NODE_ENV || "development"
-  })
-);
-
-app.get("/api/health", (c) => 
-  c.json({ 
-    status: "ok", 
+// ✅ Health check
+app.get("/api/health", (c) =>
+  c.json({
+    status: "ok",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development"
   })
 );
 
+// ✅ Supabase connection test
 app.get("/api/test", async (c) => {
-  try {
-    const { error } = await supabase
-      .from("menu_items")
-      .select("count")
-      .limit(1);
-    
-    if (error) {
-      return c.json({ 
-        status: "error", 
-        message: "Supabase connection failed",
-        error: error.message 
-      }, 500);
-    }
-    
-    return c.text("🔥 Rork backend is live and connected to Supabase!");
-  } catch (err) {
-    return c.json({ 
-      status: "error", 
-      message: "Backend test failed",
-      error: String(err) 
-    }, 500);
+  const { data, error } = await supabase.from("restaurants").select("*").limit(1);
+  if (error) {
+    return c.json({ message: "❌ Error connecting to Supabase", error: error.message });
   }
+  return c.json({
+    message: "🔥 Rork backend is live and connected to Supabase!",
+    sample: data,
+  });
 });
 
+// ✅ Server
 const port = Number(process.env.PORT) || 3000;
-console.log(`🚀 Rork backend running on http://localhost:${port}`);
-console.log(`🔗 Supabase URL: ${process.env.SUPABASE_PROJECT_URL}`);
-console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-
+console.log(`🔥 Rork backend running on http://localhost:${port}`);
 serve({ fetch: app.fetch, port });
