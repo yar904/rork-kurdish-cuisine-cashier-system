@@ -1,17 +1,27 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/index.ts", "use": "@vercel/node" }
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.ts" },
-    { "src": "/(.*)", "dest": "api/index.ts" }
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/index.ts"
+    }
   ],
   "env": {
     "NODE_ENV": "production",
     "SUPABASE_URL": "@supabase_url",
     "SUPABASE_ANON_KEY": "@supabase_anon_key",
     "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "DATABASE_URL": "@database_url",
     "FRONTEND_URL": "@frontend_url"
   }
 }
