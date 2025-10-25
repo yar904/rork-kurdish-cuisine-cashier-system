@@ -290,6 +290,7 @@ export default function PublicMenuScreen() {
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
               <View style={styles.imageContainerHorizontal}>
+                <View style={styles.goldCornerTopRight} />
                 <Image 
                   source={{ uri: item.image }} 
                   style={styles.menuItemImageHorizontal}
@@ -313,6 +314,7 @@ export default function PublicMenuScreen() {
                 <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
               </View>
             )}
+            <View style={styles.goldCornerBottomLeft} />
           </View>
         </TouchableOpacity>
         
@@ -1544,11 +1546,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 12,
+    gap: 16,
     justifyContent: 'space-between' as const,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
+        gap: 20,
       },
     }),
   },
@@ -1622,9 +1625,10 @@ const styles = StyleSheet.create({
     width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 20,
-    overflow: 'hidden' as const,
+    overflow: 'visible' as const,
     borderWidth: 0,
-    marginBottom: 4,
+    marginBottom: 16,
+    position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#8B5A2B',
@@ -1636,7 +1640,9 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
       web: {
-        maxWidth: 420,
+        width: '48%',
+        minWidth: 180,
+        maxWidth: 280,
         boxShadow: '0 6px 20px rgba(139, 90, 43, 0.12)',
       },
     }),
@@ -1663,9 +1669,12 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     backgroundColor: '#F9FAFB',
-    borderRadius: 0,
+    borderRadius: 20,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
+    position: 'relative' as const,
   },
   menuItemImageHorizontal: {
     width: '100%',
@@ -2481,6 +2490,30 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
     }),
+  },
+  goldCornerTopRight: {
+    position: 'absolute' as const,
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 32,
+    borderRightWidth: 32,
+    borderTopColor: '#D4AF37',
+    borderRightColor: 'transparent',
+    zIndex: 5,
+  },
+  goldCornerBottomLeft: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+    borderBottomWidth: 32,
+    borderLeftWidth: 32,
+    borderBottomColor: '#D4AF37',
+    borderLeftColor: 'transparent',
+    zIndex: 5,
   },
   reviewsList: {
     maxHeight: 400,

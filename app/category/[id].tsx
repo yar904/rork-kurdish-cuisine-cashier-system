@@ -77,37 +77,40 @@ export default function CategoryDetailScreen() {
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     return (
-      <TouchableOpacity 
+      <View 
         key={item.id} 
         style={styles.menuItemCard}
-        activeOpacity={0.95}
-        onPress={() => {
-          setSelectedItem(item);
-          setItemQuantity(1);
-          setItemNotes('');
-        }}
       >
-        {item.image && (
-          <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.menuItemImage}
-              resizeMode="cover"
-            />
+        <TouchableOpacity 
+          style={{ flex: 1 }}
+          activeOpacity={0.95}
+          onPress={() => {
+            setSelectedItem(item);
+            setItemQuantity(1);
+            setItemNotes('');
+          }}
+        >
+          {item.image && (
+            <View style={styles.imageContainer}>
+              <View style={styles.goldCornerTopRight} />
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.menuItemImage}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemName} numberOfLines={2}>
+              {getItemName(item)}
+            </Text>
+            <View style={styles.priceContainer}>
+              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+            </View>
+            <View style={styles.goldCornerBottomLeft} />
           </View>
-        )}
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemName} numberOfLines={1}>
-            {getItemName(item)}
-          </Text>
-          <Text style={styles.menuItemDescription} numberOfLines={2}>
-            {getItemDescription(item)}
-          </Text>
-          <View style={styles.priceContainer}>
-            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -482,37 +485,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
     gap: 16,
-    justifyContent: 'space-evenly' as const,
+    justifyContent: 'space-between' as const,
     ...Platform.select({
       web: {
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
+        justifyContent: 'center' as const,
+        gap: 20,
       },
     }),
   },
   menuItemCard: {
-    width: '47%',
+    width: '48%',
     minWidth: 160,
-    maxWidth: 240,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderRadius: 16,
-    overflow: 'hidden' as const,
+    backgroundColor: '#3d0101',
+    borderRadius: 20,
+    overflow: 'visible' as const,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(74, 21, 21, 0.1)',
+    borderWidth: 0,
+    position: 'relative' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#4A1515',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
+        shadowColor: '#8B5A2B',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 3,
+        elevation: 5,
       },
       web: {
-        boxShadow: '0 2px 16px rgba(74, 21, 21, 0.12)',
+        width: '48%',
+        minWidth: 180,
+        maxWidth: 280,
+        boxShadow: '0 6px 20px rgba(139, 90, 43, 0.12)',
       },
     }),
   },
@@ -520,44 +527,57 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     backgroundColor: '#F9FAFB',
+    borderRadius: 20,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    overflow: 'hidden' as const,
+    position: 'relative' as const,
   },
   menuItemImage: {
     width: '100%',
     height: '100%',
   },
   menuItemContent: {
-    padding: 14,
+    padding: 0,
+    position: 'relative' as const,
   },
   menuItemName: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1A1A1A',
-    marginBottom: 6,
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
     lineHeight: 20,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    marginTop: 12,
+    textAlign: 'center' as const,
+    paddingHorizontal: 12,
+  },
+  menuItemDescription: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 18,
+    fontWeight: '400' as const,
+    marginBottom: 12,
+    textAlign: 'center' as const,
+    paddingHorizontal: 12,
     ...Platform.select({
       web: {
         fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
-  menuItemDescription: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
-    fontWeight: '400' as const,
-    marginBottom: 10,
-    minHeight: 32,
-  },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 12,
+    alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
-    color: '#1A1A1A',
-    letterSpacing: -0.5,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.3,
+    textAlign: 'center' as const,
   },
   emptyState: {
     padding: 60,
@@ -605,6 +625,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#D4AF37',
     marginBottom: 16,
     borderRadius: 1,
+  },
+  goldCornerTopRight: {
+    position: 'absolute' as const,
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 32,
+    borderRightWidth: 32,
+    borderTopColor: '#D4AF37',
+    borderRightColor: 'transparent',
+    zIndex: 5,
+  },
+  goldCornerBottomLeft: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+    borderBottomWidth: 32,
+    borderLeftWidth: 32,
+    borderBottomColor: '#D4AF37',
+    borderLeftColor: 'transparent',
+    zIndex: 5,
   },
   modalOverlay: {
     flex: 1,
