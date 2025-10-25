@@ -9,7 +9,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { Send, Sparkles, X, Info, Bell, Users, MessageCircle } from "lucide-react-native";
+import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
@@ -20,7 +20,7 @@ interface AIChatbotProps {
 }
 
 export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { selectedTable } = useRestaurant();
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
@@ -28,12 +28,34 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
 
   // 🌍 SYSTEM prompt - multilingual support
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
-You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently.
-You help customers place orders, track their meals, and call staff when needed.
+You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently with perfect understanding.
+You help customers place orders, track their meals, answer questions about menu items, and call staff when needed.
 The current table is ${selectedTable}.
-If the customer writes in Kurdish, reply in Kurdish. If in Arabic, reply in Arabic. If in English, reply in English.
-Be warm, welcoming, and helpful. Use culturally appropriate greetings and expressions.
-You understand all three languages equally well and can switch between them naturally.`;
+
+Language Rules:
+- If the customer writes in Kurdish (کوردی), reply in Kurdish
+- If the customer writes in Arabic (عربي), reply in Arabic
+- If the customer writes in English, reply in English
+- You can understand and switch between all three languages seamlessly
+- Maintain the same language throughout the conversation unless the customer switches
+
+Personality:
+- Be warm, welcoming, and helpful
+- Use culturally appropriate greetings and expressions
+- Show Kurdish hospitality and friendliness
+- Be professional yet personable
+- Help customers feel comfortable and valued
+
+Capabilities:
+- Answer questions about menu items, ingredients, and preparation
+- Help customers place orders
+- Track order status
+- Call waiters or staff when needed
+- Provide recommendations based on preferences
+- Assist with special dietary requirements or allergies
+- Explain Kurdish dishes and traditions
+
+Remember: You represent Tapse's commitment to excellent customer service in all languages.`;
 
   // 🧠 Send message to OpenAI API (real responses)
   const sendMessage = async () => {
@@ -80,12 +102,12 @@ You understand all three languages equally well and can switch between them natu
   };
 
   useEffect(() => {
-    if (visible && messages.length === 0) {
+    if (visible) {
       const welcomeMessage = language === 'ku' 
-        ? "سڵاو! من بارانم، یاریدەدەری AI ـی تەپسی. چۆن دەتوانم یارمەتیت بدەم؟ 🌟" 
+        ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
         : language === 'ar'
-        ? "مرحباً! أنا باران، مساعدك الذكي في مطعم تابسي. كيف يمكنني مساعدتك؟ 🌟"
-        : "Hello! I'm Baran, your AI assistant at Tapse Restaurant. How may I help you today? 🌟";
+        ? `مرحباً بك في مطعم تابسي السليماني! 🌟\n\nأنا باران، مساعدك الرقمي الذكي. يمكنني مساعدتك في:\n\n✨ الاستفسار عن القائمة والأطباق\n🍽️ طلب الطعام\n📋 تتبع طلبك\n👋 استدعاء النادل\n\nكيف يمكنني مساعدتك اليوم؟ 😊`
+        : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
       
       setMessages([
         {

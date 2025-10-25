@@ -21,15 +21,28 @@ export const updateMenuItemProcedure = publicProcedure
   .mutation(async ({ input }: { input: z.infer<typeof updateMenuItemSchema> }) => {
     const { id, ...updateData } = input;
 
+    const { data: currentItem, error: fetchError } = await supabase
+      .from("menu_items")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !currentItem) {
+      console.error("Error fetching menu item:", fetchError);
+      throw new Error("Failed to fetch menu item");
+    }
+
+    const kurdishName = updateData.nameKurdish ?? currentItem.name_kurdish;
+
     const dbUpdateData: Record<string, any> = {};
-    if (updateData.name !== undefined) dbUpdateData.name = updateData.name;
+    if (updateData.name !== undefined) dbUpdateData.name = updateData.name || kurdishName;
     if (updateData.nameKurdish !== undefined) dbUpdateData.name_kurdish = updateData.nameKurdish;
-    if (updateData.nameArabic !== undefined) dbUpdateData.name_arabic = updateData.nameArabic;
+    if (updateData.nameArabic !== undefined) dbUpdateData.name_arabic = updateData.nameArabic || kurdishName;
     if (updateData.category !== undefined) dbUpdateData.category = updateData.category;
     if (updateData.price !== undefined) dbUpdateData.price = updateData.price;
-    if (updateData.description !== undefined) dbUpdateData.description = updateData.description;
+    if (updateData.description !== undefined) dbUpdateData.description = updateData.description || (updateData.descriptionKurdish ?? currentItem.description_kurdish);
     if (updateData.descriptionKurdish !== undefined) dbUpdateData.description_kurdish = updateData.descriptionKurdish;
-    if (updateData.descriptionArabic !== undefined) dbUpdateData.description_arabic = updateData.descriptionArabic;
+    if (updateData.descriptionArabic !== undefined) dbUpdateData.description_arabic = updateData.descriptionArabic || (updateData.descriptionKurdish ?? currentItem.description_kurdish);
     if (updateData.image !== undefined) dbUpdateData.image = updateData.image;
     if (updateData.available !== undefined) dbUpdateData.available = updateData.available;
 

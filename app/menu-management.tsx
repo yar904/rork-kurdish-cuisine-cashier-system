@@ -96,13 +96,13 @@ export default function MenuManagementScreen() {
   }, [checkAccess]);
 
   const handleSave = () => {
-    if (!editingItem.name || !editingItem.nameKurdish || !editingItem.nameArabic) {
-      Alert.alert('Validation Error', 'Please fill in all name fields');
+    if (!editingItem.nameKurdish) {
+      Alert.alert('Validation Error', 'Kurdish name is required. Other languages are optional.');
       return;
     }
 
-    if (!editingItem.description || !editingItem.descriptionKurdish || !editingItem.descriptionArabic) {
-      Alert.alert('Validation Error', 'Please fill in all description fields');
+    if (!editingItem.descriptionKurdish) {
+      Alert.alert('Validation Error', 'Kurdish description is required. Other languages are optional.');
       return;
     }
 
@@ -113,14 +113,14 @@ export default function MenuManagementScreen() {
     }
 
     const data = {
-      name: editingItem.name,
+      name: editingItem.name || editingItem.nameKurdish,
       nameKurdish: editingItem.nameKurdish,
-      nameArabic: editingItem.nameArabic,
+      nameArabic: editingItem.nameArabic || editingItem.nameKurdish,
       category: editingItem.category,
       price: price,
-      description: editingItem.description,
+      description: editingItem.description || editingItem.descriptionKurdish,
       descriptionKurdish: editingItem.descriptionKurdish,
-      descriptionArabic: editingItem.descriptionArabic,
+      descriptionArabic: editingItem.descriptionArabic || editingItem.descriptionKurdish,
       image: editingItem.image || null,
       available: editingItem.available,
     };
@@ -318,52 +318,25 @@ export default function MenuManagementScreen() {
 
           <ScrollView style={styles.modalContent} contentContainerStyle={styles.modalContentContainer}>
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>English</Text>
+              <Text style={styles.formSectionTitle}>Kurdish (کوردی) - Required</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editingItem.name}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
-                  placeholder="e.g., Tikka Kebab"
-                  placeholderTextColor={Colors.textLight}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description *</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={editingItem.description}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, description: text })}
-                  placeholder="Describe the dish..."
-                  placeholderTextColor={Colors.textLight}
-                  multiline
-                  numberOfLines={3}
-                />
-              </View>
-            </View>
-
-            <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>Kurdish (کوردی)</Text>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name *</Text>
+                <Text style={styles.inputLabel}>Name (ناو) *</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.nameKurdish}
                   onChangeText={(text) => setEditingItem({ ...editingItem, nameKurdish: text })}
-                  placeholder="ناوی خواردن"
+                  placeholder="ناوی خواردن (پێویستە)"
                   placeholderTextColor={Colors.textLight}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description *</Text>
+                <Text style={styles.inputLabel}>Description (وەسف) *</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionKurdish}
                   onChangeText={(text) => setEditingItem({ ...editingItem, descriptionKurdish: text })}
-                  placeholder="وەسفی خواردن..."
+                  placeholder="وەسفی خواردن... (پێویستە)"
                   placeholderTextColor={Colors.textLight}
                   multiline
                   numberOfLines={3}
@@ -372,25 +345,52 @@ export default function MenuManagementScreen() {
             </View>
 
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>Arabic (عربي)</Text>
+              <Text style={styles.formSectionTitle}>English (Optional)</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name *</Text>
+                <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
                   style={styles.input}
-                  value={editingItem.nameArabic}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, nameArabic: text })}
-                  placeholder="اسم الطبق"
+                  value={editingItem.name}
+                  onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
+                  placeholder="e.g., Tikka Kebab (defaults to Kurdish)"
                   placeholderTextColor={Colors.textLight}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description *</Text>
+                <Text style={styles.inputLabel}>Description</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editingItem.description}
+                  onChangeText={(text) => setEditingItem({ ...editingItem, description: text })}
+                  placeholder="Describe the dish... (defaults to Kurdish)"
+                  placeholderTextColor={Colors.textLight}
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+            </View>
+
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Arabic (عربي) - Optional</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Name (اسم)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editingItem.nameArabic}
+                  onChangeText={(text) => setEditingItem({ ...editingItem, nameArabic: text })}
+                  placeholder="اسم الطبق (افتراضي للكردية)"
+                  placeholderTextColor={Colors.textLight}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Description (وصف)</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionArabic}
                   onChangeText={(text) => setEditingItem({ ...editingItem, descriptionArabic: text })}
-                  placeholder="وصف الطبق..."
+                  placeholder="وصف الطبق... (افتراضي للكردية)"
                   placeholderTextColor={Colors.textLight}
                   multiline
                   numberOfLines={3}
