@@ -2,14 +2,11 @@
   "name": "restaurant-backend",
   "version": "1.0.0",
   "description": "Backend for Rork Kurdish Cuisine Cashier System",
-  "main": "api/index.ts",
+  "main": "index.ts",
   "scripts": {
-  "dev": "tsx watch --env-file=.env index.ts",
-  "start": "tsx index.ts",
-  "build": "tsc"
-}
-    "start": "tsx api/index.ts",
-    "vercel-build": "echo '✅ Edge runtime build complete'"
+    "dev": "tsx watch --env-file=.env index.ts",
+    "start": "tsx index.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "hono": "^4.4.3",
