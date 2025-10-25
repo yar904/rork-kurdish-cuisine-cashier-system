@@ -116,14 +116,7 @@ export default function LandingPage() {
               <Text style={styles.languageButtonText}>{currentLanguage?.label}</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity 
-              style={styles.staffButton}
-              onPress={() => router.push('/staff-login')}
-              activeOpacity={0.7}
-            >
-              <Settings size={20} color="#FFFFFF" strokeWidth={2} />
-              <Text style={styles.staffButtonText}>Staff</Text>
-            </TouchableOpacity>
+            <View style={{ width: 120 }} />
           </View>
 
           {showLanguages && (
@@ -251,28 +244,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
-  staffButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(61, 1, 1, 0.75)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: Colors.gold + '40',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  staffButtonText: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
+
   languageDropdown: {
     position: 'absolute',
     left: 20,
