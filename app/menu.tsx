@@ -1008,8 +1008,11 @@ export default function PublicMenuScreen() {
           opacity: categorySlideHeight,
         },
       ]}>
-        <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-        <View style={styles.luxuryAccent} />
+        <View style={styles.categoryTitleContainer}>
+          <View style={styles.categoryDecorLeft} />
+          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
+          <View style={styles.categoryDecorRight} />
+        </View>
         <ScrollView 
           ref={categoryScrollRef}
           horizontal 
@@ -1335,7 +1338,7 @@ const styles = StyleSheet.create({
     fontWeight: '400' as const,
   },
   categorySliderContainer: {
-    backgroundColor: '#5C4033',
+    backgroundColor: '#D4C5A9',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
     overflow: 'hidden' as const,
@@ -1346,41 +1349,43 @@ const styles = StyleSheet.create({
       web: {
         paddingBottom: 28,
         paddingTop: 16,
-        backgroundImage: 'linear-gradient(135deg, #6B4423 0%, #5C4033 50%, #4A3426 100%)',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       },
     }),
   },
   categorySliderTitle: {
-    fontSize: 18,
+    fontSize: 28,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#E8C968',
+    color: '#3d0101',
     marginTop: 8,
-    marginLeft: 0,
+    marginLeft: 20,
     marginBottom: 4,
-    letterSpacing: 0.8,
-    textAlign: 'center' as const,
+    letterSpacing: 0.5,
+    textAlign: 'left' as const,
     textTransform: 'capitalize' as const,
     ...Platform.select({
       web: {
-        fontSize: 22,
+        fontSize: 28,
         marginTop: 12,
         marginBottom: 6,
       },
     }),
   },
   luxuryAccent: {
-    width: 60,
-    height: 2,
-    backgroundColor: '#D4AF37',
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
     marginLeft: 0,
-    marginBottom: 12,
-    borderRadius: 1,
-    alignSelf: 'center' as const,
+    marginBottom: 0,
+    borderRadius: 0,
+    display: 'none' as const,
     ...Platform.select({
       web: {
-        width: 90,
-        height: 3,
-        marginBottom: 16,
+        width: 0,
+        height: 0,
+        marginBottom: 0,
       },
     }),
   },
@@ -1448,7 +1453,7 @@ const styles = StyleSheet.create({
   categoryCardFooter: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: '#5C4033',
+    backgroundColor: '#2a1a1a',
     width: '100%',
     height: 60,
     justifyContent: 'center',
@@ -1460,7 +1465,6 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 10,
         height: 70,
-        backgroundImage: 'linear-gradient(to bottom, #5C4033 0%, #4A3426 100%)',
       },
     }),
   },
@@ -2753,24 +2757,26 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    backgroundColor: '#3d0101',
+    backgroundColor: 'rgba(61, 1, 1, 0.85)',
     paddingVertical: 12,
     paddingHorizontal: 8,
     paddingBottom: Platform.select({ ios: 24, android: 16, default: 16 }),
     borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.3)',
+    borderTopColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 16,
+        elevation: 20,
       },
       web: {
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 -6px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.3)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       },
     }),
   },
@@ -2780,31 +2786,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 8,
     paddingHorizontal: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     marginHorizontal: 4,
     minHeight: 64,
-    ...Platform.select({
-      web: {
-        minHeight: 72,
-        transition: 'all 0.2s ease',
-      },
-    }),
-  },
-  fabButtonPrimary: {
-    backgroundColor: '#D4AF37',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     ...Platform.select({
       ios: {
-        shadowColor: '#D4AF37',
+        shadowColor: 'rgba(212, 175, 55, 0.5)',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
+        shadowOpacity: 0.3,
         shadowRadius: 8,
       },
       android: {
         elevation: 6,
       },
       web: {
-        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.5)',
+        minHeight: 72,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      },
+    }),
+  },
+  fabButtonPrimary: {
+    backgroundColor: 'rgba(212, 175, 55, 0.95)',
+    borderColor: 'rgba(212, 175, 55, 0.8)',
+    borderWidth: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
       },
     }),
   },
@@ -2812,19 +2836,25 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
     position: 'relative' as const,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
   },
   fabLabel: {
     fontFamily: 'NotoNaskhArabic_600SemiBold',
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#FFFFFF',
     textAlign: 'center' as const,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
     lineHeight: 14,
+    fontWeight: '700' as const,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   fabLabelPrimary: {
     color: '#3d0101',
