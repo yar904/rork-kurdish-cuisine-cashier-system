@@ -60,6 +60,7 @@ export default function PublicMenuScreen() {
   const lastScrollY = useRef(0);
   const scrollDirection = useRef<'up' | 'down'>('down');
   const currentSlideIndex = useRef(0);
+  const fabSlideAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!selectedTable && !params.table) {
@@ -71,6 +72,15 @@ export default function PublicMenuScreen() {
       }
     }
   }, [params.table, setSelectedTable, selectedTable]);
+
+  useEffect(() => {
+    Animated.spring(fabSlideAnimation, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 7,
+    }).start();
+  }, []);
 
   const handleAddToCart = () => {
     if (selectedItem) {
@@ -919,74 +929,6 @@ export default function PublicMenuScreen() {
             <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
         </View>
-        
-        <View style={styles.iconRow}>
-          <TouchableOpacity
-            style={styles.iconItem}
-            onPress={() => setShowAIAssistant(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <MessageCircle size={22} color="#D4AF37" strokeWidth={1.8} />
-            </View>
-            <Text style={styles.iconLabel}>
-              {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.iconItem}
-            onPress={() => setShowCart(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Utensils size={22} color="#D4AF37" strokeWidth={1.8} />
-              {cartItemCount > 0 && (
-                <View style={styles.cartBadge}>
-                  <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.iconLabel}>
-              {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.iconItem}
-            onPress={() => {
-              if (Platform.OS === 'web') {
-                window.open('https://www.google.com/search?q=Tapsi+Sulaymaniyah+reviews', '_blank');
-              } else {
-                Alert.alert(
-                  language === 'en' ? 'Google Reviews' : language === 'ku' ? 'هەڵسەنگاندنی گووگڵ' : 'مراجعات جوجل',
-                  language === 'en' ? 'Please visit our Google page to leave a review' : language === 'ku' ? 'تکایە سەردانی پەڕەی گووگڵمان بکە بۆ هێشتنەوەی هەڵسەنگاندن' : 'يرجى زيارة صفحتنا على جوجل لترك تقييم'
-                );
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Star size={22} color="#D4AF37" strokeWidth={1.8} />
-            </View>
-            <Text style={styles.iconLabel}>
-              {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.iconItem}
-            onPress={() => setShowSearchModal(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Search size={22} color="#D4AF37" strokeWidth={1.8} />
-            </View>
-            <Text style={styles.iconLabel}>
-              {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         {showLanguageMenu && (
           <View style={styles.languageMenu}>
@@ -1153,6 +1095,89 @@ export default function PublicMenuScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <Animated.View
+        style={[
+          styles.floatingMenu,
+          {
+            transform: [
+              {
+                translateY: fabSlideAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [100, 0],
+                }),
+              },
+            ],
+            opacity: fabSlideAnimation,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={() => setShowAIAssistant(true)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.fabIconContainer}>
+            <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
+          </View>
+          <Text style={styles.fabLabel}>
+            {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.fabButton, styles.fabButtonPrimary]}
+          onPress={() => setShowCart(true)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.fabIconContainer}>
+            <Utensils size={24} color="#3d0101" strokeWidth={2} />
+            {cartItemCount > 0 && (
+              <View style={styles.fabCartBadge}>
+                <Text style={styles.fabCartBadgeText}>{cartItemCount}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={[styles.fabLabel, styles.fabLabelPrimary]}>
+            {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={() => {
+            if (Platform.OS === 'web') {
+              window.open('https://www.google.com/search?q=Tapsi+Sulaymaniyah+reviews', '_blank');
+            } else {
+              Alert.alert(
+                language === 'en' ? 'Google Reviews' : language === 'ku' ? 'هەڵسەنگاندنی گووگڵ' : 'مراجعات جوجل',
+                language === 'en' ? 'Please visit our Google page to leave a review' : language === 'ku' ? 'تکایە سەردانی پەڕەی گووگڵمان بکە بۆ هێشتنەوەی هەڵسەنگاندن' : 'يرجى زيارة صفحتنا على جوجل لترك تقييم'
+              );
+            }
+          }}
+          activeOpacity={0.85}
+        >
+          <View style={styles.fabIconContainer}>
+            <Star size={24} color="#FFFFFF" strokeWidth={2} />
+          </View>
+          <Text style={styles.fabLabel}>
+            {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={() => setShowSearchModal(true)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.fabIconContainer}>
+            <Search size={24} color="#FFFFFF" strokeWidth={2} />
+          </View>
+          <Text style={styles.fabLabel}>
+            {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
+          </Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -1178,6 +1203,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3d0101',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+    paddingBottom: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1207,38 +1233,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  iconRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.2)',
-  },
-  iconItem: {
-    alignItems: 'center',
-    gap: 6,
-    flex: 1,
-  },
-  iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-    position: 'relative' as const,
-  },
-  iconLabel: {
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center' as const,
-    letterSpacing: 0.3,
-  },
+
 
   cartBadge: {
     position: 'absolute' as const,
@@ -1609,7 +1604,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingBottom: 32,
+    paddingBottom: Platform.select({ ios: 100, android: 92, default: 92 }),
     ...Platform.select({
       web: {
         paddingHorizontal: 0,
@@ -2751,5 +2746,107 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#D4AF37',
+  },
+  floatingMenu: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    backgroundColor: '#3d0101',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    paddingBottom: Platform.select({ ios: 24, android: 16, default: 16 }),
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(212, 175, 55, 0.3)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 16,
+      },
+      web: {
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)',
+      },
+    }),
+  },
+  fabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    marginHorizontal: 4,
+    minHeight: 64,
+    ...Platform.select({
+      web: {
+        minHeight: 72,
+        transition: 'all 0.2s ease',
+      },
+    }),
+  },
+  fabButtonPrimary: {
+    backgroundColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
+  fabIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    position: 'relative' as const,
+  },
+  fabLabel: {
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.95)',
+    textAlign: 'center' as const,
+    letterSpacing: 0.2,
+    lineHeight: 14,
+  },
+  fabLabelPrimary: {
+    color: '#3d0101',
+    fontWeight: '700' as const,
+  },
+  fabCartBadge: {
+    position: 'absolute' as const,
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  fabCartBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700' as const,
   },
 });
