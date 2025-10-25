@@ -153,6 +153,16 @@ export default function LandingPage() {
                 <RNText style={styles.menuButtonText}>{getMenuText()}</RNText>
               </TouchableOpacity>
 
+              <TouchableOpacity
+                style={styles.staffButton}
+                onPress={() => router.push('/staff-login')}
+                activeOpacity={0.7}
+              >
+                <RNText style={styles.staffButtonText}>
+                  {selectedLang === 'en' ? 'Staff Login' : selectedLang === 'ku' ? 'چوونەژوورەوەی کارمەندان' : 'تسجيل دخول الموظفين'}
+                </RNText>
+              </TouchableOpacity>
+
               <View style={styles.footerContainer}>
                 <RNText style={styles.footerText}>
                   {translations[selectedLang].footerText}
@@ -321,6 +331,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    marginBottom: 16,
+  },
+  staffButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    width: '100%',
+    maxWidth: 220,
+  },
+  staffButtonText: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   menuButtonText: {
     fontFamily: fonts.bold,

@@ -192,8 +192,8 @@ export default function PublicMenuScreen() {
     
     const interval = setInterval(() => {
       const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 160;
-      const gap = 12;
+      const cardWidth = 180;
+      const gap = 16;
       const scrollPosition = nextIndex * (cardWidth + gap);
       
       categoryScrollRef.current?.scrollTo({
@@ -290,7 +290,6 @@ export default function PublicMenuScreen() {
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
               <View style={styles.imageContainerHorizontal}>
-                <View style={styles.goldCornerTopRight} />
                 <Image 
                   source={{ uri: item.image }} 
                   style={styles.menuItemImageHorizontal}
@@ -314,7 +313,6 @@ export default function PublicMenuScreen() {
                 <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
               </View>
             )}
-            <View style={styles.goldCornerBottomLeft} />
           </View>
         </TouchableOpacity>
         
@@ -1626,14 +1624,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
-    borderWidth: 0,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     marginBottom: 12,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#8B5A2B',
+        shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.3,
         shadowRadius: 12,
       },
       android: {
@@ -1643,7 +1642,7 @@ const styles = StyleSheet.create({
         width: '31%',
         minWidth: 160,
         maxWidth: 220,
-        boxShadow: '0 4px 16px rgba(139, 90, 43, 0.1)',
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
