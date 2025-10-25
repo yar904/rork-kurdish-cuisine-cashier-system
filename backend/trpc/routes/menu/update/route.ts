@@ -12,7 +12,7 @@ const updateMenuItemSchema = z.object({
   description: z.string().min(1, "Description is required").optional(),
   descriptionKurdish: z.string().min(1, "Kurdish description is required").optional(),
   descriptionArabic: z.string().min(1, "Arabic description is required").optional(),
-  image: z.string().url().nullable().optional(),
+  image: z.string().nullable().optional(),
   available: z.boolean().optional(),
 });
 

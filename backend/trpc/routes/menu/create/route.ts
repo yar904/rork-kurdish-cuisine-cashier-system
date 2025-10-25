@@ -11,7 +11,7 @@ const createMenuItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
   descriptionKurdish: z.string().min(1, "Kurdish description is required"),
   descriptionArabic: z.string().min(1, "Arabic description is required"),
-  image: z.string().url().nullable().optional(),
+  image: z.string().nullable().optional(),
   available: z.boolean().default(true),
 });
 
