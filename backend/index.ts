@@ -74,3 +74,5 @@ console.log(`🧪 Test endpoint: http://localhost:${port}/api/test`);
 console.log(`🔌 tRPC endpoint: http://localhost:${port}/trpc`);
 
 serve({ fetch: app.fetch, port });
+
+export default app;
