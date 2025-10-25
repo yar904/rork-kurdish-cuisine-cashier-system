@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════
+  VERCEL ENVIRONMENT VARIABLES - QUICK COPY/PASTE
+═══════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANT: Use SUPABASE_PROJECT_URL (not SUPABASE_URL)
+
+────────────────────────────────────────────────────────────────
+Variable Name: NODE_ENV
+Value: production
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: SUPABASE_PROJECT_URL
+Value: https://oqspnszwjxzyvwqjvjiy.supabase.co
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wc3FuenN3anh6dnl3cWpxdmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MTM5MjUsImV4cCI6MjA3NjQ4OTkyNX0.j3GfMt1dypvBQvLzvyREclMcEJRQ1_hzq81blOmwW_k
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: SUPABASE_SERVICE_ROLE_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wc3FuenN3anh6dnl3cWpxdmp5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDkxMzkyNSwiZXhwIjoyMDc2NDg5OTI1fQ.ssIEnxorttkyClGoMPas7DagfpkJmtCMLmJKi2xIXr4
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: DATABASE_URL
+Value: postgresql://Farman12Tapse@db.oqspnszwjxzyvwqjvjiy.supabase.co:5432/postgres
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: FRONTEND_URL
+Value: https://rork-kurdish-cuisine-cashier-system.vercel.app
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: EXPO_PUBLIC_SUPABASE_URL
+Value: https://oqspnszwjxzyvwqjvjiy.supabase.co
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: EXPO_PUBLIC_SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wc3FuenN3anh6dnl3cWpxdmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MTM5MjUsImV4cCI6MjA3NjQ4OTkyNX0.j3GfMt1dypvBQvLzvyREclMcEJRQ1_hzq81blOmwW_k
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: EXPO_PUBLIC_API_BASE_URL
+Value: https://rork-kurdish-cuisine-cashier-system.vercel.app
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────
+Variable Name: EXPO_PUBLIC_RORK_API_BASE_URL
+Value: https://rork-kurdish-cuisine-cashier-system.vercel.app
+Apply to: Production, Preview, Development
+────────────────────────────────────────────────────────────────
+
+═══════════════════════════════════════════════════════════════
+  AFTER ADDING ALL VARIABLES:
+═══════════════════════════════════════════════════════════════
+
+1. DELETE any old variables named:
+   - SUPABASE_URL (uppercase)
+   - supabase_url (lowercase)
+
+2. Run deployment:
+   vercel --prod --force
+
+3. Test API:
+   curl https://rork-kurdish-cuisine-cashier-system.vercel.app/api/health
+
+4. Expected response:
+   {"status":"ok","timestamp":"2025-..."}
+
+═══════════════════════════════════════════════════════════════
