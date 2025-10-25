@@ -1125,11 +1125,11 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.fabButton}
           onPress={() => setShowAIAssistant(true)}
-          activeOpacity={0.85}
+          activeOpacity={0.7}
         >
-          <View style={styles.fabIconContainer}>
+          <Animated.View style={styles.fabIconContainer}>
             <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
-          </View>
+          </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
           </Text>
@@ -1138,16 +1138,16 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={[styles.fabButton, styles.fabButtonPrimary]}
           onPress={() => setShowCart(true)}
-          activeOpacity={0.85}
+          activeOpacity={0.7}
         >
-          <View style={styles.fabIconContainer}>
+          <Animated.View style={styles.fabIconContainer}>
             <Utensils size={24} color="#3d0101" strokeWidth={2} />
             {cartItemCount > 0 && (
               <View style={styles.fabCartBadge}>
                 <Text style={styles.fabCartBadgeText}>{cartItemCount}</Text>
               </View>
             )}
-          </View>
+          </Animated.View>
           <Text style={[styles.fabLabel, styles.fabLabelPrimary]}>
             {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
           </Text>
@@ -1165,11 +1165,11 @@ export default function PublicMenuScreen() {
               );
             }
           }}
-          activeOpacity={0.85}
+          activeOpacity={0.7}
         >
-          <View style={styles.fabIconContainer}>
+          <Animated.View style={styles.fabIconContainer}>
             <Star size={24} color="#FFFFFF" strokeWidth={2} />
-          </View>
+          </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
           </Text>
@@ -1178,11 +1178,11 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.fabButton}
           onPress={() => setShowSearchModal(true)}
-          activeOpacity={0.85}
+          activeOpacity={0.7}
         >
-          <View style={styles.fabIconContainer}>
+          <Animated.View style={styles.fabIconContainer}>
             <Search size={24} color="#FFFFFF" strokeWidth={2} />
-          </View>
+          </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
           </Text>
@@ -1282,43 +1282,47 @@ const styles = StyleSheet.create({
   languageMenu: {
     marginHorizontal: 20,
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    backgroundColor: 'rgba(61, 1, 1, 0.98)',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
     overflow: 'hidden' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 2,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
       },
     }),
   },
   languageOption: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
   languageOptionActive: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
   },
   languageOptionText: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-    color: '#6B7280',
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center' as const,
   },
   languageOptionTextActive: {
-    fontWeight: '600' as const,
-    color: '#1A1A1A',
+    fontWeight: '700' as const,
+    color: '#E8C968',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -2809,10 +2813,11 @@ const styles = StyleSheet.create({
       },
       web: {
         minHeight: 76,
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         backdropFilter: 'blur(15px)',
         WebkitBackdropFilter: 'blur(15px)',
         boxShadow: '0 4px 20px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        cursor: 'pointer',
       },
     }),
   },
@@ -2820,6 +2825,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(212, 175, 55, 0.98)',
     borderColor: '#D4AF37',
     borderWidth: 2.5,
+    transform: [{ scale: 1 }],
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
