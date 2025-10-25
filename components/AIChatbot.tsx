@@ -26,11 +26,14 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<ScrollView>(null);
 
-  // 🌍 SYSTEM prompt
+  // 🌍 SYSTEM prompt - multilingual support
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
+You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently.
 You help customers place orders, track their meals, and call staff when needed.
 The current table is ${selectedTable}.
-Be concise, friendly, and reply in ${language}.`;
+If the customer writes in Kurdish, reply in Kurdish. If in Arabic, reply in Arabic. If in English, reply in English.
+Be warm, welcoming, and helpful. Use culturally appropriate greetings and expressions.
+You understand all three languages equally well and can switch between them naturally.`;
 
   // 🧠 Send message to OpenAI API (real responses)
   const sendMessage = async () => {
@@ -78,14 +81,20 @@ Be concise, friendly, and reply in ${language}.`;
 
   useEffect(() => {
     if (visible && messages.length === 0) {
+      const welcomeMessage = language === 'ku' 
+        ? "سڵاو! من بارانم، یاریدەدەری AI ـی تەپسی. چۆن دەتوانم یارمەتیت بدەم؟ 🌟" 
+        : language === 'ar'
+        ? "مرحباً! أنا باران، مساعدك الذكي في مطعم تابسي. كيف يمكنني مساعدتك؟ 🌟"
+        : "Hello! I'm Baran, your AI assistant at Tapse Restaurant. How may I help you today? 🌟";
+      
       setMessages([
         {
           role: "assistant",
-          content: t("welcomeMessage") || "👋 Welcome! I'm Baran, your AI assistant. How can I help?",
+          content: welcomeMessage,
         },
       ]);
     }
-  }, [visible]);
+  }, [visible, language]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
@@ -102,8 +111,12 @@ Be concise, friendly, and reply in ${language}.`;
             <Sparkles size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Baran AI Assistant</Text>
-            <Text style={styles.headerSubtitle}>Your digital waiter at Tapse</Text>
+            <Text style={styles.headerTitle}>
+              {language === 'ku' ? 'یاریدەدەری AI بارانم' : language === 'ar' ? 'مساعد بارانم الذكي' : 'Baran AI Assistant'}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {language === 'ku' ? 'چۆخدارە دیجیتاڵیت لە تەپسی' : language === 'ar' ? 'نادلك الرقمي في تابسي' : 'Your digital waiter at Tapse'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -140,7 +153,7 @@ Be concise, friendly, and reply in ${language}.`;
       >
         <TextInput
           style={styles.input}
-          placeholder="Ask Baran..."
+          placeholder={language === 'ku' ? 'پرسیار لە بارانم بکە...' : language === 'ar' ? 'اسأل بارانم...' : 'Ask Baran...'}
           placeholderTextColor="#999"
           value={input}
           onChangeText={setInput}

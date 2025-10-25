@@ -192,7 +192,7 @@ export default function PublicMenuScreen() {
     
     const interval = setInterval(() => {
       const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 180;
+      const cardWidth = 150;
       const gap = 16;
       const scrollPosition = nextIndex * (cardWidth + gap);
       
@@ -1061,7 +1061,7 @@ export default function PublicMenuScreen() {
         {
           height: categorySlideHeight.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 310],
+            outputRange: [0, 250],
           }),
           opacity: categorySlideHeight,
         },
@@ -1345,12 +1345,12 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
-    paddingBottom: 20,
-    paddingTop: 8,
+    paddingBottom: 16,
+    paddingTop: 6,
     ...Platform.select({
       web: {
-        paddingBottom: 28,
-        paddingTop: 12,
+        paddingBottom: 22,
+        paddingTop: 10,
       },
     }),
   },
@@ -1405,10 +1405,10 @@ const styles = StyleSheet.create({
     }),
   },
   categoryCard: {
-    width: 180,
-    height: 220,
+    width: 150,
+    height: 180,
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.4)',
@@ -1423,8 +1423,8 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-        width: 240,
-        height: 260,
+        width: 200,
+        height: 220,
         boxShadow: '0 10px 30px rgba(212, 175, 55, 0.35)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         cursor: 'pointer',
@@ -1433,12 +1433,12 @@ const styles = StyleSheet.create({
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 150,
+    height: 120,
     position: 'relative' as const,
     backgroundColor: '#F9FAFB',
     ...Platform.select({
       web: {
-        height: 180,
+        height: 150,
       },
     }),
   },
@@ -1452,35 +1452,35 @@ const styles = StyleSheet.create({
   },
 
   categoryCardFooter: {
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     backgroundColor: '#3d0101',
     width: '100%',
-    height: 70,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 2,
     borderTopColor: 'rgba(212, 175, 55, 0.4)',
     ...Platform.select({
       web: {
-        paddingVertical: 18,
-        paddingHorizontal: 16,
-        height: 80,
+        paddingVertical: 16,
+        paddingHorizontal: 14,
+        height: 70,
       },
     }),
   },
   categoryCardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#D4AF37',
     textAlign: 'center' as const,
     letterSpacing: 0.5,
-    lineHeight: 22,
+    lineHeight: 20,
     ...Platform.select({
       web: {
-        fontSize: 18,
-        lineHeight: 26,
+        fontSize: 16,
+        lineHeight: 22,
         letterSpacing: 0.6,
       },
     }),
@@ -1688,11 +1688,11 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   menuItemNameHorizontal: {
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 18,
+    lineHeight: 22,
     letterSpacing: 0.3,
     marginBottom: 6,
     marginTop: 10,
@@ -1700,8 +1700,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     ...Platform.select({
       web: {
-        fontSize: 14,
-        lineHeight: 19,
+        fontSize: 18,
+        lineHeight: 24,
       },
     }),
   },
