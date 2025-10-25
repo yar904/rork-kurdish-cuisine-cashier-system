@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
+  Text as RNText,
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
@@ -85,8 +85,8 @@ export default function LandingPage() {
       {Platform.OS === 'web' ? (
         <View style={styles.background}>
           <View style={styles.videoPlaceholder}>
-            <Text style={styles.videoPlaceholderText}>🎬</Text>
-            <Text style={styles.videoPlaceholderSubtext}>Video Background</Text>
+            <RNText style={styles.videoPlaceholderText}>🎬</RNText>
+            <RNText style={styles.videoPlaceholderSubtext}>Video Background</RNText>
           </View>
         </View>
       ) : (
@@ -113,7 +113,7 @@ export default function LandingPage() {
               activeOpacity={0.7}
             >
               <Globe size={20} color="#FFFFFF" strokeWidth={2} />
-              <Text style={styles.languageButtonText}>{currentLanguage?.label}</Text>
+              <RNText style={styles.languageButtonText}>{currentLanguage?.label}</RNText>
             </TouchableOpacity>
             
             <View style={{ width: 120 }} />
@@ -131,12 +131,12 @@ export default function LandingPage() {
                   onPress={() => handleLanguageSelect(lang.code)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[
+                  <RNText style={[
                     styles.languageOptionText,
                     selectedLang === lang.code && styles.languageOptionTextActive,
                   ]}>
                     {lang.label}
-                  </Text>
+                  </RNText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -150,13 +150,13 @@ export default function LandingPage() {
                 onPress={handleContinue}
                 activeOpacity={0.7}
               >
-                <Text style={styles.menuButtonText}>{getMenuText()}</Text>
+                <RNText style={styles.menuButtonText}>{getMenuText()}</RNText>
               </TouchableOpacity>
 
               <View style={styles.footerContainer}>
-                <Text style={styles.footerText}>
+                <RNText style={styles.footerText}>
                   {translations[selectedLang].footerText}
-                </Text>
+                </RNText>
               </View>
             </View>
           </ScrollView>
