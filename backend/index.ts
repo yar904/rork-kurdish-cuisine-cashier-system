@@ -1,75 +1,76 @@
-import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
-import { createClient } from '@supabase/supabase-js';
-import 'dotenv/config';
+import { Hono } from "hono";
+import { serve } from "@hono/node-server";
+import { cors } from "hono/cors";
+import { trpcServer } from "@hono/trpc-server";
+import { createClient } from "@supabase/supabase-js";
+import { appRouter } from "./trpc/app-router";
+import { createContext } from "./trpc/create-context";
+import "dotenv/config";
 
-// 🧩 Initialize Hono app
 const app = new Hono();
 
-// 🧠 Initialize Supabase client
+app.use("*", cors({
+  origin: process.env.FRONTEND_URL || "*",
+  credentials: true,
+}));
+
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL!,
-  process.env.SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// 🩺 Health check route
-app.get('/', (c) => c.json({ status: '🟢 Backend running successfully' }));
+app.use(
+  "/trpc/*",
+  trpcServer({
+    router: appRouter,
+    createContext,
+  })
+);
 
-// 🧾 MENU ROUTE — get all menu items
-app.get('/menu', async (c) => {
-  const { data, error } = await supabase
-    .from('menu_items')
-    .select('*')
-    .order('created_at', { ascending: false });
+app.get("/", (c) => 
+  c.json({ 
+    status: "✅ Backend is running", 
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || "development"
+  })
+);
 
-  if (error) return c.json({ error: error.message }, 500);
-  return c.json(data);
+app.get("/api/health", (c) => 
+  c.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  })
+);
+
+app.get("/api/test", async (c) => {
+  try {
+    const { error } = await supabase
+      .from("menu_items")
+      .select("count")
+      .limit(1);
+    
+    if (error) {
+      return c.json({ 
+        status: "error", 
+        message: "Supabase connection failed",
+        error: error.message 
+      }, 500);
+    }
+    
+    return c.text("🔥 Rork backend is live and connected to Supabase!");
+  } catch (err) {
+    return c.json({ 
+      status: "error", 
+      message: "Backend test failed",
+      error: String(err) 
+    }, 500);
+  }
 });
 
-// 🛒 CREATE ORDER — add a new order
-app.post('/orders', async (c) => {
-  const body = await c.req.json();
-  const { table_id, total, status } = body;
+const port = Number(process.env.PORT) || 3000;
+console.log(`🚀 Rork backend running on http://localhost:${port}`);
+console.log(`🔗 Supabase URL: ${process.env.SUPABASE_PROJECT_URL}`);
+console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
 
-  const { data, error } = await supabase
-    .from('orders')
-    .insert([{ table_id, total, status }])
-    .select()
-    .single();
-
-  if (error) return c.json({ error: error.message }, 500);
-  return c.json(data);
-});
-
-// 📦 ADD ORDER ITEMS — add items for an order
-app.post('/order-items', async (c) => {
-  const body = await c.req.json();
-  const { order_id, menu_item_id, quantity, price } = body;
-
-  const { data, error } = await supabase
-    .from('order_items')
-    .insert([{ order_id, menu_item_id, quantity, price }])
-    .select();
-
-  if (error) return c.json({ error: error.message }, 500);
-  return c.json(data);
-});
-
-// 📜 GET ALL ORDERS — fetch orders with items + table info
-app.get('/orders', async (c) => {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, order_items(*), tables(table_number)')
-    .order('created_at', { ascending: false });
-
-  if (error) return c.json({ error: error.message }, 500);
-  return c.json(data);
-});
-
-// 🚀 Start local server
-serve({
-  fetch: app.fetch,
-  port: Number(process.env.PORT) || 3000,
-});
-
-console.log('🟢 Backend running on http://localhost:3000');
+serve({ fetch: app.fetch, port });
