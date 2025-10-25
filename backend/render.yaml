@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: kurdish-cuisine-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index-render.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_PROJECT_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://rork-kurdish-cuisine-cashier-system.vercel.app
