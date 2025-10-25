@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
   ImageBackground,
   ActivityIndicator,
-  Platform,
   ScrollView,
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { Globe, Settings } from 'lucide-react-native';
+import { Globe } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -82,20 +81,11 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      {Platform.OS === 'web' ? (
-        <View style={styles.background}>
-          <View style={styles.videoPlaceholder}>
-            <RNText style={styles.videoPlaceholderText}>🎬</RNText>
-            <RNText style={styles.videoPlaceholderSubtext}>Video Background</RNText>
-          </View>
-        </View>
-      ) : (
-        <ImageBackground
-          source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
-          style={styles.background}
-          resizeMode="cover"
-        />
-      )}
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+        style={styles.background}
+        resizeMode="cover"
+      />
       <View style={styles.absoluteOverlay}>
         <LinearGradient
           colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}

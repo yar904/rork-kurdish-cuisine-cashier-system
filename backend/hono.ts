@@ -1,9 +1,11 @@
 import { Hono } from "hono";
+import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
 import { cors } from "hono/cors";
 import { createClient } from "@supabase/supabase-js";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
+import "dotenv/config";
 
 const app = new Hono();
 
@@ -58,12 +60,19 @@ app.get("/api/test", async (c) => {
 
 // Mount tRPC server
 app.use(
-  "/trpc/*",
+  "/api/trpc/*",
   trpcServer({
-    endpoint: "/api/trpc",
     router: appRouter,
     createContext,
   })
 );
+
+const port = Number(process.env.PORT) || 3000;
+console.log(`🔥 Rork backend running on http://localhost:${port}`);
+console.log(`📡 Health check: http://localhost:${port}/api/health`);
+console.log(`🧪 Test endpoint: http://localhost:${port}/api/test`);
+console.log(`🔌 tRPC endpoint: http://localhost:${port}/api/trpc`);
+
+serve({ fetch: app.fetch, port });
 
 export default app;

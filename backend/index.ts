@@ -24,7 +24,7 @@ const supabase = createClient(
 );
 
 app.use(
-  "/trpc/*",
+  "/api/trpc/*",
   trpcServer({
     router: appRouter,
     createContext,
@@ -71,7 +71,7 @@ const port = Number(process.env.PORT) || 3000;
 console.log(`🔥 Rork backend running on http://localhost:${port}`);
 console.log(`📡 Health check: http://localhost:${port}/api/health`);
 console.log(`🧪 Test endpoint: http://localhost:${port}/api/test`);
-console.log(`🔌 tRPC endpoint: http://localhost:${port}/trpc`);
+console.log(`🔌 tRPC endpoint: http://localhost:${port}/api/trpc`);
 
 serve({ fetch: app.fetch, port });
 
