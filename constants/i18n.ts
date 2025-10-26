@@ -189,6 +189,7 @@ export const translations = {
     footerText: 'Experience authentic Kurdish cuisine crafted with passion and tradition',
     footerTagline: 'تەپسی سلێمانی - Where Tradition Meets Excellence',
     footerThankYou: 'Thank you for visiting!',
+    selectLanguage: 'Select Language',
   },
   ku: {
     restaurantName: 'تەپسی سلێمانی',
@@ -378,6 +379,7 @@ export const translations = {
     footerText: 'تامی خواردنی کوردی بە دڵسۆزی و نەریتی ڕەسەن',
     footerTagline: 'تەپسی سلێمانی - شوێنی کۆبوونەوەی نەریت و باشترین',
     footerThankYou: 'سوپاس بۆ سەردانیکردنتان!',
+    selectLanguage: 'هەڵبژاردنی زمان',
   },
   ar: {
     restaurantName: 'تەپسی سلێمانی',
@@ -567,6 +569,7 @@ export const translations = {
     footerText: 'تجربة المطبخ الكردي الأصيل المُعد بشغف وتقاليد عريقة',
     footerTagline: 'تەپسی سلێمانی - حيث يلتقي التقليد بالتميز',
     footerThankYou: 'شكراً لزيارتكم!',
+    selectLanguage: 'اختر اللغة',
   },
 };
 

@@ -118,3 +118,45 @@ self.addEventListener('sync', (event) => {
 async function syncOrders() {
   console.log('[ServiceWorker] Syncing offline orders');
 }
+
+self.addEventListener('push', (event) => {
+  console.log('[ServiceWorker] Push received');
+  
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Tapse Notification';
+  const options = {
+    body: data.body || '',
+    icon: '/assets/images/icon.png',
+    badge: '/assets/images/icon.png',
+    vibrate: [200, 100, 200],
+    data: data.data || {},
+    tag: data.tag || 'default',
+    requireInteraction: data.requireInteraction || false,
+    actions: data.actions || []
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('[ServiceWorker] Notification clicked:', event.notification.tag);
+  
+  event.notification.close();
+  
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});

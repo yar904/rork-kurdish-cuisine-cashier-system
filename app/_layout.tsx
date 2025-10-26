@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const queryClient = new QueryClient();
 
@@ -48,15 +49,17 @@ export default function RootLayout() {
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <OfflineProvider>
-            <AuthProvider>
-              <LanguageProvider>
-                <TableProvider>
-                  <RestaurantProvider>
-                    <RootLayoutNav />
-                  </RestaurantProvider>
-                </TableProvider>
-              </LanguageProvider>
-            </AuthProvider>
+            <NotificationProvider>
+              <AuthProvider>
+                <LanguageProvider>
+                  <TableProvider>
+                    <RestaurantProvider>
+                      <RootLayoutNav />
+                    </RestaurantProvider>
+                  </TableProvider>
+                </LanguageProvider>
+              </AuthProvider>
+            </NotificationProvider>
           </OfflineProvider>
         </QueryClientProvider>
       </trpc.Provider>
