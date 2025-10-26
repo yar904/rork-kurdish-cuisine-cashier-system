@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  useWindowDimensions,
   Platform,
   Modal,
   Alert,
@@ -20,7 +19,6 @@ import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
-import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
@@ -37,7 +35,6 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
-  const { width } = useWindowDimensions();
   
 
 
@@ -259,12 +256,6 @@ export default function CategoryDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.plaidPattern} />
-        <View style={styles.citadelPattern}>
-          <View style={styles.citadelSilhouette}>
-            <Text style={styles.citadelText}>🏰</Text>
-          </View>
-        </View>
         <View style={styles.menuGrid}>
           {filteredItems.map(renderMenuItem)}
         </View>
@@ -441,33 +432,16 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
   },
   plaidPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
-    zIndex: 0,
+    display: 'none' as const,
   },
   citadelPattern: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 300,
-    opacity: 0.12,
-    zIndex: 1,
-    overflow: 'hidden' as const,
+    display: 'none' as const,
   },
   citadelSilhouette: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: '50%' as const,
-    transform: [{ translateX: -75 }],
-    width: 150,
-    height: 150,
+    display: 'none' as const,
   },
   citadelText: {
-    fontSize: 150,
-    color: '#1A1A1A',
-    opacity: 0.3,
-    textAlign: 'center' as const,
+    display: 'none' as const,
   },
   contentContainer: {
     paddingBottom: 32,
@@ -482,12 +456,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 16,
-    justifyContent: 'space-between' as const,
+    justifyContent: 'flex-start' as const,
     paddingTop: 20,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
         gap: 20,
+        paddingHorizontal: 32,
       },
     }),
   },
@@ -511,9 +486,8 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '31%',
         minWidth: 160,
-        maxWidth: 220,
+        maxWidth: 280,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
