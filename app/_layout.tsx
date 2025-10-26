@@ -22,6 +22,14 @@ function RootLayoutNav() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="order-tracking" options={{ headerShown: false }} />
       <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="menu-management" options={{ headerShown: false }} />
+      <Stack.Screen name="employees" options={{ headerShown: false }} />
+      <Stack.Screen name="clock-in-out" options={{ headerShown: false }} />
+      <Stack.Screen name="employee-shifts" options={{ headerShown: false }} />
+      <Stack.Screen name="employee-metrics" options={{ headerShown: false }} />
+      <Stack.Screen name="inventory" options={{ headerShown: false }} />
+      <Stack.Screen name="table-qr-codes" options={{ headerShown: false }} />
+      <Stack.Screen name="customer-order" options={{ headerShown: false }} />
       <Stack.Screen
         name="font-preview"
         options={{ headerShown: true, title: "Kurdish Fonts" }}
