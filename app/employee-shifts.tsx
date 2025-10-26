@@ -10,11 +10,9 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Calendar } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function EmployeeShiftsScreen() {
   const { employeeId, name } = useLocalSearchParams<{ employeeId: string; name: string }>();
-  const insets = useSafeAreaInsets();
 
   const shiftsQuery = trpc.employees.getShifts.useQuery(
     { employeeId },
@@ -34,12 +32,15 @@ export default function EmployeeShiftsScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
           title: `Shifts - ${name}`,
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '700' as const,
+          },
         }}
       />
 
@@ -76,13 +77,13 @@ export default function EmployeeShiftsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   list: {
     flex: 1,
@@ -90,19 +91,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 16,
   },
   shiftCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   shiftHeader: {
@@ -113,14 +116,16 @@ const styles = StyleSheet.create({
   },
   shiftDate: {
     fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#111827',
+    fontWeight: '700' as const,
+    color: Colors.text,
   },
   shiftTime: {
-    backgroundColor: '#f0f9ff',
+    backgroundColor: Colors.backgroundGray,
     padding: 10,
     borderRadius: 8,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   timeText: {
     fontSize: 18,
@@ -130,7 +135,8 @@ const styles = StyleSheet.create({
   },
   notes: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     fontStyle: 'italic' as const,
+    fontWeight: '500' as const,
   },
 });

@@ -11,13 +11,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Users, Plus, Clock, Calendar, TrendingUp, Trash2 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
 export default function EmployeesScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
@@ -97,12 +95,15 @@ export default function EmployeesScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
           title: 'Employee Management',
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '700' as const,
+          },
         }}
       />
 
@@ -281,19 +282,19 @@ export default function EmployeesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
   },
   headerTop: {
     flexDirection: 'row',
@@ -303,8 +304,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
   },
   addButton: {
     flexDirection: 'row',
@@ -326,35 +327,40 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.cardBackground,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   statValue: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginTop: 6,
   },
   statLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     marginTop: 2,
+    fontWeight: '600' as const,
   },
   list: {
     flex: 1,
     padding: 16,
   },
   employeeCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   employeeHeader: {
@@ -367,14 +373,15 @@ const styles = StyleSheet.create({
   },
   employeeName: {
     fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 4,
   },
   employeeRole: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     marginBottom: 6,
+    fontWeight: '600' as const,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -388,8 +395,9 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     textTransform: 'capitalize' as const,
+    fontWeight: '600' as const,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -399,9 +407,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.backgroundGray,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   employeeDetails: {
     gap: 6,
@@ -412,7 +422,8 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
+    fontWeight: '500' as const,
   },
   quickActions: {
     flexDirection: 'row',
@@ -424,11 +435,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: Colors.backgroundGray,
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#bfdbfe',
+    borderColor: Colors.border,
   },
   quickActionText: {
     fontSize: 12,
@@ -442,7 +453,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     borderRadius: 16,
     padding: 24,
     width: '90%',
@@ -450,17 +461,19 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
     fontSize: 16,
+    backgroundColor: Colors.cardBackground,
+    color: Colors.text,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -474,12 +487,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.backgroundGray,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   cancelButtonText: {
-    color: '#374151',
+    color: Colors.text,
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
   },
   saveButton: {
     backgroundColor: Colors.primary,
@@ -487,6 +502,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
   },
 });

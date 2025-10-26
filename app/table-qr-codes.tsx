@@ -13,10 +13,8 @@ import { Stack } from 'expo-router';
 import { QrCode, Share2 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TableQRCodesScreen() {
-  const insets = useSafeAreaInsets();
   const tablesQuery = trpc.tables.getAll.useQuery();
 
   const getOrderUrl = (tableNumber: number) => {
@@ -45,12 +43,15 @@ export default function TableQRCodesScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
           title: 'Table QR Codes',
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '700' as const,
+          },
         }}
       />
 
@@ -107,39 +108,42 @@ export default function TableQRCodesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
   },
   list: {
     flex: 1,
     padding: 16,
   },
   qrCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -153,62 +157,71 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: Colors.border,
   },
   tableInfo: {
     flex: 1,
   },
   tableName: {
     fontSize: 20,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 4,
   },
   tableCapacity: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
   },
   shareButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: Colors.backgroundGray,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   qrCodeContainer: {
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.backgroundGray,
     borderRadius: 12,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   qrPlaceholder: {
     fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#111827',
+    fontWeight: '700' as const,
+    color: Colors.text,
     marginTop: 12,
   },
   qrUrl: {
     fontSize: 11,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     marginTop: 4,
     textAlign: 'center' as const,
+    fontWeight: '500' as const,
   },
   instructions: {
-    backgroundColor: '#f0f9ff',
+    backgroundColor: Colors.backgroundGray,
     padding: 16,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   instructionTitle: {
     fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 8,
   },
   instructionText: {
     fontSize: 13,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     lineHeight: 20,
+    fontWeight: '500' as const,
   },
 });

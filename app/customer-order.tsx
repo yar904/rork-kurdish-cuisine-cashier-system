@@ -13,7 +13,6 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ShoppingCart, Plus, Minus, Send } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type CartItem = {
   menuItem: {
@@ -30,7 +29,6 @@ type CartItem = {
 
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
-  const insets = useSafeAreaInsets();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -118,13 +116,17 @@ export default function CustomerOrderScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Table {table}</Text>
-        <Text style={styles.headerSubtitle}>Order directly from your table</Text>
-      </View>
+    <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: `Table ${table} - Order`,
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '700' as const,
+          },
+        }}
+      />
 
       <ScrollView
         horizontal
@@ -247,33 +249,18 @@ export default function CustomerOrderScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    backgroundColor: Colors.primary,
-    padding: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '700' as const,
-    color: '#fff',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
+    backgroundColor: Colors.backgroundGray,
   },
   categoriesScroll: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
   },
   categoriesContent: {
     padding: 12,
@@ -283,16 +270,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.backgroundGray,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   categoryChipActive: {
     backgroundColor: Colors.primary,
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#374151',
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
     textTransform: 'capitalize' as const,
   },
   categoryTextActive: {
@@ -304,14 +293,16 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   menuImage: {
@@ -325,14 +316,15 @@ const styles = StyleSheet.create({
   },
   menuName: {
     fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 4,
   },
   menuDescription: {
     fontSize: 13,
-    color: '#6b7280',
+    color: Colors.textSecondary,
     marginBottom: 6,
+    fontWeight: '500' as const,
   },
   menuPrice: {
     fontSize: 18,
@@ -348,9 +340,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cartFooter: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: Colors.border,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -367,8 +359,8 @@ const styles = StyleSheet.create({
   cartTitle: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
   },
   cartTotal: {
     fontSize: 20,
@@ -384,20 +376,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: Colors.border,
   },
   cartItemInfo: {
     flex: 1,
   },
   cartItemName: {
     fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#111827',
+    fontWeight: '700' as const,
+    color: Colors.text,
     marginBottom: 2,
   },
   cartItemPrice: {
     fontSize: 13,
-    color: '#6b7280',
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
   },
   quantityControls: {
     flexDirection: 'row',
@@ -408,14 +401,16 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: Colors.backgroundGray,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   quantity: {
     fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     minWidth: 24,
     textAlign: 'center' as const,
   },

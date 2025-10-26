@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,9 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Clock, LogIn, LogOut } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ClockInOutScreen() {
   const { employeeId, name } = useLocalSearchParams<{ employeeId: string; name: string }>();
-  const insets = useSafeAreaInsets();
 
   const clockRecordsQuery = trpc.employees.getClockRecords.useQuery(
     { employeeId },
@@ -79,12 +77,15 @@ export default function ClockInOutScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
           title: `Clock In/Out - ${name}`,
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: '700' as const,
+          },
         }}
       />
 
@@ -177,24 +178,24 @@ export default function ClockInOutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundGray,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
   },
   employeeName: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 16,
   },
   activeRecordCard: {
@@ -259,19 +260,21 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#111827',
+    fontWeight: '800' as const,
+    color: Colors.text,
     marginBottom: 12,
   },
   recordCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   recordHeader: {
@@ -285,8 +288,8 @@ const styles = StyleSheet.create({
   },
   recordDate: {
     fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#111827',
+    fontWeight: '700' as const,
+    color: Colors.text,
     flex: 1,
   },
   inProgressBadge: {
@@ -310,12 +313,13 @@ const styles = StyleSheet.create({
   },
   recordLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
   },
   recordValue: {
     fontSize: 14,
-    color: '#111827',
-    fontWeight: '500' as const,
+    color: Colors.text,
+    fontWeight: '600' as const,
   },
   hoursValue: {
     color: Colors.primary,
