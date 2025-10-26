@@ -92,7 +92,6 @@ export default function CategoryDetailScreen() {
         >
           {item.image && (
             <View style={styles.imageContainer}>
-              <View style={styles.goldCornerTopRight} />
               <Image 
                 source={{ uri: item.image }} 
                 style={styles.menuItemImage}
@@ -107,7 +106,6 @@ export default function CategoryDetailScreen() {
             <View style={styles.priceContainer}>
               <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
             </View>
-            <View style={styles.goldCornerBottomLeft} />
           </View>
         </TouchableOpacity>
       </View>
@@ -298,15 +296,15 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4C5A9',
+    backgroundColor: '#3d0101',
+    position: 'relative' as const,
     ...Platform.select({
       web: {
-        maxWidth: 1920,
-        alignSelf: 'center' as const,
         width: '100%',
-        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
       },
     }),
@@ -480,58 +478,61 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
+    paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    paddingHorizontal: 16,
-    paddingTop: 20,
     gap: 16,
     justifyContent: 'space-between' as const,
+    paddingTop: 20,
     ...Platform.select({
       web: {
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
-        width: '100%',
         justifyContent: 'center' as const,
         gap: 20,
       },
     }),
   },
   menuItemCard: {
-    width: '48%',
-    minWidth: 160,
+    width: '47%' as const,
     backgroundColor: '#3d0101',
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'visible' as const,
-    marginBottom: 16,
-    borderWidth: 0,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginBottom: 12,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#8B5A2B',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 16,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 5,
+        elevation: 4,
       },
       web: {
-        width: '48%',
-        minWidth: 180,
-        maxWidth: 280,
-        boxShadow: '0 6px 20px rgba(139, 90, 43, 0.12)',
+        width: '31%',
+        minWidth: 160,
+        maxWidth: 220,
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 120,
     backgroundColor: '#F9FAFB',
-    borderRadius: 20,
+    borderRadius: 16,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
+    marginBottom: 0,
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        height: 140,
+      },
+    }),
   },
   menuItemImage: {
     width: '100%',
@@ -542,16 +543,22 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
   },
   menuItemName: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 20,
-    letterSpacing: 0.5,
-    marginBottom: 8,
-    marginTop: 12,
+    lineHeight: 22,
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    marginTop: 10,
     textAlign: 'center' as const,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
+    ...Platform.select({
+      web: {
+        fontSize: 18,
+        lineHeight: 24,
+      },
+    }),
   },
   menuItemDescription: {
     fontSize: 13,
@@ -568,16 +575,21 @@ const styles = StyleSheet.create({
     }),
   },
   priceContainer: {
-    marginBottom: 12,
+    marginBottom: 10,
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 17,
+      },
+    }),
   },
   emptyState: {
     padding: 60,
@@ -626,30 +638,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 1,
   },
-  goldCornerTopRight: {
-    position: 'absolute' as const,
-    top: 0,
-    right: 0,
-    width: 0,
-    height: 0,
-    borderTopWidth: 32,
-    borderRightWidth: 32,
-    borderTopColor: '#D4AF37',
-    borderRightColor: 'transparent',
-    zIndex: 5,
-  },
-  goldCornerBottomLeft: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    width: 0,
-    height: 0,
-    borderBottomWidth: 32,
-    borderLeftWidth: 32,
-    borderBottomColor: '#D4AF37',
-    borderLeftColor: 'transparent',
-    zIndex: 5,
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
