@@ -1,14 +1,11 @@
-const CACHE_NAME = 'tapse-v3-' + Date.now();
+const CACHE_NAME = 'tapse-v4';
 const OFFLINE_URL = '/';
 
 const STATIC_CACHE = [
   '/',
+  '/landing',
   '/menu',
-  '/kitchen',
-  '/analytics',
-  '/waiter',
-  '/cashier',
-  '/admin',
+  '/staff-login',
 ];
 
 self.addEventListener('install', (event) => {
@@ -52,7 +49,8 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.url.includes('/api/') || 
       event.request.url.includes('supabase.co') ||
-      event.request.url.includes('openai.com')) {
+      event.request.url.includes('openai.com') ||
+      event.request.url.includes('toolkit.rork.com')) {
     event.respondWith(
       fetch(event.request)
         .catch(() => {
@@ -72,13 +70,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200) {
           return response;
         }
 
@@ -88,10 +82,15 @@ self.addEventListener('fetch', (event) => {
         });
 
         return response;
-      }).catch(() => {
-        return caches.match(OFFLINE_URL);
-      });
-    })
+      })
+      .catch(() => {
+        return caches.match(event.request).then((response) => {
+          if (response) {
+            return response;
+          }
+          return caches.match(OFFLINE_URL);
+        });
+      })
   );
 });
 
@@ -99,64 +98,4 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-  
-  if (event.data && event.data.type === 'CACHE_URLS') {
-    event.waitUntil(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.addAll(event.data.urls);
-      })
-    );
-  }
-});
-
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-orders') {
-    event.waitUntil(syncOrders());
-  }
-});
-
-async function syncOrders() {
-  console.log('[ServiceWorker] Syncing offline orders');
-}
-
-self.addEventListener('push', (event) => {
-  console.log('[ServiceWorker] Push received');
-  
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Tapse Notification';
-  const options = {
-    body: data.body || '',
-    icon: '/assets/images/icon.png',
-    badge: '/assets/images/icon.png',
-    vibrate: [200, 100, 200],
-    data: data.data || {},
-    tag: data.tag || 'default',
-    requireInteraction: data.requireInteraction || false,
-    actions: data.actions || []
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  console.log('[ServiceWorker] Notification clicked:', event.notification.tag);
-  
-  event.notification.close();
-  
-  const urlToOpen = event.notification.data?.url || '/';
-  
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(urlToOpen);
-      }
-    })
-  );
 });

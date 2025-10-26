@@ -51,26 +51,6 @@ export default function RootLayout() {
         }
       `;
       document.head.appendChild(style);
-
-      if ('serviceWorker' in navigator && !sessionStorage.getItem('cacheCleared')) {
-        sessionStorage.setItem('cacheCleared', 'true');
-        
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const registration of registrations) {
-            registration.unregister();
-          }
-        });
-
-        caches.keys().then((names) => {
-          for (const name of names) {
-            caches.delete(name);
-          }
-        });
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
-      }
     }
   }, []);
 
