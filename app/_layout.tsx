@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
+import { OfflineProvider } from "@/contexts/OfflineContext";
 
 const queryClient = new QueryClient();
 
@@ -46,15 +47,17 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <LanguageProvider>
-              <TableProvider>
-                <RestaurantProvider>
-                  <RootLayoutNav />
-                </RestaurantProvider>
-              </TableProvider>
-            </LanguageProvider>
-          </AuthProvider>
+          <OfflineProvider>
+            <AuthProvider>
+              <LanguageProvider>
+                <TableProvider>
+                  <RestaurantProvider>
+                    <RootLayoutNav />
+                  </RestaurantProvider>
+                </TableProvider>
+              </LanguageProvider>
+            </AuthProvider>
+          </OfflineProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </GestureHandlerRootView>
