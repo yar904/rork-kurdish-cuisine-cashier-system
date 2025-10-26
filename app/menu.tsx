@@ -373,13 +373,11 @@ export default function PublicMenuScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      {Platform.OS !== 'web' && (
-        <Image
-          source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
-          style={StyleSheet.absoluteFillObject}
-          resizeMode="cover"
-        />
-      )}
+      <Image
+        source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
+        style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
+        resizeMode="cover"
+      />
 
       <Modal
         visible={selectedItem !== null}
@@ -1199,13 +1197,12 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        maxWidth: 1920,
-        alignSelf: 'center' as const,
         width: '100%',
         backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
       },
     }),
   },
