@@ -640,11 +640,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.text,
-    ...Platform.select({
-      web: {
-        outline: 'none',
-      },
-    }),
+
   },
   aiButtons: {
     flexDirection: 'row',
