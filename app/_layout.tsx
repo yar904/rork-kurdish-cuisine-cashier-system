@@ -9,6 +9,7 @@ import { TableProvider } from "@/contexts/TableContext";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -39,18 +40,39 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  // Apply web font styling
-  if (Platform.OS === "web") {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
-      * {
-        font-family: 'Montserrat', 'Segoe UI', Roboto, sans-serif;
-        font-weight: 600;
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      const style = document.createElement("style");
+      style.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
+        * {
+          font-family: 'Montserrat', 'Segoe UI', Roboto, sans-serif;
+          font-weight: 600;
+        }
+      `;
+      document.head.appendChild(style);
+
+      if ('serviceWorker' in navigator && !sessionStorage.getItem('cacheCleared')) {
+        sessionStorage.setItem('cacheCleared', 'true');
+        
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+
+        caches.keys().then((names) => {
+          for (const name of names) {
+            caches.delete(name);
+          }
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
-    `;
-    document.head.appendChild(style);
-  }
+    }
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} {...({} as any)}>
