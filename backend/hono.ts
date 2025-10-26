@@ -14,7 +14,14 @@ app.use("*", cors({
       "http://localhost:8081",
       "http://localhost:3000",
     ];
-    if (!origin || origin.startsWith("exp://") || origin.endsWith(".rork.app") || allowedOrigins.includes(origin)) {
+    if (!origin || 
+        origin.startsWith("exp://") || 
+        origin.endsWith(".rork.app") || 
+        origin.endsWith(".netlify.app") ||
+        origin.endsWith(".onrender.com") ||
+        origin.endsWith(".railway.app") ||
+        origin.endsWith(".vercel.app") ||
+        allowedOrigins.includes(origin)) {
       return origin || "*";
     }
     return null;

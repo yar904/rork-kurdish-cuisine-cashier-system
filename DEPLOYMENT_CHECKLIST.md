@@ -1,304 +1,352 @@
-# ✅ Vercel Deployment Checklist
+# ✅ Deployment Checklist - Kurdish Cuisine System
 
-Complete checklist for deploying the Kurdish Cuisine Backend to Vercel Edge Runtime.
-
----
-
-## 📦 Prerequisites
-
-- [ ] Vercel account created
-- [ ] GitHub repository ready
-- [ ] Supabase project set up with database tables
-- [ ] Node.js 20.x installed locally (for testing)
+Print this and check off as you go!
 
 ---
 
-## 🔧 Backend Preparation
+## 📋 Pre-Deployment
 
-### 1. Install Dependencies
-```bash
-cd backend
-npm install superjson
-```
-- [ ] `superjson` installed successfully
-- [ ] No npm errors
+### Understand the Problem
+- [ ] Read `START_HERE.md` (2 min)
+- [ ] Read `DEPLOYMENT_SOLUTION.md` (3 min)
+- [ ] Understand you have frontend + backend
+- [ ] Know backend needs separate hosting
 
-### 2. Update package.json
-Edit `backend/package.json` and ensure this script exists:
-```json
-"vercel-build": "echo 'Edge runtime build'"
-```
-- [ ] Script added to package.json
+### Choose Your Path
+- [ ] Decided on hosting platform for backend
+- [ ] Decided on hosting platform for frontend
+- [ ] Reviewed costs in `HOSTING_OPTIONS_COMPARISON.md`
+- [ ] Prepared payment method (if using paid tier)
 
-### 3. Verify Files Created
-- [ ] `backend/api/index.ts` exists (Vercel entry point)
-- [ ] `backend/vercel.json` updated with correct routes
-- [ ] `backend/tsconfig.json` configured correctly
-
-### 4. Test Locally (Optional but Recommended)
-```bash
-cd backend
-npm run dev
-```
-- [ ] Backend starts without errors on port 3000
-- [ ] Can access `http://localhost:3000/api/health`
-- [ ] Returns `{"status":"ok","timestamp":"..."}`
-
-### 5. Run Automated Tests (Optional)
-```bash
-cd backend
-chmod +x test-deployment.sh
-./test-deployment.sh
-```
-- [ ] All tests pass
-- [ ] Health check works
-- [ ] Root endpoint works
-- [ ] CORS configured
-- [ ] tRPC endpoint accessible
+### Gather Information
+- [ ] Have GitHub account
+- [ ] Have Supabase URL and keys
+- [ ] Can access `.env` file
+- [ ] Can access `backend/.env` file
 
 ---
 
-## 🚀 Vercel Deployment
+## 🔧 Backend Deployment (Critical!)
 
-### Option A: Deploy via Vercel CLI
+### Setup Account
+- [ ] Created account on Render.com (or chosen platform)
+- [ ] Connected GitHub repository
+- [ ] Verified email if required
 
-```bash
-cd backend
-npx vercel
-```
+### Configure Backend
+- [ ] Selected repository
+- [ ] Set Root Directory: `backend`
+- [ ] Set Build Command: `npm install && npm install -g tsx`
+- [ ] Set Start Command: `npx tsx index.ts`
+- [ ] Set Environment: Node
+- [ ] Set Region (choose closest to you)
 
-Follow prompts:
-- [ ] Link to existing project or create new
-- [ ] Confirm scope/team
-- [ ] Deployment successful
-- [ ] Note the deployed URL
+### Environment Variables
+- [ ] Added `SUPABASE_PROJECT_URL`
+- [ ] Added `SUPABASE_ANON_KEY`
+- [ ] Added `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] Added `NODE_ENV=production`
+- [ ] Added `PORT=3000`
+- [ ] Double-checked all values are correct
 
-### Option B: Deploy via Vercel Dashboard
+### Deploy Backend
+- [ ] Clicked "Create Web Service" or "Deploy"
+- [ ] Waited for build to complete (2-3 min)
+- [ ] Deployment succeeded ✅
+- [ ] Copied backend URL (e.g., `https://xxx.onrender.com`)
 
-1. Go to [vercel.com/dashboard](https://vercel.com/dashboard)
-2. Click "Add New" → "Project"
-3. Import your GitHub repository
-4. Configure project:
-   - [ ] **Root Directory:** Set to `backend`
-   - [ ] **Framework Preset:** Select "Other"
-   - [ ] **Build Command:** Leave empty or `npm run vercel-build`
-   - [ ] **Install Command:** `npm install`
-   - [ ] **Output Directory:** Leave empty
-   - [ ] **Node.js Version:** 20.x
-5. Click "Deploy"
-6. [ ] Deployment successful
-7. [ ] Note the deployed URL (e.g., `https://your-backend.vercel.app`)
-
----
-
-## 🔐 Environment Variables
-
-### In Vercel Dashboard
-
-Go to: Project Settings → Environment Variables
-
-Add these variables for **Production**, **Preview**, and **Development**:
-
-```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=eyJh...
-SUPABASE_SERVICE_ROLE_KEY=eyJh...
-FRONTEND_URL=https://your-frontend.vercel.app
-```
-
-- [ ] `SUPABASE_URL` added
-- [ ] `SUPABASE_ANON_KEY` added
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` added
-- [ ] `FRONTEND_URL` added (add after frontend deployment)
-- [ ] Environment variables saved
-
-### Redeploy After Adding ENV
-- [ ] Trigger redeploy from Vercel Dashboard
-- [ ] Deployment successful
+### Verify Backend
+- [ ] Visit `https://your-backend.onrender.com/`
+- [ ] See version info? ✅
+- [ ] Visit `https://your-backend.onrender.com/api/health`
+- [ ] See `{"status":"ok"}`? ✅
+- [ ] Visit `https://your-backend.onrender.com/api/test`
+- [ ] See `"supabaseConnected": true`? ✅
+- [ ] No errors in logs? ✅
 
 ---
 
-## 🧪 Post-Deployment Testing
+## 🎨 Frontend Deployment
 
-### Test Backend Endpoints
+### Option A: Update on Rork
 
-Replace `YOUR_BACKEND_URL` with your actual Vercel backend URL.
+- [ ] Opened `.env` file in Rork editor
+- [ ] Updated `EXPO_PUBLIC_RORK_API_BASE_URL=https://your-backend-url`
+- [ ] Saved file
+- [ ] Waited for Rork to rebuild
+- [ ] Verified app loads without "snapshot not found"
 
-#### 1. Health Check
-```bash
-curl https://YOUR_BACKEND_URL/api/health
-```
-Expected: `{"status":"ok","timestamp":"..."}`
-- [ ] Returns 200 status
-- [ ] JSON response with "ok" status
+### Option B: Deploy to Netlify
 
-#### 2. Root Endpoint
-```bash
-curl https://YOUR_BACKEND_URL/
-```
-Expected: `✅ Kurdish Cuisine API is running on Vercel Edge Runtime`
-- [ ] Returns 200 status
-- [ ] Welcome message displays
+#### Setup Netlify
+- [ ] Created Netlify account
+- [ ] Connected GitHub repository
+- [ ] Selected repository
+- [ ] Set Build Command: `npx expo export -p web`
+- [ ] Set Publish Directory: `dist`
+- [ ] Set Node Version: 20
 
-#### 3. tRPC Endpoint (via browser)
-Open: `https://YOUR_BACKEND_URL/api/trpc/example.hi`
-- [ ] Page loads (may show error - that's OK, means endpoint exists)
-- [ ] Not a 404 error
+#### Environment Variables
+- [ ] Added `EXPO_PUBLIC_SUPABASE_URL`
+- [ ] Added `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] Added `EXPO_PUBLIC_RORK_API_BASE_URL=https://your-backend-url`
+- [ ] Verified all values are correct
 
-#### 4. Automated Test Script
-```bash
-cd backend
-./test-deployment.sh https://YOUR_BACKEND_URL
-```
-- [ ] All tests pass
+#### Deploy Frontend
+- [ ] Clicked "Deploy site"
+- [ ] Waited for build (2-3 min)
+- [ ] Build succeeded ✅
+- [ ] Got Netlify URL (e.g., `https://xxx.netlify.app`)
 
----
-
-## 🎨 Frontend Configuration
-
-### Update Frontend Environment Variables
-
-#### Local Development
-Edit root `.env`:
-```bash
-EXPO_PUBLIC_RORK_API_BASE_URL=https://YOUR_BACKEND_URL
-```
-- [ ] Variable updated
-- [ ] Expo restarted
-
-#### Vercel Frontend (if deploying frontend to Vercel)
-In Frontend Project Settings → Environment Variables:
-```bash
-EXPO_PUBLIC_RORK_API_BASE_URL=https://YOUR_BACKEND_URL
-```
-- [ ] Variable added to Vercel
-- [ ] Frontend redeployed
+### Verify Frontend
+- [ ] Site loads without errors ✅
+- [ ] No "snapshot not found" message ✅
+- [ ] Opened browser DevTools (F12)
+- [ ] No errors in Console tab ✅
+- [ ] Checked Network tab - API calls successful ✅
 
 ---
 
-## 🔄 Backend CORS Update (after frontend deployment)
+## 🧪 Integration Testing
 
-Once frontend is deployed, update backend CORS:
+### Basic Functionality
+- [ ] Homepage loads
+- [ ] Menu page displays items
+- [ ] Images load correctly
+- [ ] Can navigate between pages
+- [ ] Mobile responsive works
 
-### Update Environment Variable
-In Backend Vercel Settings → Environment Variables:
-- [ ] Update `FRONTEND_URL` with actual frontend URL
-- [ ] Redeploy backend
+### Cashier Flow
+- [ ] Can select a table
+- [ ] Can add items to cart
+- [ ] Can adjust quantities
+- [ ] Can remove items
+- [ ] Total calculates correctly
+- [ ] Can submit order
+- [ ] Order submission succeeds ✅
 
-### Verify CORS in Code (if needed)
-Check `backend/api/index.ts`:
-```typescript
-app.use('*', cors({
-  origin: ['http://localhost:8081', process.env.FRONTEND_URL || '*'],
-  credentials: true,
-}));
-```
-- [ ] Frontend URL included in CORS origins
-- [ ] Deployed if changed
+### Kitchen Flow
+- [ ] Kitchen view loads
+- [ ] New orders appear
+- [ ] Can change order status
+- [ ] Status updates reflected immediately
+- [ ] All order details visible
+
+### Waiter Flow
+- [ ] Waiter view loads
+- [ ] Can see all tables
+- [ ] Can see table status
+- [ ] Can view orders by table
+- [ ] Can mark orders as served
+
+### Admin Flow
+- [ ] Admin panel accessible
+- [ ] Can view all orders
+- [ ] Can view analytics
+- [ ] Reports generate correctly
+- [ ] Menu management works
+
+### Data Persistence
+- [ ] Created a test order
+- [ ] Refreshed page
+- [ ] Order still exists ✅
+- [ ] All data intact ✅
+
+### Multi-Device Testing
+- [ ] Tested on desktop browser
+- [ ] Tested on mobile browser
+- [ ] Tested on tablet (if available)
+- [ ] Layout works on all sizes ✅
 
 ---
 
-## ✅ Integration Testing
+## 🔒 Security Check
 
-### Test Frontend → Backend Communication
+### Environment Variables
+- [ ] No secrets exposed in frontend
+- [ ] Only `EXPO_PUBLIC_*` vars in frontend
+- [ ] Service role key only in backend
+- [ ] All secrets properly configured
 
-1. Open your frontend app (locally or on Vercel)
-2. Open browser DevTools → Network tab
-3. Interact with the app (load menu, create order, etc.)
-
-Check:
-- [ ] API calls go to `https://YOUR_BACKEND_URL/api/trpc/*`
-- [ ] Requests return 200 status codes
+### CORS
+- [ ] API calls work from frontend
 - [ ] No CORS errors in console
-- [ ] Data loads correctly
-- [ ] Menu items display
-- [ ] Orders can be created
-- [ ] Tables load correctly
+- [ ] Backend accepts frontend domain
+
+### HTTPS
+- [ ] Frontend served over HTTPS ✅
+- [ ] Backend served over HTTPS ✅
+- [ ] No mixed content warnings
 
 ---
 
-## 📊 Monitoring & Verification
+## 📊 Performance Check
 
-### Vercel Dashboard
+### Backend Performance
+- [ ] Health check responds < 2 seconds
+- [ ] API calls respond < 3 seconds
+- [ ] No timeout errors
+- [ ] Logs show no errors
 
-- [ ] Check "Deployments" tab - deployment is live
-- [ ] Check "Functions" tab - edge functions showing activity
-- [ ] Check "Analytics" - requests being tracked
-- [ ] Review "Runtime Logs" - no errors
+### Frontend Performance
+- [ ] Page loads < 3 seconds
+- [ ] Images load reasonably fast
+- [ ] No console warnings
+- [ ] Smooth interactions
 
-### Supabase Dashboard
-
-- [ ] Check "Table Editor" - data appears when app is used
-- [ ] Check "API" tab - service role key matches
-- [ ] Review "Logs" - queries are executing
-
----
-
-## 🐛 Troubleshooting
-
-If you encounter issues, check:
-
-### Backend Not Responding
-- [ ] Verified deployment succeeded in Vercel
-- [ ] Checked Vercel function logs for errors
-- [ ] Confirmed environment variables are set
-- [ ] URL is correct (no typos)
-
-### CORS Errors
-- [ ] `FRONTEND_URL` environment variable set
-- [ ] Backend redeployed after adding frontend URL
-- [ ] CORS origins in code include frontend domain
-
-### Database Errors
-- [ ] Supabase credentials are correct
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` is set (not just anon key)
-- [ ] Database tables exist
-- [ ] RLS policies allow service role access
-
-### tRPC Errors
-- [ ] `superjson` is installed
-- [ ] Frontend tRPC client configured correctly
-- [ ] API routes match in both frontend and backend
+### Database Performance
+- [ ] Queries execute quickly
+- [ ] Data loads without lag
+- [ ] No connection errors
 
 ---
 
-## 📚 Reference Documentation
+## 🌍 Production Readiness
 
-Detailed guides available:
-- **`backend/DEPLOYMENT_SUMMARY.md`** - What was created
-- **`backend/VERCEL_DEPLOYMENT.md`** - Detailed deployment guide
-- **`backend/SETUP_INSTRUCTIONS.md`** - Local setup
-- **`ENV_SETUP_GUIDE.md`** - Environment variables
-- **`VERCEL_QUICK_START.md`** - Fast deployment
+### Documentation
+- [ ] Saved backend URL
+- [ ] Saved frontend URL
+- [ ] Saved database credentials
+- [ ] Documented deployment process
+
+### Monitoring
+- [ ] Can access backend logs
+- [ ] Can access frontend logs
+- [ ] Can access database dashboard
+- [ ] Set up error alerts (optional)
+
+### Backup Plan
+- [ ] Know how to rollback frontend
+- [ ] Know how to rollback backend
+- [ ] Have database backup strategy
+- [ ] Know support contacts
+
+### Team Access
+- [ ] Shared credentials (if team)
+- [ ] Added team members to platforms
+- [ ] Documented where everything is hosted
+- [ ] Created handoff documentation
 
 ---
 
-## 🎉 Success Criteria
+## 🎉 Launch Checklist
 
-Your deployment is successful when:
+### Final Verification
+- [ ] All pages work ✅
+- [ ] All features work ✅
+- [ ] No console errors ✅
+- [ ] Mobile works ✅
+- [ ] Desktop works ✅
+- [ ] Data persists ✅
 
-✅ Backend health check returns `{"status":"ok"}`
-✅ Backend root returns welcome message
-✅ Frontend connects to backend without errors
-✅ API calls in Network tab show 200 status
-✅ No CORS errors in browser console
-✅ Data loads from Supabase correctly
-✅ Can create, read, update menu items
-✅ Can manage orders and tables
-✅ Vercel logs show no errors
+### Performance
+- [ ] Fast load times ✅
+- [ ] Smooth interactions ✅
+- [ ] No errors ✅
+
+### Go Live
+- [ ] Updated any marketing materials
+- [ ] Tested with real users
+- [ ] Monitored first few orders
+- [ ] Confirmed everything works ✅
 
 ---
 
-## 🚀 You're Done!
+## 🚨 If Something Goes Wrong
 
-**Congratulations!** Your Kurdish Cuisine Cashier System backend is now:
-- Live on Vercel Edge Runtime
-- Connected to Supabase
-- Accessible via tRPC
-- Production-ready and scalable
+### Backend Issues
+- [ ] Check `TROUBLESHOOTING.md` → "Backend Not Responding"
+- [ ] Review backend logs
+- [ ] Verify environment variables
+- [ ] Check Supabase connection
 
-**Next Steps:**
-- Deploy frontend to Vercel
-- Set up custom domain (optional)
-- Configure monitoring/alerts
-- Share with your team! 🎊
+### Frontend Issues
+- [ ] Check `TROUBLESHOOTING.md` → "Frontend Build Failures"
+- [ ] Clear browser cache
+- [ ] Check console for errors
+- [ ] Verify API URL is correct
+
+### Data Issues
+- [ ] Check `TROUBLESHOOTING.md` → "Data Not Syncing"
+- [ ] Test Supabase connection
+- [ ] Check database logs
+- [ ] Verify credentials
+
+### Still Stuck?
+- [ ] Read full `TROUBLESHOOTING.md`
+- [ ] Check platform status pages
+- [ ] Contact platform support
+- [ ] Review deployment logs
+
+---
+
+## 📞 Support Contacts
+
+### Platforms
+- **Render**: https://render.com/support
+- **Netlify**: https://www.netlify.com/support/
+- **Supabase**: https://supabase.com/docs
+- **Rork**: Contact Rork support
+
+### Documentation
+- All guides in project root
+- `START_HERE.md` for overview
+- `TROUBLESHOOTING.md` for problems
+
+---
+
+## ✅ Deployment Complete!
+
+### Post-Deployment
+- [ ] Saved all URLs and credentials
+- [ ] Documented any custom changes
+- [ ] Shared access with team
+- [ ] Set up monitoring
+
+### Celebrate! 🎉
+- [ ] Your app is live! ✅
+- [ ] All features working ✅
+- [ ] Users can access it ✅
+- [ ] You did it! 🚀
+
+---
+
+## 📝 Deployment Summary
+
+Fill this out when complete:
+
+```
+Deployment Date: _______________
+
+Frontend:
+  Platform: ________________
+  URL: ____________________
+  Status: ✅ / ❌
+
+Backend:
+  Platform: ________________
+  URL: ____________________
+  Status: ✅ / ❌
+
+Database:
+  Platform: Supabase
+  URL: https://oqspnszwjxzyvwqjvjiy.supabase.co
+  Status: ✅
+
+Total Time Taken: _______ minutes
+
+Issues Encountered: _______________
+_________________________________
+
+Final Result: ✅ SUCCESS / ❌ NEEDS WORK
+
+Notes:
+_________________________________
+_________________________________
+```
+
+---
+
+**Congratulations on deploying your Kurdish Cuisine Cashier System!** 🎉
+
+Keep this checklist for future deployments or updates.
