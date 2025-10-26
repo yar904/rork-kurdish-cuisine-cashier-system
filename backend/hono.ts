@@ -8,11 +8,17 @@ import { createClient } from "@supabase/supabase-js";
 const app = new Hono();
 
 app.use("*", cors({
-  origin: [
-    "https://kurdish-cuisine-cashier-system.rork.app",
-    "http://localhost:8081",
-    "exp://"
-  ],
+  origin: (origin) => {
+    const allowedOrigins = [
+      "https://kurdish-cuisine-cashier-system.rork.app",
+      "http://localhost:8081",
+      "http://localhost:3000",
+    ];
+    if (!origin || origin.startsWith("exp://") || origin.endsWith(".rork.app") || allowedOrigins.includes(origin)) {
+      return origin || "*";
+    }
+    return null;
+  },
   credentials: true,
 }));
 
