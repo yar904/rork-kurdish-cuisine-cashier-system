@@ -13,6 +13,7 @@ import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
+import { useRorkAgent } from "@rork/toolkit-sdk";
 
 interface AIChatbotProps {
   onClose: () => void;
@@ -22,11 +23,9 @@ interface AIChatbotProps {
 export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
   const { language } = useLanguage();
   const { selectedTable } = useRestaurant();
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<ScrollView>(null);
 
-  // 🌍 SYSTEM prompt - multilingual support
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
 You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently with perfect understanding.
 You help customers place orders, track their meals, answer questions about menu items, and call staff when needed.
@@ -57,66 +56,29 @@ Capabilities:
 
 Remember: You represent Tapse's commitment to excellent customer service in all languages.`;
 
-  // 🧠 Send message to OpenAI API (real responses)
-  const sendMessage = async () => {
+  const { messages, sendMessage: sendRorkMessage } = useRorkAgent({
+    systemPrompt,
+    tools: {},
+  });
+
+  const sendMessage = () => {
     if (!input.trim()) return;
-
-    const newMessage = { role: "user", content: input };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
+    const message = input;
     setInput("");
-
-    try {
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...updated.map((m) => ({
-                role: m.role as "user" | "assistant",
-                content: m.content,
-              })),
-            ],
-          }),
-        }
-      );
-
-      const data = await response.json();
-      const aiReply = data.choices?.[0]?.message?.content || "Sorry, I couldn’t respond.";
-
-      setMessages((prev) => [...prev, { role: "assistant", content: aiReply }]);
-    } catch (err) {
-      console.error("AI error:", err);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "⚠️ Network error. Try again." },
-      ]);
-    }
+    sendRorkMessage(message);
   };
 
   useEffect(() => {
-    if (visible) {
+    if (visible && messages.length === 0) {
       const welcomeMessage = language === 'ku' 
         ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
         : language === 'ar'
         ? `مرحباً بك في مطعم تابسي السليماني! 🌟\n\nأنا باران، مساعدك الرقمي الذكي. يمكنني مساعدتك في:\n\n✨ الاستفسار عن القائمة والأطباق\n🍽️ طلب الطعام\n📋 تتبع طلبك\n👋 استدعاء النادل\n\nكيف يمكنني مساعدتك اليوم؟ 😊`
         : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
       
-      setMessages([
-        {
-          role: "assistant",
-          content: welcomeMessage,
-        },
-      ]);
+      sendRorkMessage(welcomeMessage);
     }
-  }, [visible, language]);
+  }, [visible, language, messages.length, sendRorkMessage]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
@@ -126,7 +88,6 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.aiIcon}>
@@ -146,29 +107,36 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
         </TouchableOpacity>
       </View>
 
-      {/* Messages */}
       <ScrollView ref={scrollRef} style={styles.messages}>
-        {messages.map((msg, i) => (
-          <View
-            key={i}
-            style={[
-              styles.message,
-              msg.role === "user" ? styles.userMsg : styles.aiMsg,
-            ]}
-          >
-            <Text
-              style={[
-                styles.messageText,
-                msg.role === "user" ? styles.userText : styles.aiText,
-              ]}
-            >
-              {msg.content}
-            </Text>
+        {messages.map((msg) => (
+          <View key={msg.id}>
+            {msg.parts.map((part: any, i: number) => {
+              if (part.type === "text") {
+                return (
+                  <View
+                    key={`${msg.id}-${i}`}
+                    style={[
+                      styles.message,
+                      msg.role === "user" ? styles.userMsg : styles.aiMsg,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.messageText,
+                        msg.role === "user" ? styles.userText : styles.aiText,
+                      ]}
+                    >
+                      {part.text}
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            })}
           </View>
         ))}
       </ScrollView>
 
-      {/* Input */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.inputRow}
