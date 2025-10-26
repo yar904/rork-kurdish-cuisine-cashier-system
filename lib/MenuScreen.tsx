@@ -43,8 +43,8 @@ export default function MenuScreen() {
       <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}>🍽 Menu</Text>
       <FlatList
         data={menu}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        keyExtractor={(item: any) => item.id}
+        renderItem={({ item }: { item: any }) => (
           <TouchableOpacity
             onPress={() => handleOrder(item)}
             style={{

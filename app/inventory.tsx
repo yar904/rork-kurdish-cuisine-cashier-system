@@ -181,28 +181,28 @@ export default function InventoryScreen() {
               style={styles.input}
               placeholder="Item Name"
               value={newItem.name}
-              onChangeText={(text) => setNewItem({ ...newItem, name: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, name: text })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Category"
               value={newItem.category}
-              onChangeText={(text) => setNewItem({ ...newItem, category: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, category: text })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Unit (kg, lbs, pieces, etc.)"
               value={newItem.unit}
-              onChangeText={(text) => setNewItem({ ...newItem, unit: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, unit: text })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Current Stock"
               value={newItem.currentStock}
-              onChangeText={(text) => setNewItem({ ...newItem, currentStock: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, currentStock: text })}
               keyboardType="decimal-pad"
             />
 
@@ -210,7 +210,7 @@ export default function InventoryScreen() {
               style={styles.input}
               placeholder="Minimum Stock"
               value={newItem.minimumStock}
-              onChangeText={(text) => setNewItem({ ...newItem, minimumStock: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, minimumStock: text })}
               keyboardType="decimal-pad"
             />
 
@@ -218,7 +218,7 @@ export default function InventoryScreen() {
               style={styles.input}
               placeholder="Cost Per Unit"
               value={newItem.costPerUnit}
-              onChangeText={(text) => setNewItem({ ...newItem, costPerUnit: text })}
+              onChangeText={(text: string) => setNewItem({ ...newItem, costPerUnit: text })}
               keyboardType="decimal-pad"
             />
 

@@ -217,21 +217,21 @@ export default function EmployeesScreen() {
               style={styles.input}
               placeholder="Name *"
               value={newEmployee.name}
-              onChangeText={(text) => setNewEmployee({ ...newEmployee, name: text })}
+              onChangeText={(text: string) => setNewEmployee({ ...newEmployee, name: text })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Role *"
               value={newEmployee.role}
-              onChangeText={(text) => setNewEmployee({ ...newEmployee, role: text })}
+              onChangeText={(text: string) => setNewEmployee({ ...newEmployee, role: text })}
             />
 
             <TextInput
               style={styles.input}
               placeholder="Phone"
               value={newEmployee.phone}
-              onChangeText={(text) => setNewEmployee({ ...newEmployee, phone: text })}
+              onChangeText={(text: string) => setNewEmployee({ ...newEmployee, phone: text })}
               keyboardType="phone-pad"
             />
 
@@ -239,7 +239,7 @@ export default function EmployeesScreen() {
               style={styles.input}
               placeholder="Email"
               value={newEmployee.email}
-              onChangeText={(text) => setNewEmployee({ ...newEmployee, email: text })}
+              onChangeText={(text: string) => setNewEmployee({ ...newEmployee, email: text })}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -248,7 +248,7 @@ export default function EmployeesScreen() {
               style={styles.input}
               placeholder="Hourly Rate *"
               value={newEmployee.hourlyRate}
-              onChangeText={(text) => setNewEmployee({ ...newEmployee, hourlyRate: text })}
+              onChangeText={(text: string) => setNewEmployee({ ...newEmployee, hourlyRate: text })}
               keyboardType="decimal-pad"
             />
 

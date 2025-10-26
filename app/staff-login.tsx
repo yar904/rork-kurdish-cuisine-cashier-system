@@ -27,7 +27,7 @@ export default function StaffLoginScreen() {
   const [dimensions, setDimensions] = React.useState(() => Dimensions.get('window'));
 
   React.useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    const subscription = Dimensions.addEventListener('change', ({ window }: { window: { width: number; height: number; scale: number; fontScale: number } }) => {
       setDimensions(window);
     });
     return () => subscription?.remove();

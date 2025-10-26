@@ -324,7 +324,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={styles.input}
                   value={editingItem.nameKurdish}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, nameKurdish: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, nameKurdish: text })}
                   placeholder="ناوی خواردن (پێویستە)"
                   placeholderTextColor={Colors.textLight}
                 />
@@ -335,7 +335,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionKurdish}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, descriptionKurdish: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, descriptionKurdish: text })}
                   placeholder="وەسفی خواردن... (پێویستە)"
                   placeholderTextColor={Colors.textLight}
                   multiline
@@ -351,7 +351,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={styles.input}
                   value={editingItem.name}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, name: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, name: text })}
                   placeholder="e.g., Tikka Kebab (defaults to Kurdish)"
                   placeholderTextColor={Colors.textLight}
                 />
@@ -362,7 +362,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.description}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, description: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, description: text })}
                   placeholder="Describe the dish... (defaults to Kurdish)"
                   placeholderTextColor={Colors.textLight}
                   multiline
@@ -378,7 +378,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={styles.input}
                   value={editingItem.nameArabic}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, nameArabic: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, nameArabic: text })}
                   placeholder="اسم الطبق (افتراضي للكردية)"
                   placeholderTextColor={Colors.textLight}
                 />
@@ -389,7 +389,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionArabic}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, descriptionArabic: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, descriptionArabic: text })}
                   placeholder="وصف الطبق... (افتراضي للكردية)"
                   placeholderTextColor={Colors.textLight}
                   multiline
@@ -436,7 +436,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={styles.input}
                   value={editingItem.price}
-                  onChangeText={(text) => setEditingItem({ ...editingItem, price: text })}
+                  onChangeText={(text: string) => setEditingItem({ ...editingItem, price: text })}
                   placeholder="25000"
                   placeholderTextColor={Colors.textLight}
                   keyboardType="numeric"

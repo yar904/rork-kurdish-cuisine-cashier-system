@@ -328,7 +328,7 @@ export default function PublicMenuScreen() {
         
         <TouchableOpacity
           style={styles.rateButtonOnCard}
-          onPress={(e) => {
+          onPress={(e: any) => {
             setRatingItem(item);
             setUserRating(0);
             setRatingComment('');
