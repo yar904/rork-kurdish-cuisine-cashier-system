@@ -11,6 +11,7 @@ app.use("*", cors({
   origin: (origin) => {
     const allowedOrigins = [
       "https://kurdish-cuisine-cashier-system.rork.app",
+      "https://tapse.netlify.app",
       "http://localhost:8081",
       "http://localhost:3000",
     ];
@@ -18,9 +19,7 @@ app.use("*", cors({
         origin.startsWith("exp://") || 
         origin.endsWith(".rork.app") || 
         origin.endsWith(".netlify.app") ||
-        origin.endsWith(".onrender.com") ||
-        origin.endsWith(".railway.app") ||
-        origin.endsWith(".vercel.app") ||
+        origin.endsWith(".supabase.co") ||
         allowedOrigins.includes(origin)) {
       return origin || "*";
     }
