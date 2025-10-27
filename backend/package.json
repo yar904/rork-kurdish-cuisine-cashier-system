@@ -1,7 +1,7 @@
 {
-  "name": "kurdish-cuisine-cashier-backend",
+  "name": "kurdish-cuisine-backend",
   "version": "1.0.0",
-  "description": "Backend server for Kurdish Cuisine Cashier System built with Hono, Bun, and Supabase",
+  "description": "Backend for Kurdish Cuisine Cashier System using Hono, Bun, and Supabase",
   "main": "index.ts",
   "scripts": {
     "dev": "bun run --watch index.ts",
