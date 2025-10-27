@@ -15,12 +15,20 @@ module.exports = function (api) {
               '@lib': './lib',
               '@backend': './backend',
               '@types': './types',
-              '@assets': './assets'
+              '@assets': './assets',
             },
-            extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.native.js', '.web.js']
-          }
+            extensions: [
+              '.js',
+              '.jsx',
+              '.ts',
+              '.tsx',
+              '.json',
+              '.native.js',
+              '.web.js',
+            ],
+          },
         ],
-        'react-native-reanimated/plugin'
-      ]
+        'react-native-reanimated/plugin',
+      ],
     };
   };
