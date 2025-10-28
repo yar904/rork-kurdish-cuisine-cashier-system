@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "expo start --web",
     "start": "expo start",
-    "build": "npx expo export --output dist && echo ✅ Netlify build ready",
+    "build": "expo export --platform web && echo '✅ Netlify build ready'",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx .",
     "clean": "rm -rf node_modules dist .expo package-lock.json && npm install --legacy-peer-deps"
   },
