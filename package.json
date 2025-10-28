@@ -1,5 +1,5 @@
 {
-  "name": "rork-kurdish-cuisine-cashier-system",
+  "name": "kurdish-cuisine-cashier-system",
   "version": "1.0.0",
   "description": "Full-stack restaurant cashier system built with Rork + Supabase + Netlify integration.",
   "main": "expo-router/entry",
