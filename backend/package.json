@@ -1,8 +1,6 @@
 {
   "name": "rork-backend",
   "version": "1.0.0",
-  "description": "Backend for the Rork Kurdish Cuisine Cashier System with Netlify functions.",
-  "main": "index.js",
   "scripts": {
     "build": "echo '✅ Backend ready for Netlify functions deployment'",
     "start": "node index.js",
