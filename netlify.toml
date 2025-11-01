@@ -1,7 +1,11 @@
 [build]
-command = "npm install --legacy-peer-deps && cd backend && npm install --legacy-peer-deps && cd .. && npm run build"
 publish = "dist"
 functions = "netlify/functions"
+command = """
+npm install --legacy-peer-deps &&
+npm --prefix backend install --legacy-peer-deps &&
+npm run build
+"""
 
 [[redirects]]
 from = "/api/*"
