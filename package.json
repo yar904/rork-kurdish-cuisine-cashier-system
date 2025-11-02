@@ -1,43 +1,41 @@
 {
   "name": "rork-kurdish-cuisine-cashier-system",
   "version": "1.0.0",
-  "description": "## Project info",
-  "main": "app.js",
-  "directories": {
-    "lib": "lib"
-  },
+  "description": "Full-stack Rork Kurdish Cuisine Cashier System — frontend + backend ready for Netlify deployment",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "echo '🧠 Local dev mode (handled separately)'",
+    "build:backend": "npm run build:prepare && echo '✅ Backend built successfully'",
+    "build:prepare": "if [ -d backend ]; then cd backend && npm install --legacy-peer-deps && cd ..; fi",
+    "build": "npm install --legacy-peer-deps && npm run build:backend",
+    "start": "node backend/index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["netlify", "cashier", "expo", "react", "backend", "hono", "supabase"],
+  "author": "Yar Khader",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system/issues"
   },
   "homepage": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system#readme",
   "dependencies": {
-    "expo": "^54.0.21",
-    "expo-linking": "^8.0.8",
-    "expo-router": "^6.0.14",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-native": "^0.77.0",
-    "react-native-safe-area-context": "~5.6.0",
-    "react-native-web": "^0.21.2",
-    "zod": "^4.1.12"
+    "expo": "^51.0.28",
+    "expo-status-bar": "^1.12.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-native": "0.76.3",
+    "react-native-safe-area-context": "5.6.0",
+    "react-native-web": "0.21.2",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@types/react": "~19.1.10",
-    "babel-plugin-module-resolver": "^5.0.2",
-    "babel-preset-expo": "^54.0.6",
-    "cross-env": "^10.1.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.3"
-  }
+    "@babel/core": "^7.25.5",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "eslint-config-expo": "^10.0.0",
+    "typescript": "^5.6.3"
+  },
+  "private": true
 }
