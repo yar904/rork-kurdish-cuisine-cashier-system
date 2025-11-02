@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "echo '🧠 Local dev mode (handled separately)'",
     "build:backend": "if [ -d backend ]; then npm --prefix backend install --legacy-peer-deps && npm --prefix backend run build; fi",
-    "build:web": "npx expo export --platform web --output-dir dist --clear",
+    "build:web": "npx --yes expo export --platform web --output-dir dist --clear --non-interactive",
     "build": "npm run build:backend && npm run build:web",
     "start": "node backend/index.js"
   },
