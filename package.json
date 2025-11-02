@@ -1,26 +1,31 @@
 {
   "name": "rork-kurdish-cuisine-cashier-system",
   "version": "1.0.0",
-  "description": "Full-stack Rork Kurdish Cuisine Cashier System — frontend + backend ready for Netlify deployment",
+  "description": "Full-stack Expo web + backend platform for restaurants (menu + cashier) — ready for Netlify",
   "main": "index.js",
   "scripts": {
-    "dev": "echo '🧠 Local dev mode (handled separately)'",
-    "build:backend": "npm run build:prepare && echo '✅ Backend built successfully'",
-    "build:prepare": "if [ -d backend ]; then cd backend && npm install --legacy-peer-deps && cd ..; fi",
-    "build": "npm install --legacy-peer-deps && npm run build:backend",
-    "start": "node backend/index.js"
+    "dev": "echo '💡 Local dev handled via Expo + local backend'",
+    "build:backend": "if [ -d backend ]; then npm --prefix backend install --legacy-peer-deps && npm --prefix backend run build; fi",
+    "build:web": "npx --yes expo export --platform web --output-dir dist --clear --non-interactive",
+    "build": "npm install --legacy-peer-deps && npm run build:backend && npm run build:web",
+    "start": "node backend/dist/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
+    "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
   },
-  "keywords": ["netlify", "cashier", "expo", "react", "backend", "hono", "supabase"],
   "author": "Yar Khader",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system/issues"
-  },
-  "homepage": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system#readme",
+  "keywords": [
+    "expo",
+    "react-native-web",
+    "cashier-system",
+    "restaurant-menu",
+    "backend",
+    "hono",
+    "supabase",
+    "netlify"
+  ],
   "dependencies": {
     "@ai-sdk/react": "^2.0.86",
     "@stardazed/streams-text-encoding": "^1.0.2",
