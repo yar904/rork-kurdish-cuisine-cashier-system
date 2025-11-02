@@ -1,12 +1,16 @@
 {
   "name": "rork-backend",
   "version": "1.0.0",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "echo '✅ Backend ready for Netlify Functions deployment'",
-    "start": "node index.js"
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "hono": "^4.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
   },
   "private": true
 }
