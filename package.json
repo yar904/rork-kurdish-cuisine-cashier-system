@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo '💡 Local dev handled via Expo + local backend'",
-    "build:backend": "npm --prefix backend install --legacy-peer-deps && npm --prefix backend run build",
+    "prebuild": "npm install --legacy-peer-deps && npm --prefix backend install --legacy-peer-deps",
+    "build:backend": "npm --prefix backend run build",
     "build:web": "npx --yes expo export --platform web --output-dir dist --clear --non-interactive",
-    "build": "npm install --legacy-peer-deps && npm --prefix backend install --legacy-peer-deps && npm run build:backend && npm run build:web",
+    "build": "npm run build:backend && npm run build:web",
     "start": "node backend/dist/index.js"
   },
   "repository": {
