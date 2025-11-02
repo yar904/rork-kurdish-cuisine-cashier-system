@@ -1,11 +1,10 @@
-import path from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import "dotenv/config";
 
-const { appRouter } = require(path.join(__dirname, "trpc", "app-router")) as typeof import("./trpc/app-router");
-const { createContext } = require(path.join(__dirname, "trpc", "create-context")) as typeof import("./trpc/create-context");
+import { appRouter } from "./trpc/app-router";
+import { createContext } from "./trpc/create-context";
 
 const app = new Hono();
 

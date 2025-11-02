@@ -1,3 +1,5 @@
-import app from "../../backend/dist/hono/index.js";
+import honoModule from "../../backend/dist/hono.js";
+
+const app = honoModule.default ?? honoModule;
 
 export default app;
