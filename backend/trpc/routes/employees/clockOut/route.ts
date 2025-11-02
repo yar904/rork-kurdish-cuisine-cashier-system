@@ -9,7 +9,7 @@ export const clockOutProcedure = publicProcedure
       breakMinutes: z.number().optional(),
     })
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: { employeeId: string; breakMinutes?: number } }) => {
     const { data: existingRecord } = await supabase
       .from("clock_records")
       .select("*")

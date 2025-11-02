@@ -10,7 +10,7 @@ export const getEmployeeMetricsProcedure = publicProcedure
       endDate: z.string().optional(),
     })
   )
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input: { employeeId: string; startDate?: string; endDate?: string } }) => {
     let query = supabase
       .from("clock_records")
       .select("*")
@@ -32,7 +32,7 @@ export const getEmployeeMetricsProcedure = publicProcedure
       throw new Error("Failed to fetch employee metrics");
     }
 
-    const totalHours = clockRecords.reduce((acc, record) => {
+    const totalHours = clockRecords.reduce((acc: number, record: any) => {
       const clockIn = new Date(record.clock_in).getTime();
       const clockOut = new Date(record.clock_out!).getTime();
       const hoursWorked = (clockOut - clockIn) / (1000 * 60 * 60);

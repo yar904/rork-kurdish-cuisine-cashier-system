@@ -26,7 +26,7 @@ export default function ClockInOutScreen() {
       clockRecordsQuery.refetch();
       Alert.alert('Success', 'Clocked in successfully');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert('Error', error.message);
     },
   });
@@ -36,13 +36,13 @@ export default function ClockInOutScreen() {
       clockRecordsQuery.refetch();
       Alert.alert('Success', 'Clocked out successfully');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert('Error', error.message);
     },
   });
 
   const activeRecord = clockRecordsQuery.data?.find(
-    (record) => record.clock_out === null
+    (record: any) => record.clock_out === null
   );
 
   const handleClockIn = () => {
@@ -134,7 +134,7 @@ export default function ClockInOutScreen() {
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>Recent Clock Records</Text>
-        {clockRecordsQuery.data?.map((record) => (
+        {clockRecordsQuery.data?.map((record: any) => (
           <View key={record.id} style={styles.recordCard}>
             <View style={styles.recordHeader}>
               <Clock size={20} color={Colors.primary} />

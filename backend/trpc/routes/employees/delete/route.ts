@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const deleteEmployeeProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: { id: string } }) => {
     const { error } = await supabase
       .from("employees")
       .delete()
