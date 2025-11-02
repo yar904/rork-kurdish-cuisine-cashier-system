@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
+// Use explicit relative imports so the Netlify bundler picks up the compiled tRPC modules
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 import "dotenv/config";

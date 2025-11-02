@@ -10,10 +10,9 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ES2020"],
-    "baseUrl": ".",
+    "baseUrl": "../",
     "paths": {
-      "@/*": ["../*"],
-      "@/backend/*": ["./*"]
+      "@trpc/*": ["backend/trpc/*"]
     }
   },
   "include": ["**/*.ts"]
