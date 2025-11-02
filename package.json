@@ -1,15 +1,21 @@
 {
   "name": "rork-kurdish-cuisine-cashier-system",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "description": "Full-stack Rork Kurdish Cuisine Cashier System",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:backend": "npm --prefix backend install --legacy-peer-deps && npm --prefix backend run build",
+    "build:web": "npx --yes expo export --platform web --output-dir dist --clear --non-interactive",
+    "build": "npm run build:backend && npm run build:web"
   },
   "dependencies": {
+    "@ai-sdk/react": "^2.0.86",
     "@nkzw/create-context-hook": "^1.1.0",
+    "@stardazed/streams-text-encoding": "^1.0.2",
     "@supabase/supabase-js": "^2.78.0",
     "@tanstack/react-query": "^5.90.6",
     "@trpc/client": "^11.7.1",
@@ -19,6 +25,7 @@
     "expo-audio": "~1.0.14",
     "expo-router": "~6.0.14",
     "expo-status-bar": "~3.0.8",
+    "expo-web-browser": "^15.0.8",
     "lucide-react-native": "^0.552.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -28,11 +35,11 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "0.21.2",
     "superjson": "^2.2.5",
-    "zod": "^3.24.1"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.5",
-    "@types/react": "~19.0.2",
+    "babel-plugin-module-resolver": "^5.0.0",
     "typescript": "^5.6.3"
   },
   "private": true
