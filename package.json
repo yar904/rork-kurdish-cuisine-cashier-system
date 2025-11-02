@@ -1,46 +1,38 @@
 {
   "name": "rork-kurdish-cuisine-cashier-system",
   "version": "1.0.0",
-  "description": "Full-stack Expo web + backend platform for restaurants (menu + cashier) — ready for Netlify",
-  "main": "index.js",
+  "main": "expo-router/entry",
   "scripts": {
-    "dev": "echo '💡 Local dev handled via Expo + local backend'",
-    "prebuild": "npm install --legacy-peer-deps && npm --prefix backend install --legacy-peer-deps",
-    "build:backend": "npm --prefix backend run build",
-    "build:web": "npx --yes expo export --platform web --output-dir dist --clear --non-interactive",
-    "build": "npm run build:backend && npm run build:web",
-    "start": "node backend/dist/index.js"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
-  },
-  "author": "Yar Khader",
-  "license": "MIT",
-  "keywords": [
-    "expo",
-    "react-native-web",
-    "cashier-system",
-    "restaurant-menu",
-    "backend",
-    "hono",
-    "supabase",
-    "netlify"
-  ],
   "dependencies": {
-    "expo": "^51.0.28",
-    "expo-status-bar": "^1.12.1",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-native": "0.76.3",
+    "@nkzw/create-context-hook": "^1.1.0",
+    "@supabase/supabase-js": "^2.78.0",
+    "@tanstack/react-query": "^5.90.6",
+    "@trpc/client": "^11.7.1",
+    "@trpc/react-query": "^11.7.1",
+    "@trpc/server": "^11.7.1",
+    "expo": "^54.0.21",
+    "expo-audio": "~1.0.14",
+    "expo-router": "~6.0.14",
+    "expo-status-bar": "~3.0.8",
+    "lucide-react-native": "^0.552.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.21.1",
     "react-native-safe-area-context": "5.6.0",
+    "react-native-svg": "15.12.1",
     "react-native-web": "0.21.2",
+    "superjson": "^2.2.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.5",
-    "babel-plugin-module-resolver": "^5.0.0",
-    "eslint-config-expo": "^10.0.0",
+    "@types/react": "~19.0.2",
     "typescript": "^5.6.3"
   },
   "private": true
