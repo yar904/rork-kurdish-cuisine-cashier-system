@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo '🧠 Local dev mode (handled separately)'",
-    "build:backend": "npm run build:prepare && echo '✅ Backend built successfully'",
-    "build:prepare": "if [ -d backend ]; then cd backend && npm install --legacy-peer-deps && cd ..; fi",
-    "build": "npm install --legacy-peer-deps && npm run build:backend",
+    "build:backend": "if [ -d backend ]; then npm --prefix backend install --legacy-peer-deps && npm --prefix backend run build; fi",
+    "build:web": "npx expo export --platform web --output-dir dist --clear",
+    "build": "npm run build:backend && npm run build:web",
     "start": "node backend/index.js"
   },
   "repository": {
