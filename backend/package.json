@@ -7,14 +7,15 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@hono/trpc-server": "^0.3.4",
-    "@supabase/supabase-js": "^2.46.1",
-    "@trpc/server": "^11.0.0-rc.482",
-    "@types/node": "^22.7.4",
     "hono": "^4.6.1",
-    "superjson": "^2.2.4",
-    "typescript": "^5.6.3",
-    "zod": "^3.24.1"
+    "@trpc/server": "^11.0.0-rc.482",
+    "@trpc/client": "^11.0.0-rc.482",
+    "@supabase/supabase-js": "^2.46.1",
+    "superjson": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "typescript": "^5.3.3"
   },
   "private": true
 }
