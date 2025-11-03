@@ -28,7 +28,6 @@
     "eslint": "9.31.0",
     "eslint-config-expo": "9.2.0",
     "expo": "^54.0.21",
-    "expo-audio": "~1.0.14",
     "expo-av": "~16.0.7",
     "expo-router": "~6.0.14",
     "expo-status-bar": "~3.0.0",
