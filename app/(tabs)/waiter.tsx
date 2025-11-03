@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, TextInput, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
@@ -16,11 +16,19 @@ export default function WaiterScreen() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [splitBillModal, setSplitBillModal] = useState<{ visible: boolean; order: Order | null }>({ visible: false, order: null });
   const [splitPeople, setSplitPeople] = useState<string>('2');
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { width } = useWindowDimensions();
   
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredOrders = useMemo(() => {
     if (selectedFilter === 'all') return orders;
