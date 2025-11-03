@@ -12,7 +12,8 @@ app.use(
   "*",
   cors({
     origin: [
-      "https://endearing-kheer-8f2632.netlify.app",
+      "https://tapse.netlify.app",
+      "http://localhost:8081",
       "http://localhost:3000",
     ],
     credentials: true,
