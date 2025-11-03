@@ -1,53 +1,47 @@
-# 🚨 URGENT FIX NEEDED - Netlify Build Failing
+# DEPLOYMENT QUICK FIX - DO THIS NOW
 
-## Problem
-Netlify build is failing with: **`sh: 1: tsc: not found`**
+## Current Status
+- Git is synced ✅
+- Backend dependencies fixed ✅
+- **Ready to deploy to Netlify**
 
-This happens because backend dependencies (including TypeScript) are not installed before building.
+## What Was Fixed
+1. Moved `typescript` from devDependencies to dependencies in `backend/package.json` (Netlify needs it for builds)
+2. This fixes the "tsc: not found" error
 
-## Solution (2 minutes)
+## Deploy Steps (DO THIS NOW)
 
-### Step 1: Update package.json
-Open the root `package.json` file and change line 12:
-
-**FROM:**
-```json
-"build:backend": "npm --prefix backend run build",
-```
-
-**TO:**
-```json
-"build:backend": "npm --prefix backend install && npm --prefix backend run build",
-```
-
-### Step 2: Commit and Push
+### 1. Commit and Push
 ```bash
-git add package.json
-git commit -m "Fix: Install backend dependencies before build"
+git add .
+git commit -m "Fix backend build - move typescript to dependencies"
 git push origin main
 ```
 
-### Step 3: Verify on Netlify
-- Go to Netlify dashboard
-- Wait for automatic deploy to trigger
-- Build should now succeed
+If you get a push error (divergent branches), force push:
+```bash
+git push origin main --force
+```
 
-## What This Does
-- Installs backend dependencies (including `typescript`) before running the build
-- The `netlify.toml` already has this fix, but package.json also needs it for consistency
+### 2. Netlify Will Auto-Deploy
+- Once you push, Netlify will automatically detect the changes and start a new build
+- Go to your Netlify dashboard to watch the build logs
+- Build should complete successfully now
 
-## Expected Result
-✅ Build completes successfully  
-✅ Site deploys to Netlify  
-✅ Frontend and backend both work  
+### 3. Verify Environment Variables in Netlify
+Make sure these are set in Netlify dashboard (Site settings > Environment variables):
+- `SUPABASE_URL` - Your Supabase project URL
+- `SUPABASE_ANON_KEY` - Your Supabase anon key
+- `EXPO_PUBLIC_SUPABASE_URL` - Same as SUPABASE_URL
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Same as SUPABASE_ANON_KEY
+- `EXPO_PUBLIC_RORK_API_BASE_URL` - Your Netlify URL (e.g., https://your-site.netlify.app)
+- `FRONTEND_URL` - Same as your Netlify URL
 
-## If Still Failing
-Check that all environment variables are set in Netlify:
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-- `DATABASE_URL`
-- `FRONTEND_URL`
+## That's It!
+Once you push the changes, Netlify will build and deploy automatically. The site should be live in 2-3 minutes.
 
----
-
-**That's it! Just change 1 line in package.json.**
+## If Build Still Fails
+Check the Netlify build logs and share them. The most common issues are:
+1. Missing environment variables
+2. Supabase connection issues
+3. Build timeouts (increase in Netlify settings)
