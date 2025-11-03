@@ -21,9 +21,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "typescript": "^5.9.2",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
   },
   "author": "Yar Khader",
   "license": "MIT"
-  }
+}
