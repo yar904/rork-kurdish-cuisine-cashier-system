@@ -1,5 +1,5 @@
 [build]
-command = "npm --prefix backend install && npm run build"
+command = "cd backend && npm install && npx tsc --project tsconfig.json && cd .. && npm run build:web"
 publish = "dist"
 functions = "netlify/functions"
 
