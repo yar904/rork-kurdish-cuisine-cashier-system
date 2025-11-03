@@ -9,7 +9,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
-    "build:backend": "npm --prefix backend run build",
+    "build:backend": "npm --prefix backend install && npm --prefix backend run build",
     "build": "npm run build:backend && npm run build:web",
     "dev": "concurrently \"npm run start\" \"npm --prefix backend run start\""
   },
