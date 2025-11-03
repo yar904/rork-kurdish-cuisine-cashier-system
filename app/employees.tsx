@@ -128,7 +128,7 @@ export default function EmployeesScreen() {
           <View style={styles.statCard}>
             <Users size={20} color="#10b981" />
             <Text style={styles.statValue}>
-              {employeesQuery.data?.filter(e => e.status === 'active').length || 0}
+              {employeesQuery.data?.filter((e: { status: string }) => e.status === 'active').length || 0}
             </Text>
             <Text style={styles.statLabel}>Active</Text>
           </View>
@@ -136,7 +136,7 @@ export default function EmployeesScreen() {
       </View>
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {employeesQuery.data?.map((employee) => (
+        {employeesQuery.data?.map((employee: any) => (
           <View key={employee.id} style={styles.employeeCard}>
             <View style={styles.employeeHeader}>
               <View style={styles.employeeInfo}>

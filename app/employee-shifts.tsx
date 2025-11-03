@@ -46,7 +46,7 @@ export default function EmployeeShiftsScreen() {
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Scheduled Shifts</Text>
-        {shiftsQuery.data?.map((shift) => (
+        {shiftsQuery.data?.map((shift: any) => (
           <View key={shift.id} style={styles.shiftCard}>
             <View style={styles.shiftHeader}>
               <Calendar size={20} color={Colors.primary} />

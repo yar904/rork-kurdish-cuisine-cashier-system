@@ -827,7 +827,7 @@ export default function PublicMenuScreen() {
             
             {!ratingItem && (
               <ScrollView style={styles.reviewsList} showsVerticalScrollIndicator={false}>
-                {Object.entries(ratingsStats).map(([itemId, stats]) => {
+                {Object.entries(ratingsStats).map(([itemId, stats]: [string, any]) => {
                   const menuItem = MENU_ITEMS.find(item => item.id === itemId);
                   if (!menuItem || stats.totalRatings === 0) return null;
                   
