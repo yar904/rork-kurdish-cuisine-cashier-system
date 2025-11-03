@@ -1,49 +1,53 @@
 {
-"expo": {
-  "name": "Kurdish Cuisine Cashier System",
-  "slug": "kurdish-cuisine-cashier-system",
-  "version": "1.0.0",
-  "orientation": "portrait",
-  "icon": "./assets/images/icon.png",
-  "userInterfaceStyle": "automatic",
-  "platforms": ["ios", "android", "web"],
-  "splash": {
-    "image": "./assets/images/splash-icon.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#ffffff"
-  },
-  "android": {
-    "package": "app.rork.kurdishcuisinecashier"
-  },
-  "ios": {
-    "bundleIdentifier": "app.rork.kurdishcuisinecashier",
-    "infoPlist": {
-      "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-      "UIBackgroundModes": [
-        "audio"
-      ]
-    }
-  },
-  "web": {
-    "favicon": "./assets/images/favicon.png",
-    "bundler": "metro"
-  },
-  "plugins": [
-    [
-      "expo-router",
-      {
-        "origin": "https://rork.com/"
-      }
+  "expo": {
+    "name": "Kurdish Cuisine Cashier System",
+    "slug": "kurdish-cuisine-cashier-system",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
     ],
-    [
-      "expo-audio",
-      {
-        "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "android": {
+      "package": "app.rork.kurdishcuisinecashier"
+    },
+    "ios": {
+      "bundleIdentifier": "app.rork.kurdishcuisinecashier",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
-    ]
-  ],
-  "experiments": {
-    "typedRoutes": true
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://rork.com/"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
-}
 }
