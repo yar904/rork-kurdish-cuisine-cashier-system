@@ -17,10 +17,12 @@
     "dotenv": "^16.4.5",
     "hono": "^4.10.4",
     "superjson": "^2.2.5",
-   "zod": "^3.23.8"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
+    "@types/phoenix": "^1.6.3",
+    "@types/ws": "^8.5.12",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3"
   },
