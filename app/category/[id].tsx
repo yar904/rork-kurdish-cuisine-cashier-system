@@ -455,8 +455,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 16,
-    justifyContent: 'flex-start' as const,
+    justifyContent: 'space-between' as const,
     paddingTop: 20,
     ...Platform.select({
       web: {
@@ -467,13 +466,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCard: {
-    width: '47%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
-    overflow: 'visible' as const,
+    overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 12,
+    marginBottom: 16,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -494,17 +493,15 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 120,
+    height: 130,
     backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 140,
+        height: 150,
       },
     }),
   },
@@ -513,24 +510,22 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-    padding: 0,
+    padding: 12,
     position: 'relative' as const,
   },
   menuItemName: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 22,
+    lineHeight: 20,
     letterSpacing: 0.3,
-    marginBottom: 6,
-    marginTop: 10,
+    marginBottom: 8,
     textAlign: 'center' as const,
-    paddingHorizontal: 10,
     ...Platform.select({
       web: {
-        fontSize: 18,
-        lineHeight: 24,
+        fontSize: 17,
+        lineHeight: 22,
       },
     }),
   },
@@ -549,11 +544,10 @@ const styles = StyleSheet.create({
     }),
   },
   priceContainer: {
-    marginBottom: 10,
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -561,7 +555,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 17,
+        fontSize: 16,
       },
     }),
   },
