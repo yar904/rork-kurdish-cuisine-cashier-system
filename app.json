@@ -38,8 +38,8 @@
         {
           "origin": "https://rork.com/"
         }
-      ],
-    ]
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

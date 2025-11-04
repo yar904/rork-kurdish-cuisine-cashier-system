@@ -1,6 +1,6 @@
-import { publicProcedure } from "../../../create-context";
+import { publicProcedure } from "../../../create-context.js";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../lib/supabase.js";
 
 const createMenuItemSchema = z.object({
   name: z.string().optional().default(""),

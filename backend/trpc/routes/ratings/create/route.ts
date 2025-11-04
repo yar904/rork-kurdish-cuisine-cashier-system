@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { publicProcedure } from "../../../create-context";
-import { supabase } from "@/lib/supabase";
+import { publicProcedure } from "../../../create-context.js";
+import { supabase } from "../../../../../lib/supabase.js";
 
 export const createRatingProcedure = publicProcedure
   .input(
