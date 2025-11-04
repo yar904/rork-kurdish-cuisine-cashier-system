@@ -17,15 +17,15 @@
       "backgroundColor": "#ffffff"
     },
     "android": {
-      "package": "app.rork.kurdishcuisinecashier"
+      "package": "app.rork.kurdishcuisinecashier",
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
     },
     "ios": {
       "bundleIdentifier": "app.rork.kurdishcuisinecashier",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
       }
     },
     "web": {

@@ -11,6 +11,16 @@ This is a native cross-platform mobile app created with [Rork](https://rork.com)
 
 There are several ways of editing your native mobile application.
 
+### **Key npm scripts**
+
+| Command | Description |
+| --- | --- |
+| `npm run start` | Launch the Expo dev server (tunnel enabled by default). |
+| `npm run dev` | Start Expo and the backend simultaneously. |
+| `npm run build:backend` | Install backend dependencies (with offline fallbacks) and run the TypeScript build. |
+| `npm run build:web` | Export the Expo project for static web hosting into `dist/`. |
+| `npm run build` | Build the backend and generate the static web bundle in one step. |
+
 ### **Use Rork**
 
 Simply visit [rork.com](https://rork.com) and prompt to build your app with AI.
@@ -25,7 +35,7 @@ If you want to work locally using your own code editor, you can clone this repo 
 
 If you are new to coding and unsure which editor to use, we recommend Cursor. If you're familiar with terminals, try Claude Code.
 
-The only requirement is having Node.js & Bun installed - [install Node.js with nvm](https://github.com/nvm-sh/nvm) and [install Bun](https://bun.sh/docs/installation)
+The only requirement is having Node.js installed - [install Node.js with nvm](https://github.com/nvm-sh/nvm)
 
 Follow these steps:
 
@@ -37,16 +47,12 @@ git clone <YOUR_GIT_URL>
 cd <YOUR_PROJECT_NAME>
 
 # Step 3: Install the necessary dependencies.
-bun i
+npm install
 
-# Step 4: Start the instant web preview of your Rork app in your browser, with auto-reloading of your changes
-bun run start-web
+# Step 4: Start the Expo development server with auto-reloading.
+npm run start
 
-# Step 5: Start iOS preview
-# Option A (recommended):
-bun run start  # then press "i" in the terminal to open iOS Simulator
-# Option B (if supported by your environment):
-bun run start -- --ios
+# Step 5: Launch a platform target from the Expo CLI (press "i" for iOS, "a" for Android, or "w" for web).
 ```
 
 ### **Edit a file directly in GitHub**
@@ -72,11 +78,11 @@ This project is built with the most popular native mobile cross-platform technic
 
 1. **iOS**: Download the [Rork app from the App Store](https://apps.apple.com/app/rork) or [Expo Go](https://apps.apple.com/app/expo-go/id982107779)
 2. **Android**: Download the [Expo Go app from Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent)
-3. Run `bun run start` and scan the QR code from your development server
+3. Run `npm run start` and scan the QR code from your development server
 
 ### **In your browser**
 
-Run `bun start-web` to test in a web browser. Note: The browser preview is great for quick testing, but some native features may not be available.
+Run `npm run web` to test in a web browser. Note: The browser preview is great for quick testing, but some native features may not be available.
 
 ### **iOS Simulator / Android Emulator**
 
@@ -95,10 +101,10 @@ If you have XCode (iOS) or Android Studio installed:
 
 ```bash
 # iOS Simulator
-bun run start -- --ios
+npm run start -- --ios
 
 # Android Emulator
-bun run start -- --android
+npm run start -- --android
 ```
 
 ## How can I deploy this project?
@@ -108,7 +114,7 @@ bun run start -- --android
 1. **Install EAS CLI**:
 
    ```bash
-   bun i -g @expo/eas-cli
+   npm install -g @expo/eas-cli
    ```
 
 2. **Configure your project**:
@@ -152,14 +158,10 @@ Your React Native app can also run on the web:
 1. **Build for web**:
 
    ```bash
-   eas build --platform web
+   npm run build:web
    ```
 
-2. **Deploy with EAS Hosting**:
-   ```bash
-   eas hosting:configure
-   eas hosting:deploy
-   ```
+2. **Deploy the generated `dist/` directory** to your preferred hosting provider (for example Netlify, Vercel, or an S3 bucket).
 
 Alternative web deployment options:
 
@@ -211,7 +213,7 @@ For advanced native features, you'll need to create a Custom Development Build i
 
 ```bash
 # Install EAS CLI
-bun i -g @expo/eas-cli
+npm install -g @expo/eas-cli
 
 # Configure your project for development builds
 eas build:configure
@@ -221,7 +223,7 @@ eas build --profile development --platform ios
 eas build --profile development --platform android
 
 # Install the development build on your device and start developing
-bun start --dev-client
+npm run start -- --dev-client
 ```
 
 **Learn more:**
@@ -296,13 +298,13 @@ For mobile apps, you'll configure your app's deep linking scheme in `app.json`.
 ### **App not loading on device?**
 
 1. Make sure your phone and computer are on the same WiFi network
-2. Try using tunnel mode: `bun start -- --tunnel`
+2. Try using tunnel mode: `npx expo start --tunnel`
 3. Check if your firewall is blocking the connection
 
 ### **Build failing?**
 
-1. Clear your cache: `bunx expo start --clear`
-2. Delete `node_modules` and reinstall: `rm -rf node_modules && bun install`
+1. Clear your cache: `npx expo start --clear`
+2. Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
 3. Check [Expo's troubleshooting guide](https://docs.expo.dev/troubleshooting/build-errors/)
 
 ### **Need help with native features?**
