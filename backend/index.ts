@@ -1,16 +1,15 @@
 import { serve } from "hono/node-server";
-import app from "./hono";
+import app from "./hono.js";
 
-const port = parseInt(process.env.PORT || "3000");
+const port = Number.parseInt(process.env.PORT || "3000", 10);
 
 console.log(`🚀 Starting server on port ${port}...`);
 
-// Prefer deployed URLs for logging
 const baseUrl =
-  process.env.EXPO_PUBLIC_RORK_API_BASE_URL ||
-  process.env.EXPO_PUBLIC_BACKEND_URL ||
+  process.env.BACKEND_PUBLIC_URL ||
   process.env.FRONTEND_URL ||
-  "https://endearing-kheer-8f2632.netlify.app";
+  process.env.EXPO_PUBLIC_RORK_API_BASE_URL ||
+  `http://localhost:${port}`;
 
 serve({
   fetch: app.fetch,
