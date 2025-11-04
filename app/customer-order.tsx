@@ -48,14 +48,14 @@ export default function CustomerOrderScreen() {
   });
 
   const categories = useMemo(() => {
-    const cats = new Set(menuQuery.data?.map((item: { category: string }) => item.category) || []);
+    const cats = new Set(menuQuery.data?.map(item => item.category) || []);
     return ['all', ...Array.from(cats)];
   }, [menuQuery.data]);
 
   const filteredMenu = useMemo(() => {
     if (!menuQuery.data) return [];
-    if (selectedCategory === 'all') return menuQuery.data.filter((item: { available: boolean }) => item.available);
-    return menuQuery.data.filter((item: { category: string; available: boolean }) => item.category === selectedCategory && item.available);
+    if (selectedCategory === 'all') return menuQuery.data.filter(item => item.available);
+    return menuQuery.data.filter(item => item.category === selectedCategory && item.available);
   }, [menuQuery.data, selectedCategory]);
 
   const cartTotal = useMemo(() => {
@@ -141,7 +141,7 @@ export default function CustomerOrderScreen() {
               styles.categoryChip,
               selectedCategory === category && styles.categoryChipActive,
             ]}
-            onPress={() => setSelectedCategory(category as string)}
+            onPress={() => setSelectedCategory(category)}
           >
             <Text
               style={[
@@ -156,7 +156,7 @@ export default function CustomerOrderScreen() {
       </ScrollView>
 
       <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-        {filteredMenu.map((item: any) => (
+        {filteredMenu.map((item) => (
           <View key={item.id} style={styles.menuItem}>
             {item.image && (
               <Image source={{ uri: item.image }} style={styles.menuImage} />

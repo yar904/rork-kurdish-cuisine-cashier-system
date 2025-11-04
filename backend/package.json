@@ -1,29 +1,28 @@
 {
-  "name": "kurdish-cuisine-backend",
+  "name": "kurdish-cuisine-cashier-backend",
   "version": "1.0.0",
-  "description": "Backend for Kurdish Cuisine Cashier System",
-  "main": "hono.ts",
-  "type": "module",
+  "description": "Backend server for Kurdish Cuisine Cashier System built with Hono, Bun, and Supabase",
+  "main": "index.ts",
   "scripts": {
-    "dev": "tsx watch --env-file=.env hono.ts",
-    "build": "tsc --project tsconfig.json",
-    "start": "node dist/hono.js"
+    "dev": "bun run --watch index.ts",
+    "start": "bun run index.ts",
+    "build": "bun build index.ts --outdir dist",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@hono/node-server": "^1.12.0",
-    "@hono/trpc-server": "^0.4.0",
+    "hono": "^4.6.0",
+    "@hono/node-server": "^1.9.0",
+    "@hono/trpc-server": "^0.2.1",
+    "@trpc/server": "^10.45.22",
     "@supabase/supabase-js": "^2.44.2",
-    "@trpc/server": "^11.7.1",
-    "dotenv": "^16.4.5",
-    "hono": "^4.10.4",
-    "superjson": "^2.2.5",
-   "zod": "^3.23.8"
+    "cors": "^2.8.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
-    "tsx": "^4.19.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.4.5",
+    "eslint": "^8.56.0",
+    "@types/node": "^20.10.5"
   },
-  "author": "Yar Khader",
+  "type": "module",
   "license": "MIT"
 }

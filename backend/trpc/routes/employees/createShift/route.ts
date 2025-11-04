@@ -12,7 +12,7 @@ export const createShiftProcedure = publicProcedure
       notes: z.string().optional(),
     })
   )
-  .mutation(async ({ input }: { input: { employeeId: string; shiftDate: string; startTime: string; endTime: string; notes?: string } }) => {
+  .mutation(async ({ input }) => {
     const { data, error } = await supabase
       .from("shifts")
       .insert({

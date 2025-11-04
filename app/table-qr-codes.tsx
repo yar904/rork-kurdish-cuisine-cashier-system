@@ -63,7 +63,7 @@ export default function TableQRCodesScreen() {
       </View>
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {tablesQuery.data?.map((table: any) => {
+        {tablesQuery.data?.map((table) => {
           const url = getOrderUrl(table.number);
           const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 

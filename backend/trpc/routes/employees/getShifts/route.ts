@@ -10,7 +10,7 @@ export const getShiftsProcedure = publicProcedure
       endDate: z.string().optional(),
     })
   )
-  .query(async ({ input }: { input: { employeeId?: string; startDate?: string; endDate?: string } }) => {
+  .query(async ({ input }) => {
     let query = supabase
       .from("shifts")
       .select("*, employees(name, role)")

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, ArrowRight, Printer } from 'lucide-react-native';
@@ -14,19 +14,11 @@ import { Colors } from '@/constants/colors';
 export default function KitchenScreen() {
   const { orders, updateOrderStatus, readyNotification, optimizeKitchenQueue } = useRestaurant();
   const { t } = useLanguage();
-  const [currentTime, setCurrentTime] = useState(new Date());
   const { width } = useWindowDimensions();
   
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   const activeOrders = useMemo(() => {
     const filtered = orders.filter(order => 

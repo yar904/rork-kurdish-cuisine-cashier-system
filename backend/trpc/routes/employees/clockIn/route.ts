@@ -8,7 +8,7 @@ export const clockInProcedure = publicProcedure
       employeeId: z.string(),
     })
   )
-  .mutation(async ({ input }: { input: { employeeId: string } }) => {
+  .mutation(async ({ input }) => {
     const { data: existingRecord } = await supabase
       .from("clock_records")
       .select("*")

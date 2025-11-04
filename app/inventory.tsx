@@ -116,7 +116,7 @@ export default function InventoryScreen() {
       </View>
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {displayItems?.map((item: any) => {
+        {displayItems?.map((item) => {
           const isLowStock = item.current_stock < item.minimum_stock;
           const stockPercentage = (item.current_stock / item.minimum_stock) * 100;
 

@@ -448,7 +448,7 @@ export default function MenuManagementScreen() {
                 <TextInput
                   style={styles.input}
                   value={editingItem.image}
-                  onChangeText={(text: string) => setEditingItem({ ...editingItem, image: text })}
+                  onChangeText={(text) => setEditingItem({ ...editingItem, image: text })}
                   placeholder="https://images.unsplash.com/..."
                   placeholderTextColor={Colors.textLight}
                 />
