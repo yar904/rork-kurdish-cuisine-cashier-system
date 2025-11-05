@@ -1003,16 +1003,7 @@ export default function PublicMenuScreen() {
         </Animated.View>
       )}
 
-      <Animated.View style={[
-        styles.categorySliderContainer,
-        {
-          height: categorySlideHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 160],
-          }),
-          opacity: categorySlideHeight,
-        },
-      ]}>
+      <View style={styles.categorySliderContainer}>
         <View style={styles.categoryTitleContainer}>
           <View style={styles.categoryDecorLeft} />
           <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
@@ -1043,7 +1034,7 @@ export default function PublicMenuScreen() {
                   if (autoScrollInterval.current) {
                     clearInterval(autoScrollInterval.current);
                   }
-                  router.push(`/category/${category.id}`);
+                  contentScrollRef.current?.scrollTo({ y: 0, animated: true });
                 }}
               >
                 <View style={styles.categoryCardImageContainer}>
@@ -1063,7 +1054,7 @@ export default function PublicMenuScreen() {
             );
           })}
         </ScrollView>
-      </Animated.View>
+      </View>
 
       <ScrollView 
         ref={contentScrollRef}
@@ -1349,14 +1340,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(61, 1, 1, 0.4)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
-    overflow: 'hidden' as const,
-    position: 'relative' as const,
-    paddingBottom: 16,
-    paddingTop: 10,
+    paddingBottom: 12,
+    paddingTop: 8,
     ...Platform.select({
       web: {
-        paddingBottom: 22,
-        paddingTop: 14,
+        paddingBottom: 16,
+        paddingTop: 10,
       },
     }),
   },
@@ -1398,27 +1387,23 @@ const styles = StyleSheet.create({
     }),
   },
   categorySlider: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    gap: 10,
+    paddingHorizontal: 12,
+    paddingBottom: 4,
     ...Platform.select({
       web: {
-        paddingHorizontal: 32,
-        gap: 12,
-        flexDirection: 'row' as const,
-        flexWrap: 'wrap' as const,
-        justifyContent: 'center' as const,
+        paddingHorizontal: 16,
       },
     }),
   },
   categoryCard: {
-    width: 130,
-    height: 120,
+    width: 120,
+    height: 110,
     backgroundColor: '#3d0101',
     borderRadius: 12,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
+    marginRight: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -1430,8 +1415,8 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        width: 140,
-        height: 130,
+        width: 130,
+        height: 120,
         boxShadow: '0 4px 20px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.7)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         cursor: 'pointer',
@@ -1440,12 +1425,12 @@ const styles = StyleSheet.create({
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 80,
+    height: 70,
     position: 'relative' as const,
     backgroundColor: '#2a1a1a',
     ...Platform.select({
       web: {
-        height: 85,
+        height: 80,
       },
     }),
   },
@@ -1459,8 +1444,8 @@ const styles = StyleSheet.create({
   },
 
   categoryCardFooter: {
-    paddingVertical: 6,
-    paddingHorizontal: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 4,
     backgroundColor: '#2a1a1a',
     width: '100%',
     height: 40,
@@ -1470,24 +1455,24 @@ const styles = StyleSheet.create({
     borderTopColor: '#D4AF37',
     ...Platform.select({
       web: {
-        paddingVertical: 8,
-        paddingHorizontal: 6,
-        height: 45,
+        paddingVertical: 6,
+        paddingHorizontal: 4,
+        height: 40,
       },
     }),
   },
   categoryCardTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
     textAlign: 'center' as const,
     letterSpacing: 0.2,
-    lineHeight: 16,
+    lineHeight: 14,
     ...Platform.select({
       web: {
-        fontSize: 13,
-        lineHeight: 17,
+        fontSize: 12,
+        lineHeight: 16,
         letterSpacing: 0.3,
       },
     }),
