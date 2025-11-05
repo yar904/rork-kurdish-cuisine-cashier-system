@@ -1174,9 +1174,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    paddingBottom: 0,
   },
   searchContainer: {
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingTop: 12,
     paddingBottom: 8,
   },
   searchBar: {
@@ -1315,15 +1317,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   categoriesContent: {
-    padding: 16,
-    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
   },
   categoryChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: Colors.backgroundGray,
-    marginRight: 10,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -1331,21 +1333,22 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   categoryText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700' as const,
     color: Colors.textSecondary,
     textTransform: 'capitalize' as const,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   categoryTextActive: {
     color: '#fff',
   },
   viewToggleContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
+    alignItems: 'flex-start' as const,
   },
   viewToggle: {
-    alignSelf: 'center',
     borderRadius: 20,
     overflow: 'hidden' as const,
     backgroundColor: 'rgba(0,0,0,0.03)',
@@ -1387,14 +1390,15 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 16,
-    padding: 20,
+    padding: 12,
+    gap: 12,
   },
   listContainer: {
-    padding: 20,
+    padding: 12,
   },
   gridCard: {
-    width: '48.5%',
+    width: '48%',
+    flexBasis: '48%',
   },
   gridCardInner: {
     backgroundColor: Colors.cardBackground,
@@ -1457,7 +1461,7 @@ const styles = StyleSheet.create({
   },
   gridImageContainer: {
     width: '100%',
-    height: 140,
+    height: 160,
     position: 'relative' as const,
   },
   gridImage: {
@@ -1479,7 +1483,7 @@ const styles = StyleSheet.create({
     }),
   },
   gridContent: {
-    padding: 14,
+    padding: 12,
   },
   gridHeader: {
     flexDirection: 'row' as const,
@@ -1489,10 +1493,10 @@ const styles = StyleSheet.create({
   },
   gridName: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800' as const,
     color: Colors.text,
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
     textShadowColor: 'rgba(0, 0, 0, 0.05)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
@@ -1509,11 +1513,11 @@ const styles = StyleSheet.create({
     color: '#FFD700',
   },
   gridDescription: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
-    marginBottom: 12,
-    lineHeight: 19,
-    letterSpacing: 0.2,
+    marginBottom: 10,
+    lineHeight: 17,
+    letterSpacing: 0.1,
   },
   gridFooter: {
     flexDirection: 'row' as const,
