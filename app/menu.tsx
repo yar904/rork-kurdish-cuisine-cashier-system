@@ -62,7 +62,10 @@ export default function PublicMenuScreen() {
   const scrollDirection = useRef<'up' | 'down'>('down');
   const currentSlideIndex = useRef(0);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
+  const headerOpacity = useRef(new Animated.Value(1)).current;
+  const headerTranslateY = useRef(new Animated.Value(0)).current;
   const [categoryLayouts, setCategoryLayouts] = useState<Record<string, number>>({});
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   useEffect(() => {
     if (!selectedTable && !params.table) {
@@ -230,24 +233,39 @@ export default function PublicMenuScreen() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDelta = currentScrollY - lastScrollY.current;
     
-    if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
-      if (scrollDirection.current !== 'down') {
-        scrollDirection.current = 'down';
-        Animated.timing(categorySlideHeight, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
+    if (currentScrollY > 80 && scrollDelta > 5) {
+      if (isHeaderVisible) {
+        setIsHeaderVisible(false);
+        Animated.parallel([
+          Animated.timing(headerOpacity, {
+            toValue: 0.4,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerTranslateY, {
+            toValue: -60,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+        ]).start();
       }
-    } else if (currentScrollY < lastScrollY.current) {
-      if (scrollDirection.current !== 'up') {
-        scrollDirection.current = 'up';
-        Animated.timing(categorySlideHeight, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
+    } else if (scrollDelta < -5 || currentScrollY < 50) {
+      if (!isHeaderVisible) {
+        setIsHeaderVisible(true);
+        Animated.parallel([
+          Animated.timing(headerOpacity, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerTranslateY, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+        ]).start();
       }
     }
     
@@ -1088,7 +1106,15 @@ export default function PublicMenuScreen() {
         </Animated.View>
       )}
 
-      <View style={styles.categorySliderContainer}>
+      <Animated.View 
+        style={[
+          styles.categorySliderContainer,
+          {
+            opacity: headerOpacity,
+            transform: [{ translateY: headerTranslateY }],
+          },
+        ]}
+      >
         <View style={styles.categoryTitleContainer}>
           <View style={styles.categoryDecorLeft} />
           <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
@@ -1099,6 +1125,9 @@ export default function PublicMenuScreen() {
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categorySlider}
+          snapToInterval={140}
+          decelerationRate="fast"
+          snapToAlignment="center"
           onScrollBeginDrag={() => {
             if (autoScrollInterval.current) {
               clearInterval(autoScrollInterval.current);
@@ -1139,9 +1168,17 @@ export default function PublicMenuScreen() {
             );
           })}
         </ScrollView>
-      </View>
+      </Animated.View>
 
-      <View style={styles.viewSwitcherContainer}>
+      <Animated.View 
+        style={[
+          styles.viewSwitcherContainer,
+          {
+            opacity: headerOpacity,
+            transform: [{ translateY: headerTranslateY }],
+          },
+        ]}
+      >
         <View style={styles.viewSwitcher}>
           <TouchableOpacity
             style={[styles.viewButton, layoutView === 'grid' && styles.viewButtonActive]}
@@ -1158,7 +1195,7 @@ export default function PublicMenuScreen() {
             <List size={18} color={layoutView === 'list' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
       <ScrollView 
         ref={contentScrollRef}
@@ -1534,6 +1571,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#D4AF37',
     marginRight: 10,
+    transform: [{ scale: 1 }],
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -1670,7 +1708,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 12,
-    justifyContent: 'space-between' as const,
+    justifyContent: 'flex-start' as const,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -1887,7 +1925,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: '48.5%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
