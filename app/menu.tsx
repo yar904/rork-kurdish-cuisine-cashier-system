@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Grid3x3, List } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -51,6 +51,7 @@ export default function PublicMenuScreen() {
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
+  const [layoutView, setLayoutView] = useState<'grid' | 'list'>('grid');
   const { width } = useWindowDimensions();
 
   const contentScrollRef = useRef<ScrollView>(null);
@@ -203,8 +204,8 @@ export default function PublicMenuScreen() {
     
     const interval = setInterval(() => {
       const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 150;
-      const gap = 16;
+      const cardWidth = 130;
+      const gap = 10;
       const scrollPosition = nextIndex * (cardWidth + gap);
       
       categoryScrollRef.current?.scrollTo({
@@ -213,7 +214,7 @@ export default function PublicMenuScreen() {
       });
       
       currentSlideIndex.current = nextIndex;
-    }, 3000);
+    }, 4000);
     
     autoScrollInterval.current = interval;
   }, [availableCategories.length]);
@@ -283,6 +284,72 @@ export default function PublicMenuScreen() {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
+    
+    if (layoutView === 'list') {
+      return (
+        <View 
+          key={item.id} 
+          style={[styles.menuItemCardList, isPremium && styles.premiumCardList]}
+        >
+          <TouchableOpacity
+            style={styles.menuItemTouchableList}
+            activeOpacity={0.95}
+            onPress={() => {
+              setSelectedItem(item);
+              setItemQuantity(1);
+              setItemNotes('');
+            }}
+          >
+            <View style={styles.menuItemContentList}>
+              {item.image && (
+                <View style={styles.imageContainerList}>
+                  <Image 
+                    source={{ uri: item.image }} 
+                    style={styles.menuItemImageList}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              
+              <View style={styles.menuItemInfo}>
+                <Text style={styles.menuItemNameList} numberOfLines={2}>
+                  {getItemName(item)}
+                </Text>
+                
+                <Text style={styles.menuItemDescriptionList} numberOfLines={2}>
+                  {getItemDescription(item)}
+                </Text>
+                
+                {hasRatings && (
+                  <View style={styles.ratingBadgeList}>
+                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                    <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                    <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+                  </View>
+                )}
+                
+                <View style={styles.priceHighlightList}>
+                  <Text style={styles.menuItemPriceList}>{formatPrice(item.price)}</Text>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.rateButtonOnCardList}
+            onPress={(e: any) => {
+              setRatingItem(item);
+              setUserRating(0);
+              setRatingComment('');
+              setShowRatingModal(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <Star size={18} color="#D4AF37" strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
+      );
+    }
     
     return (
       <View 
@@ -1022,10 +1089,28 @@ export default function PublicMenuScreen() {
       )}
 
       <View style={styles.categorySliderContainer}>
-        <View style={styles.categoryTitleContainer}>
-          <View style={styles.categoryDecorLeft} />
-          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-          <View style={styles.categoryDecorRight} />
+        <View style={styles.categoryHeaderRow}>
+          <View style={styles.categoryTitleContainer}>
+            <View style={styles.categoryDecorLeft} />
+            <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
+            <View style={styles.categoryDecorRight} />
+          </View>
+          <View style={styles.viewSwitcher}>
+            <TouchableOpacity
+              style={[styles.viewButton, layoutView === 'grid' && styles.viewButtonActive]}
+              onPress={() => setLayoutView('grid')}
+              activeOpacity={0.7}
+            >
+              <Grid3x3 size={18} color={layoutView === 'grid' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewButton, layoutView === 'list' && styles.viewButtonActive]}
+              onPress={() => setLayoutView('list')}
+              activeOpacity={0.7}
+            >
+              <List size={18} color={layoutView === 'list' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
         </View>
         <ScrollView 
           ref={categoryScrollRef}
@@ -1367,6 +1452,30 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  categoryHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: 16,
+  },
+  viewSwitcher: {
+    flexDirection: 'row',
+    gap: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 8,
+    padding: 4,
+  },
+  viewButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  viewButtonActive: {
+    backgroundColor: '#D4AF37',
+  },
   categorySliderTitle: {
     fontSize: 22,
     fontFamily: 'NotoNaskhArabic_700Bold',
@@ -1564,6 +1673,155 @@ const styles = StyleSheet.create({
         justifyContent: 'center' as const,
         gap: 20,
         paddingHorizontal: 20,
+      },
+    }),
+  },
+  menuItemCardList: {
+    width: '100%' as const,
+    backgroundColor: '#3d0101',
+    borderRadius: 16,
+    overflow: 'visible' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginBottom: 12,
+    marginHorizontal: 12,
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  premiumCardList: {
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.3), 0 0 0 2px rgba(212, 175, 55, 0.2)',
+      },
+    }),
+  },
+  menuItemTouchableList: {
+    flex: 1,
+  },
+  menuItemContentList: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+  },
+  imageContainerList: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    overflow: 'hidden' as const,
+    ...Platform.select({
+      web: {
+        width: 120,
+        height: 120,
+      },
+    }),
+  },
+  menuItemImageList: {
+    width: '100%',
+    height: '100%',
+  },
+  menuItemInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  menuItemNameList: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    lineHeight: 24,
+    letterSpacing: 0.3,
+    marginBottom: 4,
+    ...Platform.select({
+      web: {
+        fontSize: 20,
+        lineHeight: 26,
+      },
+    }),
+  },
+  menuItemDescriptionList: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 18,
+    marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontSize: 14,
+        lineHeight: 20,
+      },
+    }),
+  },
+  priceHighlightList: {
+    marginTop: 'auto' as const,
+  },
+  menuItemPriceList: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.3,
+    ...Platform.select({
+      web: {
+        fontSize: 20,
+      },
+    }),
+  },
+  ratingBadgeList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start' as const,
+    gap: 3,
+    marginBottom: 8,
+  },
+  rateButtonOnCardList: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
       },
     }),
   },
