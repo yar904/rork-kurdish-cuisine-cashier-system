@@ -247,19 +247,29 @@ export default function PublicMenuScreen() {
       if (isHeaderVisible) {
         setIsHeaderVisible(false);
         Animated.parallel([
+          Animated.timing(headerOpacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerTranslateY, {
+            toValue: -100,
+            duration: 300,
+            useNativeDriver: true,
+          }),
           Animated.timing(categorySectionOpacity, {
             toValue: 0,
-            duration: 250,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 0,
-            duration: 250,
+            duration: 300,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 0,
-            duration: 250,
+            duration: 300,
             useNativeDriver: true,
           }),
         ]).start();
@@ -268,19 +278,29 @@ export default function PublicMenuScreen() {
       if (!isHeaderVisible) {
         setIsHeaderVisible(true);
         Animated.parallel([
+          Animated.timing(headerOpacity, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerTranslateY, {
+            toValue: 0,
+            duration: 350,
+            useNativeDriver: true,
+          }),
           Animated.timing(categorySectionOpacity, {
             toValue: 1,
-            duration: 300,
+            duration: 350,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 1,
-            duration: 300,
+            duration: 350,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 1,
-            duration: 300,
+            duration: 350,
             useNativeDriver: true,
           }),
         ]).start();
@@ -1040,7 +1060,14 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
       
-      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+      <Animated.View style={[
+        styles.header, 
+        { 
+          paddingTop: insets.top + 4,
+          opacity: headerOpacity,
+          transform: [{ translateY: headerTranslateY }],
+        }
+      ]}>
         <View style={styles.headerTop}>
           <TouchableOpacity
             style={styles.backButton}
@@ -1085,7 +1112,7 @@ export default function PublicMenuScreen() {
             ))}
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {showSearch && (
         <Animated.View
