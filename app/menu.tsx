@@ -61,6 +61,7 @@ export default function PublicMenuScreen() {
   const scrollDirection = useRef<'up' | 'down'>('down');
   const currentSlideIndex = useRef(0);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
+  const [categoryLayouts, setCategoryLayouts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!selectedTable && !params.table) {
@@ -342,6 +343,13 @@ export default function PublicMenuScreen() {
     );
   };
 
+  const handleCategoryPress = (categoryId: string) => {
+    const yOffset = categoryLayouts[categoryId];
+    if (yOffset !== undefined && contentScrollRef.current) {
+      contentScrollRef.current.scrollTo({ y: yOffset - 20, animated: true });
+    }
+  };
+
   const renderCategorySection = (category: MenuCategory) => {
     const categoryItems = MENU_ITEMS.filter((item) => {
       const matchesCategory = item.category === category;
@@ -355,7 +363,17 @@ export default function PublicMenuScreen() {
     if (categoryItems.length === 0) return null;
 
     return (
-      <View key={category} style={styles.categorySection}>
+      <View 
+        key={category} 
+        style={styles.categorySection}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setCategoryLayouts(prev => ({
+            ...prev,
+            [category]: layout.y
+          }));
+        }}
+      >
         <View style={styles.categoryHeader}>
           <View style={styles.categoryTitleContainer}>
             <View style={styles.categoryDecorLeft} />
@@ -1034,10 +1052,7 @@ export default function PublicMenuScreen() {
                   if (autoScrollInterval.current) {
                     clearInterval(autoScrollInterval.current);
                   }
-                  router.push({
-                    pathname: '/category/[id]',
-                    params: { id: category.id },
-                  });
+                  handleCategoryPress(category.id);
                 }}
               >
                 <View style={styles.categoryCardImageContainer}>
