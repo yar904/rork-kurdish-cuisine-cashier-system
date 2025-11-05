@@ -243,65 +243,70 @@ export default function PublicMenuScreen() {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollDelta = currentScrollY - lastScrollY.current;
     
-    if (currentScrollY > 50 && scrollDelta > 5) {
+    if (currentScrollY > 100 && scrollDelta > 5) {
       if (isHeaderVisible) {
         setIsHeaderVisible(false);
         Animated.parallel([
           Animated.timing(headerOpacity, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(headerTranslateY, {
-            toValue: -150,
-            duration: 250,
+            toValue: -200,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionOpacity, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionScale, {
-            toValue: 0,
-            duration: 250,
+            toValue: 0.8,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 0,
-            duration: 250,
+            duration: 200,
             useNativeDriver: true,
           }),
         ]).start();
       }
-    } else if (scrollDelta < -5 || currentScrollY < 30) {
+    } else if (scrollDelta < -10 || currentScrollY < 50) {
       if (!isHeaderVisible) {
         setIsHeaderVisible(true);
         Animated.parallel([
-          Animated.timing(headerOpacity, {
+          Animated.spring(headerOpacity, {
             toValue: 1,
-            duration: 300,
             useNativeDriver: true,
+            tension: 100,
+            friction: 8,
           }),
-          Animated.timing(headerTranslateY, {
+          Animated.spring(headerTranslateY, {
             toValue: 0,
-            duration: 300,
             useNativeDriver: true,
+            tension: 100,
+            friction: 8,
           }),
-          Animated.timing(categorySectionOpacity, {
+          Animated.spring(categorySectionOpacity, {
             toValue: 1,
-            duration: 300,
             useNativeDriver: true,
+            tension: 100,
+            friction: 8,
           }),
-          Animated.timing(categorySectionScale, {
+          Animated.spring(categorySectionScale, {
             toValue: 1,
-            duration: 300,
             useNativeDriver: true,
+            tension: 100,
+            friction: 8,
           }),
-          Animated.timing(viewSwitcherOpacity, {
+          Animated.spring(viewSwitcherOpacity, {
             toValue: 1,
-            duration: 300,
             useNativeDriver: true,
+            tension: 100,
+            friction: 8,
           }),
         ]).start();
       }
@@ -1599,6 +1604,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
     paddingBottom: 12,
     paddingTop: 8,
+    overflow: 'hidden' as const,
     ...Platform.select({
       web: {
         paddingBottom: 16,
@@ -1612,6 +1618,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
+    overflow: 'hidden' as const,
     ...Platform.select({
       web: {
         paddingVertical: 20,
