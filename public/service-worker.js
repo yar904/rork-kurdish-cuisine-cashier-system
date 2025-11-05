@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tapse-v4';
+const CACHE_NAME = 'tapse-v5';
 const OFFLINE_URL = '/';
 
 const STATIC_CACHE = [
@@ -53,17 +53,21 @@ self.addEventListener('fetch', (event) => {
       event.request.url.includes('toolkit.rork.com')) {
     event.respondWith(
       fetch(event.request)
-        .catch(() => {
-          return new Response(
-            JSON.stringify({ 
-              error: 'offline', 
-              message: 'You are offline. Some features may not be available.' 
-            }),
-            { 
-              headers: { 'Content-Type': 'application/json' },
-              status: 503 
-            }
-          );
+        .catch((error) => {
+          console.error('[ServiceWorker] API fetch error:', error);
+          if (!navigator.onLine) {
+            return new Response(
+              JSON.stringify({ 
+                error: 'offline', 
+                message: 'You are offline. Some features may not be available.' 
+              }),
+              { 
+                headers: { 'Content-Type': 'application/json' },
+                status: 503 
+              }
+            );
+          }
+          throw error;
         })
     );
     return;
