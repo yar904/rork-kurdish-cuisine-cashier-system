@@ -1394,7 +1394,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   gridCard: {
-    width: '48%',
+    width: '47%',
   },
   gridCardInner: {
     backgroundColor: Colors.cardBackground,

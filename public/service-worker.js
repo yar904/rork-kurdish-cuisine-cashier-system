@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tapse-v5';
+const CACHE_NAME = 'tapse-v7';
 const OFFLINE_URL = '/';
 
 const STATIC_CACHE = [
