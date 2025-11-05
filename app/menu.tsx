@@ -15,6 +15,7 @@ import {
   Alert,
   useWindowDimensions,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Grid3x3, List } from 'lucide-react-native';
@@ -68,6 +69,8 @@ export default function PublicMenuScreen() {
   const categorySectionOpacity = useRef(new Animated.Value(1)).current;
   const categorySectionHeight = useRef(new Animated.Value(1)).current;
   const viewSwitcherOpacity = useRef(new Animated.Value(1)).current;
+  const viewSwitcherScale = useRef(new Animated.Value(1)).current;
+  const viewToggleAnimation = useRef(new Animated.Value(0)).current;
   const [categoryLayouts, setCategoryLayouts] = useState<Record<string, number>>({});
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
@@ -1220,9 +1223,15 @@ export default function PublicMenuScreen() {
             opacity: viewSwitcherOpacity,
             transform: [
               {
-                scaleY: viewSwitcherOpacity.interpolate({
+                scale: viewSwitcherScale.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+              },
+              {
+                translateY: viewSwitcherOpacity.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-20, 0],
                 }),
               },
             ],
@@ -1230,19 +1239,60 @@ export default function PublicMenuScreen() {
         ]}
       >
         <View style={styles.viewSwitcher}>
+          <Animated.View
+            style={[
+              styles.viewSwitcherPill,
+              {
+                transform: [
+                  {
+                    translateX: viewToggleAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 48],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          />
           <TouchableOpacity
-            style={[styles.viewButton, layoutView === 'grid' && styles.viewButtonActive]}
-            onPress={() => setLayoutView('grid')}
+            style={styles.viewButton}
+            onPress={() => {
+              if (layoutView !== 'grid') {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }
+                Animated.spring(viewToggleAnimation, {
+                  toValue: 0,
+                  useNativeDriver: true,
+                  tension: 80,
+                  friction: 8,
+                }).start();
+                setLayoutView('grid');
+              }
+            }}
             activeOpacity={0.7}
           >
-            <Grid3x3 size={18} color={layoutView === 'grid' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+            <Grid3x3 size={20} color={layoutView === 'grid' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.viewButton, layoutView === 'list' && styles.viewButtonActive]}
-            onPress={() => setLayoutView('list')}
+            style={styles.viewButton}
+            onPress={() => {
+              if (layoutView !== 'list') {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }
+                Animated.spring(viewToggleAnimation, {
+                  toValue: 1,
+                  useNativeDriver: true,
+                  tension: 80,
+                  friction: 8,
+                }).start();
+                setLayoutView('list');
+              }
+            }}
             activeOpacity={0.7}
           >
-            <List size={18} color={layoutView === 'list' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+            <List size={20} color={layoutView === 'list' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -1541,30 +1591,73 @@ const styles = StyleSheet.create({
     }),
   },
   viewSwitcherContainer: {
-    backgroundColor: 'rgba(61, 1, 1, 0.4)',
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    ...Platform.select({
+      web: {
+        paddingVertical: 20,
+      },
+    }),
   },
   viewSwitcher: {
     flexDirection: 'row',
-    gap: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 8,
-    padding: 4,
+    backgroundColor: 'rgba(61, 1, 1, 0.85)',
+    borderRadius: 26,
+    padding: 5,
+    position: 'relative' as const,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 24px rgba(212, 175, 55, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.2)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      },
+    }),
+  },
+  viewSwitcherPill: {
+    position: 'absolute' as const,
+    left: 5,
+    top: 5,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 16px rgba(212, 175, 55, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+      },
+    }),
   },
   viewButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 6,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-  },
-  viewButtonActive: {
-    backgroundColor: '#D4AF37',
+    zIndex: 2,
   },
   categorySliderTitle: {
     fontSize: 22,
