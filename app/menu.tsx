@@ -1528,7 +1528,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ scaleX: 1 }],
   },
   languageMenu: {
     marginHorizontal: 20,
@@ -2018,7 +2017,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 2,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -2090,7 +2089,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: '48.5%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -3005,7 +3004,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 2,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
