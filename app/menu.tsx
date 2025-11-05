@@ -1456,10 +1456,10 @@ const styles = StyleSheet.create({
   viewSwitcherContainer: {
     backgroundColor: 'rgba(61, 1, 1, 0.4)',
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   viewSwitcher: {
     flexDirection: 'row',
