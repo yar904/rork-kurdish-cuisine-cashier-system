@@ -509,16 +509,16 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 32,
-    paddingHorizontal: 12,
-    paddingTop: 16,
+    paddingHorizontal: 8,
+    paddingTop: 8,
   },
   columnWrapper: {
     justifyContent: 'space-between',
+    gap: 8,
     marginBottom: 12,
   },
   menuItemCard: {
-    flex: 1,
-    marginHorizontal: 6,
+    width: '48%',
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'hidden' as const,
