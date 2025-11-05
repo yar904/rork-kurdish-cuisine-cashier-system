@@ -58,18 +58,10 @@ export default function PublicMenuScreen() {
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const categorySlideHeight = useRef(new Animated.Value(1)).current;
   const lastScrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('down');
   const currentSlideIndex = useRef(0);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
-  const headerOpacity = useRef(new Animated.Value(1)).current;
   const headerTranslateY = useRef(new Animated.Value(0)).current;
-  const headerScale = useRef(new Animated.Value(1)).current;
-  const categorySectionOpacity = useRef(new Animated.Value(1)).current;
-  const categorySectionScale = useRef(new Animated.Value(1)).current;
-  const viewSwitcherOpacity = useRef(new Animated.Value(1)).current;
-  const viewSwitcherScale = useRef(new Animated.Value(1)).current;
   const viewToggleAnimation = useRef(new Animated.Value(0)).current;
   const [categoryLayouts, setCategoryLayouts] = useState<Record<string, number>>({});
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -243,94 +235,24 @@ export default function PublicMenuScreen() {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollDelta = currentScrollY - lastScrollY.current;
     
-    if (currentScrollY > 100 && scrollDelta > 5) {
+    if (currentScrollY > 80 && scrollDelta > 5) {
       if (isHeaderVisible) {
         setIsHeaderVisible(false);
-        Animated.parallel([
-          Animated.timing(headerOpacity, {
-            toValue: 0.3,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerTranslateY, {
-            toValue: -60,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerScale, {
-            toValue: 0.7,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(categorySectionOpacity, {
-            toValue: 0.4,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(categorySectionScale, {
-            toValue: 0.85,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(viewSwitcherOpacity, {
-            toValue: 0.5,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(viewSwitcherScale, {
-            toValue: 0.9,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        Animated.timing(headerTranslateY, {
+          toValue: -120,
+          duration: 250,
+          useNativeDriver: true,
+        }).start();
       }
     } else if (scrollDelta < -10 || currentScrollY < 50) {
       if (!isHeaderVisible) {
         setIsHeaderVisible(true);
-        Animated.parallel([
-          Animated.spring(headerOpacity, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(headerTranslateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(headerScale, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(categorySectionOpacity, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(categorySectionScale, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(viewSwitcherOpacity, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-          Animated.spring(viewSwitcherScale, {
-            toValue: 1,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-        ]).start();
+        Animated.spring(headerTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 8,
+        }).start();
       }
     }
     
@@ -501,7 +423,7 @@ export default function PublicMenuScreen() {
   const handleCategoryPress = (categoryId: string) => {
     const yOffset = categoryLayouts[categoryId];
     if (yOffset !== undefined && contentScrollRef.current) {
-      contentScrollRef.current.scrollTo({ y: yOffset - 20, animated: true });
+      contentScrollRef.current.scrollTo({ y: yOffset + 220, animated: true });
     }
   };
 
@@ -546,12 +468,14 @@ export default function PublicMenuScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      
       <Image
         source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
         style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
         resizeMode="cover"
       />
 
+      {/* All Modal Components */}
       <Modal
         visible={selectedItem !== null}
         animationType="slide"
@@ -1087,15 +1011,12 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
       
+      {/* Header with hide animation */}
       <Animated.View style={[
         styles.header, 
         { 
           paddingTop: insets.top + 4,
-          opacity: headerOpacity,
-          transform: [
-            { translateY: headerTranslateY },
-            { scale: headerScale },
-          ],
+          transform: [{ translateY: headerTranslateY }],
         }
       ]}>
         <View style={styles.headerTop}>
@@ -1144,203 +1065,137 @@ export default function PublicMenuScreen() {
         )}
       </Animated.View>
 
-      {showSearch && (
-        <Animated.View
-          style={[
-            styles.searchContainer,
-            {
-              transform: [
+      {/* Sticky Category and View Switcher Section */}
+      <View style={[styles.stickySection, { paddingTop: insets.top + 110 }]}>
+        <View style={styles.categorySliderContainer}>
+          <View style={styles.categoryTitleContainer}>
+            <View style={styles.categoryDecorLeft} />
+            <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
+            <View style={styles.categoryDecorRight} />
+          </View>
+          <ScrollView 
+            ref={categoryScrollRef}
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categorySlider}
+            snapToInterval={140}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            onScrollBeginDrag={() => {
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+              }
+            }}
+            onScrollEndDrag={startAutoScroll}
+          >
+            {availableCategories.map((category) => {
+              const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
+              const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+              
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  style={styles.categoryCard}
+                  activeOpacity={0.9}
+                  onPress={() => {
+                    if (autoScrollInterval.current) {
+                      clearInterval(autoScrollInterval.current);
+                    }
+                    handleCategoryPress(category.id);
+                  }}
+                >
+                  <View style={styles.categoryCardImageContainer}>
+                    {categoryItems[0]?.image && (
+                      <Image 
+                        source={{ uri: categoryItems[0].image }} 
+                        style={styles.categoryCardImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                    <View style={styles.categoryCardOverlay} />
+                  </View>
+                  <View style={styles.categoryCardFooter}>
+                    <Text style={styles.categoryCardTitle}>{categoryName}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <View style={styles.viewSwitcherContainer}>
+          <View style={styles.viewSwitcher}>
+            <Animated.View
+              style={[
+                styles.viewSwitcherPill,
                 {
-                  translateY: searchSlideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-60, 0],
-                  }),
+                  transform: [
+                    {
+                      translateX: viewToggleAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 48],
+                      }),
+                    },
+                  ],
                 },
-              ],
-              opacity: searchSlideAnim,
-            },
-          ]}
-        >
-          <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('searchMenu')}
-            placeholderTextColor="rgba(255, 255, 255, 0.5)"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          <TouchableOpacity
-            onPress={() => {
-              setSearchQuery('');
-              setShowSearch(false);
-              Animated.spring(searchSlideAnim, {
-                toValue: 0,
-                useNativeDriver: true,
-              }).start();
-            }}
-            style={styles.closeSearchButton}
-          >
-            <X size={18} color="rgba(255, 255, 255, 0.7)" />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-
-      <Animated.View 
-        style={[
-          styles.categorySliderContainer,
-          {
-            opacity: categorySectionOpacity,
-            transform: [
-              {
-                scaleY: categorySectionScale,
-              },
-            ],
-          },
-        ]}
-      >
-        <View style={styles.categoryTitleContainer}>
-          <View style={styles.categoryDecorLeft} />
-          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-          <View style={styles.categoryDecorRight} />
-        </View>
-        <ScrollView 
-          ref={categoryScrollRef}
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categorySlider}
-          snapToInterval={140}
-          decelerationRate="fast"
-          snapToAlignment="center"
-          onScrollBeginDrag={() => {
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-            }
-          }}
-          onScrollEndDrag={startAutoScroll}
-        >
-          {availableCategories.map((category) => {
-            const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-            
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                activeOpacity={0.9}
-                onPress={() => {
-                  if (autoScrollInterval.current) {
-                    clearInterval(autoScrollInterval.current);
+              ]}
+            />
+            <TouchableOpacity
+              style={styles.viewButton}
+              onPress={() => {
+                if (layoutView !== 'grid') {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   }
-                  handleCategoryPress(category.id);
-                }}
-              >
-                <View style={styles.categoryCardImageContainer}>
-                  {categoryItems[0]?.image && (
-                    <Image 
-                      source={{ uri: categoryItems[0].image }} 
-                      style={styles.categoryCardImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.categoryCardOverlay} />
-                </View>
-                <View style={styles.categoryCardFooter}>
-                  <Text style={styles.categoryCardTitle}>{categoryName}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </Animated.View>
-
-      <Animated.View 
-        style={[
-          styles.viewSwitcherContainer,
-          {
-            opacity: viewSwitcherOpacity,
-            transform: [
-              {
-                scale: viewSwitcherScale,
-              },
-            ],
-          },
-        ]}
-      >
-        <View style={styles.viewSwitcher}>
-          <Animated.View
-            style={[
-              styles.viewSwitcherPill,
-              {
-                transform: [
-                  {
-                    translateX: viewToggleAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 48],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          />
-          <TouchableOpacity
-            style={styles.viewButton}
-            onPress={() => {
-              if (layoutView !== 'grid') {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  Animated.spring(viewToggleAnimation, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                    tension: 80,
+                    friction: 8,
+                  }).start();
+                  setLayoutView('grid');
                 }
-                Animated.spring(viewToggleAnimation, {
-                  toValue: 0,
-                  useNativeDriver: true,
-                  tension: 80,
-                  friction: 8,
-                }).start();
-                setLayoutView('grid');
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            <Grid3x3 size={20} color={layoutView === 'grid' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.viewButton}
-            onPress={() => {
-              if (layoutView !== 'list') {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              }}
+              activeOpacity={0.7}
+            >
+              <Grid3x3 size={20} color={layoutView === 'grid' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.viewButton}
+              onPress={() => {
+                if (layoutView !== 'list') {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  }
+                  Animated.spring(viewToggleAnimation, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 80,
+                    friction: 8,
+                  }).start();
+                  setLayoutView('list');
                 }
-                Animated.spring(viewToggleAnimation, {
-                  toValue: 1,
-                  useNativeDriver: true,
-                  tension: 80,
-                  friction: 8,
-                }).start();
-                setLayoutView('list');
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            <List size={20} color={layoutView === 'list' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
-          </TouchableOpacity>
+              }}
+              activeOpacity={0.7}
+            >
+              <List size={20} color={layoutView === 'list' ? '#3d0101' : 'rgba(232, 201, 104, 0.8)'} strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </Animated.View>
+      </View>
 
+      {/* Scrollable Menu Content */}
       <ScrollView 
         ref={contentScrollRef}
         style={styles.content} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer, 
+          { paddingTop: insets.top + 280 }
+        ]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        decelerationRate="normal"
       >
-        <View style={styles.plaidPattern} />
-        <View style={styles.citadelPattern}>
-          <View style={styles.citadelSilhouette}>
-            <Text style={styles.citadelText}>🏰</Text>
-          </View>
-        </View>
         <View style={styles.menuSections}>
           {filteredCategories.map(renderCategorySection)}
         </View>
@@ -1366,6 +1221,7 @@ export default function PublicMenuScreen() {
         </View>
       </ScrollView>
 
+      {/* Floating Action Buttons */}
       <Animated.View
         style={[
           styles.floatingMenu,
@@ -1485,10 +1341,15 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#3d0101',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
     paddingBottom: 8,
+    zIndex: 100,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1518,25 +1379,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-
-
-  cartBadge: {
-    position: 'absolute' as const,
-    top: -2,
-    right: -2,
-    backgroundColor: '#D4AF37',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  cartBadgeText: {
-    color: '#3d0101',
-    fontSize: 11,
-    fontWeight: '700' as const,
-  },
   backButton: {
     width: 40,
     height: 40,
@@ -1545,7 +1387,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   languageButton: {
     width: 40,
     height: 40,
@@ -1599,41 +1440,135 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#E8C968',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    marginHorizontal: 20,
-    marginTop: 8,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    height: 44,
-  },
-  closeSearchButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#FFFFFF',
-    fontWeight: '400' as const,
+  stickySection: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
   },
   categorySliderContainer: {
-    backgroundColor: 'rgba(61, 1, 1, 0.4)',
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
     paddingBottom: 12,
     paddingTop: 8,
-    overflow: 'hidden' as const,
     ...Platform.select({
       web: {
         paddingBottom: 16,
         paddingTop: 10,
+      },
+    }),
+  },
+  categorySliderTitle: {
+    fontSize: 22,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#E8C968',
+    marginTop: 6,
+    marginLeft: 20,
+    marginBottom: 4,
+    letterSpacing: 0.5,
+    textAlign: 'left' as const,
+    textTransform: 'capitalize' as const,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+    ...Platform.select({
+      web: {
+        fontSize: 24,
+        marginTop: 8,
+        marginBottom: 5,
+      },
+    }),
+  },
+  categorySlider: {
+    paddingHorizontal: 12,
+    paddingBottom: 4,
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 16,
+      },
+    }),
+  },
+  categoryCard: {
+    width: 120,
+    height: 110,
+    backgroundColor: '#3d0101',
+    borderRadius: 12,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginRight: 10,
+    transform: [{ scale: 1 }],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        width: 130,
+        height: 120,
+        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.7)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        cursor: 'pointer',
+      },
+    }),
+  },
+  categoryCardImageContainer: {
+    width: '100%',
+    height: 70,
+    position: 'relative' as const,
+    backgroundColor: '#2a1a1a',
+    ...Platform.select({
+      web: {
+        height: 80,
+      },
+    }),
+  },
+  categoryCardImage: {
+    width: '100%',
+    height: '100%',
+  },
+  categoryCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  categoryCardFooter: {
+    paddingVertical: 5,
+    paddingHorizontal: 4,
+    backgroundColor: '#2a1a1a',
+    width: '100%',
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#D4AF37',
+    ...Platform.select({
+      web: {
+        paddingVertical: 6,
+        paddingHorizontal: 4,
+        height: 40,
+      },
+    }),
+  },
+  categoryCardTitle: {
+    fontSize: 11,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.2,
+    lineHeight: 14,
+    ...Platform.select({
+      web: {
+        fontSize: 12,
+        lineHeight: 16,
+        letterSpacing: 0.3,
       },
     }),
   },
@@ -1642,8 +1577,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    backgroundColor: 'transparent',
-    overflow: 'hidden' as const,
+    backgroundColor: 'rgba(61, 1, 1, 0.4)',
     ...Platform.select({
       web: {
         paddingVertical: 20,
@@ -1707,146 +1641,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     zIndex: 2,
   },
-  categorySliderTitle: {
-    fontSize: 22,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#E8C968',
-    marginTop: 6,
-    marginLeft: 20,
-    marginBottom: 4,
-    letterSpacing: 0.5,
-    textAlign: 'left' as const,
-    textTransform: 'capitalize' as const,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-    ...Platform.select({
-      web: {
-        fontSize: 24,
-        marginTop: 8,
-        marginBottom: 5,
-      },
-    }),
-  },
-  luxuryAccent: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    marginLeft: 0,
-    marginBottom: 0,
-    borderRadius: 0,
-    display: 'none' as const,
-    ...Platform.select({
-      web: {
-        width: 0,
-        height: 0,
-        marginBottom: 0,
-      },
-    }),
-  },
-  categorySlider: {
-    paddingHorizontal: 12,
-    paddingBottom: 4,
-    ...Platform.select({
-      web: {
-        paddingHorizontal: 16,
-      },
-    }),
-  },
-  categoryCard: {
-    width: 120,
-    height: 110,
-    backgroundColor: '#3d0101',
-    borderRadius: 12,
-    overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-    marginRight: 10,
-    transform: [{ scale: 1 }],
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.5,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        width: 130,
-        height: 120,
-        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.7)',
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-        cursor: 'pointer',
-      },
-    }),
-  },
-  categoryCardImageContainer: {
-    width: '100%',
-    height: 70,
-    position: 'relative' as const,
-    backgroundColor: '#2a1a1a',
-    ...Platform.select({
-      web: {
-        height: 80,
-      },
-    }),
-  },
-  categoryCardImage: {
-    width: '100%',
-    height: '100%',
-  },
-  categoryCardOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-  },
-
-  categoryCardFooter: {
-    paddingVertical: 5,
-    paddingHorizontal: 4,
-    backgroundColor: '#2a1a1a',
-    width: '100%',
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#D4AF37',
-    ...Platform.select({
-      web: {
-        paddingVertical: 6,
-        paddingHorizontal: 4,
-        height: 40,
-      },
-    }),
-  },
-  categoryCardTitle: {
-    fontSize: 11,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '800' as const,
-    color: '#E8C968',
-    textAlign: 'center' as const,
-    letterSpacing: 0.2,
-    lineHeight: 14,
-    ...Platform.select({
-      web: {
-        fontSize: 12,
-        lineHeight: 16,
-        letterSpacing: 0.3,
-      },
-    }),
-  },
-  menuSections: {
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
-  categorySection: {
-    marginBottom: 40,
-  },
-  categoryHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
   categoryTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1867,6 +1661,33 @@ const styles = StyleSheet.create({
     borderRadius: 1,
     opacity: 0.6,
   },
+  content: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    position: 'relative' as const,
+  },
+  contentContainer: {
+    paddingBottom: Platform.select({ ios: 100, android: 92, default: 92 }),
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 0,
+        maxWidth: 1600,
+        alignSelf: 'center' as const,
+        width: '100%',
+      },
+    }),
+  },
+  menuSections: {
+    paddingTop: 24,
+    paddingBottom: 24,
+  },
+  categorySection: {
+    marginBottom: 40,
+  },
+  categoryHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
   categoryTitle: {
     fontSize: 28,
     fontFamily: 'NotoNaskhArabic_700Bold',
@@ -1876,23 +1697,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-  },
-  categoryCount: {
-    fontSize: 12,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    color: '#3d0101',
-    opacity: 0.7,
-  },
-  categoryItemsScroll: {
-    paddingHorizontal: 20,
-    gap: 20,
-    ...Platform.select({
-      web: {
-        flexWrap: 'wrap' as const,
-        flexDirection: 'row' as const,
-        justifyContent: 'center' as const,
-      },
-    }),
   },
   categoryItemsGrid: {
     paddingHorizontal: 16,
@@ -2056,64 +1860,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-
-  content: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    position: 'relative' as const,
-  },
-  baobabPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
-    zIndex: 0,
-  },
-  baobabTree: {
-    position: 'absolute' as const,
-    width: 220,
-    height: 280,
-    opacity: 0.15,
-    transform: [{ rotate: '0deg' }],
-  },
-  plaidPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
-    zIndex: 0,
-  },
-  citadelPattern: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 300,
-    opacity: 0.12,
-    zIndex: 1,
-    overflow: 'hidden' as const,
-  },
-  citadelSilhouette: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: '50%' as const,
-    transform: [{ translateX: -75 }],
-    width: 150,
-    height: 150,
-  },
-  citadelText: {
-    fontSize: 150,
-    color: '#1A1A1A',
-    opacity: 0.3,
-    textAlign: 'center' as const,
-  },
-  contentContainer: {
-    paddingBottom: Platform.select({ ios: 100, android: 92, default: 92 }),
-    ...Platform.select({
-      web: {
-        paddingHorizontal: 0,
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
-        width: '100%',
-      },
-    }),
-  },
   menuItemCardHorizontal: {
     width: '47.5%' as const,
     backgroundColor: '#3d0101',
@@ -2231,81 +1977,97 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  menuItemDescriptionHorizontal: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
-    fontWeight: '400' as const,
-    marginBottom: 12,
-    textAlign: 'center' as const,
-    ...Platform.select({
-      web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
-      },
-    }),
-  },
-  premiumBadge: {
-    backgroundColor: '#D4AF37',
-    alignSelf: 'flex-start' as const,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  premiumBadgeText: {
-    color: '#3d0101',
-    fontSize: 11,
-    fontWeight: '700' as const,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase' as const,
-  },
-  addToCartButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#3d0101',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+  menuItemTouchable: {
     flex: 1,
-    marginTop: 8,
+  },
+  rateButtonOnCard: {
+    position: 'absolute' as const,
+    top: 6,
+    right: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
     ...Platform.select({
       ios: {
-        shadowColor: '#3d0101',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
       },
       android: {
         elevation: 4,
       },
     }),
   },
-  addToCartButtonPremium: {
-    backgroundColor: '#D4AF37',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+  ratingBadgeCentered: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'center' as const,
+    gap: 3,
   },
-  addToCartButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  ratingText: {
+    fontSize: 12,
     fontWeight: '700' as const,
-    letterSpacing: 0.3,
-    ...Platform.select({
-      web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
-      },
-    }),
+    color: '#D4AF37',
+  },
+  ratingCount: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+  },
+  emptyState: {
+    padding: 60,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#6B7280',
+    fontWeight: '500' as const,
+  },
+  footer: {
+    padding: 48,
+    alignItems: 'center',
+    backgroundColor: '#3d0101',
+    marginTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  footerLogo: {
+    width: 90,
+    height: 90,
+    marginBottom: 16,
+  },
+  footerTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  footerText: {
+    fontSize: 15,
+    fontWeight: '400' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 16,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+  },
+  footerDivider: {
+    width: 60,
+    height: 2,
+    backgroundColor: '#D4AF37',
+    marginBottom: 16,
+    borderRadius: 1,
   },
   modalOverlay: {
     flex: 1,
@@ -2822,318 +2584,6 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontWeight: '500' as const,
   },
-  emptyState: {
-    padding: 60,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500' as const,
-  },
-  footer: {
-    padding: 48,
-    alignItems: 'center',
-    backgroundColor: '#3d0101',
-    marginTop: 32,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  footerLogo: {
-    width: 90,
-    height: 90,
-    marginBottom: 16,
-  },
-  footerTitle: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  footerText: {
-    fontSize: 15,
-    fontWeight: '400' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 16,
-    textAlign: 'center' as const,
-    lineHeight: 22,
-  },
-
-  footerDivider: {
-    width: 60,
-    height: 2,
-    backgroundColor: '#D4AF37',
-    marginBottom: 16,
-    borderRadius: 1,
-  },
-  footerTextSecondary: {
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginBottom: 4,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginBottom: 12,
-    alignSelf: 'flex-start' as const,
-    gap: 4,
-  },
-  ratingBadgeCentered: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'center' as const,
-    gap: 3,
-  },
-  ratingText: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: '#D4AF37',
-  },
-  ratingCount: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    color: '#6B7280',
-  },
-  menuItemActions: {
-    flexDirection: 'row',
-    gap: 8,
-    width: '100%',
-  },
-  rateButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-  },
-  ratingModalContent: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 32,
-    maxHeight: '80%',
-    ...Platform.select({
-      web: {
-        maxWidth: 500,
-        alignSelf: 'center' as const,
-        width: '100%',
-        marginBottom: 0,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        maxHeight: '75%',
-        marginTop: 'auto' as const,
-      },
-    }),
-  },
-  ratingModalTitle: {
-    fontSize: 24,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#3d0101',
-    textAlign: 'center' as const,
-    marginBottom: 12,
-  },
-  ratingModalItemName: {
-    fontSize: 18,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#6B7280',
-    textAlign: 'center' as const,
-    marginBottom: 24,
-  },
-  starRatingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 24,
-  },
-  starButton: {
-    padding: 4,
-  },
-  ratingModalLabel: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#1A1A1A',
-    marginBottom: 8,
-  },
-  ratingInput: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    minHeight: 100,
-    textAlignVertical: 'top' as const,
-    marginBottom: 24,
-  },
-  submitRatingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    backgroundColor: '#3d0101',
-    paddingVertical: 16,
-    borderRadius: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#3d0101',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-  submitRatingButtonDisabled: {
-    backgroundColor: 'rgba(61, 1, 1, 0.4)',
-    ...Platform.select({
-      ios: {
-        shadowOpacity: 0.1,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  submitRatingButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700' as const,
-  },
-  menuItemTouchable: {
-    flex: 1,
-  },
-  rateButtonOnCard: {
-    position: 'absolute' as const,
-    top: 6,
-    right: 6,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  goldCornerTopRight: {
-    position: 'absolute' as const,
-    top: 0,
-    right: 0,
-    width: 0,
-    height: 0,
-    borderTopWidth: 24,
-    borderRightWidth: 24,
-    borderTopColor: '#D4AF37',
-    borderRightColor: 'transparent',
-    zIndex: 5,
-    ...Platform.select({
-      web: {
-        borderTopWidth: 28,
-        borderRightWidth: 28,
-      },
-    }),
-  },
-  goldCornerBottomLeft: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    width: 0,
-    height: 0,
-    borderBottomWidth: 24,
-    borderLeftWidth: 24,
-    borderBottomColor: '#D4AF37',
-    borderLeftColor: 'transparent',
-    zIndex: 5,
-    ...Platform.select({
-      web: {
-        borderBottomWidth: 28,
-        borderLeftWidth: 28,
-      },
-    }),
-  },
-  reviewsList: {
-    maxHeight: 400,
-    marginVertical: 12,
-  },
-  reviewItem: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  reviewItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  reviewItemName: {
-    fontSize: 16,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#1A1A1A',
-    flex: 1,
-    marginRight: 12,
-  },
-  reviewItemRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  reviewItemRatingText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#D4AF37',
-  },
-  reviewItemCount: {
-    fontSize: 13,
-    color: '#6B7280',
-    fontWeight: '500' as const,
-  },
-  noReviewsContainer: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  noReviewsText: {
-    fontSize: 16,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#9CA3AF',
-    marginTop: 16,
-    textAlign: 'center' as const,
-  },
   searchModalContainer: {
     flex: 1,
     backgroundColor: '#3d0101',
@@ -3288,6 +2738,157 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#D4AF37',
+  },
+  ratingModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 32,
+    maxHeight: '80%',
+    ...Platform.select({
+      web: {
+        maxWidth: 500,
+        alignSelf: 'center' as const,
+        width: '100%',
+        marginBottom: 0,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        maxHeight: '75%',
+        marginTop: 'auto' as const,
+      },
+    }),
+  },
+  ratingModalTitle: {
+    fontSize: 24,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#3d0101',
+    textAlign: 'center' as const,
+    marginBottom: 12,
+  },
+  ratingModalItemName: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#6B7280',
+    textAlign: 'center' as const,
+    marginBottom: 24,
+  },
+  starRatingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  starButton: {
+    padding: 4,
+  },
+  ratingModalLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  ratingInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minHeight: 100,
+    textAlignVertical: 'top' as const,
+    marginBottom: 24,
+  },
+  submitRatingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#3d0101',
+    paddingVertical: 16,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  submitRatingButtonDisabled: {
+    backgroundColor: 'rgba(61, 1, 1, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.1,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  submitRatingButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700' as const,
+  },
+  reviewsList: {
+    maxHeight: 400,
+    marginVertical: 12,
+  },
+  reviewItem: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  reviewItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewItemName: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#1A1A1A',
+    flex: 1,
+    marginRight: 12,
+  },
+  reviewItemRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  reviewItemRatingText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+  },
+  reviewItemCount: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500' as const,
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center' as const,
   },
   floatingMenu: {
     position: 'absolute' as const,
