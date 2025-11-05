@@ -452,12 +452,12 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
     paddingTop: 16,
-    gap: 12,
+    gap: 10,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCard: {
-    width: '47.5%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 14,
     overflow: 'hidden' as const,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 140,
     backgroundColor: '#F9FAFB',
     borderRadius: 0,
     overflow: 'hidden' as const,
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        aspectRatio: 1,
+        height: 160,
       },
     }),
   },
@@ -511,20 +511,20 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-    padding: 10,
-    paddingBottom: 12,
+    padding: 12,
+    paddingBottom: 14,
     position: 'relative' as const,
-    minHeight: 70,
+    minHeight: 80,
     justifyContent: 'space-between' as const,
   },
   menuItemName: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 18,
+    lineHeight: 20,
     letterSpacing: 0.3,
-    marginBottom: 6,
+    marginBottom: 8,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -637,11 +637,22 @@ const styles = StyleSheet.create({
   },
   modalImage: {
     width: '100%',
-    height: 300,
+    height: 280,
     backgroundColor: '#F9FAFB',
+    ...Platform.select({
+      web: {
+        height: 320,
+      },
+    }),
   },
   modalBody: {
-    padding: 24,
+    padding: 20,
+    paddingTop: 24,
+    ...Platform.select({
+      web: {
+        padding: 24,
+      },
+    }),
   },
   modalCloseButton: {
     position: 'absolute' as const,
@@ -672,30 +683,43 @@ const styles = StyleSheet.create({
     }),
   },
   modalItemName: {
-    fontSize: 26,
+    fontSize: 22,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 8,
     textAlign: 'left' as const,
     ...Platform.select({
       web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
+        fontSize: 26,
       },
     }),
   },
   modalItemPrice: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700' as const,
     color: '#3d0101',
     marginBottom: 12,
     textAlign: 'left' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 24,
+      },
+    }),
   },
   modalItemDescription: {
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 20,
     textAlign: 'left' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 16,
+        lineHeight: 24,
+      },
+    }),
   },
   modalDivider: {
     height: 1,

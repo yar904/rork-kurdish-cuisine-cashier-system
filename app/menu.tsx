@@ -1412,8 +1412,8 @@ const styles = StyleSheet.create({
     }),
   },
   categoryCard: {
-    width: 75,
-    height: 85,
+    width: 130,
+    height: 120,
     backgroundColor: '#3d0101',
     borderRadius: 12,
     overflow: 'hidden' as const,
@@ -1430,8 +1430,8 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        width: 100,
-        height: 110,
+        width: 140,
+        height: 130,
         boxShadow: '0 4px 20px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.7)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         cursor: 'pointer',
@@ -1440,12 +1440,12 @@ const styles = StyleSheet.create({
   },
   categoryCardImageContainer: {
     width: '100%',
-    height: 55,
+    height: 80,
     position: 'relative' as const,
     backgroundColor: '#2a1a1a',
     ...Platform.select({
       web: {
-        height: 65,
+        height: 85,
       },
     }),
   },
@@ -1459,35 +1459,35 @@ const styles = StyleSheet.create({
   },
 
   categoryCardFooter: {
-    paddingVertical: 5,
-    paddingHorizontal: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
     backgroundColor: '#2a1a1a',
     width: '100%',
-    height: 30,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#D4AF37',
     ...Platform.select({
       web: {
-        paddingVertical: 6,
-        paddingHorizontal: 5,
-        height: 35,
+        paddingVertical: 8,
+        paddingHorizontal: 6,
+        height: 45,
       },
     }),
   },
   categoryCardTitle: {
-    fontSize: 9,
+    fontSize: 12,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
     textAlign: 'center' as const,
     letterSpacing: 0.2,
-    lineHeight: 12,
+    lineHeight: 16,
     ...Platform.select({
       web: {
-        fontSize: 11,
-        lineHeight: 14,
+        fontSize: 13,
+        lineHeight: 17,
         letterSpacing: 0.3,
       },
     }),
@@ -1551,15 +1551,16 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 16,
+    gap: 10,
     justifyContent: 'space-between' as const,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
         gap: 20,
+        paddingHorizontal: 20,
       },
     }),
   },
@@ -1622,7 +1623,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '47%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -1642,8 +1643,8 @@ const styles = StyleSheet.create({
       },
       web: {
         width: '31%',
-        minWidth: 160,
-        maxWidth: 220,
+        minWidth: 180,
+        maxWidth: 240,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -1668,7 +1669,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 120,
+    height: 140,
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
     borderBottomLeftRadius: 0,
@@ -1678,7 +1679,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 140,
+        height: 160,
       },
     }),
   },
