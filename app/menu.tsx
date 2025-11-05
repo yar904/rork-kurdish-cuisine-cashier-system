@@ -460,6 +460,10 @@ export default function PublicMenuScreen() {
             setShowRatingModal(true);
           }}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel={language === 'en' ? `Rate ${getItemName(item)}` : language === 'ku' ? `هەڵسەنگاندنی ${getItemName(item)}` : `تقييم ${getItemName(item)}`}
+          accessibilityRole="button"
+          accessibilityHint={language === 'en' ? 'Opens rating form' : language === 'ku' ? 'فۆرمی هەڵسەنگاندن دەکاتەوە' : 'يفتح نموذج التقييم'}
         >
           <Star size={18} color="#D4AF37" strokeWidth={2} />
         </TouchableOpacity>
@@ -1356,6 +1360,10 @@ export default function PublicMenuScreen() {
           style={styles.fabButton}
           onPress={() => setShowAIAssistant(true)}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel={language === 'en' ? 'AI Chat Assistant' : language === 'ku' ? 'یارمەتیدەری وتووێژی AI' : 'مساعد الدردشة AI'}
+          accessibilityRole="button"
+          accessibilityHint={language === 'en' ? 'Get help choosing menu items' : language === 'ku' ? 'یارمەتی وەربگرە بۆ هەڵبژاردنی خواردن' : 'احصل على المساعدة في اختيار عناصر القائمة'}
         >
           <Animated.View style={styles.fabIconContainer}>
             <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
@@ -1369,6 +1377,10 @@ export default function PublicMenuScreen() {
           style={[styles.fabButton, styles.fabButtonPrimary]}
           onPress={() => setShowCart(true)}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel={`${language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}, ${cartItemCount} ${language === 'en' ? 'items' : language === 'ku' ? 'دانە' : 'عناصر'}`}
+          accessibilityRole="button"
+          accessibilityHint={language === 'en' ? 'View your shopping cart' : language === 'ku' ? 'سەبەتەی کڕینەکەت ببینە' : 'عرض سلة التسوق الخاصة بك'}
         >
           <Animated.View style={styles.fabIconContainer}>
             <Utensils size={24} color="#3d0101" strokeWidth={2} />
@@ -1396,6 +1408,10 @@ export default function PublicMenuScreen() {
             }
           }}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel={language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
+          accessibilityRole="button"
+          accessibilityHint={language === 'en' ? 'View and leave reviews' : language === 'ku' ? 'بینینی هەڵسەنگاندنەکان و هێشتنەوەی هەڵسەنگاندن' : 'عرض وترك التقييمات'}
         >
           <Animated.View style={styles.fabIconContainer}>
             <Star size={24} color="#FFFFFF" strokeWidth={2} />
@@ -1409,6 +1425,10 @@ export default function PublicMenuScreen() {
           style={styles.fabButton}
           onPress={() => setShowSearchModal(true)}
           activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel={language === 'en' ? 'Search menu' : language === 'ku' ? 'گەڕان لە مینیو' : 'بحث في القائمة'}
+          accessibilityRole="button"
+          accessibilityHint={language === 'en' ? 'Search for dishes' : language === 'ku' ? 'گەڕان لە خواردنەکان' : 'ابحث عن الأطباق'}
         >
           <Animated.View style={styles.fabIconContainer}>
             <Search size={24} color="#FFFFFF" strokeWidth={2} />
