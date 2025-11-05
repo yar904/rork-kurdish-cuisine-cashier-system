@@ -471,7 +471,7 @@ export default function PublicMenuScreen() {
       
       <Image
         source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
-        style={StyleSheet.absoluteFillObject}
+        style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
         resizeMode="cover"
       />
 
@@ -1329,6 +1329,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#3d0101',
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        width: '100%',
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      },
+    }),
   },
   header: {
     position: 'absolute' as const,
@@ -1436,9 +1446,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 50,
-    backgroundColor: 'rgba(61, 1, 1, 0.96)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+    backgroundColor: 'rgba(61, 1, 1, 0.98)',
   },
   categorySliderContainer: {
     backgroundColor: 'transparent',
@@ -1659,11 +1667,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   categorySection: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   categoryHeader: {
-    paddingHorizontal: 12,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    marginBottom: 14,
   },
   categoryTitle: {
     fontSize: 20,
@@ -1673,16 +1681,16 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
   },
   categoryItemsGrid: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    gap: 8,
+    gap: 10,
     ...Platform.select({
       web: {
         justifyContent: 'flex-start' as const,
-        gap: 12,
-        paddingHorizontal: 12,
+        gap: 14,
+        paddingHorizontal: 16,
       },
     }),
   },
@@ -1835,27 +1843,29 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
-    backgroundColor: '#2a1a1a',
-    borderRadius: 12,
-    overflow: 'hidden' as const,
+    width: '48.5%' as const,
+    backgroundColor: '#3d0101',
+    borderRadius: 14,
+    overflow: 'visible' as const,
     borderWidth: 1.5,
     borderColor: '#D4AF37',
-    marginBottom: 8,
+    marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
       },
       android: {
         elevation: 3,
       },
       web: {
-        width: '48%',
-        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.25)',
+        width: '31%',
+        minWidth: 200,
+        maxWidth: 300,
+        boxShadow: '0 3px 14px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
@@ -1879,14 +1889,17 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 120,
-    backgroundColor: '#1a1010',
+    height: 110,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 140,
+        height: 160,
       },
     }),
   },
@@ -1896,20 +1909,32 @@ const styles = StyleSheet.create({
   },
   imageGradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    ...Platform.select({
+      android: {
+        backgroundColor: 'rgba(61, 1, 1, 0.3)',
+      },
+      ios: {
+        backgroundColor: 'rgba(61, 1, 1, 0.3)',
+      },
+      web: {
+        backgroundColor: 'rgba(61, 1, 1, 0.6)',
+      },
+    }),
   },
   menuItemContentHorizontal: {
-    padding: 10,
+    padding: 0,
   },
   menuItemNameHorizontal: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '700' as const,
+    fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 20,
-    letterSpacing: 0.3,
-    marginBottom: 6,
+    lineHeight: 18,
+    letterSpacing: 0.2,
+    marginBottom: 4,
+    marginTop: 8,
     textAlign: 'center' as const,
+    paddingHorizontal: 8,
     ...Platform.select({
       web: {
         fontSize: 16,
@@ -1918,16 +1943,15 @@ const styles = StyleSheet.create({
     }),
   },
   priceHighlight: {
-    marginTop: 4,
-    marginBottom: 2,
+    marginBottom: 8,
     alignItems: 'center' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.2,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
@@ -1965,13 +1989,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 6,
     alignSelf: 'center' as const,
     gap: 3,
-    marginTop: 4,
   },
   ratingText: {
     fontSize: 12,
