@@ -13,9 +13,11 @@ import {
   Pressable,
   LayoutAnimation,
   Platform,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check, ChevronUp } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -39,8 +41,13 @@ export default function CustomerOrderScreen() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [successAnimation, setSuccessAnimation] = useState<string | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentSection, setCurrentSection] = useState<string>('all');
   const cartBadgeScale = useRef(new Animated.Value(1)).current;
   const cartBarScale = useRef(new Animated.Value(1)).current;
+  const scrollTopOpacity = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef<ScrollView>(null);
 
   const menuQuery = trpc.menu.getAll.useQuery();
 
@@ -154,6 +161,35 @@ export default function CustomerOrderScreen() {
     return null;
   };
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const scrollY = contentOffset.y;
+    const scrollHeight = contentSize.height - layoutMeasurement.height;
+    
+    const progress = scrollHeight > 0 ? scrollY / scrollHeight : 0;
+    setScrollProgress(progress);
+    
+    const shouldShow = scrollY > 400;
+    if (shouldShow !== showScrollTop) {
+      setShowScrollTop(shouldShow);
+      Animated.timing(scrollTopOpacity, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+    
+    const categoryHeight = 300;
+    const sectionIndex = Math.floor(scrollY / categoryHeight);
+    if (sectionIndex >= 0 && sectionIndex < categories.length) {
+      setCurrentSection(categories[sectionIndex]);
+    }
+  };
+
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   const handleSubmitOrder = () => {
     if (cart.length === 0) {
       Alert.alert('Empty Cart', 'Please add items to your cart before submitting');
@@ -244,7 +280,23 @@ export default function CustomerOrderScreen() {
         </View>
       </View>
 
-      <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+      <View style={styles.scrollProgressContainer}>
+        <View style={[styles.scrollProgressBar, { width: `${scrollProgress * 100}%` }]} />
+      </View>
+
+      {showScrollTop && currentSection !== 'all' && (
+        <View style={styles.sectionMarker}>
+          <Text style={styles.sectionMarkerText}>{currentSection}</Text>
+        </View>
+      )}
+
+      <ScrollView 
+        ref={scrollRef}
+        style={styles.menuList} 
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {viewMode === 'grid' ? (
           <View style={styles.gridContainer}>
             {filteredMenu.map((item) => (
@@ -274,6 +326,18 @@ export default function CustomerOrderScreen() {
           </View>
         )}
       </ScrollView>
+
+      {showScrollTop && (
+        <Animated.View style={[styles.scrollTopFab, { opacity: scrollTopOpacity }]}>
+          <TouchableOpacity
+            style={styles.scrollTopButton}
+            onPress={scrollToTop}
+            activeOpacity={0.8}
+          >
+            <ChevronUp size={24} color="#fff" strokeWidth={3} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {cart.length > 0 && (
         <Animated.View 
@@ -717,15 +781,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   categoriesContent: {
-    padding: 12,
-    gap: 8,
+    padding: 16,
+    gap: 10,
   },
   categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
     backgroundColor: Colors.backgroundGray,
-    marginRight: 8,
+    marginRight: 10,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -733,17 +797,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700' as const,
     color: Colors.textSecondary,
     textTransform: 'capitalize' as const,
+    letterSpacing: 0.3,
   },
   categoryTextActive: {
     color: '#fff',
   },
   viewToggleContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 16,
   },
   viewToggle: {
     alignSelf: 'center',
@@ -788,11 +853,11 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 12,
-    padding: 16,
+    gap: 16,
+    padding: 20,
   },
   listContainer: {
-    padding: 16,
+    padding: 20,
   },
   gridCard: {
     width: '48%',
@@ -880,7 +945,7 @@ const styles = StyleSheet.create({
     }),
   },
   gridContent: {
-    padding: 12,
+    padding: 14,
   },
   gridHeader: {
     flexDirection: 'row' as const,
@@ -890,9 +955,13 @@ const styles = StyleSheet.create({
   },
   gridName: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800' as const,
     color: Colors.text,
+    letterSpacing: 0.2,
+    textShadowColor: 'rgba(0, 0, 0, 0.05)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   ratingContainer: {
     flexDirection: 'row' as const,
@@ -906,10 +975,11 @@ const styles = StyleSheet.create({
     color: '#FFD700',
   },
   gridDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textSecondary,
-    marginBottom: 10,
-    lineHeight: 16,
+    marginBottom: 12,
+    lineHeight: 19,
+    letterSpacing: 0.2,
   },
   gridFooter: {
     flexDirection: 'row' as const,
@@ -935,9 +1005,10 @@ const styles = StyleSheet.create({
     }),
   },
   gridPrice: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800' as const,
     color: '#fff',
+    letterSpacing: 0.3,
   },
   addIconContainer: {
     width: 32,
@@ -948,7 +1019,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   listItemWrapper: {
-    marginBottom: 12,
+    marginBottom: 16,
     position: 'relative' as const,
   },
   swipeActionContainer: {
@@ -1020,15 +1091,20 @@ const styles = StyleSheet.create({
   },
   listName: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800' as const,
     color: Colors.text,
+    letterSpacing: 0.3,
+    textShadowColor: 'rgba(0, 0, 0, 0.05)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   listDescription: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 8,
-    lineHeight: 18,
+    marginBottom: 10,
+    lineHeight: 21,
+    letterSpacing: 0.2,
   },
   listFooter: {
     flexDirection: 'row' as const,
@@ -1036,9 +1112,10 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   listPrice: {
-    fontSize: 18,
-    fontWeight: '700' as const,
+    fontSize: 20,
+    fontWeight: '800' as const,
     color: Colors.primary,
+    letterSpacing: 0.4,
   },
   addButtonList: {
     width: 36,
@@ -1244,5 +1321,85 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: Colors.primary,
     zIndex: 5,
+  },
+  scrollProgressContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    zIndex: 100,
+  },
+  scrollProgressBar: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+      },
+      web: {
+        boxShadow: '0 0 8px rgba(178,34,34,0.5)',
+      },
+      default: {},
+    }),
+  },
+  sectionMarker: {
+    position: 'absolute' as const,
+    top: 60,
+    left: 20,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 99,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {},
+    }),
+  },
+  sectionMarkerText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700' as const,
+    textTransform: 'capitalize' as const,
+    letterSpacing: 0.5,
+  },
+  scrollTopFab: {
+    position: 'absolute' as const,
+    right: 20,
+    bottom: 100,
+    zIndex: 100,
+  },
+  scrollTopButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {},
+    }),
   },
 });
