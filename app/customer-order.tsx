@@ -17,7 +17,7 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check, ChevronUp } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check, ChevronUp, Flame, Leaf } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -48,6 +48,7 @@ export default function CustomerOrderScreen() {
   const cartBarScale = useRef(new Animated.Value(1)).current;
   const scrollTopOpacity = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
+  const backgroundShift = useRef(new Animated.Value(0)).current;
 
   const menuQuery = trpc.menu.getAll.useQuery();
 
@@ -161,6 +162,24 @@ export default function CustomerOrderScreen() {
     return null;
   };
 
+  const getItemType = (item: any) => {
+    if (item.id === '2' || item.id === '12') return 'premium';
+    if (item.id === '3' || item.id === '13') return 'seasonal';
+    if (!item.available) return 'sold-out';
+    return 'standard';
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      appetizers: 'rgba(255, 193, 7, 0.1)',
+      mains: 'rgba(244, 67, 54, 0.1)',
+      desserts: 'rgba(233, 30, 99, 0.1)',
+      drinks: 'rgba(33, 150, 243, 0.1)',
+      all: 'transparent',
+    };
+    return colors[category.toLowerCase()] || colors.all;
+  };
+
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const scrollY = contentOffset.y;
@@ -168,6 +187,12 @@ export default function CustomerOrderScreen() {
     
     const progress = scrollHeight > 0 ? scrollY / scrollHeight : 0;
     setScrollProgress(progress);
+    
+    Animated.timing(backgroundShift, {
+      toValue: scrollY * 0.3,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
     
     const shouldShow = scrollY > 400;
     if (shouldShow !== showScrollTop) {
@@ -222,6 +247,16 @@ export default function CustomerOrderScreen() {
 
   return (
     <View style={styles.container}>
+      <Animated.View
+        style={[
+          styles.backgroundPattern,
+          {
+            transform: [{ translateY: backgroundShift }],
+            backgroundColor: getCategoryColor(selectedCategory),
+          },
+        ]}
+      />
+      <View style={styles.backgroundMesh} />
       <Stack.Screen
         options={{
           title: `Table ${table} - Order`,
@@ -304,6 +339,7 @@ export default function CustomerOrderScreen() {
                 key={item.id}
                 item={item}
                 badge={getItemBadge(item)}
+                itemType={getItemType(item)}
                 onAddToCart={addToCart}
                 showSuccess={successAnimation === item.id}
               />
@@ -316,6 +352,7 @@ export default function CustomerOrderScreen() {
                 key={item.id}
                 item={item}
                 badge={getItemBadge(item)}
+                itemType={getItemType(item)}
                 onAddToCart={addToCart}
                 itemInCart={getItemInCart(item.id)}
                 onUpdateQuantity={updateQuantity}
@@ -419,11 +456,13 @@ export default function CustomerOrderScreen() {
 function GridMenuItem({
   item,
   badge,
+  itemType,
   onAddToCart,
   showSuccess,
 }: {
   item: any;
   badge: 'new' | 'popular' | null;
+  itemType: 'premium' | 'seasonal' | 'sold-out' | 'standard';
   onAddToCart: (item: any) => void;
   showSuccess: boolean;
 }) {
@@ -432,6 +471,7 @@ function GridMenuItem({
   const rippleOpacity = useRef(new Animated.Value(0)).current;
   const successScale = useRef(new Animated.Value(0)).current;
   const successOpacity = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
   const particleAnimations = useRef(
     Array.from({ length: 8 }, () => ({
       translateX: new Animated.Value(0),
@@ -439,6 +479,25 @@ function GridMenuItem({
       opacity: new Animated.Value(0),
     }))
   ).current;
+
+  useEffect(() => {
+    if (itemType === 'premium') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+    }
+  }, [itemType]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -520,22 +579,40 @@ function GridMenuItem({
   }, [showSuccess]);
 
   const fakeRating = parseFloat((4 + Math.random()).toFixed(1));
+  const isPremium = itemType === 'premium' as const;
+  const isSeasonal = itemType === 'seasonal' as const;
+  const isSoldOut = itemType === 'sold-out' as const;
+
+  const glowColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['rgba(212, 175, 55, 0)', 'rgba(212, 175, 55, 0.8)'],
+  });
 
   return (
     <Pressable
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      onPress={() => onAddToCart({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        description: item.description,
-        image: item.image,
-        category: item.category,
-      })}
+      onPress={() => {
+        if (!isSoldOut) {
+          onAddToCart({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            description: item.description,
+            image: item.image,
+            category: item.category,
+          });
+        }
+      }}
       style={styles.gridCard}
+      disabled={isSoldOut}
     >
-      <Animated.View style={[styles.gridCardInner, { transform: [{ scale: scaleAnim }] }]}>
+      <Animated.View style={[
+        styles.gridCardInner,
+        { transform: [{ scale: scaleAnim }] },
+        isPremium && { borderColor: glowColor, borderWidth: 2 },
+        isSoldOut && styles.soldOutCard,
+      ]}>
         <Animated.View
           style={[
             styles.rippleEffect,
@@ -573,7 +650,7 @@ function GridMenuItem({
             ]}
           />
         ))}
-        {badge && (
+        {badge && !isSoldOut && (
           <View style={[
             styles.badge,
             badge === 'new' ? styles.badgeNew : styles.badgePopular,
@@ -581,15 +658,30 @@ function GridMenuItem({
             {badge === 'new' ? (
               <Sparkles size={12} color="#fff" />
             ) : (
-              <TrendingUp size={12} color="#fff" />
+              <Flame size={12} color="#fff" />
             )}
             <Text style={styles.badgeText}>{badge.toUpperCase()}</Text>
           </View>
         )}
 
+        {isSeasonal && !isSoldOut && (
+          <View style={styles.seasonalCorner}>
+            <Leaf size={16} color="#4CAF50" />
+          </View>
+        )}
+
+        {isSoldOut && (
+          <View style={styles.soldOutBanner}>
+            <Text style={styles.soldOutText}>SOLD OUT</Text>
+          </View>
+        )}
+
         <View style={styles.gridImageContainer}>
           {item.image && (
-            <Image source={{ uri: item.image }} style={styles.gridImage} />
+            <Image
+              source={{ uri: item.image }}
+              style={[styles.gridImage, isSoldOut && styles.soldOutImage]}
+            />
           )}
           <View style={styles.gradientOverlay} />
         </View>
@@ -624,6 +716,7 @@ function GridMenuItem({
 function ListMenuItem({
   item,
   badge,
+  itemType,
   onAddToCart,
   itemInCart,
   onUpdateQuantity,
@@ -632,6 +725,7 @@ function ListMenuItem({
 }: {
   item: any;
   badge: 'new' | 'popular' | null;
+  itemType: 'premium' | 'seasonal' | 'sold-out' | 'standard';
   onAddToCart: (item: any) => void;
   itemInCart?: { quantity: number };
   onUpdateQuantity: (id: string, delta: number) => void;
@@ -639,18 +733,47 @@ function ListMenuItem({
   onToggleExpanded: () => void;
 }) {
   const translateX = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const isPremium = itemType === 'premium' as const;
+  const isSeasonal = itemType === 'seasonal' as const;
+  const isSoldOut = itemType === 'sold-out' as const;
+
+  useEffect(() => {
+    if (itemType === 'premium') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+    }
+  }, [itemType]);
+
+  const glowColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['rgba(212, 175, 55, 0)', 'rgba(212, 175, 55, 0.8)'],
+  });
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
         return Math.abs(gestureState.dx) > 20;
       },
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dx < 0) {
+        if (gestureState.dx < 0 && !isSoldOut) {
           translateX.setValue(Math.max(gestureState.dx, -80));
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -50) {
+        if (gestureState.dx < -50 && !isSoldOut) {
           onAddToCart({
             id: item.id,
             name: item.name,
@@ -680,10 +803,15 @@ function ListMenuItem({
       </View>
 
       <Animated.View
-        style={[styles.listItem, { transform: [{ translateX }] }]}
+        style={[
+          styles.listItem,
+          { transform: [{ translateX }] },
+          isPremium && { borderColor: glowColor, borderWidth: 2 },
+          isSoldOut && styles.soldOutCard,
+        ]}
         {...panResponder.panHandlers}
       >
-        {badge && (
+        {badge && !isSoldOut && (
           <View style={[
             styles.badgeList,
             badge === 'new' ? styles.badgeNew : styles.badgePopular,
@@ -691,16 +819,31 @@ function ListMenuItem({
             {badge === 'new' ? (
               <Sparkles size={10} color="#fff" />
             ) : (
-              <TrendingUp size={10} color="#fff" />
+              <Flame size={10} color="#fff" />
             )}
             <Text style={styles.badgeTextSmall}>{badge.toUpperCase()}</Text>
+          </View>
+        )}
+
+        {isSeasonal && !isSoldOut && (
+          <View style={styles.seasonalCornerList}>
+            <Leaf size={14} color="#4CAF50" />
+          </View>
+        )}
+
+        {isSoldOut && (
+          <View style={styles.soldOutBanner}>
+            <Text style={styles.soldOutText}>SOLD OUT</Text>
           </View>
         )}
 
         <Pressable onPress={onToggleExpanded} style={styles.listContent}>
           <View style={styles.listImageContainer}>
             {item.image && (
-              <Image source={{ uri: item.image }} style={styles.listImage} />
+              <Image
+                source={{ uri: item.image }}
+                style={[styles.listImage, isSoldOut && styles.soldOutImage]}
+              />
             )}
           </View>
 
@@ -765,6 +908,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundGray,
+    position: 'relative' as const,
+  },
+  backgroundPattern: {
+    position: 'absolute' as const,
+    top: -100,
+    left: 0,
+    right: 0,
+    height: 600,
+    opacity: 0.3,
+    zIndex: 0,
+  },
+  backgroundMesh: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.05,
+    zIndex: 0,
+    ...Platform.select({
+      web: {
+        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(61, 1, 1, 0.2) 0%, transparent 50%)',
+      },
+      default: {},
+    }),
   },
   loadingContainer: {
     flex: 1,
@@ -1398,6 +1566,93 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 8,
+      },
+      web: {},
+    }),
+  },
+  soldOutCard: {
+    opacity: 0.5,
+  },
+  soldOutImage: {
+    opacity: 0.3,
+  },
+  soldOutBanner: {
+    position: 'absolute' as const,
+    top: 60,
+    left: -30,
+    right: -30,
+    backgroundColor: '#000',
+    paddingVertical: 8,
+    transform: [{ rotate: '-45deg' }],
+    zIndex: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {},
+    }),
+  },
+  soldOutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800' as const,
+    textAlign: 'center' as const,
+    letterSpacing: 2,
+  },
+  seasonalCorner: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    width: 48,
+    height: 48,
+    backgroundColor: '#E8F5E9',
+    borderBottomRightRadius: 48,
+    justifyContent: 'flex-start' as const,
+    alignItems: 'flex-start' as const,
+    paddingTop: 8,
+    paddingLeft: 8,
+    zIndex: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {},
+    }),
+  },
+  seasonalCornerList: {
+    position: 'absolute' as const,
+    top: 0,
+    right: 0,
+    width: 40,
+    height: 40,
+    backgroundColor: '#E8F5E9',
+    borderBottomLeftRadius: 40,
+    justifyContent: 'flex-start' as const,
+    alignItems: 'flex-end' as const,
+    paddingTop: 6,
+    paddingRight: 6,
+    zIndex: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: -2, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
       },
       web: {},
     }),
