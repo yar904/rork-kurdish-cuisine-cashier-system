@@ -243,64 +243,44 @@ export default function PublicMenuScreen() {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollDelta = currentScrollY - lastScrollY.current;
     
-    if (currentScrollY > 100 && scrollDelta > 8) {
+    if (currentScrollY > 50 && scrollDelta > 5) {
       if (isHeaderVisible) {
         setIsHeaderVisible(false);
         Animated.parallel([
           Animated.timing(categorySectionOpacity, {
             toValue: 0,
-            duration: 200,
+            duration: 250,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 0,
-            duration: 200,
+            duration: 250,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerScale, {
-            toValue: 0.85,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerTranslateY, {
-            toValue: -10,
-            duration: 200,
+            duration: 250,
             useNativeDriver: true,
           }),
         ]).start();
       }
-    } else if (scrollDelta < -10 || currentScrollY < 50) {
+    } else if (scrollDelta < -5 || currentScrollY < 30) {
       if (!isHeaderVisible) {
         setIsHeaderVisible(true);
         Animated.parallel([
           Animated.timing(categorySectionOpacity, {
             toValue: 1,
-            duration: 250,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 1,
-            duration: 250,
+            duration: 300,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 1,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerScale, {
-            toValue: 1,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.timing(headerTranslateY, {
-            toValue: 0,
-            duration: 250,
+            duration: 300,
             useNativeDriver: true,
           }),
         ]).start();
@@ -1308,7 +1288,7 @@ export default function PublicMenuScreen() {
         contentContainerStyle={styles.contentContainer}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        decelerationRate="fast"
+        decelerationRate="normal"
       >
         <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
@@ -1868,11 +1848,11 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 12,
     justifyContent: 'space-between' as const,
+    gap: 16,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -1889,7 +1869,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#D4AF37',
     marginBottom: 12,
-    marginHorizontal: 12,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -2089,7 +2068,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48.5%' as const,
+    width: '47.5%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
