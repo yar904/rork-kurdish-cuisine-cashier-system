@@ -1142,10 +1142,10 @@ const styles = StyleSheet.create({
   },
   backgroundPattern: {
     position: 'absolute' as const,
-    top: -100,
+    top: 0,
     left: 0,
     right: 0,
-    height: 600,
+    bottom: 0,
     opacity: 0.3,
     zIndex: 0,
   },
@@ -1171,10 +1171,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   headerContainer: {
-    backgroundColor: Colors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    backgroundColor: 'transparent',
     paddingBottom: 0,
+    zIndex: 10,
   },
   searchContainer: {
     paddingHorizontal: 12,
@@ -1314,7 +1313,7 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   categoriesScroll: {
-    backgroundColor: Colors.background,
+    backgroundColor: 'transparent',
   },
   categoriesContent: {
     paddingHorizontal: 12,
@@ -1386,6 +1385,7 @@ const styles = StyleSheet.create({
   },
   menuList: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   gridContainer: {
     flexDirection: 'row' as const,
