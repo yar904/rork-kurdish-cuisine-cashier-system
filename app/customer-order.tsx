@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,14 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Animated,
+  PanResponder,
+  Pressable,
+  LayoutAnimation,
+  Platform,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -31,6 +36,8 @@ export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   const menuQuery = trpc.menu.getAll.useQuery();
 
@@ -75,6 +82,10 @@ export default function CustomerOrderScreen() {
     }
   };
 
+  const getItemInCart = (menuItemId: string) => {
+    return cart.find(item => item.menuItem.id === menuItemId);
+  };
+
   const updateQuantity = (menuItemId: string, delta: number) => {
     setCart(cart.map(item => {
       if (item.menuItem.id === menuItemId) {
@@ -83,6 +94,22 @@ export default function CustomerOrderScreen() {
       }
       return item;
     }).filter(item => item.quantity > 0));
+  };
+
+  const toggleViewMode = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setViewMode(viewMode === 'grid' ? 'list' : 'grid');
+  };
+
+  const toggleExpanded = (itemId: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedItem(expandedItem === itemId ? null : itemId);
+  };
+
+  const getItemBadge = (item: any) => {
+    if (item.id === '1' || item.id === '10') return 'new';
+    if (item.id === '7' || item.id === '11') return 'popular';
+    return null;
   };
 
   const handleSubmitOrder = () => {
@@ -128,61 +155,81 @@ export default function CustomerOrderScreen() {
         }}
       />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesScroll}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryChip,
-              selectedCategory === category && styles.categoryChipActive,
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text
+      <View style={styles.headerContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
+          contentContainerStyle={styles.categoriesContent}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
               style={[
-                styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive,
+                styles.categoryChip,
+                selectedCategory === category && styles.categoryChipActive,
               ]}
+              onPress={() => setSelectedCategory(category)}
             >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory === category && styles.categoryTextActive,
+                ]}
+              >
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.viewToggleContainer}>
+          <Pressable
+            style={styles.viewToggle}
+            onPress={toggleViewMode}
+          >
+            <View style={styles.viewTogglePill}>
+              <Text style={[
+                styles.viewToggleText,
+                viewMode === 'grid' && styles.viewToggleTextActive,
+              ]}>Grid</Text>
+              <Text style={[
+                styles.viewToggleText,
+                viewMode === 'list' && styles.viewToggleTextActive,
+              ]}>List</Text>
+            </View>
+          </Pressable>
+        </View>
+      </View>
 
       <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-        {filteredMenu.map((item) => (
-          <View key={item.id} style={styles.menuItem}>
-            {item.image && (
-              <Image source={{ uri: item.image }} style={styles.menuImage} />
-            )}
-            <View style={styles.menuInfo}>
-              <Text style={styles.menuName}>{item.name}</Text>
-              <Text style={styles.menuDescription} numberOfLines={2}>
-                {item.description}
-              </Text>
-              <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => addToCart({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                description: item.description,
-                image: item.image,
-                category: item.category,
-              })}
-            >
-              <Plus size={20} color="#fff" />
-            </TouchableOpacity>
+        {viewMode === 'grid' ? (
+          <View style={styles.gridContainer}>
+            {filteredMenu.map((item) => (
+              <GridMenuItem
+                key={item.id}
+                item={item}
+                badge={getItemBadge(item)}
+                onAddToCart={addToCart}
+              />
+            ))}
           </View>
-        ))}
+        ) : (
+          <View style={styles.listContainer}>
+            {filteredMenu.map((item) => (
+              <ListMenuItem
+                key={item.id}
+                item={item}
+                badge={getItemBadge(item)}
+                onAddToCart={addToCart}
+                itemInCart={getItemInCart(item.id)}
+                onUpdateQuantity={updateQuantity}
+                isExpanded={expandedItem === item.id}
+                onToggleExpanded={() => toggleExpanded(item.id)}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {cart.length > 0 && (
@@ -246,6 +293,237 @@ export default function CustomerOrderScreen() {
   );
 }
 
+function GridMenuItem({
+  item,
+  badge,
+  onAddToCart,
+}: {
+  item: any;
+  badge: 'new' | 'popular' | null;
+  onAddToCart: (item: any) => void;
+}) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const fakeRating = parseFloat((4 + Math.random()).toFixed(1));
+
+  return (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={() => onAddToCart({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        description: item.description,
+        image: item.image,
+        category: item.category,
+      })}
+      style={styles.gridCard}
+    >
+      <Animated.View style={[styles.gridCardInner, { transform: [{ scale: scaleAnim }] }]}>
+        {badge && (
+          <View style={[
+            styles.badge,
+            badge === 'new' ? styles.badgeNew : styles.badgePopular,
+          ]}>
+            {badge === 'new' ? (
+              <Sparkles size={12} color="#fff" />
+            ) : (
+              <TrendingUp size={12} color="#fff" />
+            )}
+            <Text style={styles.badgeText}>{badge.toUpperCase()}</Text>
+          </View>
+        )}
+
+        <View style={styles.gridImageContainer}>
+          {item.image && (
+            <Image source={{ uri: item.image }} style={styles.gridImage} />
+          )}
+          <View style={styles.gradientOverlay} />
+        </View>
+
+        <View style={styles.gridContent}>
+          <View style={styles.gridHeader}>
+            <Text style={styles.gridName} numberOfLines={1}>{item.name}</Text>
+            {fakeRating >= 4.5 && (
+              <View style={styles.ratingContainer}>
+                <Star size={12} color="#FFD700" fill="#FFD700" />
+                <Text style={styles.ratingText}>{fakeRating}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.gridDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+          <View style={styles.gridFooter}>
+            <View style={styles.priceBadge}>
+              <Text style={styles.gridPrice}>${(item.price / 1000).toFixed(0)}</Text>
+            </View>
+            <View style={styles.addIconContainer}>
+              <Plus size={18} color="#fff" />
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+function ListMenuItem({
+  item,
+  badge,
+  onAddToCart,
+  itemInCart,
+  onUpdateQuantity,
+  isExpanded,
+  onToggleExpanded,
+}: {
+  item: any;
+  badge: 'new' | 'popular' | null;
+  onAddToCart: (item: any) => void;
+  itemInCart?: { quantity: number };
+  onUpdateQuantity: (id: string, delta: number) => void;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+}) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 20;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dx < 0) {
+          translateX.setValue(Math.max(gestureState.dx, -80));
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -50) {
+          onAddToCart({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            description: item.description,
+            image: item.image,
+            category: item.category,
+          });
+        }
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
+
+  const fakeRating = parseFloat((4 + Math.random()).toFixed(1));
+
+  return (
+    <View style={styles.listItemWrapper}>
+      <View style={styles.swipeActionContainer}>
+        <View style={styles.swipeAction}>
+          <ShoppingCart size={20} color="#fff" />
+          <Text style={styles.swipeActionText}>Add to Cart</Text>
+        </View>
+      </View>
+
+      <Animated.View
+        style={[styles.listItem, { transform: [{ translateX }] }]}
+        {...panResponder.panHandlers}
+      >
+        {badge && (
+          <View style={[
+            styles.badgeList,
+            badge === 'new' ? styles.badgeNew : styles.badgePopular,
+          ]}>
+            {badge === 'new' ? (
+              <Sparkles size={10} color="#fff" />
+            ) : (
+              <TrendingUp size={10} color="#fff" />
+            )}
+            <Text style={styles.badgeTextSmall}>{badge.toUpperCase()}</Text>
+          </View>
+        )}
+
+        <Pressable onPress={onToggleExpanded} style={styles.listContent}>
+          <View style={styles.listImageContainer}>
+            {item.image && (
+              <Image source={{ uri: item.image }} style={styles.listImage} />
+            )}
+          </View>
+
+          <View style={styles.listInfo}>
+            <View style={styles.listHeader}>
+              <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
+              {fakeRating >= 4.5 && (
+                <View style={styles.ratingContainer}>
+                  <Star size={12} color="#FFD700" fill="#FFD700" />
+                  <Text style={styles.ratingText}>{fakeRating}</Text>
+                </View>
+              )}
+            </View>
+            <Text
+              style={styles.listDescription}
+              numberOfLines={isExpanded ? undefined : 2}
+            >
+              {item.description}
+            </Text>
+            <View style={styles.listFooter}>
+              <Text style={styles.listPrice}>${(item.price / 1000).toFixed(0)}</Text>
+              {itemInCart ? (
+                <View style={styles.quantityControlsInline}>
+                  <TouchableOpacity
+                    style={styles.quantityButtonInline}
+                    onPress={() => onUpdateQuantity(item.id, -1)}
+                  >
+                    <Minus size={14} color={Colors.primary} />
+                  </TouchableOpacity>
+                  <Text style={styles.quantityInline}>{itemInCart.quantity}</Text>
+                  <TouchableOpacity
+                    style={styles.quantityButtonInline}
+                    onPress={() => onUpdateQuantity(item.id, 1)}
+                  >
+                    <Plus size={14} color={Colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.addButtonList}
+                  onPress={() => onAddToCart({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    description: item.description,
+                    image: item.image,
+                    category: item.category,
+                  })}
+                >
+                  <Plus size={16} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Pressable>
+      </Animated.View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -257,10 +535,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.backgroundGray,
   },
-  categoriesScroll: {
+  headerContainer: {
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  categoriesScroll: {
+    backgroundColor: Colors.background,
   },
   categoriesContent: {
     padding: 12,
@@ -287,57 +568,338 @@ const styles = StyleSheet.create({
   categoryTextActive: {
     color: '#fff',
   },
+  viewToggleContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  viewToggle: {
+    alignSelf: 'center',
+    borderRadius: 20,
+    overflow: 'hidden' as const,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {},
+    }),
+  },
+  viewTogglePill: {
+    flexDirection: 'row' as const,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 20,
+    padding: 3,
+    gap: 4,
+  },
+  viewToggleText: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
+    borderRadius: 16,
+  },
+  viewToggleTextActive: {
+    backgroundColor: Colors.primary,
+    color: '#fff',
+  },
   menuList: {
     flex: 1,
+  },
+  gridContainer: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 12,
     padding: 16,
   },
-  menuItem: {
-    flexDirection: 'row',
+  listContainer: {
+    padding: 16,
+  },
+  gridCard: {
+    width: '48%',
+  },
+  gridCardInner: {
     backgroundColor: Colors.cardBackground,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {},
+    }),
   },
-  menuImage: {
-    width: 80,
-    height: 80,
+  badge: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 10,
+  },
+  badgeNew: {
+    backgroundColor: '#FF6B6B',
+  },
+  badgePopular: {
+    backgroundColor: '#4ECDC4',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '800' as const,
+  },
+  badgeList: {
+    position: 'absolute' as const,
+    top: 8,
+    left: 8,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
     borderRadius: 8,
+    zIndex: 10,
+  },
+  badgeTextSmall: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '800' as const,
+  },
+  gridImageContainer: {
+    width: '100%',
+    height: 140,
+    position: 'relative' as const,
+  },
+  gridImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gradientOverlay: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'transparent',
+    ...Platform.select({
+      web: {
+        backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
+      },
+      default: {},
+    }),
+  },
+  gridContent: {
+    padding: 12,
+  },
+  gridHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 6,
+  },
+  gridName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '800' as const,
+    color: Colors.text,
+  },
+  ratingContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 3,
+    marginLeft: 4,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#FFD700',
+  },
+  gridDescription: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  gridFooter: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+  },
+  priceBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {},
+    }),
+  },
+  gridPrice: {
+    fontSize: 16,
+    fontWeight: '800' as const,
+    color: '#fff',
+  },
+  addIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  listItemWrapper: {
+    marginBottom: 12,
+    position: 'relative' as const,
+  },
+  swipeActionContainer: {
+    position: 'absolute' as const,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 80,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  swipeAction: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+  },
+  swipeActionText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+  },
+  listItem: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 12,
+    overflow: 'hidden' as const,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {},
+    }),
+  },
+  listContent: {
+    flexDirection: 'row' as const,
+    padding: 12,
+  },
+  listImageContainer: {
+    width: 90,
+    height: 90,
+    borderRadius: 10,
+    overflow: 'hidden' as const,
     marginRight: 12,
   },
-  menuInfo: {
+  listImage: {
+    width: '100%',
+    height: '100%',
+  },
+  listInfo: {
     flex: 1,
   },
-  menuName: {
+  listHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 4,
+  },
+  listName: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '800' as const,
     color: Colors.text,
-    marginBottom: 4,
   },
-  menuDescription: {
+  listDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
-    marginBottom: 6,
-    fontWeight: '500' as const,
+    marginBottom: 8,
+    lineHeight: 18,
   },
-  menuPrice: {
+  listFooter: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+  },
+  listPrice: {
     fontSize: 18,
     fontWeight: '700' as const,
     color: Colors.primary,
   },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  addButtonList: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  quantityControlsInline: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 18,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  quantityButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.background,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  quantityInline: {
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    minWidth: 20,
+    textAlign: 'center' as const,
   },
   cartFooter: {
     backgroundColor: Colors.background,
