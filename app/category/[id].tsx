@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  FlatList,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -13,7 +14,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X, Grid, List } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -35,6 +36,7 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
 
 
@@ -72,10 +74,40 @@ export default function CategoryDetailScreen() {
     }
   };
 
-  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+  const renderMenuItem = ({ item }: { item: typeof MENU_ITEMS[0] }) => {
+    if (viewMode === 'list') {
+      return (
+        <TouchableOpacity
+          style={styles.menuItemCardList}
+          activeOpacity={0.95}
+          onPress={() => {
+            setSelectedItem(item);
+            setItemQuantity(1);
+            setItemNotes('');
+          }}
+        >
+          {item.image && (
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.menuItemImageList}
+              resizeMode="cover"
+            />
+          )}
+          <View style={styles.menuItemContentList}>
+            <Text style={styles.menuItemName} numberOfLines={2}>
+              {getItemName(item)}
+            </Text>
+            <Text style={styles.menuItemDescriptionList} numberOfLines={2}>
+              {getItemDescription(item)}
+            </Text>
+            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
     return (
       <TouchableOpacity
-        key={item.id}
         style={styles.menuItemCard}
         activeOpacity={0.95}
         onPress={() => {
@@ -250,37 +282,55 @@ export default function CategoryDetailScreen() {
             onChangeText={setSearchQuery}
           />
         </View>
+
+        <View style={styles.viewToggleContainer}>
+          <TouchableOpacity
+            style={[styles.viewToggleButton, viewMode === 'grid' && styles.viewToggleButtonActive]}
+            onPress={() => setViewMode('grid')}
+            activeOpacity={0.8}
+          >
+            <Grid size={20} color={viewMode === 'grid' ? '#3d0101' : '#FFFFFF'} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.viewToggleButton, viewMode === 'list' && styles.viewToggleButtonActive]}
+            onPress={() => setViewMode('list')}
+            activeOpacity={0.8}
+          >
+            <List size={20} color={viewMode === 'list' ? '#3d0101' : '#FFFFFF'} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView 
-        style={styles.content} 
-        showsVerticalScrollIndicator={false}
+      <FlatList
+        data={filteredItems}
+        renderItem={renderMenuItem}
+        keyExtractor={(item) => item.id}
+        numColumns={viewMode === 'grid' ? 2 : 1}
+        key={viewMode}
         contentContainerStyle={styles.contentContainer}
-      >
-        <View style={styles.menuGrid}>
-          {filteredItems.map(renderMenuItem)}
-        </View>
-
-        {filteredItems.length === 0 && (
+        columnWrapperStyle={viewMode === 'grid' ? styles.columnWrapper : undefined}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
           </View>
-        )}
-
-        <View style={styles.footer}>
-          <Image 
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
-            style={styles.footerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
-          <View style={styles.footerDivider} />
-          
-          <Text style={styles.footerSubtitle}>
-            {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
-          </Text>
-        </View>
-      </ScrollView>
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+              style={styles.footerLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
+            <View style={styles.footerDivider} />
+            
+            <Text style={styles.footerSubtitle}>
+              {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -427,10 +477,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '400' as const,
   },
-  content: {
-    flex: 1,
+  viewToggleContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 4,
+    alignSelf: 'flex-start',
+  },
+  viewToggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: 'transparent',
-    position: 'relative' as const,
+  },
+  viewToggleButtonActive: {
+    backgroundColor: '#D4AF37',
   },
   plaidPattern: {
     display: 'none' as const,
@@ -446,36 +509,21 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 32,
-    ...Platform.select({
-      web: {
-        paddingHorizontal: 0,
-      },
-    }),
-  },
-  menuGrid: {
     paddingHorizontal: 12,
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
-    justifyContent: 'space-between' as const,
     paddingTop: 16,
-    gap: 12,
-    ...Platform.select({
-      web: {
-        justifyContent: 'center' as const,
-        gap: 20,
-        paddingHorizontal: 32,
-      },
-    }),
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   menuItemCard: {
-    width: '48%' as const,
+    flex: 1,
+    marginHorizontal: 6,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 10,
-    position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -486,13 +534,45 @@ const styles = StyleSheet.create({
       android: {
         elevation: 4,
       },
-      web: {
-        width: '30%',
-        minWidth: 200,
-        maxWidth: 280,
-        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
+    }),
+  },
+  menuItemCardList: {
+    flexDirection: 'row',
+    backgroundColor: '#3d0101',
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginBottom: 12,
+    marginHorizontal: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
       },
     }),
+  },
+  menuItemImageList: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#2a1a1a',
+  },
+  menuItemContentList: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'space-between',
+  },
+  menuItemDescriptionList: {
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 16,
+    marginVertical: 4,
   },
   imageContainer: {
     width: '100%',
@@ -625,7 +705,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
-    writingDirection: 'ltr' as const,
     ...Platform.select({
       web: {
         maxWidth: 600,
