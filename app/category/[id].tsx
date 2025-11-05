@@ -74,38 +74,34 @@ export default function CategoryDetailScreen() {
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     return (
-      <View 
-        key={item.id} 
+      <TouchableOpacity
+        key={item.id}
         style={styles.menuItemCard}
+        activeOpacity={0.95}
+        onPress={() => {
+          setSelectedItem(item);
+          setItemQuantity(1);
+          setItemNotes('');
+        }}
       >
-        <TouchableOpacity 
-          style={{ flex: 1 }}
-          activeOpacity={0.95}
-          onPress={() => {
-            setSelectedItem(item);
-            setItemQuantity(1);
-            setItemNotes('');
-          }}
-        >
-          {item.image && (
-            <View style={styles.imageContainer}>
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.menuItemImage}
-                resizeMode="cover"
-              />
-            </View>
-          )}
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemName} numberOfLines={2}>
-              {getItemName(item)}
-            </Text>
-            <View style={styles.priceContainer}>
-              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-            </View>
+        {item.image && (
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.menuItemImage}
+              resizeMode="cover"
+            />
           </View>
-        </TouchableOpacity>
-      </View>
+        )}
+        <View style={styles.menuItemContent}>
+          <Text style={styles.menuItemName} numberOfLines={2}>
+            {getItemName(item)}
+          </Text>
+          <View style={styles.priceContainer}>
+            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -469,11 +465,11 @@ const styles = StyleSheet.create({
   menuItemCard: {
     width: '48%' as const,
     backgroundColor: '#3d0101',
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 0,
+    marginBottom: 10,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -486,8 +482,9 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
+        width: '31%',
         minWidth: 180,
-        maxWidth: 300,
+        maxWidth: 240,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -495,8 +492,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 140,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 0,
+    backgroundColor: '#2a1a1a',
+    borderRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
@@ -511,25 +510,25 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-    padding: 12,
-    paddingBottom: 14,
+    padding: 10,
+    paddingBottom: 12,
     position: 'relative' as const,
-    minHeight: 80,
-    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   menuItemName: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 20,
+    lineHeight: 22,
     letterSpacing: 0.3,
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 17,
-        lineHeight: 22,
+        fontSize: 18,
+        lineHeight: 24,
       },
     }),
   },
@@ -551,7 +550,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -559,7 +558,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 16,
+        fontSize: 17,
       },
     }),
   },
