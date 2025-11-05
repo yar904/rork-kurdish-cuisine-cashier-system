@@ -67,7 +67,7 @@ export default function PublicMenuScreen() {
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const headerScale = useRef(new Animated.Value(1)).current;
   const categorySectionOpacity = useRef(new Animated.Value(1)).current;
-  const categorySectionHeight = useRef(new Animated.Value(1)).current;
+  const categorySectionScale = useRef(new Animated.Value(1)).current;
   const viewSwitcherOpacity = useRef(new Animated.Value(1)).current;
   const viewSwitcherScale = useRef(new Animated.Value(1)).current;
   const viewToggleAnimation = useRef(new Animated.Value(0)).current;
@@ -262,10 +262,10 @@ export default function PublicMenuScreen() {
             duration: 250,
             useNativeDriver: true,
           }),
-          Animated.timing(categorySectionHeight, {
+          Animated.timing(categorySectionScale, {
             toValue: 0,
             duration: 250,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 0,
@@ -293,10 +293,10 @@ export default function PublicMenuScreen() {
             duration: 300,
             useNativeDriver: true,
           }),
-          Animated.timing(categorySectionHeight, {
+          Animated.timing(categorySectionScale, {
             toValue: 1,
             duration: 300,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 1,
@@ -1161,16 +1161,9 @@ export default function PublicMenuScreen() {
           styles.categorySliderContainer,
           {
             opacity: categorySectionOpacity,
-            height: categorySectionHeight.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 250],
-            }),
             transform: [
               {
-                translateY: categorySectionHeight.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-250, 0],
-                }),
+                scaleY: categorySectionScale,
               },
             ],
           },
@@ -1236,16 +1229,9 @@ export default function PublicMenuScreen() {
           styles.viewSwitcherContainer,
           {
             opacity: viewSwitcherOpacity,
-            height: viewSwitcherOpacity.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 80],
-            }),
             transform: [
               {
-                translateY: viewSwitcherOpacity.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-80, 0],
-                }),
+                scaleY: viewSwitcherOpacity,
               },
             ],
           },
