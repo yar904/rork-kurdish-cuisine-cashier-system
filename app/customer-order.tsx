@@ -1307,14 +1307,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: Colors.border,
-    ...Platform.select({
-      web: {
-        animation: 'shimmer 1.5s infinite',
-        backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)',
-        backgroundSize: '200% 100%',
-      },
-      default: {},
-    }),
   },
   imageHidden: {
     opacity: 0,
