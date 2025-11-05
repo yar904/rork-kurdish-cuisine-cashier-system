@@ -15,9 +15,10 @@ import {
   Platform,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  TextInput,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check, ChevronUp, Flame, Leaf } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check, ChevronUp, Flame, Leaf, Search, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -44,9 +45,14 @@ export default function CustomerOrderScreen() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSection, setCurrentSection] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [imageLoadedMap, setImageLoadedMap] = useState<Record<string, boolean>>({});
   const cartBadgeScale = useRef(new Animated.Value(1)).current;
   const cartBarScale = useRef(new Animated.Value(1)).current;
   const scrollTopOpacity = useRef(new Animated.Value(0)).current;
+  const searchBarWidth = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const backgroundShift = useRef(new Animated.Value(0)).current;
 
@@ -72,9 +78,21 @@ export default function CustomerOrderScreen() {
 
   const filteredMenu = useMemo(() => {
     if (!menuQuery.data) return [];
-    if (selectedCategory === 'all') return menuQuery.data.filter(item => item.available);
-    return menuQuery.data.filter(item => item.category === selectedCategory && item.available);
-  }, [menuQuery.data, selectedCategory]);
+    let items = menuQuery.data.filter(item => item.available);
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      items = items.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+    } else if (selectedCategory !== 'all') {
+      items = items.filter(item => item.category === selectedCategory);
+    }
+    
+    return items;
+  }, [menuQuery.data, selectedCategory, searchQuery]);
 
   const cartTotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
@@ -102,6 +120,39 @@ export default function CustomerOrderScreen() {
       });
     }
   }, [cart.length]);
+
+  useEffect(() => {
+    Animated.timing(searchBarWidth, {
+      toValue: searchFocused ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [searchFocused]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim() && !recentSearches.includes(query.trim())) {
+      setRecentSearches(prev => [query.trim(), ...prev].slice(0, 5));
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchFocused(false);
+  };
+
+  const handleRecentSearchPress = (search: string) => {
+    setSearchQuery(search);
+    setSearchFocused(false);
+  };
+
+  const removeRecentSearch = (search: string) => {
+    setRecentSearches(prev => prev.filter(s => s !== search));
+  };
+
+  const handleImageLoad = (itemId: string) => {
+    setImageLoadedMap(prev => ({ ...prev, [itemId]: true }));
+  };
 
   const addToCart = (menuItem: CartItem['menuItem']) => {
     const existingItem = cart.find(item => item.menuItem.id === menuItem.id);
@@ -269,32 +320,128 @@ export default function CustomerOrderScreen() {
       />
 
       <View style={styles.headerContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesScroll}
-          contentContainerStyle={styles.categoriesContent}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryChip,
-                selectedCategory === category && styles.categoryChipActive,
-              ]}
-              onPress={() => setSelectedCategory(category)}
+        <View style={styles.searchContainer}>
+          <Animated.View style={[
+            styles.searchBar,
+            {
+              width: searchBarWidth.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['85%', '100%'],
+              }),
+            },
+          ]}>
+            <Search size={20} color={Colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search menu..."
+              placeholderTextColor={Colors.textSecondary}
+              value={searchQuery}
+              onChangeText={handleSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                <X size={18} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+        </View>
+
+        {searchFocused && recentSearches.length > 0 && !searchQuery && (
+          <View style={styles.recentSearches}>
+            <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.recentSearchesScroll}
             >
-              <Text
+              {recentSearches.map((search, index) => (
+                <View key={index} style={styles.recentSearchChip}>
+                  <TouchableOpacity
+                    style={styles.recentSearchButton}
+                    onPress={() => handleRecentSearchPress(search)}
+                  >
+                    <Text style={styles.recentSearchText}>{search}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.removeRecentButton}
+                    onPress={() => removeRecentSearch(search)}
+                  >
+                    <X size={12} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {!searchQuery && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesScroll}
+            contentContainerStyle={styles.categoriesContent}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
                 style={[
-                  styles.categoryText,
-                  selectedCategory === category && styles.categoryTextActive,
+                  styles.categoryChip,
+                  selectedCategory === category && styles.categoryChipActive,
                 ]}
+                onPress={() => setSelectedCategory(category)}
               >
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                <Text
+                  style={[
+                    styles.categoryText,
+                    selectedCategory === category && styles.categoryTextActive,
+                  ]}
+                >
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {searchQuery && (
+          <View style={styles.categoryFilterChips}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterChipsContent}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.filterChip,
+                  selectedCategory === 'all' && styles.filterChipActive,
+                ]}
+                onPress={() => setSelectedCategory('all')}
+              >
+                <Text style={[
+                  styles.filterChipText,
+                  selectedCategory === 'all' && styles.filterChipTextActive,
+                ]}>All</Text>
+              </TouchableOpacity>
+              {categories.filter(c => c !== 'all').map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.filterChip,
+                    selectedCategory === category && styles.filterChipActive,
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <Text style={[
+                    styles.filterChipText,
+                    selectedCategory === category && styles.filterChipTextActive,
+                  ]}>{category}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={styles.viewToggleContainer}>
           <Pressable
@@ -342,6 +489,9 @@ export default function CustomerOrderScreen() {
                 itemType={getItemType(item)}
                 onAddToCart={addToCart}
                 showSuccess={successAnimation === item.id}
+                searchQuery={searchQuery}
+                imageLoaded={imageLoadedMap[item.id]}
+                onImageLoad={() => handleImageLoad(item.id)}
               />
             ))}
           </View>
@@ -358,6 +508,9 @@ export default function CustomerOrderScreen() {
                 onUpdateQuantity={updateQuantity}
                 isExpanded={expandedItem === item.id}
                 onToggleExpanded={() => toggleExpanded(item.id)}
+                searchQuery={searchQuery}
+                imageLoaded={imageLoadedMap[item.id]}
+                onImageLoad={() => handleImageLoad(item.id)}
               />
             ))}
           </View>
@@ -459,12 +612,18 @@ function GridMenuItem({
   itemType,
   onAddToCart,
   showSuccess,
+  searchQuery,
+  imageLoaded,
+  onImageLoad,
 }: {
   item: any;
   badge: 'new' | 'popular' | null;
   itemType: 'premium' | 'seasonal' | 'sold-out' | 'standard';
   onAddToCart: (item: any) => void;
   showSuccess: boolean;
+  searchQuery: string;
+  imageLoaded?: boolean;
+  onImageLoad: () => void;
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const rippleScale = useRef(new Animated.Value(0)).current;
@@ -677,10 +836,21 @@ function GridMenuItem({
         )}
 
         <View style={styles.gridImageContainer}>
+          {!imageLoaded && (
+            <View style={styles.skeletonImage}>
+              <View style={styles.shimmer} />
+            </View>
+          )}
           {item.image && (
             <Image
               source={{ uri: item.image }}
-              style={[styles.gridImage, isSoldOut && styles.soldOutImage]}
+              style={[
+                styles.gridImage,
+                isSoldOut && styles.soldOutImage,
+                !imageLoaded && styles.imageHidden,
+              ]}
+              onLoad={onImageLoad}
+              fadeDuration={300}
             />
           )}
           <View style={styles.gradientOverlay} />
@@ -688,7 +858,12 @@ function GridMenuItem({
 
         <View style={styles.gridContent}>
           <View style={styles.gridHeader}>
-            <Text style={styles.gridName} numberOfLines={1}>{item.name}</Text>
+            <HighlightedText
+              text={item.name}
+              query={searchQuery}
+              style={styles.gridName}
+              numberOfLines={1}
+            />
             {fakeRating >= 4.5 && (
               <View style={styles.ratingContainer}>
                 <Star size={12} color="#FFD700" fill="#FFD700" />
@@ -696,9 +871,12 @@ function GridMenuItem({
               </View>
             )}
           </View>
-          <Text style={styles.gridDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
+          <HighlightedText
+            text={item.description}
+            query={searchQuery}
+            style={styles.gridDescription}
+            numberOfLines={2}
+          />
           <View style={styles.gridFooter}>
             <View style={styles.priceBadge}>
               <Text style={styles.gridPrice}>${(item.price / 1000).toFixed(0)}</Text>
@@ -722,6 +900,9 @@ function ListMenuItem({
   onUpdateQuantity,
   isExpanded,
   onToggleExpanded,
+  searchQuery,
+  imageLoaded,
+  onImageLoad,
 }: {
   item: any;
   badge: 'new' | 'popular' | null;
@@ -731,6 +912,9 @@ function ListMenuItem({
   onUpdateQuantity: (id: string, delta: number) => void;
   isExpanded: boolean;
   onToggleExpanded: () => void;
+  searchQuery: string;
+  imageLoaded?: boolean;
+  onImageLoad: () => void;
 }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
@@ -839,17 +1023,33 @@ function ListMenuItem({
 
         <Pressable onPress={onToggleExpanded} style={styles.listContent}>
           <View style={styles.listImageContainer}>
+            {!imageLoaded && (
+              <View style={styles.skeletonImageList}>
+                <View style={styles.shimmer} />
+              </View>
+            )}
             {item.image && (
               <Image
                 source={{ uri: item.image }}
-                style={[styles.listImage, isSoldOut && styles.soldOutImage]}
+                style={[
+                  styles.listImage,
+                  isSoldOut && styles.soldOutImage,
+                  !imageLoaded && styles.imageHidden,
+                ]}
+                onLoad={onImageLoad}
+                fadeDuration={300}
               />
             )}
           </View>
 
           <View style={styles.listInfo}>
             <View style={styles.listHeader}>
-              <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
+              <HighlightedText
+                text={item.name}
+                query={searchQuery}
+                style={styles.listName}
+                numberOfLines={1}
+              />
               {fakeRating >= 4.5 && (
                 <View style={styles.ratingContainer}>
                   <Star size={12} color="#FFD700" fill="#FFD700" />
@@ -857,12 +1057,12 @@ function ListMenuItem({
                 </View>
               )}
             </View>
-            <Text
+            <HighlightedText
+              text={item.description}
+              query={searchQuery}
               style={styles.listDescription}
               numberOfLines={isExpanded ? undefined : 2}
-            >
-              {item.description}
-            </Text>
+            />
             <View style={styles.listFooter}>
               <Text style={styles.listPrice}>${(item.price / 1000).toFixed(0)}</Text>
               {itemInCart ? (
@@ -901,6 +1101,36 @@ function ListMenuItem({
         </Pressable>
       </Animated.View>
     </View>
+  );
+}
+
+function HighlightedText({
+  text,
+  query,
+  style,
+  numberOfLines,
+}: {
+  text: string;
+  query: string;
+  style: any;
+  numberOfLines?: number;
+}) {
+  if (!query.trim()) {
+    return <Text style={style} numberOfLines={numberOfLines}>{text}</Text>;
+  }
+
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  
+  return (
+    <Text style={style} numberOfLines={numberOfLines}>
+      {parts.map((part, index) => 
+        part.toLowerCase() === query.toLowerCase() ? (
+          <Text key={index} style={styles.highlightedText}>{part}</Text>
+        ) : (
+          <Text key={index}>{part}</Text>
+        )
+      )}
+    </Text>
   );
 }
 
@@ -944,6 +1174,150 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  searchContainer: {
+    padding: 16,
+    paddingBottom: 8,
+  },
+  searchBar: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {},
+    }),
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text,
+    fontWeight: '600' as const,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  recentSearches: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  recentSearchesTitle: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  recentSearchesScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  recentSearchChip: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  recentSearchButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  recentSearchText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  removeRecentButton: {
+    padding: 6,
+    paddingLeft: 0,
+    paddingRight: 8,
+  },
+  categoryFilterChips: {
+    paddingBottom: 8,
+  },
+  filterChipsContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: Colors.backgroundGray,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
+    textTransform: 'capitalize' as const,
+  },
+  filterChipTextActive: {
+    color: '#fff',
+  },
+  highlightedText: {
+    backgroundColor: '#FFD70050',
+    fontWeight: '800' as const,
+    color: Colors.primary,
+  },
+  skeletonImage: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.backgroundGray,
+    overflow: 'hidden' as const,
+  },
+  skeletonImageList: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 10,
+    overflow: 'hidden' as const,
+  },
+  shimmer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Colors.border,
+    ...Platform.select({
+      web: {
+        animation: 'shimmer 1.5s infinite',
+        backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)',
+        backgroundSize: '200% 100%',
+      },
+      default: {},
+    }),
+  },
+  imageHidden: {
+    opacity: 0,
   },
   categoriesScroll: {
     backgroundColor: Colors.background,
