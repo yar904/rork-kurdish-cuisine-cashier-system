@@ -1089,28 +1089,10 @@ export default function PublicMenuScreen() {
       )}
 
       <View style={styles.categorySliderContainer}>
-        <View style={styles.categoryHeaderRow}>
-          <View style={styles.categoryTitleContainer}>
-            <View style={styles.categoryDecorLeft} />
-            <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-            <View style={styles.categoryDecorRight} />
-          </View>
-          <View style={styles.viewSwitcher}>
-            <TouchableOpacity
-              style={[styles.viewButton, layoutView === 'grid' && styles.viewButtonActive]}
-              onPress={() => setLayoutView('grid')}
-              activeOpacity={0.7}
-            >
-              <Grid3x3 size={18} color={layoutView === 'grid' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.viewButton, layoutView === 'list' && styles.viewButtonActive]}
-              onPress={() => setLayoutView('list')}
-              activeOpacity={0.7}
-            >
-              <List size={18} color={layoutView === 'list' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.categoryTitleContainer}>
+          <View style={styles.categoryDecorLeft} />
+          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
+          <View style={styles.categoryDecorRight} />
         </View>
         <ScrollView 
           ref={categoryScrollRef}
@@ -1157,6 +1139,25 @@ export default function PublicMenuScreen() {
             );
           })}
         </ScrollView>
+      </View>
+
+      <View style={styles.viewSwitcherContainer}>
+        <View style={styles.viewSwitcher}>
+          <TouchableOpacity
+            style={[styles.viewButton, layoutView === 'grid' && styles.viewButtonActive]}
+            onPress={() => setLayoutView('grid')}
+            activeOpacity={0.7}
+          >
+            <Grid3x3 size={18} color={layoutView === 'grid' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.viewButton, layoutView === 'list' && styles.viewButtonActive]}
+            onPress={() => setLayoutView('list')}
+            activeOpacity={0.7}
+          >
+            <List size={18} color={layoutView === 'list' ? '#3d0101' : '#E8C968'} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView 
@@ -1452,11 +1453,13 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  categoryHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  viewSwitcherContainer: {
+    backgroundColor: 'rgba(61, 1, 1, 0.4)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
     alignItems: 'center',
-    paddingRight: 16,
   },
   viewSwitcher: {
     flexDirection: 'row',
