@@ -64,8 +64,13 @@ export default function PublicMenuScreen() {
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const headerOpacity = useRef(new Animated.Value(1)).current;
   const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const headerScale = useRef(new Animated.Value(1)).current;
+  const categorySectionOpacity = useRef(new Animated.Value(1)).current;
+  const categorySectionHeight = useRef(new Animated.Value(1)).current;
+  const viewSwitcherOpacity = useRef(new Animated.Value(1)).current;
   const [categoryLayouts, setCategoryLayouts] = useState<Record<string, number>>({});
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!selectedTable && !params.table) {
@@ -235,27 +240,57 @@ export default function PublicMenuScreen() {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollDelta = currentScrollY - lastScrollY.current;
     
-    if (currentScrollY > 80 && scrollDelta > 5) {
+    if (currentScrollY > 100 && scrollDelta > 8) {
       if (isHeaderVisible) {
         setIsHeaderVisible(false);
         Animated.parallel([
-          Animated.timing(headerOpacity, {
-            toValue: 0.4,
-            duration: 250,
+          Animated.timing(categorySectionOpacity, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(categorySectionHeight, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: false,
+          }),
+          Animated.timing(viewSwitcherOpacity, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerScale, {
+            toValue: 0.85,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(headerTranslateY, {
-            toValue: -60,
-            duration: 250,
+            toValue: -10,
+            duration: 200,
             useNativeDriver: true,
           }),
         ]).start();
       }
-    } else if (scrollDelta < -5 || currentScrollY < 50) {
+    } else if (scrollDelta < -10 || currentScrollY < 50) {
       if (!isHeaderVisible) {
         setIsHeaderVisible(true);
         Animated.parallel([
-          Animated.timing(headerOpacity, {
+          Animated.timing(categorySectionOpacity, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(categorySectionHeight, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: false,
+          }),
+          Animated.timing(viewSwitcherOpacity, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerScale, {
             toValue: 1,
             duration: 250,
             useNativeDriver: true,
@@ -376,7 +411,7 @@ export default function PublicMenuScreen() {
       >
         <TouchableOpacity
           style={styles.menuItemTouchable}
-          activeOpacity={0.95}
+          activeOpacity={0.85}
           onPress={() => {
             setSelectedItem(item);
             setItemQuantity(1);
@@ -391,6 +426,7 @@ export default function PublicMenuScreen() {
                   style={styles.menuItemImageHorizontal}
                   resizeMode="cover"
                 />
+                <View style={styles.imageGradientOverlay} />
               </View>
             )}
             
@@ -1110,8 +1146,15 @@ export default function PublicMenuScreen() {
         style={[
           styles.categorySliderContainer,
           {
-            opacity: headerOpacity,
-            transform: [{ translateY: headerTranslateY }],
+            opacity: categorySectionOpacity,
+            transform: [
+              { 
+                scaleY: categorySectionHeight.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 1],
+                }),
+              },
+            ],
           },
         ]}
       >
@@ -1174,8 +1217,15 @@ export default function PublicMenuScreen() {
         style={[
           styles.viewSwitcherContainer,
           {
-            opacity: headerOpacity,
-            transform: [{ translateY: headerTranslateY }],
+            opacity: viewSwitcherOpacity,
+            transform: [
+              {
+                scaleY: viewSwitcherOpacity.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 1],
+                }),
+              },
+            ],
           },
         ]}
       >
@@ -1988,6 +2038,21 @@ const styles = StyleSheet.create({
   menuItemImageHorizontal: {
     width: '100%',
     height: '100%',
+  },
+  imageGradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(61, 1, 1, 0.4) 70%, rgba(61, 1, 1, 0.8) 100%)' as const,
+    ...Platform.select({
+      android: {
+        backgroundColor: 'rgba(61, 1, 1, 0.3)',
+      },
+      ios: {
+        backgroundColor: 'rgba(61, 1, 1, 0.3)',
+      },
+      web: {
+        background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(61, 1, 1, 0.4) 70%, rgba(61, 1, 1, 0.8) 100%)' as const,
+      },
+    }),
   },
   menuItemContentHorizontal: {
     padding: 0,
