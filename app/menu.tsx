@@ -249,27 +249,27 @@ export default function PublicMenuScreen() {
         Animated.parallel([
           Animated.timing(headerOpacity, {
             toValue: 0,
-            duration: 300,
+            duration: 250,
             useNativeDriver: true,
           }),
           Animated.timing(headerTranslateY, {
-            toValue: -100,
-            duration: 300,
+            toValue: -150,
+            duration: 250,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionOpacity, {
             toValue: 0,
-            duration: 300,
+            duration: 250,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 0,
-            duration: 300,
+            duration: 250,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 0,
-            duration: 300,
+            duration: 250,
             useNativeDriver: true,
           }),
         ]).start();
@@ -280,27 +280,27 @@ export default function PublicMenuScreen() {
         Animated.parallel([
           Animated.timing(headerOpacity, {
             toValue: 1,
-            duration: 350,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(headerTranslateY, {
             toValue: 0,
-            duration: 350,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionOpacity, {
             toValue: 1,
-            duration: 350,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionHeight, {
             toValue: 1,
-            duration: 350,
+            duration: 300,
             useNativeDriver: false,
           }),
           Animated.timing(viewSwitcherOpacity, {
             toValue: 1,
-            duration: 350,
+            duration: 300,
             useNativeDriver: true,
           }),
         ]).start();
@@ -1161,11 +1161,15 @@ export default function PublicMenuScreen() {
           styles.categorySliderContainer,
           {
             opacity: categorySectionOpacity,
+            height: categorySectionHeight.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 250],
+            }),
             transform: [
-              { 
-                scaleY: categorySectionHeight.interpolate({
+              {
+                translateY: categorySectionHeight.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 1],
+                  outputRange: [-250, 0],
                 }),
               },
             ],
@@ -1232,17 +1236,15 @@ export default function PublicMenuScreen() {
           styles.viewSwitcherContainer,
           {
             opacity: viewSwitcherOpacity,
+            height: viewSwitcherOpacity.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 80],
+            }),
             transform: [
-              {
-                scale: viewSwitcherScale.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-              },
               {
                 translateY: viewSwitcherOpacity.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [-20, 0],
+                  outputRange: [-80, 0],
                 }),
               },
             ],
