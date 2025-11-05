@@ -1551,10 +1551,10 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 10,
+    gap: 12,
     justifyContent: 'space-between' as const,
     ...Platform.select({
       web: {
@@ -1642,9 +1642,9 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '31%',
-        minWidth: 180,
-        maxWidth: 240,
+        width: '30%',
+        minWidth: 200,
+        maxWidth: 280,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -1669,7 +1669,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 140,
+    height: 120,
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
     borderBottomLeftRadius: 0,
@@ -1679,7 +1679,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 160,
+        height: 180,
       },
     }),
   },
@@ -1810,7 +1810,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '90%',
+    maxHeight: '85%',
     ...Platform.select({
       web: {
         maxWidth: 600,
@@ -1819,18 +1819,29 @@ const styles = StyleSheet.create({
         marginBottom: 0,
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
-        maxHeight: '85%',
+        maxHeight: '80%',
         marginTop: 'auto' as const,
       },
     }),
   },
   modalImage: {
     width: '100%',
-    height: 300,
+    height: 240,
     backgroundColor: '#F9FAFB',
+    ...Platform.select({
+      web: {
+        height: 320,
+      },
+    }),
   },
   modalBody: {
-    padding: 24,
+    padding: 20,
+    paddingTop: 24,
+    ...Platform.select({
+      web: {
+        padding: 24,
+      },
+    }),
   },
   modalCloseButton: {
     position: 'absolute' as const,
@@ -1861,23 +1872,40 @@ const styles = StyleSheet.create({
     }),
   },
   modalItemName: {
-    fontSize: 26,
+    fontSize: 22,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#1A1A1A',
     marginBottom: 8,
+    ...Platform.select({
+      web: {
+        fontSize: 26,
+      },
+    }),
   },
   modalItemPrice: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700' as const,
     color: '#3d0101',
     marginBottom: 12,
+    ...Platform.select({
+      web: {
+        fontSize: 24,
+      },
+    }),
   },
   modalItemDescription: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 20,
+    marginBottom: 20,
+    ...Platform.select({
+      web: {
+        fontSize: 16,
+        lineHeight: 24,
+        marginBottom: 24,
+      },
+    }),
   },
   modalDivider: {
     height: 1,

@@ -448,12 +448,12 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
     paddingTop: 16,
-    gap: 10,
+    gap: 12,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -482,16 +482,16 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '31%',
-        minWidth: 180,
-        maxWidth: 240,
+        width: '30%',
+        minWidth: 200,
+        maxWidth: 280,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    height: 140,
+    height: 120,
     backgroundColor: '#2a1a1a',
     borderRadius: 16,
     borderBottomLeftRadius: 0,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 160,
+        height: 180,
       },
     }),
   },
