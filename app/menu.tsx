@@ -2049,7 +2049,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(61, 1, 1, 0.3)',
       },
       web: {
-        background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(61, 1, 1, 0.4) 70%, rgba(61, 1, 1, 0.8) 100%)' as const,
+        backgroundColor: 'rgba(61, 1, 1, 0.6)',
       },
     }),
   },
