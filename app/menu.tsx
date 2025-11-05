@@ -1308,6 +1308,7 @@ export default function PublicMenuScreen() {
         contentContainerStyle={styles.contentContainer}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        decelerationRate="fast"
       >
         <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
@@ -1527,6 +1528,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    transform: [{ scaleX: 1 }],
   },
   languageMenu: {
     marginHorizontal: 20,
@@ -1613,8 +1615,8 @@ const styles = StyleSheet.create({
   viewSwitcherContainer: {
     paddingVertical: 16,
     paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     backgroundColor: 'transparent',
     ...Platform.select({
       web: {
@@ -1871,7 +1873,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 12,
-    justifyContent: 'flex-start' as const,
+    justifyContent: 'space-between' as const,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -2088,7 +2090,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48.5%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
