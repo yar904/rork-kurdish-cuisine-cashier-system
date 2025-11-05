@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Send, Star, Sparkles, TrendingUp, Check } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -38,6 +38,9 @@ export default function CustomerOrderScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [successAnimation, setSuccessAnimation] = useState<string | null>(null);
+  const cartBadgeScale = useRef(new Animated.Value(1)).current;
+  const cartBarScale = useRef(new Animated.Value(1)).current;
 
   const menuQuery = trpc.menu.getAll.useQuery();
 
@@ -69,6 +72,29 @@ export default function CustomerOrderScreen() {
     return cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
   }, [cart]);
 
+  const getCartColor = () => {
+    if (cartTotal === 0) return Colors.primary;
+    if (cartTotal < 30000) return '#D4AF37';
+    if (cartTotal < 50000) return '#C9A961';
+    return '#8B4513';
+  };
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      Animated.spring(cartBarScale, {
+        toValue: 1.02,
+        friction: 8,
+        useNativeDriver: true,
+      }).start(() => {
+        Animated.spring(cartBarScale, {
+          toValue: 1,
+          friction: 8,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
+  }, [cart.length]);
+
   const addToCart = (menuItem: CartItem['menuItem']) => {
     const existingItem = cart.find(item => item.menuItem.id === menuItem.id);
     if (existingItem) {
@@ -80,6 +106,22 @@ export default function CustomerOrderScreen() {
     } else {
       setCart([...cart, { menuItem, quantity: 1 }]);
     }
+    
+    setSuccessAnimation(menuItem.id);
+    setTimeout(() => setSuccessAnimation(null), 600);
+    
+    Animated.sequence([
+      Animated.spring(cartBadgeScale, {
+        toValue: 1.3,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+      Animated.spring(cartBadgeScale, {
+        toValue: 1,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const getItemInCart = (menuItemId: string) => {
@@ -211,6 +253,7 @@ export default function CustomerOrderScreen() {
                 item={item}
                 badge={getItemBadge(item)}
                 onAddToCart={addToCart}
+                showSuccess={successAnimation === item.id}
               />
             ))}
           </View>
@@ -233,10 +276,26 @@ export default function CustomerOrderScreen() {
       </ScrollView>
 
       {cart.length > 0 && (
-        <View style={styles.cartFooter}>
+        <Animated.View 
+          style={[
+            styles.cartFooter,
+            { 
+              backgroundColor: getCartColor(),
+              transform: [{ scale: cartBarScale }]
+            }
+          ]}
+        >
           <View style={styles.cartSummary}>
             <View style={styles.cartHeader}>
-              <ShoppingCart size={20} color={Colors.primary} />
+              <View style={styles.cartIconContainer}>
+                <ShoppingCart size={20} color="#fff" />
+                <Animated.View style={[
+                  styles.cartBadge,
+                  { transform: [{ scale: cartBadgeScale }] }
+                ]}>
+                  <Text style={styles.cartBadgeText}>{cart.length}</Text>
+                </Animated.View>
+              </View>
               <Text style={styles.cartTitle}>{cart.length} items</Text>
               <Text style={styles.cartTotal}>${cartTotal.toFixed(2)}</Text>
             </View>
@@ -287,7 +346,7 @@ export default function CustomerOrderScreen() {
               </>
             )}
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
     </View>
   );
@@ -297,18 +356,46 @@ function GridMenuItem({
   item,
   badge,
   onAddToCart,
+  showSuccess,
 }: {
   item: any;
   badge: 'new' | 'popular' | null;
   onAddToCart: (item: any) => void;
+  showSuccess: boolean;
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const rippleScale = useRef(new Animated.Value(0)).current;
+  const rippleOpacity = useRef(new Animated.Value(0)).current;
+  const successScale = useRef(new Animated.Value(0)).current;
+  const successOpacity = useRef(new Animated.Value(0)).current;
+  const particleAnimations = useRef(
+    Array.from({ length: 8 }, () => ({
+      translateX: new Animated.Value(0),
+      translateY: new Animated.Value(0),
+      opacity: new Animated.Value(0),
+    }))
+  ).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.95,
       useNativeDriver: true,
     }).start();
+    
+    rippleOpacity.setValue(0.6);
+    rippleScale.setValue(0);
+    Animated.parallel([
+      Animated.timing(rippleScale, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(rippleOpacity, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const handlePressOut = () => {
@@ -318,6 +405,55 @@ function GridMenuItem({
       useNativeDriver: true,
     }).start();
   };
+
+  useEffect(() => {
+    if (showSuccess) {
+      successOpacity.setValue(1);
+      successScale.setValue(0);
+      
+      Animated.sequence([
+        Animated.spring(successScale, {
+          toValue: 1,
+          friction: 3,
+          useNativeDriver: true,
+        }),
+        Animated.timing(successOpacity, {
+          toValue: 0,
+          duration: 200,
+          delay: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      const particleAnims = particleAnimations.map((anim, index) => {
+        const angle = (index / 8) * Math.PI * 2;
+        const distance = 40;
+        anim.translateX.setValue(0);
+        anim.translateY.setValue(0);
+        anim.opacity.setValue(1);
+        
+        return Animated.parallel([
+          Animated.timing(anim.translateX, {
+            toValue: Math.cos(angle) * distance,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim.translateY, {
+            toValue: Math.sin(angle) * distance,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim.opacity, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ]);
+      });
+
+      Animated.parallel(particleAnims).start();
+    }
+  }, [showSuccess]);
 
   const fakeRating = parseFloat((4 + Math.random()).toFixed(1));
 
@@ -336,6 +472,43 @@ function GridMenuItem({
       style={styles.gridCard}
     >
       <Animated.View style={[styles.gridCardInner, { transform: [{ scale: scaleAnim }] }]}>
+        <Animated.View
+          style={[
+            styles.rippleEffect,
+            {
+              transform: [{ scale: rippleScale }],
+              opacity: rippleOpacity,
+            },
+          ]}
+        />
+        
+        <Animated.View
+          style={[
+            styles.successCheckmark,
+            {
+              transform: [{ scale: successScale }],
+              opacity: successOpacity,
+            },
+          ]}
+        >
+          <Check size={32} color="#fff" strokeWidth={3} />
+        </Animated.View>
+
+        {particleAnimations.map((anim, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.particle,
+              {
+                transform: [
+                  { translateX: anim.translateX },
+                  { translateY: anim.translateY },
+                ],
+                opacity: anim.opacity,
+              },
+            ]}
+          />
+        ))}
         {badge && (
           <View style={[
             styles.badge,
@@ -904,10 +1077,22 @@ const styles = StyleSheet.create({
   cartFooter: {
     backgroundColor: Colors.background,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: 'rgba(255,255,255,0.2)',
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {},
+    }),
   },
   cartSummary: {
     marginBottom: 12,
@@ -918,16 +1103,36 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 12,
   },
+  cartIconContainer: {
+    position: 'relative' as const,
+  },
+  cartBadge: {
+    position: 'absolute' as const,
+    top: -6,
+    right: -6,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 4,
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '800' as const,
+  },
   cartTitle: {
     flex: 1,
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#fff',
   },
   cartTotal: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#fff',
   },
   cartItems: {
     maxHeight: 150,
@@ -938,7 +1143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: 'rgba(255,255,255,0.15)',
   },
   cartItemInfo: {
     flex: 1,
@@ -946,12 +1151,12 @@ const styles = StyleSheet.create({
   cartItemName: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#fff',
     marginBottom: 2,
   },
   cartItemPrice: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: '600' as const,
   },
   quantityControls: {
@@ -963,16 +1168,16 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   quantity: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#fff',
     minWidth: 24,
     textAlign: 'center' as const,
   },
@@ -981,13 +1186,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Colors.primary,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     paddingVertical: 16,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  rippleEffect: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    width: 200,
+    height: 200,
+    marginLeft: -100,
+    marginTop: -100,
+    borderRadius: 100,
+    backgroundColor: Colors.primary,
+    zIndex: 1,
+  },
+  successCheckmark: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    width: 60,
+    height: 60,
+    marginLeft: -30,
+    marginTop: -30,
+    borderRadius: 30,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {},
+    }),
+  },
+  particle: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+    zIndex: 5,
   },
 });
