@@ -248,28 +248,38 @@ export default function PublicMenuScreen() {
         setIsHeaderVisible(false);
         Animated.parallel([
           Animated.timing(headerOpacity, {
-            toValue: 0,
-            duration: 200,
+            toValue: 0.3,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(headerTranslateY, {
-            toValue: -200,
-            duration: 200,
+            toValue: -60,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(headerScale, {
+            toValue: 0.7,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionOpacity, {
-            toValue: 0,
-            duration: 200,
+            toValue: 0.4,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(categorySectionScale, {
-            toValue: 0.8,
-            duration: 200,
+            toValue: 0.85,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(viewSwitcherOpacity, {
-            toValue: 0,
-            duration: 200,
+            toValue: 0.5,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(viewSwitcherScale, {
+            toValue: 0.9,
+            duration: 300,
             useNativeDriver: true,
           }),
         ]).start();
@@ -290,6 +300,12 @@ export default function PublicMenuScreen() {
             tension: 100,
             friction: 8,
           }),
+          Animated.spring(headerScale, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }),
           Animated.spring(categorySectionOpacity, {
             toValue: 1,
             useNativeDriver: true,
@@ -303,6 +319,12 @@ export default function PublicMenuScreen() {
             friction: 8,
           }),
           Animated.spring(viewSwitcherOpacity, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }),
+          Animated.spring(viewSwitcherScale, {
             toValue: 1,
             useNativeDriver: true,
             tension: 100,
@@ -1070,7 +1092,10 @@ export default function PublicMenuScreen() {
         { 
           paddingTop: insets.top + 4,
           opacity: headerOpacity,
-          transform: [{ translateY: headerTranslateY }],
+          transform: [
+            { translateY: headerTranslateY },
+            { scale: headerScale },
+          ],
         }
       ]}>
         <View style={styles.headerTop}>
@@ -1236,7 +1261,7 @@ export default function PublicMenuScreen() {
             opacity: viewSwitcherOpacity,
             transform: [
               {
-                scaleY: viewSwitcherOpacity,
+                scale: viewSwitcherScale,
               },
             ],
           },
