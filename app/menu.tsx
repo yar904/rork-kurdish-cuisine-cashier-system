@@ -2041,7 +2041,6 @@ const styles = StyleSheet.create({
   },
   imageGradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(61, 1, 1, 0.4) 70%, rgba(61, 1, 1, 0.8) 100%)' as const,
     ...Platform.select({
       android: {
         backgroundColor: 'rgba(61, 1, 1, 0.3)',
