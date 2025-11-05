@@ -108,6 +108,11 @@ export default function CategoryDetailScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      <Image
+        source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
+        style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
+        resizeMode="cover"
+      />
 
       <Modal
         visible={selectedItem !== null}

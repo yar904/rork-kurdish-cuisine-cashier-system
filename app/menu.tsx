@@ -1034,7 +1034,10 @@ export default function PublicMenuScreen() {
                   if (autoScrollInterval.current) {
                     clearInterval(autoScrollInterval.current);
                   }
-                  contentScrollRef.current?.scrollTo({ y: 0, animated: true });
+                  router.push({
+                    pathname: '/category/[id]',
+                    params: { id: category.id },
+                  });
                 }}
               >
                 <View style={styles.categoryCardImageContainer}>
