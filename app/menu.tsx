@@ -1702,12 +1702,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    justifyContent: 'space-between' as const,
-    gap: 16,
+    justifyContent: 'flex-start' as const,
+    gap: 12,
     ...Platform.select({
       web: {
-        justifyContent: 'center' as const,
-        gap: 20,
+        justifyContent: 'flex-start' as const,
+        gap: 16,
         paddingHorizontal: 20,
       },
     }),
@@ -1719,7 +1719,7 @@ const styles = StyleSheet.create({
     overflow: 'visible' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 12,
+    marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -1861,13 +1861,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '47.5%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 12,
+    marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -1880,9 +1880,9 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '30%',
+        width: '31%',
         minWidth: 200,
-        maxWidth: 280,
+        maxWidth: 300,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
