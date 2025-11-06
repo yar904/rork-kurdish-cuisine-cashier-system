@@ -182,20 +182,6 @@ export default function PublicMenuScreen() {
     return categoryItems.length > 0;
   });
 
-  const menuCategoryIds: MenuCategory[] = categories.map(c => c.id as MenuCategory);
-  
-  const filteredCategories = menuCategoryIds.filter((category) => {
-    if (searchQuery === '') return true;
-    const categoryName = tc(category).toLowerCase();
-    const categoryItems = MENU_ITEMS.filter(item => item.category === category);
-    const hasMatchingItems = categoryItems.some(item =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.nameKurdish.includes(searchQuery) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    return categoryName.includes(searchQuery.toLowerCase()) || hasMatchingItems;
-  });
-
   const getItemName = (item: typeof MENU_ITEMS[0]) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
@@ -272,32 +258,36 @@ export default function PublicMenuScreen() {
     );
   };
 
-  const renderCategorySection = (category: MenuCategory) => {
-    const categoryItems = MENU_ITEMS.filter((item) => {
-      const matchesCategory = item.category === category;
-      const matchesSearch =
-        searchQuery === '' ||
-        getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch && item.available;
-    });
+  const renderAllCategories = () => {
+    return availableCategories.map((category) => {
+      const categoryItems = MENU_ITEMS.filter((item) => {
+        const matchesCategory = item.category === category.id;
+        const matchesSearch =
+          searchQuery === '' ||
+          getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+          getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch && item.available;
+      });
 
-    if (categoryItems.length === 0) return null;
+      if (categoryItems.length === 0) return null;
 
-    return (
-      <View key={category} style={styles.categorySection}>
-        <View style={styles.categoryHeader}>
-          <View style={styles.categoryTitleContainer}>
-            <View style={styles.categoryDecorLeft} />
-            <Text style={styles.categoryTitle}>{tc(category)}</Text>
-            <View style={styles.categoryDecorRight} />
+      const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+
+      return (
+        <View key={category.id} style={styles.categorySection}>
+          <View style={styles.categoryHeader}>
+            <View style={styles.categoryTitleContainer}>
+              <View style={styles.categoryDecorLeft} />
+              <Text style={styles.categoryTitle}>{categoryName}</Text>
+              <View style={styles.categoryDecorRight} />
+            </View>
+          </View>
+          <View style={styles.categoryItemsGrid}>
+            {categoryItems.map(renderMenuItem)}
           </View>
         </View>
-        <View style={styles.categoryItemsGrid}>
-          {categoryItems.map(renderMenuItem)}
-        </View>
-      </View>
-    );
+      );
+    });
   };
 
   return (
@@ -904,10 +894,10 @@ export default function PublicMenuScreen() {
           </View>
         </View>
         <View style={styles.menuSections}>
-          {filteredCategories.map(renderCategorySection)}
+          {renderAllCategories()}
         </View>
 
-        {filteredCategories.length === 0 && (
+        {availableCategories.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
           </View>
