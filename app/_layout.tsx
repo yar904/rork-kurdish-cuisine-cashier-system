@@ -23,7 +23,14 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="order-tracking" options={{ headerShown: false }} />
-      <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="category/[id]" 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: false,
+          animation: 'slide_from_right'
+        }} 
+      />
       <Stack.Screen name="menu-management" options={{ headerShown: false }} />
       <Stack.Screen name="employees" options={{ headerShown: false }} />
       <Stack.Screen name="clock-in-out" options={{ headerShown: false }} />
