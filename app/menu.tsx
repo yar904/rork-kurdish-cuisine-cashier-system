@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Grid3x3, LayoutList } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -52,6 +52,7 @@ export default function PublicMenuScreen() {
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
   const { width } = useWindowDimensions();
+  const [gridLayout, setGridLayout] = useState<'2col' | '1col'>('2col');
 
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
@@ -283,13 +284,16 @@ export default function PublicMenuScreen() {
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
     
+    const cardStyle = gridLayout === '1col' ? styles.menuItemCardList : styles.menuItemCardHorizontal;
+    const contentStyle = gridLayout === '1col' ? styles.menuItemContentList : styles.menuItemContentHorizontal;
+    
     return (
       <View 
         key={item.id} 
-        style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
+        style={[cardStyle, isPremium && styles.premiumCard]}
       >
         <TouchableOpacity
-          style={styles.menuItemTouchable}
+          style={gridLayout === '1col' ? styles.menuItemTouchableList : styles.menuItemTouchable}
           activeOpacity={0.95}
           onPress={() => {
             setSelectedItem(item);
@@ -297,32 +301,40 @@ export default function PublicMenuScreen() {
             setItemNotes('');
           }}
         >
-          <View style={styles.menuItemContentHorizontal}>
+          <View style={contentStyle}>
             {item.image && (
-              <View style={styles.imageContainerHorizontal}>
+              <View style={gridLayout === '1col' ? styles.imageContainerList : styles.imageContainerHorizontal}>
                 <Image 
                   source={{ uri: item.image }} 
-                  style={styles.menuItemImageHorizontal}
+                  style={gridLayout === '1col' ? styles.menuItemImageList : styles.menuItemImageHorizontal}
                   resizeMode="cover"
                 />
               </View>
             )}
             
-            <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
-              {getItemName(item)}
-            </Text>
-            
-            <View style={styles.priceHighlight}>
-              <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
-            </View>
-            
-            {hasRatings && (
-              <View style={styles.ratingBadgeCentered}>
-                <Star size={16} color="#D4AF37" fill="#D4AF37" />
-                <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+            <View style={gridLayout === '1col' ? styles.menuItemInfoList : styles.menuItemInfoGrid}>
+              <Text style={gridLayout === '1col' ? styles.menuItemNameList : styles.menuItemNameHorizontal} numberOfLines={2}>
+                {getItemName(item)}
+              </Text>
+              
+              {gridLayout === '1col' && (
+                <Text style={styles.menuItemDescriptionList} numberOfLines={2}>
+                  {getItemDescription(item)}
+                </Text>
+              )}
+              
+              <View style={styles.priceHighlight}>
+                <Text style={gridLayout === '1col' ? styles.menuItemPriceList : styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
               </View>
-            )}
+              
+              {hasRatings && (
+                <View style={gridLayout === '1col' ? styles.ratingBadgeList : styles.ratingBadgeCentered}>
+                  <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                  <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
+                  <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
+                </View>
+              )}
+            </View>
           </View>
         </TouchableOpacity>
         
@@ -363,7 +375,7 @@ export default function PublicMenuScreen() {
             <View style={styles.categoryDecorRight} />
           </View>
         </View>
-        <View style={styles.categoryItemsGrid}>
+        <View style={gridLayout === '1col' ? styles.categoryItemsList : styles.categoryItemsGrid}>
           {categoryItems.map(renderMenuItem)}
         </View>
       </View>
@@ -386,74 +398,83 @@ export default function PublicMenuScreen() {
         onRequestClose={() => setSelectedItem(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.modernModalContent}>
+            <TouchableOpacity 
+              style={styles.modernModalClose}
+              onPress={() => setSelectedItem(null)}
+              activeOpacity={0.8}
+            >
+              <X size={24} color="#FFFFFF" strokeWidth={2.5} />
+            </TouchableOpacity>
+
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
               {selectedItem?.image && (
-                <Image 
-                  source={{ uri: selectedItem.image }} 
-                  style={styles.modalImage}
-                  resizeMode="cover"
-                />
+                <View style={styles.modernModalImageContainer}>
+                  <Image 
+                    source={{ uri: selectedItem.image }} 
+                    style={styles.modernModalImage}
+                    resizeMode="cover"
+                  />
+                </View>
               )}
               
-              <View style={styles.modalBody}>
-                <TouchableOpacity 
-                  style={styles.modalCloseButton}
-                  onPress={() => setSelectedItem(null)}
-                  activeOpacity={0.8}
-                >
-                  <X size={22} color="#FFFFFF" strokeWidth={2.5} />
-                </TouchableOpacity>
+              <View style={styles.modernModalBody}>
+                <Text style={styles.modernModalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
+                <Text style={styles.modernModalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
+                <Text style={styles.modernModalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
 
-                <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
-                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
-                <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
+                <View style={styles.modernDivider} />
 
-                <View style={styles.modalDivider} />
-
-                <View style={styles.quantitySelector}>
-                  <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
-                  <View style={styles.quantityControls}>
+                <View style={styles.modernQuantitySection}>
+                  <Text style={styles.modernQuantityLabel}>{t('quantity')}</Text>
+                  <View style={styles.modernQuantityControls}>
                     <TouchableOpacity
-                      style={styles.quantityButton}
+                      style={styles.modernQuantityButton}
                       onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                      activeOpacity={0.7}
                     >
-                      <Minus size={20} color="#3d0101" />
+                      <Minus size={18} color="#3d0101" strokeWidth={2.5} />
                     </TouchableOpacity>
-                    <Text style={styles.quantityValue}>{itemQuantity}</Text>
+                    <View style={styles.modernQuantityValueContainer}>
+                      <Text style={styles.modernQuantityValue}>{itemQuantity}</Text>
+                    </View>
                     <TouchableOpacity
-                      style={styles.quantityButton}
+                      style={styles.modernQuantityButton}
                       onPress={() => setItemQuantity(itemQuantity + 1)}
+                      activeOpacity={0.7}
                     >
-                      <Plus size={20} color="#3d0101" />
+                      <Plus size={18} color="#3d0101" strokeWidth={2.5} />
                     </TouchableOpacity>
                   </View>
                 </View>
 
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
+                <View style={styles.modernNotesSection}>
+                  <Text style={styles.modernNotesLabel}>{t('specialRequirements')}</Text>
                   <TextInput
-                    style={styles.notesInput}
+                    style={styles.modernNotesInput}
                     placeholder={t('anySpecialRequirements')}
-                    placeholderTextColor="rgba(26, 26, 26, 0.4)"
+                    placeholderTextColor="rgba(26, 26, 26, 0.35)"
                     value={itemNotes}
                     onChangeText={setItemNotes}
                     multiline
-                    numberOfLines={3}
+                    numberOfLines={2}
                   />
                 </View>
-
-                <TouchableOpacity
-                  style={styles.modalAddButton}
-                  onPress={handleAddToCart}
-                >
-                  <ShoppingCart size={20} color="#fff" />
-                  <Text style={styles.modalAddButtonText}>
-                    {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
-                  </Text>
-                </TouchableOpacity>
               </View>
             </ScrollView>
+
+            <View style={styles.modernModalFooter}>
+              <TouchableOpacity
+                style={styles.modernAddButton}
+                onPress={handleAddToCart}
+                activeOpacity={0.85}
+              >
+                <ShoppingCart size={22} color="#fff" strokeWidth={2.5} />
+                <Text style={styles.modernAddButtonText}>
+                  {t('addToCart')} • {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -927,12 +948,24 @@ export default function PublicMenuScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <TouchableOpacity
-            style={styles.languageButton}
-            onPress={() => setShowLanguageMenu(!showLanguageMenu)}
-          >
-            <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.gridToggleButton}
+              onPress={() => setGridLayout(gridLayout === '2col' ? '1col' : '2col')}
+            >
+              {gridLayout === '2col' ? (
+                <LayoutList size={20} color="#FFFFFF" strokeWidth={1.5} />
+              ) : (
+                <Grid3x3 size={20} color="#FFFFFF" strokeWidth={1.5} />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.languageButton}
+              onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+            >
+              <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {showLanguageMenu && (
@@ -2886,5 +2919,334 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '700' as const,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  gridToggleButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuItemCardList: {
+    width: '100%' as const,
+    backgroundColor: '#3d0101',
+    borderRadius: 16,
+    overflow: 'visible' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginBottom: 12,
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        maxWidth: 900,
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  menuItemTouchableList: {
+    flex: 1,
+  },
+  menuItemContentList: {
+    flexDirection: 'row' as const,
+    padding: 0,
+  },
+  imageContainerList: {
+    width: 140,
+    height: 140,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+    overflow: 'hidden' as const,
+    position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        width: 180,
+        height: 180,
+      },
+    }),
+  },
+  menuItemImageList: {
+    width: '100%',
+    height: '100%',
+  },
+  menuItemInfoList: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'space-between' as const,
+  },
+  menuItemInfoGrid: {
+    padding: 0,
+  },
+  menuItemNameList: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    lineHeight: 24,
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    ...Platform.select({
+      web: {
+        fontSize: 20,
+        lineHeight: 26,
+      },
+    }),
+  },
+  menuItemDescriptionList: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 20,
+    marginBottom: 12,
+    ...Platform.select({
+      web: {
+        fontSize: 15,
+        lineHeight: 22,
+      },
+    }),
+  },
+  menuItemPriceList: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.3,
+    ...Platform.select({
+      web: {
+        fontSize: 20,
+      },
+    }),
+  },
+  ratingBadgeList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    alignSelf: 'flex-start' as const,
+    gap: 4,
+    marginTop: 6,
+  },
+  categoryItemsList: {
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  modernModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: '88%',
+    overflow: 'hidden' as const,
+    ...Platform.select({
+      web: {
+        maxWidth: 540,
+        alignSelf: 'center' as const,
+        width: '100%',
+        marginBottom: 0,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        maxHeight: '80%',
+        marginTop: 'auto' as const,
+      },
+    }),
+  },
+  modernModalClose: {
+    position: 'absolute' as const,
+    top: 20,
+    right: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+      },
+    }),
+  },
+  modernModalImageContainer: {
+    width: '100%',
+    height: 280,
+    backgroundColor: '#F9FAFB',
+    position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        height: 320,
+      },
+    }),
+  },
+  modernModalImage: {
+    width: '100%',
+    height: '100%',
+  },
+  modernModalBody: {
+    padding: 24,
+    paddingBottom: 0,
+  },
+  modernModalItemName: {
+    fontSize: 24,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+    marginBottom: 8,
+    lineHeight: 32,
+    ...Platform.select({
+      web: {
+        fontSize: 28,
+        lineHeight: 36,
+      },
+    }),
+  },
+  modernModalItemPrice: {
+    fontSize: 22,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: '#3d0101',
+    marginBottom: 12,
+  },
+  modernModalItemDescription: {
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#6B7280',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  modernDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 20,
+  },
+  modernQuantitySection: {
+    marginBottom: 20,
+  },
+  modernQuantityLabel: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#374151',
+    marginBottom: 12,
+  },
+  modernQuantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center' as const,
+    gap: 20,
+  },
+  modernQuantityButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  modernQuantityValueContainer: {
+    minWidth: 60,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modernQuantityValue: {
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#1A1A1A',
+  },
+  modernNotesSection: {
+    marginBottom: 20,
+  },
+  modernNotesLabel: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#374151',
+    marginBottom: 12,
+  },
+  modernNotesInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 15,
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minHeight: 70,
+    textAlignVertical: 'top' as const,
+  },
+  modernModalFooter: {
+    padding: 24,
+    paddingTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  modernAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#3d0101',
+    paddingVertical: 18,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#3d0101',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(61, 1, 1, 0.3)',
+      },
+    }),
+  },
+  modernAddButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
   },
 });
