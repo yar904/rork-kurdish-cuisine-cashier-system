@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,12 @@ import {
   TextInput,
   Platform,
   Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Modal,
   Alert,
-  useWindowDimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft, Search } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -25,7 +22,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
-import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import AIChatbot from '@/components/AIChatbot';
 import { trpc } from '@/lib/trpc';
@@ -37,8 +33,7 @@ export default function PublicMenuScreen() {
   const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
-  const searchSlideAnim = useRef(new Animated.Value(0)).current;
+
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
@@ -51,15 +46,7 @@ export default function PublicMenuScreen() {
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
-  const { width } = useWindowDimensions();
-
   const contentScrollRef = useRef<ScrollView>(null);
-  const categoryScrollRef = useRef<ScrollView>(null);
-  const autoScrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const categorySlideHeight = useRef(new Animated.Value(1)).current;
-  const lastScrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('down');
-  const currentSlideIndex = useRef(0);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -80,7 +67,7 @@ export default function PublicMenuScreen() {
       tension: 50,
       friction: 7,
     }).start();
-  }, []);
+  }, [fabSlideAnimation]);
 
   const handleAddToCart = () => {
     if (selectedItem) {
@@ -194,63 +181,6 @@ export default function PublicMenuScreen() {
     const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
     return categoryItems.length > 0;
   });
-
-  const startAutoScroll = useCallback(() => {
-    if (autoScrollInterval.current) {
-      clearInterval(autoScrollInterval.current);
-    }
-    
-    const interval = setInterval(() => {
-      const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 150;
-      const gap = 16;
-      const scrollPosition = nextIndex * (cardWidth + gap);
-      
-      categoryScrollRef.current?.scrollTo({
-        x: scrollPosition,
-        animated: true,
-      });
-      
-      currentSlideIndex.current = nextIndex;
-    }, 3000);
-    
-    autoScrollInterval.current = interval;
-  }, [availableCategories.length]);
-
-  useEffect(() => {
-    startAutoScroll();
-    return () => {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-      }
-    };
-  }, [startAutoScroll]);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    
-    if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
-      if (scrollDirection.current !== 'down') {
-        scrollDirection.current = 'down';
-        Animated.timing(categorySlideHeight, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
-      }
-    } else if (currentScrollY < lastScrollY.current) {
-      if (scrollDirection.current !== 'up') {
-        scrollDirection.current = 'up';
-        Animated.timing(categorySlideHeight, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
-      }
-    }
-    
-    lastScrollY.current = currentScrollY;
-  };
 
   const menuCategoryIds: MenuCategory[] = categories.map(c => c.id as MenuCategory);
   
@@ -961,117 +891,11 @@ export default function PublicMenuScreen() {
         )}
       </View>
 
-      {showSearch && (
-        <Animated.View
-          style={[
-            styles.searchContainer,
-            {
-              transform: [
-                {
-                  translateY: searchSlideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-60, 0],
-                  }),
-                },
-              ],
-              opacity: searchSlideAnim,
-            },
-          ]}
-        >
-          <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('searchMenu')}
-            placeholderTextColor="rgba(255, 255, 255, 0.5)"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          <TouchableOpacity
-            onPress={() => {
-              setSearchQuery('');
-              setShowSearch(false);
-              Animated.spring(searchSlideAnim, {
-                toValue: 0,
-                useNativeDriver: true,
-              }).start();
-            }}
-            style={styles.closeSearchButton}
-          >
-            <X size={18} color="rgba(255, 255, 255, 0.7)" />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-
-      <Animated.View style={[
-        styles.categorySliderContainer,
-        {
-          height: categorySlideHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 160],
-          }),
-          opacity: categorySlideHeight,
-        },
-      ]}>
-        <View style={styles.categoryTitleContainer}>
-          <View style={styles.categoryDecorLeft} />
-          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-          <View style={styles.categoryDecorRight} />
-        </View>
-        <ScrollView 
-          ref={categoryScrollRef}
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categorySlider}
-          onScrollBeginDrag={() => {
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-            }
-          }}
-          onScrollEndDrag={startAutoScroll}
-        >
-          {availableCategories.map((category) => {
-            const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-            
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                activeOpacity={0.9}
-                onPress={() => {
-                  if (autoScrollInterval.current) {
-                    clearInterval(autoScrollInterval.current);
-                  }
-                  router.push(`/category/${category.id}`);
-                }}
-              >
-                <View style={styles.categoryCardImageContainer}>
-                  {categoryItems[0]?.image && (
-                    <Image 
-                      source={{ uri: categoryItems[0].image }} 
-                      style={styles.categoryCardImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.categoryCardOverlay} />
-                </View>
-                <View style={styles.categoryCardFooter}>
-                  <Text style={styles.categoryCardTitle}>{categoryName}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </Animated.View>
-
       <ScrollView 
         ref={contentScrollRef}
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
       >
         <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
