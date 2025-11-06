@@ -39,7 +39,6 @@ export default function PublicMenuScreen() {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
@@ -555,167 +554,7 @@ export default function PublicMenuScreen() {
         <AIChatbot visible={showAIAssistant} onClose={() => setShowAIAssistant(false)} />
       </Modal>
 
-      <Modal
-        visible={showSearchModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowSearchModal(false)}
-      >
-        <View style={[styles.searchModalContainer, { paddingTop: insets.top }]}>
-          <View style={styles.searchModalHeader}>
-            <TouchableOpacity
-              style={styles.searchModalBackButton}
-              onPress={() => {
-                setShowSearchModal(false);
-                setSearchQuery('');
-              }}
-            >
-              <ArrowLeft size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            <Text style={styles.searchModalTitle}>
-              {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان بکە' : 'ابحث'}
-            </Text>
-            <TouchableOpacity
-              style={styles.searchModalSearchIcon}
-              onPress={() => {}}
-            >
-              <Search size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.searchModalInputContainer}>
-            <Search size={20} color="rgba(255, 255, 255, 0.7)" style={styles.searchModalInputIcon} />
-            <TextInput
-              style={styles.searchModalInput}
-              placeholder={language === 'en' ? 'Search for dishes...' : language === 'ku' ? 'گەڕان لە خواردن...' : 'ابحث عن الأطباق...'}
-              placeholderTextColor="rgba(255, 255, 255, 0.5)"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-            {searchQuery !== '' && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                style={styles.searchModalClearButton}
-              >
-                <X size={18} color="rgba(255, 255, 255, 0.7)" />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <ScrollView style={styles.searchModalResults} showsVerticalScrollIndicator={false}>
-            {searchQuery === '' ? (
-              <View style={styles.searchModalContent}>
-                {availableCategories.map((category) => {
-                  const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-                  if (categoryItems.length === 0) return null;
-                  
-                  const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-                  
-                  return (
-                    <View key={category.id} style={styles.searchCategorySection}>
-                      <View style={styles.searchCategoryHeader}>
-                        <View style={styles.searchCategoryDecorLeft} />
-                        <Text style={styles.searchCategoryTitle}>{categoryName}</Text>
-                        <View style={styles.searchCategoryDecorRight} />
-                      </View>
-                      
-                      {categoryItems.map((item) => {
-                        const itemStats = ratingsStats[item.id];
-                        const hasRatings = itemStats && itemStats.totalRatings > 0;
-                        
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={styles.searchResultItem}
-                            onPress={() => {
-                              toggleItemExpansion(item.id);
-                              setShowSearchModal(false);
-                              setSearchQuery('');
-                            }}
-                            activeOpacity={0.8}
-                          >
-                            <View style={styles.searchResultItemContent}>
-                              <View style={styles.searchResultItemInfo}>
-                                <Text style={styles.searchResultItemName} numberOfLines={2}>
-                                  {getItemName(item)}
-                                </Text>
-                                {hasRatings && (
-                                  <View style={styles.searchResultRatingBadge}>
-                                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                    <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                                  </View>
-                                )}
-                              </View>
-                              <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <View style={styles.searchModalContent}>
-                <View style={styles.searchResultsList}>
-                  {MENU_ITEMS.filter((item) => {
-                    const matchesSearch =
-                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchesSearch && item.available;
-                  }).map((item) => {
-                    const itemStats = ratingsStats[item.id];
-                    const hasRatings = itemStats && itemStats.totalRatings > 0;
-                    
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={styles.searchResultItem}
-                        onPress={() => {
-                          toggleItemExpansion(item.id);
-                          setShowSearchModal(false);
-                          setSearchQuery('');
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <View style={styles.searchResultItemContent}>
-                          <View style={styles.searchResultItemInfo}>
-                            <Text style={styles.searchResultItemName} numberOfLines={2}>
-                              {getItemName(item)}
-                            </Text>
-                            {hasRatings && (
-                              <View style={styles.searchResultRatingBadge}>
-                                <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                              </View>
-                            )}
-                          </View>
-                          <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                  
-                  {MENU_ITEMS.filter((item) => {
-                    const matchesSearch =
-                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchesSearch && item.available;
-                  }).length === 0 && (
-                    <View style={styles.searchModalEmpty}>
-                      <Search size={64} color="rgba(255, 255, 255, 0.3)" />
-                      <Text style={styles.searchModalEmptyText}>
-                        {t('noItemsFound')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
 
       <Modal
         visible={showRatingModal}
@@ -874,6 +713,25 @@ export default function PublicMenuScreen() {
             ))}
           </View>
         )}
+
+        <View style={styles.searchContainer}>
+          <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={language === 'en' ? 'Search menu...' : language === 'ku' ? 'گەڕان لە لیست...' : 'ابحث في القائمة...'}
+            placeholderTextColor="rgba(255, 255, 255, 0.5)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery !== '' && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              style={styles.closeSearchButton}
+            >
+              <X size={16} color="rgba(255, 255, 255, 0.7)" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView 
@@ -982,18 +840,7 @@ export default function PublicMenuScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={() => setShowSearchModal(true)}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <Search size={24} color="#FFFFFF" strokeWidth={2} />
-          </Animated.View>
-          <Text style={styles.fabLabel}>
-            {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
-          </Text>
-        </TouchableOpacity>
+
       </Animated.View>
     </View>
   );
