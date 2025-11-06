@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, Star, Utensils, ArrowLeft } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -27,7 +27,7 @@ import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
-import AIChatbot from '@/components/AIChatbot';
+
 import { trpc } from '@/lib/trpc';
 
 export default function PublicMenuScreen() {
@@ -45,7 +45,7 @@ export default function PublicMenuScreen() {
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
+
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
@@ -627,14 +627,7 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
 
-      <Modal
-        visible={showAIAssistant}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowAIAssistant(false)}
-      >
-        <AIChatbot visible={showAIAssistant} onClose={() => setShowAIAssistant(false)} />
-      </Modal>
+
 
       <Modal
         visible={showSearchModal}
@@ -1120,19 +1113,6 @@ export default function PublicMenuScreen() {
           },
         ]}
       >
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={() => setShowAIAssistant(true)}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
-          </Animated.View>
-          <Text style={styles.fabLabel}>
-            {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
-          </Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={[styles.fabButton, styles.fabButtonPrimary]}
           onPress={() => setShowCart(true)}

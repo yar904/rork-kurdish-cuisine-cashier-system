@@ -273,32 +273,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     setCurrentOrder([]);
   }, []);
 
-  const getAIRecommendations = useCallback(async (tableNumber: number): Promise<MenuItem[]> => {
-    const itemSales: Record<string, { item: MenuItem; count: number; totalRevenue: number }> = {};
-    
-    orders.forEach(order => {
-      order.items.forEach(orderItem => {
-        const itemId = orderItem.menuItem.id;
-        if (!itemSales[itemId]) {
-          itemSales[itemId] = {
-            item: orderItem.menuItem,
-            count: 0,
-            totalRevenue: 0,
-          };
-        }
-        itemSales[itemId].count += orderItem.quantity;
-        itemSales[itemId].totalRevenue += orderItem.menuItem.price * orderItem.quantity;
-      });
-    });
 
-    const topItems = Object.values(itemSales)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
-      .map(sale => sale.item)
-      .filter(item => item.available);
-
-    return topItems;
-  }, [orders]);
 
   const optimizeKitchenQueue = useCallback((orders: Order[]) => {
     const activeOrders = orders.filter(o => o.status === 'new' || o.status === 'preparing');
@@ -331,7 +306,6 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     updateOrderStatus,
     clearCurrentOrder,
     calculateTotal,
-    getAIRecommendations,
     optimizeKitchenQueue,
-  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal, getAIRecommendations, optimizeKitchenQueue]);
+  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal, optimizeKitchenQueue]);
 });
