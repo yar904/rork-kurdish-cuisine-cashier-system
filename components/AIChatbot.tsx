@@ -25,6 +25,7 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
   const { selectedTable } = useRestaurant();
   const [input, setInput] = useState("");
   const scrollRef = useRef<ScrollView>(null);
+  const hasShownWelcome = useRef(false);
 
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
 You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently with perfect understanding.
@@ -69,7 +70,7 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
   };
 
   useEffect(() => {
-    if (visible && messages.length === 0) {
+    if (visible && !hasShownWelcome.current) {
       const welcomeMessage = language === 'ku' 
         ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
         : language === 'ar'
@@ -77,8 +78,13 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
         : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
       
       sendRorkMessage(welcomeMessage);
+      hasShownWelcome.current = true;
     }
-  }, [visible, language, messages.length, sendRorkMessage]);
+    
+    if (!visible) {
+      hasShownWelcome.current = false;
+    }
+  }, [visible, language, sendRorkMessage]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
