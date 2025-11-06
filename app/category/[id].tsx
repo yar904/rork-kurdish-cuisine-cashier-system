@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -14,7 +13,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X, Grid, List } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -36,7 +35,6 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
 
 
@@ -74,11 +72,14 @@ export default function CategoryDetailScreen() {
     }
   };
 
-  const renderMenuItem = ({ item }: { item: typeof MENU_ITEMS[0] }) => {
-    if (viewMode === 'list') {
-      return (
-        <TouchableOpacity
-          style={styles.menuItemCardList}
+  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+    return (
+      <View 
+        key={item.id} 
+        style={styles.menuItemCard}
+      >
+        <TouchableOpacity 
+          style={{ flex: 1 }}
           activeOpacity={0.95}
           onPress={() => {
             setSelectedItem(item);
@@ -87,64 +88,30 @@ export default function CategoryDetailScreen() {
           }}
         >
           {item.image && (
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.menuItemImageList}
-              resizeMode="cover"
-            />
+            <View style={styles.imageContainer}>
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.menuItemImage}
+                resizeMode="cover"
+              />
+            </View>
           )}
-          <View style={styles.menuItemContentList}>
+          <View style={styles.menuItemContent}>
             <Text style={styles.menuItemName} numberOfLines={2}>
               {getItemName(item)}
             </Text>
-            <Text style={styles.menuItemDescriptionList} numberOfLines={2}>
-              {getItemDescription(item)}
-            </Text>
-            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+            <View style={styles.priceContainer}>
+              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+            </View>
           </View>
         </TouchableOpacity>
-      );
-    }
-
-    return (
-      <TouchableOpacity
-        style={styles.menuItemCard}
-        activeOpacity={0.95}
-        onPress={() => {
-          setSelectedItem(item);
-          setItemQuantity(1);
-          setItemNotes('');
-        }}
-      >
-        {item.image && (
-          <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.menuItemImage}
-              resizeMode="cover"
-            />
-          </View>
-        )}
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemName} numberOfLines={2}>
-            {getItemName(item)}
-          </Text>
-          <View style={styles.priceContainer}>
-            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Image
-        source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
-        style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
-        resizeMode="cover"
-      />
 
       <Modal
         visible={selectedItem !== null}
@@ -282,55 +249,37 @@ export default function CategoryDetailScreen() {
             onChangeText={setSearchQuery}
           />
         </View>
-
-        <View style={styles.viewToggleContainer}>
-          <TouchableOpacity
-            style={[styles.viewToggleButton, viewMode === 'grid' && styles.viewToggleButtonActive]}
-            onPress={() => setViewMode('grid')}
-            activeOpacity={0.8}
-          >
-            <Grid size={20} color={viewMode === 'grid' ? '#3d0101' : '#FFFFFF'} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.viewToggleButton, viewMode === 'list' && styles.viewToggleButtonActive]}
-            onPress={() => setViewMode('list')}
-            activeOpacity={0.8}
-          >
-            <List size={20} color={viewMode === 'list' ? '#3d0101' : '#FFFFFF'} />
-          </TouchableOpacity>
-        </View>
       </View>
 
-      <FlatList
-        data={filteredItems}
-        renderItem={renderMenuItem}
-        keyExtractor={(item) => item.id}
-        numColumns={viewMode === 'grid' ? 2 : 1}
-        key={viewMode}
-        contentContainerStyle={styles.contentContainer}
-        columnWrapperStyle={viewMode === 'grid' ? styles.columnWrapper : undefined}
+      <ScrollView 
+        style={styles.content} 
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
+        contentContainerStyle={styles.contentContainer}
+      >
+        <View style={styles.menuGrid}>
+          {filteredItems.map(renderMenuItem)}
+        </View>
+
+        {filteredItems.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
           </View>
-        }
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <Image 
-              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
-              style={styles.footerLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
-            <View style={styles.footerDivider} />
-            
-            <Text style={styles.footerSubtitle}>
-              {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
-            </Text>
-          </View>
-        }
-      />
+        )}
+
+        <View style={styles.footer}>
+          <Image 
+            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+            style={styles.footerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
+          <View style={styles.footerDivider} />
+          
+          <Text style={styles.footerSubtitle}>
+            {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -477,23 +426,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '400' as const,
   },
-  viewToggleContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
-    padding: 4,
-    alignSelf: 'flex-start',
-  },
-  viewToggleButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+  content: {
+    flex: 1,
     backgroundColor: 'transparent',
-  },
-  viewToggleButtonActive: {
-    backgroundColor: '#D4AF37',
+    position: 'relative' as const,
   },
   plaidPattern: {
     display: 'none' as const,
@@ -509,21 +445,36 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 32,
-    paddingHorizontal: 8,
-    paddingTop: 8,
+    ...Platform.select({
+      web: {
+        paddingHorizontal: 0,
+      },
+    }),
   },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 12,
+  menuGrid: {
+    paddingHorizontal: 12,
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    justifyContent: 'space-between' as const,
+    paddingTop: 16,
+    gap: 12,
+    ...Platform.select({
+      web: {
+        justifyContent: 'center' as const,
+        gap: 20,
+        paddingHorizontal: 32,
+      },
+    }),
   },
   menuItemCard: {
-    width: '48%',
+    width: '47.5%' as const,
     backgroundColor: '#3d0101',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
+    marginBottom: 0,
+    position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -534,59 +485,24 @@ const styles = StyleSheet.create({
       android: {
         elevation: 4,
       },
-    }),
-  },
-  menuItemCardList: {
-    flexDirection: 'row',
-    backgroundColor: '#3d0101',
-    borderRadius: 16,
-    overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-    marginBottom: 12,
-    marginHorizontal: 6,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
+      web: {
+        minWidth: 180,
+        maxWidth: 300,
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
-  },
-  menuItemImageList: {
-    width: 120,
-    height: 120,
-    backgroundColor: '#2a1a1a',
-  },
-  menuItemContentList: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  menuItemDescriptionList: {
-    fontSize: 12,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 16,
-    marginVertical: 4,
   },
   imageContainer: {
     width: '100%',
-    height: 120,
-    backgroundColor: '#2a1a1a',
-    borderRadius: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    aspectRatio: 1,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 180,
+        aspectRatio: 1,
       },
     }),
   },
@@ -598,22 +514,22 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingBottom: 12,
     position: 'relative' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+    minHeight: 70,
+    justifyContent: 'space-between' as const,
   },
   menuItemName: {
-    fontSize: 16,
+    fontSize: 13,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 22,
+    lineHeight: 18,
     letterSpacing: 0.3,
     marginBottom: 6,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 18,
-        lineHeight: 24,
+        fontSize: 17,
+        lineHeight: 22,
       },
     }),
   },
@@ -635,7 +551,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -643,7 +559,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 17,
+        fontSize: 16,
       },
     }),
   },
@@ -705,6 +621,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
+    writingDirection: 'ltr' as const,
     ...Platform.select({
       web: {
         maxWidth: 600,
@@ -720,22 +637,11 @@ const styles = StyleSheet.create({
   },
   modalImage: {
     width: '100%',
-    height: 280,
+    height: 300,
     backgroundColor: '#F9FAFB',
-    ...Platform.select({
-      web: {
-        height: 320,
-      },
-    }),
   },
   modalBody: {
-    padding: 20,
-    paddingTop: 24,
-    ...Platform.select({
-      web: {
-        padding: 24,
-      },
-    }),
+    padding: 24,
   },
   modalCloseButton: {
     position: 'absolute' as const,
@@ -766,43 +672,30 @@ const styles = StyleSheet.create({
     }),
   },
   modalItemName: {
-    fontSize: 22,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 26,
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 8,
     textAlign: 'left' as const,
     ...Platform.select({
       web: {
-        fontSize: 26,
+        fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
   modalItemPrice: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700' as const,
     color: '#3d0101',
     marginBottom: 12,
     textAlign: 'left' as const,
-    ...Platform.select({
-      web: {
-        fontSize: 24,
-      },
-    }),
   },
   modalItemDescription: {
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
+    fontSize: 16,
     color: '#6B7280',
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 24,
+    marginBottom: 24,
     textAlign: 'left' as const,
-    ...Platform.select({
-      web: {
-        fontSize: 16,
-        lineHeight: 24,
-      },
-    }),
   },
   modalDivider: {
     height: 1,

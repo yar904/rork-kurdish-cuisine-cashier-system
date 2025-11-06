@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { Platform, View, ActivityIndicator } from "react-native";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
@@ -9,7 +9,7 @@ import { TableProvider } from "@/contexts/TableContext";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
 
 const queryClient = new QueryClient();
@@ -32,7 +32,6 @@ function RootLayoutNav() {
       <Stack.Screen name="inventory" options={{ headerShown: false }} />
       <Stack.Screen name="table-qr-codes" options={{ headerShown: false }} />
       <Stack.Screen name="customer-order" options={{ headerShown: false }} />
-      <Stack.Screen name="item-detail" options={{ headerShown: false }} />
       <Stack.Screen
         name="font-preview"
         options={{ headerShown: true, title: "Kurdish Fonts" }}
@@ -47,49 +46,24 @@ export default function RootLayout() {
     NotoNaskhArabic_600SemiBold,
     NotoNaskhArabic_700Bold,
   });
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (Platform.OS === "web") {
-      try {
-        const style = document.createElement("style");
-        style.innerHTML = `
-          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
-          @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
-          * {
-            font-family: 'Noto Naskh Arabic', 'Montserrat', 'Segoe UI', Roboto, sans-serif;
-            font-weight: 600;
-          }
-        `;
-        document.head.appendChild(style);
-      } catch (err) {
-        console.log('Font loading error (web):', err);
-      }
+      const style = document.createElement("style");
+      style.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
+        * {
+          font-family: 'Noto Naskh Arabic', 'Montserrat', 'Segoe UI', Roboto, sans-serif;
+          font-weight: 600;
+        }
+      `;
+      document.head.appendChild(style);
     }
   }, []);
 
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      setIsReady(true);
-    } else if (fontsLoaded) {
-      setIsReady(true);
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      console.log('Force ready after timeout');
-      setIsReady(true);
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  if (!isReady) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-        <ActivityIndicator size="large" color="#D4AF37" />
-      </View>
-    );
+  if (!fontsLoaded) {
+    return null;
   }
 
   return (
