@@ -423,7 +423,10 @@ export default function PublicMenuScreen() {
   const handleCategoryPress = (categoryId: string) => {
     const yOffset = categoryLayouts[categoryId];
     if (yOffset !== undefined && contentScrollRef.current) {
-      contentScrollRef.current.scrollTo({ y: yOffset + 220, animated: true });
+      contentScrollRef.current.scrollTo({ 
+        y: yOffset - 30,
+        animated: true 
+      });
     }
   };
 
@@ -1446,10 +1449,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 50,
-    backgroundColor: 'rgba(61, 1, 1, 0.98)',
+    backgroundColor: '#2a1a1a',
   },
   categorySliderContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#2a1a1a',
     paddingBottom: 8,
     paddingTop: 6,
     ...Platform.select({
@@ -1567,7 +1570,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    backgroundColor: 'transparent',
+    backgroundColor: '#2a1a1a',
     ...Platform.select({
       web: {
         paddingVertical: 14,
@@ -1648,7 +1651,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#2a1a1a',
     position: 'relative' as const,
   },
   contentContainer: {
@@ -1681,25 +1684,25 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
   },
   categoryItemsGrid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    gap: 10,
+    gap: 8,
     ...Platform.select({
       web: {
         justifyContent: 'flex-start' as const,
-        gap: 14,
-        paddingHorizontal: 16,
+        gap: 12,
+        paddingHorizontal: 12,
       },
     }),
   },
   menuItemCardList: {
     width: '100%' as const,
     backgroundColor: '#3d0101',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'visible' as const,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#D4AF37',
     marginBottom: 0,
     position: 'relative' as const,
@@ -1843,7 +1846,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48.5%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 14,
     overflow: 'visible' as const,
@@ -1862,9 +1865,9 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
       web: {
-        width: '31%',
+        width: '32%',
         minWidth: 200,
-        maxWidth: 300,
+        maxWidth: 320,
         boxShadow: '0 3px 14px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -2019,10 +2022,10 @@ const styles = StyleSheet.create({
   footer: {
     padding: 48,
     alignItems: 'center',
-    backgroundColor: '#3d0101',
+    backgroundColor: '#2a1a1a',
     marginTop: 32,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
   },
   footerLogo: {
     width: 90,
@@ -2053,34 +2056,51 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'flex-end',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      },
+    }),
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: '88%',
     ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 20,
+      },
       web: {
         maxWidth: 600,
         alignSelf: 'center' as const,
         width: '100%',
         marginBottom: 0,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        maxHeight: '80%',
+        borderRadius: 32,
+        maxHeight: '85%',
         marginTop: 'auto' as const,
+        boxShadow: '0 -8px 40px rgba(0, 0, 0, 0.3)',
       },
     }),
   },
   modalImage: {
     width: '100%',
-    height: 240,
+    height: 280,
     backgroundColor: '#F9FAFB',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     ...Platform.select({
       web: {
-        height: 320,
+        height: 340,
       },
     }),
   },
