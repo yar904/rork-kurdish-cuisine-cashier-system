@@ -6,11 +6,15 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('rork.app')) {
-    return `${window.location.protocol}//${window.location.hostname}`;
-  }
-
   if (typeof window !== 'undefined') {
+    if (window.location.hostname.includes('rork.app')) {
+      return `${window.location.protocol}//${window.location.hostname}`;
+    }
+    
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:3000';
+    }
+    
     return window.location.origin;
   }
 
