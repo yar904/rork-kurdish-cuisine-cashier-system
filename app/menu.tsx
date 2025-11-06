@@ -1684,16 +1684,15 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize' as const,
   },
   categoryItemsGrid: {
-    paddingHorizontal: 8,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    gap: 8,
     ...Platform.select({
       web: {
-        justifyContent: 'flex-start' as const,
-        gap: 12,
         paddingHorizontal: 12,
+      },
+      default: {
+        paddingHorizontal: 8,
       },
     }),
   },
@@ -1846,13 +1845,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: 'calc(50% - 4px)' as any,
     backgroundColor: '#3d0101',
     borderRadius: 14,
     overflow: 'visible' as const,
     borderWidth: 1.5,
     borderColor: '#D4AF37',
-    marginBottom: 0,
+    marginBottom: 8,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -1865,9 +1864,8 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
       web: {
-        width: '32%',
-        minWidth: 200,
-        maxWidth: 320,
+        width: 'calc(50% - 6px)',
+        maxWidth: 500,
         boxShadow: '0 3px 14px rgba(212, 175, 55, 0.3)',
       },
     }),
