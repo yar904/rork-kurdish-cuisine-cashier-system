@@ -452,12 +452,11 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    paddingTop: 16,
-    gap: 12,
+    paddingTop: 20,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -467,13 +466,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCard: {
-    width: '47.5%' as const,
+    width: '48%' as const,
     backgroundColor: '#3d0101',
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 0,
+    marginBottom: 16,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -486,15 +485,15 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        minWidth: 180,
-        maxWidth: 300,
+        minWidth: 160,
+        maxWidth: 280,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 130,
     backgroundColor: '#F9FAFB',
     borderRadius: 0,
     overflow: 'hidden' as const,
@@ -502,7 +501,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        aspectRatio: 1,
+        height: 150,
       },
     }),
   },
@@ -511,20 +510,17 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-    padding: 10,
-    paddingBottom: 12,
+    padding: 12,
     position: 'relative' as const,
-    minHeight: 70,
-    justifyContent: 'space-between' as const,
   },
   menuItemName: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 18,
+    lineHeight: 20,
     letterSpacing: 0.3,
-    marginBottom: 6,
+    marginBottom: 8,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
@@ -551,7 +547,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
