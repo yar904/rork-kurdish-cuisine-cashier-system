@@ -84,7 +84,7 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
     if (!visible) {
       hasShownWelcome.current = false;
     }
-  }, [visible, language, sendRorkMessage]);
+  }, [visible, language]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
