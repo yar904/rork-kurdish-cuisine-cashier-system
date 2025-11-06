@@ -52,7 +52,7 @@ export default function PublicMenuScreen() {
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
   const { width } = useWindowDimensions();
-  const [gridLayout, setGridLayout] = useState<'2col' | '1col'>('2col');
+  const [gridLayout, setGridLayout] = useState<'grid' | 'list'>('grid');
 
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
@@ -284,8 +284,8 @@ export default function PublicMenuScreen() {
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
     
-    const cardStyle = gridLayout === '1col' ? styles.menuItemCardList : styles.menuItemCardHorizontal;
-    const contentStyle = gridLayout === '1col' ? styles.menuItemContentList : styles.menuItemContentHorizontal;
+    const cardStyle = gridLayout === 'list' ? styles.menuItemCardList : styles.menuItemCardHorizontal;
+    const contentStyle = gridLayout === 'list' ? styles.menuItemContentList : styles.menuItemContentHorizontal;
     
     return (
       <View 
@@ -293,7 +293,7 @@ export default function PublicMenuScreen() {
         style={[cardStyle, isPremium && styles.premiumCard]}
       >
         <TouchableOpacity
-          style={gridLayout === '1col' ? styles.menuItemTouchableList : styles.menuItemTouchable}
+          style={gridLayout === 'list' ? styles.menuItemTouchableList : styles.menuItemTouchable}
           activeOpacity={0.95}
           onPress={() => {
             setSelectedItem(item);
@@ -303,32 +303,32 @@ export default function PublicMenuScreen() {
         >
           <View style={contentStyle}>
             {item.image && (
-              <View style={gridLayout === '1col' ? styles.imageContainerList : styles.imageContainerHorizontal}>
+              <View style={gridLayout === 'list' ? styles.imageContainerList : styles.imageContainerHorizontal}>
                 <Image 
                   source={{ uri: item.image }} 
-                  style={gridLayout === '1col' ? styles.menuItemImageList : styles.menuItemImageHorizontal}
+                  style={gridLayout === 'list' ? styles.menuItemImageList : styles.menuItemImageHorizontal}
                   resizeMode="cover"
                 />
               </View>
             )}
             
-            <View style={gridLayout === '1col' ? styles.menuItemInfoList : styles.menuItemInfoGrid}>
-              <Text style={gridLayout === '1col' ? styles.menuItemNameList : styles.menuItemNameHorizontal} numberOfLines={2}>
+            <View style={gridLayout === 'list' ? styles.menuItemInfoList : styles.menuItemInfoGrid}>
+              <Text style={gridLayout === 'list' ? styles.menuItemNameList : styles.menuItemNameHorizontal} numberOfLines={2}>
                 {getItemName(item)}
               </Text>
               
-              {gridLayout === '1col' && (
+              {gridLayout === 'list' && (
                 <Text style={styles.menuItemDescriptionList} numberOfLines={2}>
                   {getItemDescription(item)}
                 </Text>
               )}
               
               <View style={styles.priceHighlight}>
-                <Text style={gridLayout === '1col' ? styles.menuItemPriceList : styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
+                <Text style={gridLayout === 'list' ? styles.menuItemPriceList : styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
               </View>
               
               {hasRatings && (
-                <View style={gridLayout === '1col' ? styles.ratingBadgeList : styles.ratingBadgeCentered}>
+                <View style={gridLayout === 'list' ? styles.ratingBadgeList : styles.ratingBadgeCentered}>
                   <Star size={14} color="#D4AF37" fill="#D4AF37" />
                   <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
                   <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
@@ -375,7 +375,7 @@ export default function PublicMenuScreen() {
             <View style={styles.categoryDecorRight} />
           </View>
         </View>
-        <View style={gridLayout === '1col' ? styles.categoryItemsList : styles.categoryItemsGrid}>
+        <View style={gridLayout === 'list' ? styles.categoryItemsList : styles.categoryItemsGrid}>
           {categoryItems.map(renderMenuItem)}
         </View>
       </View>
@@ -404,7 +404,7 @@ export default function PublicMenuScreen() {
               onPress={() => setSelectedItem(null)}
               activeOpacity={0.8}
             >
-              <X size={24} color="#FFFFFF" strokeWidth={2.5} />
+              <X size={20} color="#FFFFFF" strokeWidth={2.5} />
             </TouchableOpacity>
 
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -433,7 +433,7 @@ export default function PublicMenuScreen() {
                       onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
                       activeOpacity={0.7}
                     >
-                      <Minus size={18} color="#3d0101" strokeWidth={2.5} />
+                      <Minus size={16} color="#3d0101" strokeWidth={2.5} />
                     </TouchableOpacity>
                     <View style={styles.modernQuantityValueContainer}>
                       <Text style={styles.modernQuantityValue}>{itemQuantity}</Text>
@@ -443,7 +443,7 @@ export default function PublicMenuScreen() {
                       onPress={() => setItemQuantity(itemQuantity + 1)}
                       activeOpacity={0.7}
                     >
-                      <Plus size={18} color="#3d0101" strokeWidth={2.5} />
+                      <Plus size={16} color="#3d0101" strokeWidth={2.5} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -469,7 +469,7 @@ export default function PublicMenuScreen() {
                 onPress={handleAddToCart}
                 activeOpacity={0.85}
               >
-                <ShoppingCart size={22} color="#fff" strokeWidth={2.5} />
+                <ShoppingCart size={20} color="#fff" strokeWidth={2.5} />
                 <Text style={styles.modernAddButtonText}>
                   {t('addToCart')} • {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
                 </Text>
@@ -951,9 +951,10 @@ export default function PublicMenuScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.gridToggleButton}
-              onPress={() => setGridLayout(gridLayout === '2col' ? '1col' : '2col')}
+              onPress={() => setGridLayout(gridLayout === 'grid' ? 'list' : 'grid')}
+              activeOpacity={0.7}
             >
-              {gridLayout === '2col' ? (
+              {gridLayout === 'grid' ? (
                 <LayoutList size={20} color="#FFFFFF" strokeWidth={1.5} />
               ) : (
                 <Grid3x3 size={20} color="#FFFFFF" strokeWidth={1.5} />
@@ -3049,30 +3050,30 @@ const styles = StyleSheet.create({
   },
   modernModalContent: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    maxHeight: '88%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '75%',
     overflow: 'hidden' as const,
     ...Platform.select({
       web: {
-        maxWidth: 540,
+        maxWidth: 480,
         alignSelf: 'center' as const,
         width: '100%',
         marginBottom: 0,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
-        maxHeight: '80%',
+        borderBottomLeftRadius: 28,
+        borderBottomRightRadius: 28,
+        maxHeight: '70%',
         marginTop: 'auto' as const,
       },
     }),
   },
   modernModalClose: {
     position: 'absolute' as const,
-    top: 20,
-    right: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(61, 1, 1, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -3080,26 +3081,26 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 3px 12px rgba(0, 0, 0, 0.3)',
       },
     }),
   },
   modernModalImageContainer: {
     width: '100%',
-    height: 280,
+    height: 220,
     backgroundColor: '#F9FAFB',
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 320,
+        height: 260,
       },
     }),
   },
@@ -3108,61 +3109,61 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   modernModalBody: {
-    padding: 24,
+    padding: 20,
     paddingBottom: 0,
   },
   modernModalItemName: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#1A1A1A',
-    marginBottom: 8,
-    lineHeight: 32,
+    marginBottom: 6,
+    lineHeight: 26,
     ...Platform.select({
       web: {
-        fontSize: 28,
-        lineHeight: 36,
+        fontSize: 22,
+        lineHeight: 28,
       },
     }),
   },
   modernModalItemPrice: {
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#3d0101',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   modernModalItemDescription: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#6B7280',
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   modernDivider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   modernQuantitySection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   modernQuantityLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     color: '#374151',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   modernQuantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center' as const,
-    gap: 20,
+    gap: 16,
   },
   modernQuantityButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#F9FAFB',
     justifyContent: 'center',
     alignItems: 'center',
@@ -3181,41 +3182,41 @@ const styles = StyleSheet.create({
     }),
   },
   modernQuantityValueContainer: {
-    minWidth: 60,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    minWidth: 50,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     backgroundColor: '#F9FAFB',
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   modernQuantityValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700' as const,
     color: '#1A1A1A',
   },
   modernNotesSection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   modernNotesLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     color: '#374151',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   modernNotesInput: {
     backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    padding: 16,
-    fontSize: 15,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
     color: '#1A1A1A',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    minHeight: 70,
+    minHeight: 60,
     textAlignVertical: 'top' as const,
   },
   modernModalFooter: {
-    padding: 24,
-    paddingTop: 16,
+    padding: 20,
+    paddingTop: 14,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
@@ -3224,10 +3225,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: 10,
     backgroundColor: '#3d0101',
-    paddingVertical: 18,
-    borderRadius: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#3d0101',
@@ -3245,7 +3246,7 @@ const styles = StyleSheet.create({
   },
   modernAddButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700' as const,
     letterSpacing: 0.5,
   },
