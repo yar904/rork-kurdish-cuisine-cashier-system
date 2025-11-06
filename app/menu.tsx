@@ -30,13 +30,11 @@ export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { language, setLanguage, t, tc } = useLanguage();
-  const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
+  const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity: updateCartQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [itemNotes, setItemNotes] = useState('');
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [expandedItems, setExpandedItems] = useState<Record<string, {quantity: number, notes: string}>>({});
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
@@ -69,14 +67,47 @@ export default function PublicMenuScreen() {
     }).start();
   }, [fabSlideAnimation]);
 
-  const handleAddToCart = () => {
-    if (selectedItem) {
-      addItemToCurrentOrder(selectedItem.id, itemQuantity, itemNotes || undefined);
-      setSelectedItem(null);
-      setItemNotes('');
-      setItemQuantity(1);
+  const handleAddToCart = (itemId: string) => {
+    const expanded = expandedItems[itemId];
+    if (expanded) {
+      addItemToCurrentOrder(itemId, expanded.quantity, expanded.notes || undefined);
+      const newExpanded = { ...expandedItems };
+      delete newExpanded[itemId];
+      setExpandedItems(newExpanded);
       Alert.alert(t('success'), t('itemAddedToCart'));
     }
+  };
+
+  const toggleItemExpansion = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newExpanded = { ...prev };
+      if (newExpanded[itemId]) {
+        delete newExpanded[itemId];
+      } else {
+        newExpanded[itemId] = { quantity: 1, notes: '' };
+      }
+      return newExpanded;
+    });
+  };
+
+  const updateExpandedQuantity = (itemId: string, delta: number) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        quantity: Math.max(1, (prev[itemId]?.quantity || 1) + delta)
+      }
+    }));
+  };
+
+  const updateExpandedNotes = (itemId: string, notes: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        notes
+      }
+    }));
   };
 
   const handleSubmitOrder = () => {
@@ -198,6 +229,8 @@ export default function PublicMenuScreen() {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
+    const isExpanded = !!expandedItems[item.id];
+    const itemData = expandedItems[item.id];
     
     return (
       <View 
@@ -207,11 +240,7 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.menuItemTouchable}
           activeOpacity={0.95}
-          onPress={() => {
-            setSelectedItem(item);
-            setItemQuantity(1);
-            setItemNotes('');
-          }}
+          onPress={() => toggleItemExpansion(item.id)}
         >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
@@ -241,6 +270,53 @@ export default function PublicMenuScreen() {
             )}
           </View>
         </TouchableOpacity>
+        
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <Text style={styles.expandedDescription} numberOfLines={3}>
+              {getItemDescription(item)}
+            </Text>
+            
+            <View style={styles.quantitySelector}>
+              <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
+              <View style={styles.quantityControls}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateExpandedQuantity(item.id, -1)}
+                >
+                  <Minus size={18} color="#3d0101" />
+                </TouchableOpacity>
+                <Text style={styles.quantityValue}>{itemData?.quantity || 1}</Text>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateExpandedQuantity(item.id, 1)}
+                >
+                  <Plus size={18} color="#3d0101" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TextInput
+              style={styles.notesInput}
+              placeholder={t('anySpecialRequirements')}
+              placeholderTextColor="rgba(26, 26, 26, 0.4)"
+              value={itemData?.notes || ''}
+              onChangeText={(text: string) => updateExpandedNotes(item.id, text)}
+              multiline
+              numberOfLines={2}
+            />
+
+            <TouchableOpacity
+              style={styles.addToCartButtonInline}
+              onPress={() => handleAddToCart(item.id)}
+            >
+              <ShoppingCart size={18} color="#fff" />
+              <Text style={styles.addToCartButtonText}>
+                {t('addToCart')} - {formatPrice(item.price * (itemData?.quantity || 1))}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         
         <TouchableOpacity
           style={styles.rateButtonOnCard}
@@ -299,84 +375,7 @@ export default function PublicMenuScreen() {
         resizeMode="cover"
       />
 
-      <Modal
-        visible={selectedItem !== null}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setSelectedItem(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {selectedItem?.image && (
-                <Image 
-                  source={{ uri: selectedItem.image }} 
-                  style={styles.modalImage}
-                  resizeMode="cover"
-                />
-              )}
-              
-              <View style={styles.modalBody}>
-                <TouchableOpacity 
-                  style={styles.modalCloseButton}
-                  onPress={() => setSelectedItem(null)}
-                  activeOpacity={0.8}
-                >
-                  <X size={22} color="#FFFFFF" strokeWidth={2.5} />
-                </TouchableOpacity>
 
-                <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
-                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
-                <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
-
-                <View style={styles.modalDivider} />
-
-                <View style={styles.quantitySelector}>
-                  <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
-                  <View style={styles.quantityControls}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-                    >
-                      <Minus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityValue}>{itemQuantity}</Text>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setItemQuantity(itemQuantity + 1)}
-                    >
-                      <Plus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
-                  <TextInput
-                    style={styles.notesInput}
-                    placeholder={t('anySpecialRequirements')}
-                    placeholderTextColor="rgba(26, 26, 26, 0.4)"
-                    value={itemNotes}
-                    onChangeText={setItemNotes}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={styles.modalAddButton}
-                  onPress={handleAddToCart}
-                >
-                  <ShoppingCart size={20} color="#fff" />
-                  <Text style={styles.modalAddButtonText}>
-                    {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
 
       <Modal
         visible={showCart}
@@ -414,14 +413,14 @@ export default function PublicMenuScreen() {
                   <View style={styles.cartItemControls}>
                     <TouchableOpacity
                       style={styles.cartQuantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity - 1)}
+                      onPress={() => updateCartQuantity(index, item.quantity - 1)}
                     >
                       <Minus size={16} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.cartQuantityText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.cartQuantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity + 1)}
+                      onPress={() => updateCartQuantity(index, item.quantity + 1)}
                     >
                       <Plus size={16} color="#fff" />
                     </TouchableOpacity>
@@ -630,9 +629,7 @@ export default function PublicMenuScreen() {
                             key={item.id}
                             style={styles.searchResultItem}
                             onPress={() => {
-                              setSelectedItem(item);
-                              setItemQuantity(1);
-                              setItemNotes('');
+                              toggleItemExpansion(item.id);
                               setShowSearchModal(false);
                               setSearchQuery('');
                             }}
@@ -676,9 +673,7 @@ export default function PublicMenuScreen() {
                         key={item.id}
                         style={styles.searchResultItem}
                         onPress={() => {
-                          setSelectedItem(item);
-                          setItemQuantity(1);
-                          setItemNotes('');
+                          toggleItemExpansion(item.id);
                           setShowSearchModal(false);
                           setSearchQuery('');
                         }}
@@ -1701,12 +1696,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
+    marginTop: 8,
   },
   quantitySelectorLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600' as const,
-    color: '#1A1A1A',
+    color: '#E8C968',
   },
   quantityControls: {
     flexDirection: 'row',
@@ -1714,9 +1710,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   quantityButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFDD0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1724,10 +1720,10 @@ const styles = StyleSheet.create({
     borderColor: '#3d0101',
   },
   quantityValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
-    color: '#1A1A1A',
-    minWidth: 40,
+    color: '#FFFFFF',
+    minWidth: 35,
     textAlign: 'center' as const,
   },
   notesContainer: {
@@ -1740,15 +1736,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   notesInput: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 13,
+    color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    minHeight: 80,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    minHeight: 60,
     textAlignVertical: 'top' as const,
+    marginBottom: 12,
   },
   modalAddButton: {
     flexDirection: 'row',
@@ -2700,5 +2697,42 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '700' as const,
+  },
+  expandedContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  expandedDescription: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 18,
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center' as const,
+  },
+  addToCartButtonInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#D4AF37',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
 });
