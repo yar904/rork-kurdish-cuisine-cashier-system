@@ -1698,11 +1698,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    justifyContent: 'space-between' as const,
     gap: 8,
     ...Platform.select({
       web: {
-        justifyContent: 'flex-start' as const,
         gap: 12,
         paddingHorizontal: 20,
       },
@@ -1857,7 +1855,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48.5%',
+    width: 'calc(50% - 4px)' as any,
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -1876,7 +1874,7 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '32%',
+        width: 'calc(33.333% - 8px)' as any,
         minWidth: 220,
         maxWidth: 320,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
