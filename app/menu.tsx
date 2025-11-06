@@ -300,9 +300,7 @@ export default function PublicMenuScreen() {
             style={styles.menuItemTouchableList}
             activeOpacity={0.95}
             onPress={() => {
-              setSelectedItem(item);
-              setItemQuantity(1);
-              setItemNotes('');
+              router.push(`/item-detail?id=${item.id}`);
             }}
           >
             <View style={styles.menuItemContentList}>
@@ -365,9 +363,7 @@ export default function PublicMenuScreen() {
           style={styles.menuItemTouchable}
           activeOpacity={0.85}
           onPress={() => {
-            setSelectedItem(item);
-            setItemQuantity(1);
-            setItemNotes('');
+            router.push(`/item-detail?id=${item.id}`);
           }}
         >
           <View style={styles.menuItemContentHorizontal}>
@@ -1699,15 +1695,15 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   categoryItemsGrid: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    justifyContent: 'flex-start' as const,
-    gap: 12,
+    justifyContent: 'space-between' as const,
+    gap: 8,
     ...Platform.select({
       web: {
         justifyContent: 'flex-start' as const,
-        gap: 16,
+        gap: 12,
         paddingHorizontal: 20,
       },
     }),
@@ -1861,7 +1857,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: '48.5%',
     backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -1880,9 +1876,9 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: '31%',
-        minWidth: 200,
-        maxWidth: 300,
+        width: 'calc(33.333% - 8px)',
+        minWidth: 220,
+        maxWidth: 320,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -1907,7 +1903,7 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 120,
+    height: 140,
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
     borderBottomLeftRadius: 0,
@@ -1917,7 +1913,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 180,
+        height: 200,
       },
     }),
   },
