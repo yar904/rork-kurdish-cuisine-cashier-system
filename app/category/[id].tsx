@@ -255,6 +255,8 @@ export default function CategoryDetailScreen() {
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
+        bounces={false}
+        overScrollMode="never"
       >
         <View style={styles.menuGrid}>
           {filteredItems.map(renderMenuItem)}
