@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  Modal,
-  Alert,
-} from 'react-native';
+import * as RN from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
@@ -68,17 +57,17 @@ export default function CategoryDetailScreen() {
       setSelectedItem(null);
       setItemNotes('');
       setItemQuantity(1);
-      Alert.alert(t('success'), t('itemAddedToCart'));
+      RN.Alert.alert(t('success'), t('itemAddedToCart'));
     }
   };
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     return (
-      <View 
+      <RN.View 
         key={item.id} 
         style={styles.menuItemCard}
       >
-        <TouchableOpacity 
+        <RN.TouchableOpacity 
           style={{ flex: 1 }}
           activeOpacity={0.95}
           onPress={() => {
@@ -88,85 +77,85 @@ export default function CategoryDetailScreen() {
           }}
         >
           {item.image && (
-            <View style={styles.imageContainer}>
-              <Image 
+            <RN.View style={styles.imageContainer}>
+              <RN.Image 
                 source={{ uri: item.image }} 
                 style={styles.menuItemImage}
                 resizeMode="cover"
               />
-            </View>
+            </RN.View>
           )}
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemName} numberOfLines={2}>
+          <RN.View style={styles.menuItemContent}>
+            <RN.Text style={styles.menuItemName} numberOfLines={2}>
               {getItemName(item)}
-            </Text>
-            <View style={styles.priceContainer}>
-              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </View>
+            </RN.Text>
+            <RN.View style={styles.priceContainer}>
+              <RN.Text style={styles.menuItemPrice}>{formatPrice(item.price)}</RN.Text>
+            </RN.View>
+          </RN.View>
+        </RN.TouchableOpacity>
+      </RN.View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <RN.View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <Modal
+      <RN.Modal
         visible={selectedItem !== null}
         animationType="slide"
         transparent={true}
         onRequestClose={() => setSelectedItem(null)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+        <RN.View style={styles.modalOverlay}>
+          <RN.View style={styles.modalContent}>
+            <RN.ScrollView showsVerticalScrollIndicator={false}>
               {selectedItem?.image && (
-                <Image 
+                <RN.Image 
                   source={{ uri: selectedItem.image }} 
                   style={styles.modalImage}
                   resizeMode="cover"
                 />
               )}
               
-              <View style={styles.modalBody}>
-                <TouchableOpacity 
+              <RN.View style={styles.modalBody}>
+                <RN.TouchableOpacity 
                   style={styles.modalCloseButton}
                   onPress={() => setSelectedItem(null)}
                   activeOpacity={0.8}
                 >
                   <X size={22} color="#FFFFFF" strokeWidth={2.5} />
-                </TouchableOpacity>
+                </RN.TouchableOpacity>
 
-                <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
-                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
-                <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
+                <RN.Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</RN.Text>
+                <RN.Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</RN.Text>
+                <RN.Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</RN.Text>
 
-                <View style={styles.modalDivider} />
+                <RN.View style={styles.modalDivider} />
 
-                <View style={styles.quantitySelector}>
-                  <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
-                  <View style={styles.quantityControls}>
-                    <TouchableOpacity
+                <RN.View style={styles.quantitySelector}>
+                  <RN.Text style={styles.quantitySelectorLabel}>{t('quantity')}:</RN.Text>
+                  <RN.View style={styles.quantityControls}>
+                    <RN.TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
                     >
                       <Minus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityValue}>{itemQuantity}</Text>
-                    <TouchableOpacity
+                    </RN.TouchableOpacity>
+                    <RN.Text style={styles.quantityValue}>{itemQuantity}</RN.Text>
+                    <RN.TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => setItemQuantity(itemQuantity + 1)}
                     >
                       <Plus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                    </RN.TouchableOpacity>
+                  </RN.View>
+                </RN.View>
 
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
-                  <TextInput
+                <RN.View style={styles.notesContainer}>
+                  <RN.Text style={styles.notesLabel}>{t('specialRequirements')}:</RN.Text>
+                  <RN.TextInput
                     style={styles.notesInput}
                     placeholder={t('anySpecialRequirements')}
                     placeholderTextColor="rgba(26, 26, 26, 0.4)"
@@ -175,49 +164,49 @@ export default function CategoryDetailScreen() {
                     multiline
                     numberOfLines={3}
                   />
-                </View>
+                </RN.View>
 
-                <TouchableOpacity
+                <RN.TouchableOpacity
                   style={styles.modalAddButton}
                   onPress={handleAddToCart}
                 >
                   <ShoppingCart size={20} color="#fff" />
-                  <Text style={styles.modalAddButtonText}>
+                  <RN.Text style={styles.modalAddButtonText}>
                     {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+                  </RN.Text>
+                </RN.TouchableOpacity>
+              </RN.View>
+            </RN.ScrollView>
+          </RN.View>
+        </RN.View>
+      </RN.Modal>
       
-      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <View style={styles.headerTop}>
-          <TouchableOpacity
+      <RN.View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+        <RN.View style={styles.headerTop}>
+          <RN.TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
             <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>{tc(category)}</Text>
-            <Text style={styles.headerSubtitle}>
+          </RN.TouchableOpacity>
+          <RN.View style={styles.headerCenter}>
+            <RN.Text style={styles.headerTitle}>{tc(category)}</RN.Text>
+            <RN.Text style={styles.headerSubtitle}>
               {filteredItems.length} {t('items')}
-            </Text>
-          </View>
-          <TouchableOpacity
+            </RN.Text>
+          </RN.View>
+          <RN.TouchableOpacity
             style={styles.languageButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
           >
             <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
-          </TouchableOpacity>
-        </View>
+          </RN.TouchableOpacity>
+        </RN.View>
 
         {showLanguageMenu && (
-          <View style={styles.languageMenu}>
+          <RN.View style={styles.languageMenu}>
             {(['en', 'ku', 'ar'] as Language[]).map((lang) => (
-              <TouchableOpacity
+              <RN.TouchableOpacity
                 key={lang}
                 style={[
                   styles.languageOption,
@@ -228,70 +217,70 @@ export default function CategoryDetailScreen() {
                   setShowLanguageMenu(false);
                 }}
               >
-                <Text style={[
+                <RN.Text style={[
                   styles.languageOptionText,
                   language === lang && styles.languageOptionTextActive,
                 ]}>
                   {lang === 'en' ? 'English' : lang === 'ku' ? 'کوردی' : 'العربية'}
-                </Text>
-              </TouchableOpacity>
+                </RN.Text>
+              </RN.TouchableOpacity>
             ))}
-          </View>
+          </RN.View>
         )}
 
-        <View style={styles.searchContainer}>
+        <RN.View style={styles.searchContainer}>
           <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
-          <TextInput
+          <RN.TextInput
             style={styles.searchInput}
             placeholder={t('searchMenu')}
             placeholderTextColor="rgba(255, 255, 255, 0.5)"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        </View>
-      </View>
+        </RN.View>
+      </RN.View>
 
-      <ScrollView 
+      <RN.ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
         bounces={false}
         overScrollMode="never"
       >
-        <View style={styles.menuGrid}>
+        <RN.View style={styles.menuGrid}>
           {filteredItems.map(renderMenuItem)}
-        </View>
+        </RN.View>
 
         {filteredItems.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
-          </View>
+          <RN.View style={styles.emptyState}>
+            <RN.Text style={styles.emptyStateText}>{t('noItemsFound')}</RN.Text>
+          </RN.View>
         )}
 
-        <View style={styles.footer}>
-          <Image 
+        <RN.View style={styles.footer}>
+          <RN.Image 
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
             style={styles.footerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.footerBrandName}>تەپسی سلێمانی</Text>
-          <View style={styles.footerDivider} />
+          <RN.Text style={styles.footerBrandName}>تەپسی سلێمانی</RN.Text>
+          <RN.View style={styles.footerDivider} />
           
-          <Text style={styles.footerSubtitle}>
+          <RN.Text style={styles.footerSubtitle}>
             {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+          </RN.Text>
+        </RN.View>
+      </RN.ScrollView>
+    </RN.View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = RN.StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#3d0101',
     position: 'relative' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         width: '100%',
         backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
@@ -306,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3d0101',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
-    ...Platform.select({
+    ...RN.Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -347,7 +336,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textTransform: 'capitalize' as const,
     textAlign: 'center' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         fontSize: 26,
       },
@@ -376,7 +365,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     overflow: 'hidden' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       ios: {
         shadowColor: '#000000',
         shadowOffset: { width: 0, height: 2 },
@@ -447,7 +436,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 32,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         paddingHorizontal: 0,
       },
@@ -459,7 +448,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
     paddingTop: 20,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         justifyContent: 'center' as const,
         gap: 20,
@@ -476,7 +465,7 @@ const styles = StyleSheet.create({
     borderColor: '#D4AF37',
     marginBottom: 16,
     position: 'relative' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 4 },
@@ -501,7 +490,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         height: 150,
       },
@@ -524,7 +513,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     marginBottom: 8,
     textAlign: 'center' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         fontSize: 17,
         lineHeight: 22,
@@ -539,7 +528,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center' as const,
     paddingHorizontal: 12,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         fontFamily: 'NotoNaskhArabic_400Regular',
       },
@@ -555,7 +544,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         fontSize: 16,
       },
@@ -620,7 +609,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     maxHeight: '90%',
     writingDirection: 'ltr' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         maxWidth: 600,
         alignSelf: 'center' as const,
@@ -654,7 +643,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.3)',
-    ...Platform.select({
+    ...RN.Platform.select({
       ios: {
         shadowColor: '#3d0101',
         shadowOffset: { width: 0, height: 3 },
@@ -675,7 +664,7 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 8,
     textAlign: 'left' as const,
-    ...Platform.select({
+    ...RN.Platform.select({
       web: {
         fontFamily: 'NotoNaskhArabic_400Regular',
       },
@@ -764,7 +753,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3d0101',
     paddingVertical: 16,
     borderRadius: 12,
-    ...Platform.select({
+    ...RN.Platform.select({
       ios: {
         shadowColor: '#3d0101',
         shadowOffset: { width: 0, height: 4 },
