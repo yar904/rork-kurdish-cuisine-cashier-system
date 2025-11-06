@@ -1876,7 +1876,7 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-        width: 'calc(33.333% - 8px)',
+        width: '32%',
         minWidth: 220,
         maxWidth: 320,
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
