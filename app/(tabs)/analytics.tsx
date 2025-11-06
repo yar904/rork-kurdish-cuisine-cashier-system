@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { MenuCategory } from '@/types/restaurant';
-
+import PredictiveAnalytics from '@/components/PredictiveAnalytics';
 
 
 
@@ -177,7 +177,9 @@ export default function AnalyticsScreen() {
           </View>
         </View>
 
-
+        <View style={styles.section}>
+          <PredictiveAnalytics />
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('ordersByStatus')}</Text>

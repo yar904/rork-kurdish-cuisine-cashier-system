@@ -68,11 +68,8 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
     sendRorkMessage(message);
   };
 
-  const hasShownWelcome = useRef(false);
-
   useEffect(() => {
-    if (visible && messages.length === 0 && !hasShownWelcome.current) {
-      hasShownWelcome.current = true;
+    if (visible && messages.length === 0) {
       const welcomeMessage = language === 'ku' 
         ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
         : language === 'ar'
@@ -81,7 +78,7 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
       
       sendRorkMessage(welcomeMessage);
     }
-  }, [visible, language]);
+  }, [visible, language, messages.length, sendRorkMessage]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
