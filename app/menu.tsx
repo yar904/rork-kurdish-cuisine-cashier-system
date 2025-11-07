@@ -336,14 +336,42 @@ export default function PublicMenuScreen() {
             {currentOrder.length === 0 ? (
               <View style={styles.emptyCart}>
                 <View style={styles.emptyCartIconContainer}>
-                  <Svg width="100" height="100" viewBox="0 0 200 200" fill="none">
-                    <Circle cx="100" cy="100" r="98" stroke="#D4AF37" strokeWidth="2.5" />
-                    <Path d="M60 80 L60 160" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
-                    <Path d="M140 80 L140 160" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
-                    <Path d="M75 70 L75 85 L60 85" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                    <Path d="M125 70 L125 85 L140 85" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                    <Circle cx="100" cy="120" r="45" stroke="#D4AF37" strokeWidth="3.5" />
-                  </Svg>
+                  <View style={styles.emptyCartIconInner}>
+                    <Svg width="140" height="140" viewBox="0 0 200 200" fill="none">
+                      <Circle cx="100" cy="100" r="85" stroke="#D4AF37" strokeWidth="3" opacity="0.3" />
+                      <Circle cx="100" cy="100" r="78" stroke="#D4AF37" strokeWidth="2" opacity="0.2" />
+                      
+                      <Path 
+                        d="M 70 85 L 70 120" 
+                        stroke="#D4AF37" 
+                        strokeWidth="3" 
+                        strokeLinecap="round"
+                      />
+                      
+                      <Path 
+                        d="M 130 85 L 130 120" 
+                        stroke="#D4AF37" 
+                        strokeWidth="3" 
+                        strokeLinecap="round"
+                      />
+                      
+                      <Path 
+                        d="M 100 75 L 105 85 L 95 85 Z" 
+                        fill="#D4AF37" 
+                      />
+                      
+                      <Circle cx="100" cy="115" r="40" stroke="#D4AF37" strokeWidth="2.5" fill="none" />
+                      <Circle cx="100" cy="115" r="36" stroke="#D4AF37" strokeWidth="1.5" fill="none" opacity="0.5" />
+                      
+                      <Path 
+                        d="M 85 115 Q 100 125 115 115" 
+                        stroke="#D4AF37" 
+                        strokeWidth="1.5" 
+                        fill="none" 
+                        opacity="0.4"
+                      />
+                    </Svg>
+                  </View>
                 </View>
                 <Text style={styles.emptyCartText}>{t('noItemsInOrder')}</Text>
                 <Text style={styles.emptyCartSubtext}>
@@ -1720,34 +1748,58 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
-    marginTop: 100,
+    paddingVertical: 80,
+    marginTop: 60,
   },
   emptyCartText: {
-    fontSize: 18,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginTop: 16,
-    fontWeight: '500' as const,
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    marginTop: 28,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
   },
   emptyCartIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(61, 1, 1, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    marginBottom: 8,
+    borderWidth: 3,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)',
+      },
+    }),
+  },
+  emptyCartIconInner: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyCartSubtext: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 8,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 12,
     textAlign: 'center' as const,
-    paddingHorizontal: 32,
+    paddingHorizontal: 40,
+    lineHeight: 22,
   },
   cartItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
