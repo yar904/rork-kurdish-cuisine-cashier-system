@@ -142,6 +142,11 @@ export default function PublicMenuScreen() {
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
   const ratingsStats = ratingsStatsQuery.data || {};
 
+  const itemRatingsQuery = trpc.ratings.getByMenuItem.useQuery(
+    { menuItemId: selectedItem?.id || '' },
+    { enabled: !!selectedItem?.id }
+  );
+
   const createRatingMutation = trpc.ratings.create.useMutation({
     onSuccess: () => {
       Alert.alert(t('success'), t('ratingSubmitted'));
@@ -150,6 +155,9 @@ export default function PublicMenuScreen() {
       setUserRating(0);
       setRatingComment('');
       ratingsStatsQuery.refetch();
+      if (selectedItem?.id) {
+        itemRatingsQuery.refetch();
+      }
     },
     onError: () => {
       Alert.alert(t('error'), t('failedToSubmitRequest'));
@@ -521,17 +529,64 @@ export default function PublicMenuScreen() {
                     {getItemDescription(selectedItem)}
                   </Text>
 
-                  {ratingsStats[selectedItem.id] && ratingsStats[selectedItem.id].totalRatings > 0 && (
-                    <View style={styles.modalReviewsPreview}>
+                  {itemRatingsQuery.data && itemRatingsQuery.data.totalRatings > 0 && (
+                    <View style={styles.modalReviewsSection}>
                       <View style={styles.modalReviewsHeader}>
-                        <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                        <Star size={16} color="#D4AF37" fill="#D4AF37" />
                         <Text style={styles.modalReviewsRating}>
-                          {ratingsStats[selectedItem.id].averageRating.toFixed(1)}
+                          {itemRatingsQuery.data.averageRating.toFixed(1)}
                         </Text>
                         <Text style={styles.modalReviewsCount}>
-                          ({ratingsStats[selectedItem.id].totalRatings} {language === 'en' ? 'reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'تقييم'})
+                          ({itemRatingsQuery.data.totalRatings} {language === 'en' ? 'reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'تقييم'})
                         </Text>
                       </View>
+
+                      <ScrollView 
+                        style={styles.modalReviewsList}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled
+                      >
+                        {itemRatingsQuery.data.ratings.map((review: any) => (
+                          <View key={review.id} style={styles.modalReviewCard}>
+                            <View style={styles.modalReviewStars}>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={14}
+                                  color="#D4AF37"
+                                  fill={star <= review.rating ? '#D4AF37' : 'transparent'}
+                                  strokeWidth={1.5}
+                                />
+                              ))}
+                              <Text style={styles.modalReviewDate}>
+                                {new Date(review.created_at).toLocaleDateString(language === 'en' ? 'en-US' : language === 'ku' ? 'ku-IQ' : 'ar-IQ', { month: 'short', day: 'numeric' })}
+                              </Text>
+                            </View>
+                            {review.comment && (
+                              <Text style={styles.modalReviewComment}>
+                                {review.comment}
+                              </Text>
+                            )}
+                          </View>
+                        ))}
+                      </ScrollView>
+
+                      <TouchableOpacity
+                        style={styles.modalRateThisDishButton}
+                        onPress={() => {
+                          setRatingItem(selectedItem);
+                          setUserRating(0);
+                          setRatingComment('');
+                          setShowRatingModal(true);
+                          handleCloseItemModal();
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Star size={16} color="#D4AF37" strokeWidth={2} />
+                        <Text style={styles.modalRateThisDishButtonText}>
+                          {language === 'en' ? 'Rate this dish' : language === 'ku' ? 'هەڵسەنگاندنی ئەم خواردنە' : 'قيم هذا الطبق'}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   )}
 
@@ -2792,21 +2847,25 @@ const styles = StyleSheet.create({
   itemModalScrollView: {
     flex: 1,
   },
-  modalReviewsPreview: {
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
-    alignItems: 'center' as const,
+  modalReviewsSection: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
   },
   modalReviewsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
+    marginBottom: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.25)',
   },
   modalReviewsRating: {
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#D4AF37',
     fontWeight: '700' as const,
@@ -2814,7 +2873,54 @@ const styles = StyleSheet.create({
   modalReviewsCount: {
     fontSize: 13,
     fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  modalReviewsList: {
+    maxHeight: 140,
+    marginBottom: 12,
+  },
+  modalReviewCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  modalReviewStars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 8,
+  },
+  modalReviewDate: {
+    fontSize: 11,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginLeft: 8,
+  },
+  modalReviewComment: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.75)',
+    lineHeight: 18,
+  },
+  modalRateThisDishButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+  },
+  modalRateThisDishButtonText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: '#D4AF37',
+    fontWeight: '600' as const,
   },
   modalReviewsLink: {
     fontSize: 13,
