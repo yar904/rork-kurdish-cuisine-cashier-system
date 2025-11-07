@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, ShoppingCart, Plus, Minus } from 'lucide-react-native';
+import { X, ShoppingCart, Plus, Minus } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,7 +33,7 @@ export default function MenuItemDetailScreen() {
 
   if (!item) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.modalOverlay, { paddingTop: insets.top }]}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{t('noItemsFound')}</Text>
@@ -68,139 +68,211 @@ export default function MenuItemDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.modalOverlay, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+      <View style={styles.modalContainer}>
+        <View style={styles.dragHandleContainer}>
+          <View style={styles.dragHandle} />
+        </View>
+
         <TouchableOpacity
-          style={styles.backButton}
+          style={styles.closeButton}
           onPress={() => router.back()}
+          activeOpacity={0.7}
         >
-          <ArrowLeft size={24} color="#FFFFFF" strokeWidth={1.5} />
+          <X size={24} color="#FFFFFF" strokeWidth={2.5} />
         </TouchableOpacity>
-      </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {item.image && (
-          <Image 
-            source={{ uri: item.image }} 
-            style={styles.itemImage}
-            resizeMode="cover"
-          />
-        )}
-        
-        <View style={styles.detailsContainer}>
-          <Text style={styles.itemName}>{getItemName(item)}</Text>
-          <Text style={styles.itemPrice}>{formatPrice(item.price)}</Text>
-          <Text style={styles.itemDescription}>{getItemDescription(item)}</Text>
+        <ScrollView 
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentContainer}
+          bounces={true}
+        >
+          {item.image && (
+            <View style={styles.imageContainer}>
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          
+          <View style={styles.detailsContainer}>
+            <Text style={styles.itemName}>{getItemName(item)}</Text>
+            <Text style={styles.itemPrice}>{formatPrice(item.price)}</Text>
+            
+            {getItemDescription(item) && (
+              <Text style={styles.itemDescription}>{getItemDescription(item)}</Text>
+            )}
 
-          <View style={styles.divider} />
+            <View style={styles.divider} />
 
-          <View style={styles.quantitySection}>
-            <Text style={styles.quantityLabel}>{t('quantity')}:</Text>
-            <View style={styles.quantityControls}>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-              >
-                <Minus size={20} color="#3d0101" />
-              </TouchableOpacity>
-              <Text style={styles.quantityValue}>{itemQuantity}</Text>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => setItemQuantity(itemQuantity + 1)}
-              >
-                <Plus size={20} color="#3d0101" />
-              </TouchableOpacity>
+            <View style={styles.quantitySection}>
+              <Text style={styles.sectionTitle}>{t('quantity')}</Text>
+              <View style={styles.quantityControls}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                  activeOpacity={0.7}
+                >
+                  <Minus size={20} color="#3d0101" strokeWidth={2.5} />
+                </TouchableOpacity>
+                <View style={styles.quantityValueContainer}>
+                  <Text style={styles.quantityValue}>{itemQuantity}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => setItemQuantity(itemQuantity + 1)}
+                  activeOpacity={0.7}
+                >
+                  <Plus size={20} color="#3d0101" strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.notesSection}>
+              <Text style={styles.sectionTitle}>{t('specialRequirements')}</Text>
+              <TextInput
+                style={styles.notesInput}
+                placeholder={t('anySpecialRequirements')}
+                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                value={itemNotes}
+                onChangeText={setItemNotes}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
             </View>
           </View>
+        </ScrollView>
 
-          <View style={styles.notesSection}>
-            <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
-            <TextInput
-              style={styles.notesInput}
-              placeholder={t('anySpecialRequirements')}
-              placeholderTextColor="rgba(255, 255, 255, 0.4)"
-              value={itemNotes}
-              onChangeText={setItemNotes}
-              multiline
-              numberOfLines={3}
-            />
-          </View>
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddToCart}
+            activeOpacity={0.8}
+          >
+            <View style={styles.addButtonContent}>
+              <ShoppingCart size={22} color="#3d0101" strokeWidth={2.5} />
+              <Text style={styles.addButtonText}>
+                {t('addToCart')}
+              </Text>
+            </View>
+            <Text style={styles.addButtonPrice}>
+              {formatPrice(item.price * itemQuantity)}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleAddToCart}
-        >
-          <ShoppingCart size={20} color="#fff" />
-          <Text style={styles.addButtonText}>
-            {t('addToCart')} - {formatPrice(item.price * itemQuantity)}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#3d0101',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '92%',
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.3)',
+        maxWidth: 600,
+        alignSelf: 'center',
+        width: '100%',
+      },
+    }),
+  },
+  dragHandleContainer: {
+    paddingVertical: 12,
+    alignItems: 'center',
     backgroundColor: '#3d0101',
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: '#3d0101',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
-  },
-  backButton: {
+  dragHandle: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    height: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 3,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 100,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 32,
+    paddingBottom: 24,
   },
-  itemImage: {
+  imageContainer: {
     width: '100%',
-    height: 350,
-    backgroundColor: '#F9FAFB',
+    height: 280,
+    backgroundColor: '#2a1a1a',
     ...Platform.select({
       web: {
-        height: 400,
+        height: 320,
       },
     }),
   },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
   detailsContainer: {
     padding: 24,
+    paddingTop: 20,
   },
   itemName: {
-    fontSize: 28,
+    fontSize: 32,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: '#E8C968',
-    marginBottom: 12,
+    marginBottom: 8,
     letterSpacing: 0.5,
+    lineHeight: 40,
   },
   itemPrice: {
-    fontSize: 26,
+    fontSize: 28,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '700' as const,
-    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '700',
+    color: '#D4AF37',
     marginBottom: 16,
   },
   itemDescription: {
@@ -208,7 +280,7 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 8,
   },
   divider: {
     height: 1,
@@ -216,103 +288,128 @@ const styles = StyleSheet.create({
     marginVertical: 24,
   },
   quantitySection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 24,
   },
-  quantityLabel: {
+  sectionTitle: {
     fontSize: 18,
     fontFamily: 'NotoNaskhArabic_600SemiBold',
-    fontWeight: '600' as const,
+    fontWeight: '600',
     color: '#E8C968',
+    marginBottom: 12,
   },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    justifyContent: 'center',
+    gap: 20,
   },
   quantityButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FFFDD0',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#3d0101',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  quantityValueContainer: {
+    minWidth: 60,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   quantityValue: {
-    fontSize: 22,
-    fontWeight: '700' as const,
+    fontSize: 24,
+    fontWeight: '700',
     color: '#FFFFFF',
-    minWidth: 40,
-    textAlign: 'center' as const,
+    textAlign: 'center',
   },
   notesSection: {
-    marginBottom: 24,
-  },
-  notesLabel: {
-    fontSize: 18,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    fontWeight: '600' as const,
-    color: '#E8C968',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   notesInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
     padding: 16,
     fontSize: 15,
     color: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.3)',
     minHeight: 100,
-    textAlignVertical: 'top' as const,
+    fontFamily: 'NotoNaskhArabic_400Regular',
   },
   footer: {
-    padding: 20,
+    paddingHorizontal: 24,
     paddingTop: 16,
     backgroundColor: '#3d0101',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.3)',
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
     backgroundColor: '#D4AF37',
     paddingVertical: 18,
-    borderRadius: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
-        shadowRadius: 8,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
+  },
+  addButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   addButtonText: {
     color: '#3d0101',
     fontSize: 18,
-    fontWeight: '700' as const,
+    fontWeight: '700',
+    fontFamily: 'NotoNaskhArabic_700Bold',
+  },
+  addButtonPrice: {
+    color: '#3d0101',
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: 'NotoNaskhArabic_700Bold',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+    backgroundColor: '#3d0101',
   },
   errorText: {
     fontSize: 18,
     color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 24,
-    textAlign: 'center' as const,
+    textAlign: 'center',
   },
   backButtonError: {
     backgroundColor: '#D4AF37',
@@ -323,6 +420,6 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#3d0101',
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontWeight: '700',
   },
 });
