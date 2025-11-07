@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Utensils, Plus, Minus, Send } from 'lucide-react-native';
+import { UtensilsCrossed, Plus, Minus, Send, ChefHat } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -156,7 +156,20 @@ export default function CustomerOrderScreen() {
       </ScrollView>
 
       <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-        {filteredMenu.map((item) => (
+        {filteredMenu.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <View style={styles.iconRing1} />
+              <View style={styles.iconRing2} />
+              <View style={styles.iconCircle}>
+                <UtensilsCrossed size={48} color={Colors.gold} strokeWidth={1.5} />
+              </View>
+            </View>
+            <Text style={styles.emptyTitle}>No items in order</Text>
+            <Text style={styles.emptySubtitle}>Start adding items to your order</Text>
+          </View>
+        ) : (
+          filteredMenu.map((item) => (
           <View key={item.id} style={styles.menuItem}>
             {item.image && (
               <Image source={{ uri: item.image }} style={styles.menuImage} />
@@ -182,14 +195,17 @@ export default function CustomerOrderScreen() {
               <Plus size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-        ))}
+        ))
+        )}
       </ScrollView>
 
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
           <View style={styles.cartSummary}>
             <View style={styles.cartHeader}>
-              <Utensils size={20} color={Colors.primary} />
+              <View style={styles.cartIconBadge}>
+                <ChefHat size={18} color="#fff" />
+              </View>
               <Text style={styles.cartTitle}>{cart.length} items</Text>
               <Text style={styles.cartTotal}>${cartTotal.toFixed(2)}</Text>
             </View>
@@ -294,42 +310,45 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     backgroundColor: Colors.cardBackground,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   menuImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginRight: 16,
   },
   menuInfo: {
     flex: 1,
   },
   menuName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800' as const,
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.3,
   },
   menuDescription: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 6,
+    marginBottom: 8,
     fontWeight: '500' as const,
+    lineHeight: 20,
   },
   menuPrice: {
-    fontSize: 18,
-    fontWeight: '700' as const,
+    fontSize: 22,
+    fontWeight: '800' as const,
     color: Colors.primary,
+    letterSpacing: -0.5,
   },
   addButton: {
     width: 40,
@@ -427,5 +446,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyIconContainer: {
+    position: 'relative',
+    width: 200,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconRing1: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: 'rgba(203, 161, 53, 0.3)',
+  },
+  iconRing2: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 2,
+    borderColor: 'rgba(203, 161, 53, 0.5)',
+  },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(203, 161, 53, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: Colors.gold,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: Colors.gold,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+  },
+  cartIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
