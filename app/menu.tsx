@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Globe, ShoppingCart, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search } from 'lucide-react-native';
+import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -309,7 +309,7 @@ export default function PublicMenuScreen() {
               style={styles.addToCartButtonInline}
               onPress={() => handleAddToCart(item.id)}
             >
-              <ShoppingCart size={18} color="#fff" />
+              <UtensilsCrossed size={18} color="#fff" />
               <Text style={styles.addToCartButtonText}>
                 {t('addToCart')} - {formatPrice(item.price * (itemData?.quantity || 1))}
               </Text>
@@ -395,7 +395,7 @@ export default function PublicMenuScreen() {
             {currentOrder.length === 0 ? (
               <View style={styles.emptyCart}>
                 <View style={styles.emptyCartIconContainer}>
-                  <ShoppingCart size={80} color="#D4AF37" strokeWidth={1.5} />
+                  <UtensilsCrossed size={80} color="#D4AF37" strokeWidth={1.5} />
                 </View>
                 <Text style={styles.emptyCartText}>{t('noItemsInOrder')}</Text>
                 <Text style={styles.emptyCartSubtext}>

@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ShoppingCart, Plus, Minus, Send } from 'lucide-react-native';
+import { Utensils, Plus, Minus, Send } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -189,7 +189,7 @@ export default function CustomerOrderScreen() {
         <View style={styles.cartFooter}>
           <View style={styles.cartSummary}>
             <View style={styles.cartHeader}>
-              <ShoppingCart size={20} color={Colors.primary} />
+              <Utensils size={20} color={Colors.primary} />
               <Text style={styles.cartTitle}>{cart.length} items</Text>
               <Text style={styles.cartTotal}>${cartTotal.toFixed(2)}</Text>
             </View>

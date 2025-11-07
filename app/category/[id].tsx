@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Platform, Modal, Alert } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, UtensilsCrossed, Plus, Minus, X } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -170,7 +170,7 @@ export default function CategoryDetailScreen() {
                   style={styles.modalAddButton}
                   onPress={handleAddToCart}
                 >
-                  <ShoppingCart size={20} color="#fff" />
+                  <UtensilsCrossed size={20} color="#fff" />
                   <Text style={styles.modalAddButtonText}>
                     {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
                   </Text>
