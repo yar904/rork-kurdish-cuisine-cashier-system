@@ -8,9 +8,10 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Animated,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { UtensilsCrossed, Plus, Minus, Send, ChefHat } from 'lucide-react-native';
+import { UtensilsCrossed, Plus, Minus, Send, ChefHat, Star } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -27,12 +28,30 @@ type CartItem = {
   notes?: string;
 };
 
+type Review = {
+  id: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  menuItemId: string;
+};
+
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [addAnimations] = useState(new Map<string, Animated.Value>());
 
   const menuQuery = trpc.menu.getAll.useQuery();
+  
+  const mockReviews: Review[] = [
+    { id: '1', userName: 'Ahmed K.', rating: 5, comment: 'Absolutely delicious! The best kebab I\'ve ever had.', date: '2024-01-15', menuItemId: '7' },
+    { id: '2', userName: 'Sara M.', rating: 4, comment: 'Great biryani, very flavorful and aromatic.', date: '2024-01-14', menuItemId: '11' },
+    { id: '3', userName: 'Omar H.', rating: 5, comment: 'The dolma is just like my grandmother used to make!', date: '2024-01-13', menuItemId: '1' },
+    { id: '4', userName: 'Layla S.', rating: 5, comment: 'Best kunafa in town, perfectly sweet and crispy.', date: '2024-01-12', menuItemId: '22' },
+    { id: '5', userName: 'Khalid R.', rating: 4, comment: 'Mixed grill was excellent, generous portions.', date: '2024-01-11', menuItemId: '10' },
+  ];
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: () => {
@@ -64,6 +83,25 @@ export default function CustomerOrderScreen() {
 
   const addToCart = (menuItem: CartItem['menuItem']) => {
     const existingItem = cart.find(item => item.menuItem.id === menuItem.id);
+    
+    if (!addAnimations.has(menuItem.id)) {
+      addAnimations.set(menuItem.id, new Animated.Value(1));
+    }
+    const scaleAnim = addAnimations.get(menuItem.id)!;
+    
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
     if (existingItem) {
       setCart(cart.map(item =>
         item.menuItem.id === menuItem.id
@@ -165,37 +203,99 @@ export default function CustomerOrderScreen() {
                 <UtensilsCrossed size={48} color={Colors.gold} strokeWidth={1.5} />
               </View>
             </View>
-            <Text style={styles.emptyTitle}>No items in order</Text>
-            <Text style={styles.emptySubtitle}>Start adding items to your order</Text>
+            <Text style={styles.emptyTitle}>No items available</Text>
+            <Text style={styles.emptySubtitle}>Try selecting a different category</Text>
           </View>
         ) : (
-          filteredMenu.map((item) => (
-          <View key={item.id} style={styles.menuItem}>
-            {item.image && (
-              <Image source={{ uri: item.image }} style={styles.menuImage} />
+          <>
+            {filteredMenu.map((item) => {
+              const itemReviews = mockReviews.filter(r => r.menuItemId === item.id);
+              const avgRating = itemReviews.length > 0 
+                ? itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length 
+                : 0;
+              
+              const scaleAnim = addAnimations.get(item.id) || new Animated.Value(1);
+              if (!addAnimations.has(item.id)) {
+                addAnimations.set(item.id, scaleAnim);
+              }
+
+              return (
+                <Animated.View 
+                  key={item.id} 
+                  style={[styles.menuItem, { transform: [{ scale: scaleAnim }] }]}
+                >
+                  {item.image && (
+                    <View style={styles.imageContainer}>
+                      <Image source={{ uri: item.image }} style={styles.menuImage} />
+                      {avgRating > 0 && (
+                        <View style={styles.ratingBadge}>
+                          <Star size={12} color="#fff" fill="#fff" />
+                          <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                  <View style={styles.menuInfo}>
+                    <Text style={styles.menuName}>{item.name}</Text>
+                    <Text style={styles.menuDescription} numberOfLines={2}>
+                      {item.description}
+                    </Text>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => addToCart({
+                      id: item.id,
+                      name: item.name,
+                      price: item.price,
+                      description: item.description,
+                      image: item.image,
+                      category: item.category,
+                    })}
+                    activeOpacity={0.7}
+                  >
+                    <Plus size={22} color="#fff" strokeWidth={2.5} />
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+            
+            {mockReviews.length > 0 && (
+              <View style={styles.reviewsSection}>
+                <Text style={styles.reviewsTitle}>Customer Reviews</Text>
+                {mockReviews.slice(0, 3).map((review) => (
+                  <View key={review.id} style={styles.reviewCard}>
+                    <View style={styles.reviewHeader}>
+                      <View style={styles.reviewUserInfo}>
+                        <View style={styles.reviewAvatar}>
+                          <Text style={styles.reviewAvatarText}>{review.userName[0]}</Text>
+                        </View>
+                        <View>
+                          <Text style={styles.reviewUserName}>{review.userName}</Text>
+                          <View style={styles.reviewStars}>
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                size={14} 
+                                color={i < review.rating ? Colors.gold : Colors.border}
+                                fill={i < review.rating ? Colors.gold : 'transparent'}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      </View>
+                      <Text style={styles.reviewDate}>
+                        {new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </Text>
+                    </View>
+                    <Text style={styles.reviewComment}>{review.comment}</Text>
+                  </View>
+                ))}
+              </View>
             )}
-            <View style={styles.menuInfo}>
-              <Text style={styles.menuName}>{item.name}</Text>
-              <Text style={styles.menuDescription} numberOfLines={2}>
-                {item.description}
-              </Text>
-              <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => addToCart({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                description: item.description,
-                image: item.image,
-                category: item.category,
-              })}
-            >
-              <Plus size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ))
+          </>
         )}
       </ScrollView>
 
@@ -316,16 +416,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 16,
   },
   menuImage: {
     width: 100,
     height: 100,
     borderRadius: 12,
-    marginRight: 16,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  ratingBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#fff',
   },
   menuInfo: {
     flex: 1,
@@ -335,28 +457,40 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: Colors.text,
     marginBottom: 6,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   menuDescription: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 10,
     fontWeight: '500' as const,
     lineHeight: 20,
   },
+  priceContainer: {
+    backgroundColor: 'rgba(61, 1, 1, 0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
   menuPrice: {
     fontSize: 22,
-    fontWeight: '800' as const,
+    fontWeight: '900' as const,
     color: Colors.primary,
     letterSpacing: -0.5,
   },
   addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   cartFooter: {
     backgroundColor: Colors.background,
@@ -499,6 +633,77 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     color: Colors.textSecondary,
     textAlign: 'center' as const,
+  },
+  reviewsSection: {
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 2,
+    borderTopColor: Colors.border,
+  },
+  reviewsTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginBottom: 16,
+    letterSpacing: -0.5,
+  },
+  reviewCard: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  reviewUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  reviewAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reviewAvatarText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  reviewUserName: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  reviewStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  reviewDate: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: Colors.textSecondary,
+  },
+  reviewComment: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
   cartIconBadge: {
     width: 32,
