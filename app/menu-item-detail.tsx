@@ -23,7 +23,8 @@ import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MAX_TRANSLATE_Y = -SCREEN_HEIGHT * 0.08;
+const MODAL_HEIGHT = SCREEN_HEIGHT * 0.92;
+const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + MODAL_HEIGHT;
 
 export default function MenuItemDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -165,7 +166,7 @@ export default function MenuItemDetailScreen() {
           }}
           activeOpacity={0.7}
         >
-          <X size={24} color="#FFFFFF" strokeWidth={2.5} />
+          <X size={26} color="#FFFFFF" strokeWidth={3} />
         </TouchableOpacity>
 
         <ScrollView 
@@ -271,6 +272,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     height: SCREEN_HEIGHT,
+    maxHeight: SCREEN_HEIGHT,
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -293,6 +296,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     backgroundColor: '#3d0101',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
   },
   dragHandle: {
     width: 40,
@@ -302,24 +307,29 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    top: 12,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 100,
+    zIndex: 1000,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
       },
     }),
   },
@@ -331,11 +341,11 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 280,
+    height: 250,
     backgroundColor: '#2a1a1a',
     ...Platform.select({
       web: {
-        height: 320,
+        height: 280,
       },
     }),
   },
