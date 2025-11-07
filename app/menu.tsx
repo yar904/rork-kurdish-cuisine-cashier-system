@@ -394,8 +394,13 @@ export default function PublicMenuScreen() {
           <ScrollView style={styles.cartItems}>
             {currentOrder.length === 0 ? (
               <View style={styles.emptyCart}>
-                <ShoppingCart size={64} color="rgba(255, 255, 255, 0.3)" />
+                <View style={styles.emptyCartIconContainer}>
+                  <ShoppingCart size={80} color="#D4AF37" strokeWidth={1.5} />
+                </View>
                 <Text style={styles.emptyCartText}>{t('noItemsInOrder')}</Text>
+                <Text style={styles.emptyCartSubtext}>
+                  {language === 'en' ? 'Start adding items to your order' : language === 'ku' ? 'دەست بکە بە زیادکردنی بڕگەکان بۆ داواکاریت' : 'ابدأ بإضافة العناصر إلى طلبك'}
+                </Text>
               </View>
             ) : (
               currentOrder.map((item, index) => (
@@ -1602,6 +1607,7 @@ const styles = StyleSheet.create({
   cartContainer: {
     flex: 1,
     backgroundColor: '#3d0101',
+    position: 'relative' as const,
   },
   cartHeader: {
     flexDirection: 'row',
@@ -1626,12 +1632,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+    marginTop: 100,
   },
   emptyCartText: {
     fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
     color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 16,
     fontWeight: '500' as const,
+  },
+  emptyCartIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  emptyCartSubtext: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 8,
+    textAlign: 'center' as const,
+    paddingHorizontal: 32,
   },
   cartItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -1992,22 +2019,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
     alignSelf: 'center' as const,
-    gap: 3,
+    gap: 4,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   ratingText: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: '#D4AF37',
   },
   ratingCount: {
-    fontSize: 11,
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
     fontWeight: '600' as const,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   menuItemActions: {
     flexDirection: 'row',
@@ -2527,10 +2559,11 @@ const styles = StyleSheet.create({
   },
   expandedContent: {
     paddingHorizontal: 12,
+    paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.2)',
+    borderTopColor: 'rgba(212, 175, 55, 0.3)',
   },
   expandedDescription: {
     fontSize: 13,
