@@ -512,16 +512,41 @@ export default function PublicMenuScreen() {
                   />
                 )}
                 
-                <View style={styles.itemModalBody}>
-                  <Text style={styles.itemModalTitle}>
-                    {getItemName(selectedItem)}
-                  </Text>
-                  
-                  <Text style={styles.itemModalDescription}>
-                    {getItemDescription(selectedItem)}
-                  </Text>
+                <ScrollView style={styles.itemModalScrollView} showsVerticalScrollIndicator={false}>
+                  <View style={styles.itemModalBody}>
+                    <Text style={styles.itemModalTitle}>
+                      {getItemName(selectedItem)}
+                    </Text>
+                    
+                    <Text style={styles.itemModalDescription}>
+                      {getItemDescription(selectedItem)}
+                    </Text>
 
-                  <View style={styles.itemModalQuantitySection}>
+                    {ratingsStats[selectedItem.id] && ratingsStats[selectedItem.id].totalRatings > 0 && (
+                      <TouchableOpacity 
+                        style={styles.modalReviewsPreview}
+                        onPress={() => {
+                          setRatingItem(selectedItem);
+                          setShowRatingModal(true);
+                          handleCloseItemModal();
+                        }}
+                      >
+                        <View style={styles.modalReviewsHeader}>
+                          <Star size={16} color="#D4AF37" fill="#D4AF37" />
+                          <Text style={styles.modalReviewsRating}>
+                            {ratingsStats[selectedItem.id].averageRating.toFixed(1)}
+                          </Text>
+                          <Text style={styles.modalReviewsCount}>
+                            ({ratingsStats[selectedItem.id].totalRatings} {language === 'en' ? 'reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'تقييم'})
+                          </Text>
+                        </View>
+                        <Text style={styles.modalReviewsLink}>
+                          {language === 'en' ? 'See all reviews' : language === 'ku' ? 'بینینی هەموو هەڵسەنگاندنەکان' : 'عرض جميع التقييمات'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <View style={styles.itemModalQuantitySection}>
                     <Text style={styles.itemModalQuantityLabel}>{t('quantity')}:</Text>
                     <View style={styles.itemModalQuantityControls}>
                       <TouchableOpacity
@@ -550,16 +575,33 @@ export default function PublicMenuScreen() {
                     numberOfLines={3}
                   />
 
-                  <TouchableOpacity
-                    style={styles.itemModalAddButton}
-                    onPress={handleAddToCartFromModal}
-                  >
-                    <Utensils size={22} color="#3d0101" strokeWidth={2.5} />
-                    <Text style={styles.itemModalAddButtonText}>
-                      {t('addToCart')} - {formatPrice(selectedItem.price * modalQuantity)}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    <TouchableOpacity
+                      style={styles.itemModalAddButton}
+                      onPress={handleAddToCartFromModal}
+                    >
+                      <Utensils size={22} color="#3d0101" strokeWidth={2.5} />
+                      <Text style={styles.itemModalAddButtonText}>
+                        {t('addToCart')} - {formatPrice(selectedItem.price * modalQuantity)}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.itemModalRateButton}
+                      onPress={() => {
+                        setRatingItem(selectedItem);
+                        setUserRating(0);
+                        setRatingComment('');
+                        setShowRatingModal(true);
+                        handleCloseItemModal();
+                      }}
+                    >
+                      <Star size={18} color="#D4AF37" strokeWidth={2.5} />
+                      <Text style={styles.itemModalRateButtonText}>
+                        {language === 'en' ? 'Rate this dish' : language === 'ku' ? 'هەڵسەنگاندنی ئەم خواردنە' : 'قيم هذا الطبق'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </>
             )}
           </View>
@@ -2603,12 +2645,14 @@ const styles = StyleSheet.create({
   },
   itemModalContent: {
     backgroundColor: '#2d0000',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    maxHeight: '92%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '75%',
     overflow: 'hidden' as const,
     borderWidth: 3,
     borderColor: '#D4AF37',
+    marginHorizontal: 12,
+    marginBottom: 32,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -2620,20 +2664,20 @@ const styles = StyleSheet.create({
         elevation: 28,
       },
       web: {
-        maxWidth: 520,
-        borderRadius: 32,
-        maxHeight: '88%',
+        maxWidth: 440,
+        borderRadius: 24,
+        maxHeight: '70%',
         boxShadow: '0 -12px 60px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.4)',
       },
     }),
   },
   itemModalCloseButton: {
     position: 'absolute' as const,
-    top: 16,
-    right: 16,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    top: 12,
+    right: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -2654,50 +2698,48 @@ const styles = StyleSheet.create({
   },
   itemModalImage: {
     width: '100%',
-    height: 280,
+    height: 200,
     backgroundColor: '#1a0000',
     ...Platform.select({
       web: {
-        height: 320,
+        height: 220,
       },
     }),
   },
   itemModalBody: {
-    padding: 28,
-    gap: 24,
+    padding: 20,
+    gap: 16,
   },
   itemModalTitle: {
-    fontSize: 32,
+    fontSize: 24,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#E8C968',
     textAlign: 'center' as const,
-    letterSpacing: 0.8,
-    marginBottom: -4,
+    letterSpacing: 0.5,
     textShadowColor: 'rgba(212, 175, 55, 0.4)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
   },
   itemModalDescription: {
-    fontSize: 15,
+    fontSize: 13,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: 'rgba(255, 255, 255, 0.75)',
-    lineHeight: 22,
+    lineHeight: 19,
     textAlign: 'center' as const,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   itemModalQuantitySection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.4)',
-    marginTop: 8,
   },
   itemModalQuantityLabel: {
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_600SemiBold',
     color: 'rgba(232, 201, 104, 0.9)',
     letterSpacing: 0.3,
@@ -2705,16 +2747,16 @@ const styles = StyleSheet.create({
   itemModalQuantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
+    gap: 16,
   },
   itemModalQuantityButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#FFFDD0',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#D4AF37',
     ...Platform.select({
       ios: {
@@ -2729,21 +2771,21 @@ const styles = StyleSheet.create({
     }),
   },
   itemModalQuantityValue: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: '#FFFFFF',
-    minWidth: 48,
+    minWidth: 36,
     textAlign: 'center' as const,
   },
   itemModalNotesInput: {
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 20,
-    padding: 18,
-    fontSize: 15,
+    borderRadius: 16,
+    padding: 12,
+    fontSize: 14,
     color: '#FFFFFF',
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.4)',
-    minHeight: 110,
+    minHeight: 75,
     textAlignVertical: 'top' as const,
     fontFamily: 'NotoNaskhArabic_400Regular',
   },
@@ -2751,11 +2793,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
+    gap: 10,
     backgroundColor: '#D4AF37',
-    paddingVertical: 20,
-    borderRadius: 20,
-    marginTop: 12,
+    paddingVertical: 16,
+    borderRadius: 16,
     borderWidth: 2,
     borderColor: '#E8C968',
     ...Platform.select({
@@ -2772,9 +2813,62 @@ const styles = StyleSheet.create({
   },
   itemModalAddButtonText: {
     color: '#3d0101',
-    fontSize: 21,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     letterSpacing: 0.5,
+  },
+  itemModalScrollView: {
+    flex: 1,
+  },
+  modalReviewsPreview: {
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  modalReviewsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  modalReviewsRating: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
+  modalReviewsCount: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  modalReviewsLink: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: '#D4AF37',
+    textAlign: 'center' as const,
+  },
+  itemModalRateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    marginTop: 8,
+  },
+  itemModalRateButtonText: {
+    color: '#D4AF37',
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    letterSpacing: 0.3,
   },
 });
