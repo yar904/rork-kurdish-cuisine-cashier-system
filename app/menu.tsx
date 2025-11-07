@@ -249,6 +249,12 @@ export default function PublicMenuScreen() {
                   style={styles.menuItemImageHorizontal}
                   resizeMode="cover"
                 />
+                {hasRatings && (
+                  <View style={styles.ratingBadgeOnImage}>
+                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                    <Text style={styles.ratingTextOnImage}>{itemStats.averageRating.toFixed(1)}</Text>
+                  </View>
+                )}
               </View>
             )}
             
@@ -259,20 +265,12 @@ export default function PublicMenuScreen() {
             <View style={styles.priceHighlight}>
               <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
             </View>
-            
-            {hasRatings && (
-              <View style={styles.ratingBadgeCentered}>
-                <Star size={16} color="#D4AF37" fill="#D4AF37" />
-                <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
-              </View>
-            )}
           </View>
         </TouchableOpacity>
         
         {isExpanded && (
           <View style={styles.expandedContent}>
-            <Text style={styles.expandedDescription} numberOfLines={3}>
+            <Text style={styles.expandedDescription} numberOfLines={4}>
               {getItemDescription(item)}
             </Text>
             
@@ -298,7 +296,7 @@ export default function PublicMenuScreen() {
             <TextInput
               style={styles.notesInput}
               placeholder={t('anySpecialRequirements')}
-              placeholderTextColor="rgba(26, 26, 26, 0.4)"
+              placeholderTextColor="rgba(255, 255, 255, 0.4)"
               value={itemData?.notes || ''}
               onChangeText={(text: string) => updateExpandedNotes(item.id, text)}
               multiline
@@ -309,7 +307,7 @@ export default function PublicMenuScreen() {
               style={styles.addToCartButtonInline}
               onPress={() => handleAddToCart(item.id)}
             >
-              <UtensilsCrossed size={18} color="#fff" />
+              <Utensils size={18} color="#3d0101" />
               <Text style={styles.addToCartButtonText}>
                 {t('addToCart')} - {formatPrice(item.price * (itemData?.quantity || 1))}
               </Text>
@@ -1431,13 +1429,13 @@ const styles = StyleSheet.create({
     }),
   },
   addToCartButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#3d0101',
+    fontSize: 15,
     fontWeight: '700' as const,
     letterSpacing: 0.3,
     ...Platform.select({
       web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
+        fontFamily: 'NotoNaskhArabic_600SemiBold',
       },
     }),
   },
@@ -1568,7 +1566,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   notesInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(26, 26, 26, 0.6)',
     borderRadius: 8,
     padding: 10,
     fontSize: 13,
@@ -2028,6 +2026,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  ratingBadgeOnImage: {
+    position: 'absolute' as const,
+    bottom: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
+  },
+  ratingTextOnImage: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
   },
   ratingText: {
     fontSize: 14,
@@ -2558,20 +2575,19 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   expandedContent: {
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 14,
+    backgroundColor: 'rgba(26, 26, 26, 0.7)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.3)',
+    borderTopColor: 'rgba(212, 175, 55, 0.4)',
   },
   expandedDescription: {
     fontSize: 13,
     fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.8)',
-    lineHeight: 18,
-    marginTop: 12,
-    marginBottom: 8,
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 19,
+    marginBottom: 12,
     textAlign: 'center' as const,
   },
   addToCartButtonInline: {
