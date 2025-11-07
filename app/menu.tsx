@@ -791,7 +791,7 @@ export default function PublicMenuScreen() {
           activeOpacity={0.7}
         >
           <Animated.View style={styles.fabIconContainer}>
-            <Utensils size={24} color="#3d0101" strokeWidth={2} />
+            <UtensilsCrossed size={24} color="#3d0101" strokeWidth={2} />
             {cartItemCount > 0 && (
               <View style={styles.fabCartBadge}>
                 <Text style={styles.fabCartBadgeText}>{cartItemCount}</Text>
