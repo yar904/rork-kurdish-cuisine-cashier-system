@@ -34,7 +34,9 @@ export default function PublicMenuScreen() {
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [expandedItems, setExpandedItems] = useState<Record<string, {quantity: number, notes: string}>>({});
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [modalQuantity, setModalQuantity] = useState(1);
+  const [modalNotes, setModalNotes] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
@@ -66,47 +68,28 @@ export default function PublicMenuScreen() {
     }).start();
   }, [fabSlideAnimation]);
 
-  const handleAddToCart = (itemId: string) => {
-    const expanded = expandedItems[itemId];
-    if (expanded) {
-      addItemToCurrentOrder(itemId, expanded.quantity, expanded.notes || undefined);
-      const newExpanded = { ...expandedItems };
-      delete newExpanded[itemId];
-      setExpandedItems(newExpanded);
+  const handleOpenItemModal = (item: MenuItem) => {
+    setSelectedItem(item);
+    setModalQuantity(1);
+    setModalNotes('');
+  };
+
+  const handleCloseItemModal = () => {
+    setSelectedItem(null);
+    setModalQuantity(1);
+    setModalNotes('');
+  };
+
+  const handleAddToCartFromModal = () => {
+    if (selectedItem) {
+      addItemToCurrentOrder(selectedItem.id, modalQuantity, modalNotes || undefined);
       Alert.alert(t('success'), t('itemAddedToCart'));
+      handleCloseItemModal();
     }
   };
 
-  const toggleItemExpansion = (itemId: string) => {
-    setExpandedItems(prev => {
-      const newExpanded = { ...prev };
-      if (newExpanded[itemId]) {
-        delete newExpanded[itemId];
-      } else {
-        newExpanded[itemId] = { quantity: 1, notes: '' };
-      }
-      return newExpanded;
-    });
-  };
-
-  const updateExpandedQuantity = (itemId: string, delta: number) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        quantity: Math.max(1, (prev[itemId]?.quantity || 1) + delta)
-      }
-    }));
-  };
-
-  const updateExpandedNotes = (itemId: string, notes: string) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        notes
-      }
-    }));
+  const updateModalQuantity = (delta: number) => {
+    setModalQuantity(prev => Math.max(1, prev + delta));
   };
 
   const handleSubmitOrder = () => {
@@ -228,8 +211,6 @@ export default function PublicMenuScreen() {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
-    const isExpanded = !!expandedItems[item.id];
-    const itemData = expandedItems[item.id];
     
     return (
       <View 
@@ -239,7 +220,7 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.menuItemTouchable}
           activeOpacity={0.95}
-          onPress={() => toggleItemExpansion(item.id)}
+          onPress={() => handleOpenItemModal(item as MenuItem)}
         >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
@@ -267,53 +248,6 @@ export default function PublicMenuScreen() {
             </View>
           </View>
         </TouchableOpacity>
-        
-        {isExpanded && (
-          <View style={styles.expandedContent}>
-            <Text style={styles.expandedDescription} numberOfLines={4}>
-              {getItemDescription(item)}
-            </Text>
-            
-            <View style={styles.quantitySelector}>
-              <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
-              <View style={styles.quantityControls}>
-                <TouchableOpacity
-                  style={styles.quantityButton}
-                  onPress={() => updateExpandedQuantity(item.id, -1)}
-                >
-                  <Minus size={18} color="#3d0101" />
-                </TouchableOpacity>
-                <Text style={styles.quantityValue}>{itemData?.quantity || 1}</Text>
-                <TouchableOpacity
-                  style={styles.quantityButton}
-                  onPress={() => updateExpandedQuantity(item.id, 1)}
-                >
-                  <Plus size={18} color="#3d0101" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <TextInput
-              style={styles.notesInput}
-              placeholder={t('anySpecialRequirements')}
-              placeholderTextColor="rgba(255, 255, 255, 0.4)"
-              value={itemData?.notes || ''}
-              onChangeText={(text: string) => updateExpandedNotes(item.id, text)}
-              multiline
-              numberOfLines={2}
-            />
-
-            <TouchableOpacity
-              style={styles.addToCartButtonInline}
-              onPress={() => handleAddToCart(item.id)}
-            >
-              <Utensils size={18} color="#3d0101" />
-              <Text style={styles.addToCartButtonText}>
-                {t('addToCart')} - {formatPrice(item.price * (itemData?.quantity || 1))}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
         
         <TouchableOpacity
           style={styles.rateButtonOnCard}
@@ -551,6 +485,86 @@ export default function PublicMenuScreen() {
 
 
 
+
+      <Modal
+        visible={!!selectedItem}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseItemModal}
+      >
+        <View style={styles.itemModalOverlay}>
+          <View style={styles.itemModalContent}>
+            <TouchableOpacity 
+              style={styles.itemModalCloseButton}
+              onPress={handleCloseItemModal}
+              activeOpacity={0.8}
+            >
+              <X size={24} color="#FFFFFF" strokeWidth={2.5} />
+            </TouchableOpacity>
+
+            {selectedItem && (
+              <>
+                {selectedItem.image && (
+                  <Image 
+                    source={{ uri: selectedItem.image }} 
+                    style={styles.itemModalImage}
+                    resizeMode="cover"
+                  />
+                )}
+                
+                <View style={styles.itemModalBody}>
+                  <Text style={styles.itemModalTitle}>
+                    {getItemName(selectedItem)}
+                  </Text>
+                  
+                  <Text style={styles.itemModalDescription}>
+                    {getItemDescription(selectedItem)}
+                  </Text>
+
+                  <View style={styles.itemModalQuantitySection}>
+                    <Text style={styles.itemModalQuantityLabel}>{t('quantity')}:</Text>
+                    <View style={styles.itemModalQuantityControls}>
+                      <TouchableOpacity
+                        style={styles.itemModalQuantityButton}
+                        onPress={() => updateModalQuantity(-1)}
+                      >
+                        <Minus size={20} color="#3d0101" strokeWidth={3} />
+                      </TouchableOpacity>
+                      <Text style={styles.itemModalQuantityValue}>{modalQuantity}</Text>
+                      <TouchableOpacity
+                        style={styles.itemModalQuantityButton}
+                        onPress={() => updateModalQuantity(1)}
+                      >
+                        <Plus size={20} color="#3d0101" strokeWidth={3} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TextInput
+                    style={styles.itemModalNotesInput}
+                    placeholder={t('anySpecialRequirements')}
+                    placeholderTextColor="rgba(61, 1, 1, 0.4)"
+                    value={modalNotes}
+                    onChangeText={setModalNotes}
+                    multiline
+                    numberOfLines={3}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.itemModalAddButton}
+                    onPress={handleAddToCartFromModal}
+                  >
+                    <Utensils size={22} color="#3d0101" strokeWidth={2.5} />
+                    <Text style={styles.itemModalAddButtonText}>
+                      {t('addToCart')} - {formatPrice(selectedItem.price * modalQuantity)}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={showRatingModal}
@@ -2574,41 +2588,181 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700' as const,
   },
-  expandedContent: {
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 14,
-    backgroundColor: 'rgba(26, 26, 26, 0.7)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.4)',
+  itemModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'flex-end',
+    ...Platform.select({
+      web: {
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+    }),
   },
-  expandedDescription: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.85)',
-    lineHeight: 19,
-    marginBottom: 12,
-    textAlign: 'center' as const,
-  },
-  addToCartButtonInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#D4AF37',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+  itemModalContent: {
+    backgroundColor: '#3d0101',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: '90%',
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 3 },
+        shadowOffset: { width: 0, height: -8 },
+        shadowOpacity: 0.6,
+        shadowRadius: 24,
+      },
+      android: {
+        elevation: 24,
+      },
+      web: {
+        maxWidth: 500,
+        borderRadius: 32,
+        maxHeight: '85%',
+        boxShadow: '0 -8px 40px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  itemModalCloseButton: {
+    position: 'absolute' as const,
+    top: 20,
+    right: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
         shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  itemModalImage: {
+    width: '100%',
+    height: 250,
+    ...Platform.select({
+      web: {
+        height: 280,
+      },
+    }),
+  },
+  itemModalBody: {
+    padding: 24,
+    gap: 20,
+  },
+  itemModalTitle: {
+    fontSize: 28,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  itemModalDescription: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 24,
+    textAlign: 'center' as const,
+  },
+  itemModalQuantitySection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(26, 26, 26, 0.5)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  itemModalQuantityLabel: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: '#E8C968',
+  },
+  itemModalQuantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  itemModalQuantityButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFDD0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
       },
       android: {
         elevation: 4,
       },
     }),
+  },
+  itemModalQuantityValue: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    minWidth: 40,
+    textAlign: 'center' as const,
+  },
+  itemModalNotesInput: {
+    backgroundColor: 'rgba(26, 26, 26, 0.5)',
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 16,
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    minHeight: 100,
+    textAlignVertical: 'top' as const,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+  },
+  itemModalAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#D4AF37',
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginTop: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  itemModalAddButtonText: {
+    color: '#3d0101',
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
   },
 });
