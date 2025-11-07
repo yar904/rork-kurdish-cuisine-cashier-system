@@ -15,6 +15,7 @@ import {
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search } from 'lucide-react-native';
+import Svg, { Path, Circle } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -335,7 +336,14 @@ export default function PublicMenuScreen() {
             {currentOrder.length === 0 ? (
               <View style={styles.emptyCart}>
                 <View style={styles.emptyCartIconContainer}>
-                  <UtensilsCrossed size={80} color="#D4AF37" strokeWidth={1.5} />
+                  <Svg width="100" height="100" viewBox="0 0 200 200" fill="none">
+                    <Circle cx="100" cy="100" r="98" stroke="#D4AF37" strokeWidth="2.5" />
+                    <Path d="M60 80 L60 160" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
+                    <Path d="M140 80 L140 160" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
+                    <Path d="M75 70 L75 85 L60 85" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <Path d="M125 70 L125 85 L140 85" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <Circle cx="100" cy="120" r="45" stroke="#D4AF37" strokeWidth="3.5" />
+                  </Svg>
                 </View>
                 <Text style={styles.emptyCartText}>{t('noItemsInOrder')}</Text>
                 <Text style={styles.emptyCartSubtext}>
