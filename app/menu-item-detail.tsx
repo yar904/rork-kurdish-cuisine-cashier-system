@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,9 @@ import {
   TextInput,
   Platform,
   Alert,
+  Animated,
+  Dimensions,
+  PanResponder,
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +22,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const MAX_TRANSLATE_Y = -SCREEN_HEIGHT * 0.92;
+
 export default function MenuItemDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -28,6 +34,52 @@ export default function MenuItemDetailScreen() {
   
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
+
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(translateY, {
+      toValue: MAX_TRANSLATE_Y,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+    }).start();
+  }, [translateY]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const { dy } = gestureState;
+        return Math.abs(dy) > 5;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const { dy } = gestureState;
+        if (dy > 0) {
+          translateY.setValue(MAX_TRANSLATE_Y + dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const { dy, vy } = gestureState;
+        if (dy > 100 || vy > 0.5) {
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+          }).start(() => {
+            router.back();
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: MAX_TRANSLATE_Y,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 8,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const item = MENU_ITEMS.find(menuItem => menuItem.id === id);
 
@@ -67,18 +119,50 @@ export default function MenuItemDetailScreen() {
     ]);
   };
 
+  const backgroundOpacity = translateY.interpolate({
+    inputRange: [MAX_TRANSLATE_Y, 0],
+    outputRange: [0.5, 0],
+    extrapolate: 'clamp',
+  });
+
   return (
-    <View style={[styles.modalOverlay, { paddingTop: insets.top }]}>
+    <View style={styles.modalOverlay}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.modalContainer}>
-        <View style={styles.dragHandleContainer}>
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            backgroundColor: '#000',
+            opacity: backgroundOpacity,
+          },
+        ]}
+        pointerEvents="none"
+      />
+
+      <Animated.View
+        style={[
+          styles.modalContainer,
+          {
+            transform: [{ translateY: translateY }],
+          },
+        ]}
+      >
+        <View {...panResponder.panHandlers} style={styles.dragHandleContainer}>
           <View style={styles.dragHandle} />
         </View>
 
         <TouchableOpacity
           style={styles.closeButton}
-          onPress={() => router.back()}
+          onPress={() => {
+            Animated.timing(translateY, {
+              toValue: 0,
+              duration: 250,
+              useNativeDriver: true,
+            }).start(() => {
+              router.back();
+            });
+          }}
           activeOpacity={0.7}
         >
           <X size={24} color="#FFFFFF" strokeWidth={2.5} />
@@ -89,6 +173,7 @@ export default function MenuItemDetailScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.contentContainer}
           bounces={true}
+          scrollEventThrottle={16}
         >
           {item.image && (
             <View style={styles.imageContainer}>
@@ -166,7 +251,7 @@ export default function MenuItemDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -174,15 +259,18 @@ export default function MenuItemDetailScreen() {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'transparent',
     justifyContent: 'flex-end',
   },
   modalContainer: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#3d0101',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    maxHeight: '92%',
-    overflow: 'hidden',
+    height: SCREEN_HEIGHT,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -196,7 +284,7 @@ const styles = StyleSheet.create({
       web: {
         boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.3)',
         maxWidth: 600,
-        alignSelf: 'center',
+        alignSelf: 'center' as const,
         width: '100%',
       },
     }),
