@@ -23,7 +23,7 @@ import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MAX_TRANSLATE_Y = -SCREEN_HEIGHT * 0.92;
+const MAX_TRANSLATE_Y = -SCREEN_HEIGHT * 0.08;
 
 export default function MenuItemDetailScreen() {
   const insets = useSafeAreaInsets();
