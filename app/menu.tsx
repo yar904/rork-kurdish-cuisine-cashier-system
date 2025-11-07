@@ -15,7 +15,7 @@ import {
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search } from 'lucide-react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -338,36 +338,74 @@ export default function PublicMenuScreen() {
                 <View style={styles.emptyCartIconContainer}>
                   <View style={styles.emptyCartIconInner}>
                     <Svg width="140" height="140" viewBox="0 0 200 200" fill="none">
-                      <Circle cx="100" cy="100" r="85" stroke="#D4AF37" strokeWidth="3" opacity="0.3" />
-                      <Circle cx="100" cy="100" r="78" stroke="#D4AF37" strokeWidth="2" opacity="0.2" />
+                      <Circle cx="100" cy="100" r="70" fill="#2A0A0A" opacity="0.4" />
+                      <Circle cx="100" cy="100" r="65" stroke="#D4AF37" strokeWidth="1.5" opacity="0.5" />
                       
-                      <Path 
-                        d="M 70 85 L 70 120" 
-                        stroke="#D4AF37" 
-                        strokeWidth="3" 
+                      <Path
+                        d="M 60 90 L 60 95 L 60 105"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                      <Path
+                        d="M 60 105 L 60 130"
+                        stroke="#D4AF37"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                      <Path
+                        d="M 54 90 L 54 100"
+                        stroke="#D4AF37"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <Path
+                        d="M 66 90 L 66 100"
+                        stroke="#D4AF37"
+                        strokeWidth="2"
                         strokeLinecap="round"
                       />
                       
-                      <Path 
-                        d="M 130 85 L 130 120" 
-                        stroke="#D4AF37" 
-                        strokeWidth="3" 
+                      <Path
+                        d="M 140 90 L 140 105 L 135 108 L 135 130"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
                         strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <Path
+                        d="M 130 94 L 135 100 L 145 100 L 150 94"
+                        stroke="#D4AF37"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
                       />
                       
-                      <Path 
-                        d="M 100 75 L 105 85 L 95 85 Z" 
-                        fill="#D4AF37" 
+                      <Ellipse
+                        cx="100"
+                        cy="110"
+                        rx="28"
+                        ry="25"
+                        fill="none"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
                       />
-                      
-                      <Circle cx="100" cy="115" r="40" stroke="#D4AF37" strokeWidth="2.5" fill="none" />
-                      <Circle cx="100" cy="115" r="36" stroke="#D4AF37" strokeWidth="1.5" fill="none" opacity="0.5" />
-                      
-                      <Path 
-                        d="M 85 115 Q 100 125 115 115" 
-                        stroke="#D4AF37" 
-                        strokeWidth="1.5" 
-                        fill="none" 
+                      <Ellipse
+                        cx="100"
+                        cy="108"
+                        rx="24"
+                        ry="21"
+                        fill="none"
+                        stroke="#D4AF37"
+                        strokeWidth="1.5"
+                        opacity="0.5"
+                      />
+                      <Path
+                        d="M 75 110 Q 100 120 125 110"
+                        stroke="#D4AF37"
+                        strokeWidth="1.5"
+                        fill="none"
                         opacity="0.4"
                       />
                     </Svg>
