@@ -34,7 +34,7 @@ export default function PublicMenuScreen() {
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
 
-
+  const [expandedItems, setExpandedItems] = useState<Record<string, {quantity: number, notes: string}>>({});
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTableSelector, setShowTableSelector] = useState(false);
@@ -66,13 +66,48 @@ export default function PublicMenuScreen() {
     }).start();
   }, [fabSlideAnimation]);
 
+  const handleAddToCart = (itemId: string) => {
+    const expanded = expandedItems[itemId];
+    if (expanded) {
+      addItemToCurrentOrder(itemId, expanded.quantity, expanded.notes || undefined);
+      const newExpanded = { ...expandedItems };
+      delete newExpanded[itemId];
+      setExpandedItems(newExpanded);
+      Alert.alert(t('success'), t('itemAddedToCart'));
+    }
+  };
 
+  const toggleItemExpansion = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newExpanded = { ...prev };
+      if (newExpanded[itemId]) {
+        delete newExpanded[itemId];
+      } else {
+        newExpanded[itemId] = { quantity: 1, notes: '' };
+      }
+      return newExpanded;
+    });
+  };
 
+  const updateExpandedQuantity = (itemId: string, delta: number) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        quantity: Math.max(1, (prev[itemId]?.quantity || 1) + delta)
+      }
+    }));
+  };
 
-
-
-
-
+  const updateExpandedNotes = (itemId: string, notes: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: {
+        ...prev[itemId],
+        notes
+      }
+    }));
+  };
 
   const handleSubmitOrder = () => {
     if (currentOrder.length === 0) {
@@ -189,14 +224,12 @@ export default function PublicMenuScreen() {
     return item.description;
   };
 
-  const handleItemPress = (itemId: string) => {
-    router.push(`/menu-item-detail?id=${itemId}`);
-  };
-
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
+    const isExpanded = !!expandedItems[item.id];
+    const itemData = expandedItems[item.id];
     
     return (
       <View 
@@ -206,7 +239,7 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.menuItemTouchable}
           activeOpacity={0.95}
-          onPress={() => handleItemPress(item.id)}
+          onPress={() => toggleItemExpansion(item.id)}
         >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
@@ -236,6 +269,53 @@ export default function PublicMenuScreen() {
             )}
           </View>
         </TouchableOpacity>
+        
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <Text style={styles.expandedDescription} numberOfLines={3}>
+              {getItemDescription(item)}
+            </Text>
+            
+            <View style={styles.quantitySelector}>
+              <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
+              <View style={styles.quantityControls}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateExpandedQuantity(item.id, -1)}
+                >
+                  <Minus size={18} color="#3d0101" />
+                </TouchableOpacity>
+                <Text style={styles.quantityValue}>{itemData?.quantity || 1}</Text>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => updateExpandedQuantity(item.id, 1)}
+                >
+                  <Plus size={18} color="#3d0101" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TextInput
+              style={styles.notesInput}
+              placeholder={t('anySpecialRequirements')}
+              placeholderTextColor="rgba(26, 26, 26, 0.4)"
+              value={itemData?.notes || ''}
+              onChangeText={(text: string) => updateExpandedNotes(item.id, text)}
+              multiline
+              numberOfLines={2}
+            />
+
+            <TouchableOpacity
+              style={styles.addToCartButtonInline}
+              onPress={() => handleAddToCart(item.id)}
+            >
+              <ShoppingCart size={18} color="#fff" />
+              <Text style={styles.addToCartButtonText}>
+                {t('addToCart')} - {formatPrice(item.price * (itemData?.quantity || 1))}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         
         <TouchableOpacity
           style={styles.rateButtonOnCard}
@@ -2445,5 +2525,41 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700' as const,
   },
-
+  expandedContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  expandedDescription: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 18,
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center' as const,
+  },
+  addToCartButtonInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#D4AF37',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
 });

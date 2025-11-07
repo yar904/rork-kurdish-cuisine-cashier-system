@@ -36,14 +36,6 @@ function RootLayoutNav() {
         name="font-preview"
         options={{ headerShown: true, title: "Kurdish Fonts" }}
       />
-      <Stack.Screen
-        name="menu-item-detail"
-        options={{
-          presentation: "modal",
-          headerShown: false,
-          animation: "slide_from_bottom",
-        }}
-      />
     </Stack>
   );
 }

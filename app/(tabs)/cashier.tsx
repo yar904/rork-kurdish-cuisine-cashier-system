@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -28,7 +28,6 @@ export default function CashierScreen() {
   } = useRestaurant();
 
   const { t, tc } = useLanguage();
-  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
 
@@ -167,7 +166,7 @@ export default function CashierScreen() {
                 <TouchableOpacity
                   key={item.id}
                   style={[styles.menuItem, isPhone && styles.menuItemPhone, !isPhone && { width: itemWidth }]}
-                  onPress={() => router.push({ pathname: '/menu-item-detail', params: { id: item.id } })}
+                  onPress={() => addItemToCurrentOrder(item.id)}
                 >
                   {item.image && (
                     <Image
