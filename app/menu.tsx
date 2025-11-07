@@ -189,6 +189,10 @@ export default function PublicMenuScreen() {
     return item.description;
   };
 
+  const handleItemPress = (itemId: string) => {
+    router.push(`/menu-item-detail?id=${itemId}`);
+  };
+
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
@@ -202,7 +206,7 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.menuItemTouchable}
           activeOpacity={0.95}
-          onPress={() => router.push(`/menu-item-detail?id=${item.id}`)}
+          onPress={() => handleItemPress(item.id)}
         >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
