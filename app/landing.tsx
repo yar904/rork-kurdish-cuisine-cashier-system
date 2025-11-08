@@ -113,13 +113,17 @@ export default function LandingPage() {
         />
       ) : (
         <Video
-          source={{ uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV' }}
-          style={styles.background}
+          source={{ 
+            uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV',
+            overrideFileExtensionAndroid: 'mov',
+          }}
+          style={styles.videoBackground}
           resizeMode={ResizeMode.COVER}
           shouldPlay
           isLooping
           isMuted
           useNativeControls={false}
+          videoStyle={styles.videoStyle}
         />
       )}
       <View style={styles.absoluteOverlay}>
@@ -210,6 +214,19 @@ const styles = StyleSheet.create({
   },
   background: {
     ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  videoBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    width: '100%',
+    height: '100%',
+  },
+  videoStyle: {
     width: '100%',
     height: '100%',
   },
