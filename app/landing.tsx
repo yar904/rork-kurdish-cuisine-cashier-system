@@ -124,11 +124,16 @@ export default function LandingPage() {
           isMuted
           useNativeControls={false}
           videoStyle={styles.videoStyle}
+          posterSource={undefined}
+          usePoster={false}
+          rate={1.0}
+          onLoad={() => console.log('Video loaded successfully')}
+          onError={(error) => console.error('Video error:', error)}
         />
       )}
       <View style={styles.absoluteOverlay}>
         <LinearGradient
-          colors={isLargeScreen ? ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.6)'] : ['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
+          colors={isLargeScreen ? ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.6)'] : ['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)']}
           style={styles.overlay}
         >
           <ScrollView 
@@ -225,10 +230,12 @@ const styles = StyleSheet.create({
     right: 0,
     width: '100%',
     height: '100%',
+    backgroundColor: '#000',
   },
   videoStyle: {
     width: '100%',
     height: '100%',
+    backgroundColor: 'transparent',
   },
   videoPlaceholder: {
     flex: 1,
