@@ -11,7 +11,7 @@ import {
   Animated,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell, Search, Phone } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -41,6 +41,7 @@ export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [addAnimations] = useState(new Map<string, Animated.Value>());
 
   const menuQuery = trpc.menu.getAll.useQuery();
@@ -86,9 +87,21 @@ export default function CustomerOrderScreen() {
 
   const filteredMenu = useMemo(() => {
     if (!menuQuery.data) return [];
-    if (selectedCategory === 'all') return menuQuery.data.filter(item => item.available);
-    return menuQuery.data.filter(item => item.category === selectedCategory && item.available);
-  }, [menuQuery.data, selectedCategory]);
+    let items = menuQuery.data.filter(item => item.available);
+    
+    if (selectedCategory !== 'all') {
+      items = items.filter(item => item.category === selectedCategory);
+    }
+    
+    if (searchQuery.trim()) {
+      items = items.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return items;
+  }, [menuQuery.data, selectedCategory, searchQuery]);
 
   const cartTotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
@@ -221,21 +234,70 @@ export default function CustomerOrderScreen() {
           headerTitleStyle: {
             fontWeight: '700' as const,
           },
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={handleCallWaiter}
-              style={styles.callWaiterButton}
-              disabled={createServiceRequestMutation.isPending}
-            >
-              {createServiceRequestMutation.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Bell size={24} color="#fff" />
-              )}
-            </TouchableOpacity>
-          ),
         }}
       />
+
+      <View style={styles.actionButtonsRow}>
+        <TouchableOpacity
+          style={styles.circularActionButton}
+          onPress={() => {
+            Alert.alert(
+              'Search Menu',
+              'Enter search term',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+              ]
+            );
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.circularButtonIcon}>
+            <Search size={22} color="#fff" strokeWidth={2} />
+          </View>
+          <Text style={styles.circularButtonLabel}>Search</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.circularActionButton}
+          onPress={handleCallWaiter}
+          disabled={createServiceRequestMutation.isPending}
+          activeOpacity={0.7}
+        >
+          <View style={styles.circularButtonIcon}>
+            {createServiceRequestMutation.isPending ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Phone size={22} color="#fff" strokeWidth={2} />
+            )}
+          </View>
+          <Text style={styles.circularButtonLabel}>Call Waiter</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.circularActionButton}
+          onPress={() => {
+            Alert.alert(
+              'Reviews',
+              'View all customer reviews',
+              [
+                {
+                  text: 'OK',
+                  style: 'default',
+                },
+              ]
+            );
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.circularButtonIcon}>
+            <Star size={22} color="#fff" strokeWidth={2} fill="#fff" />
+          </View>
+          <Text style={styles.circularButtonLabel}>Reviews</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView
         horizontal
@@ -801,10 +863,39 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
-  callWaiterButton: {
-    padding: 8,
-    marginRight: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  actionButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  circularActionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+  },
+  circularButtonIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  circularButtonLabel: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: Colors.text,
+    textAlign: 'center' as const,
   },
 });
