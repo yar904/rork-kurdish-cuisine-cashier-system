@@ -5,7 +5,7 @@ import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { BlurView } from "expo-blur";
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -37,13 +37,17 @@ export default function TabLayout() {
         tabBarInactiveTintColor: Colors.textSecondary,
         headerShown: false,
         tabBarStyle: Platform.OS === 'ios' ? styles.iosTabBar : styles.androidTabBar,
-        tabBarBackground: Platform.OS === 'ios' ? () => (
-          <GlassView 
-            style={styles.glassBackground}
-            glassEffectStyle="regular"
-            tintColor={Colors.cream}
-          />
-        ) : undefined,
+        tabBarBackground: () => (
+          Platform.OS === 'ios' ? (
+            <BlurView
+              intensity={80}
+              tint="light"
+              style={styles.glassBackground}
+            />
+          ) : (
+            <View style={styles.androidBackground} />
+          )
+        ),
         tabBarItemStyle: styles.tabBarItem,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarIconStyle: styles.tabBarIcon,
@@ -115,9 +119,9 @@ const styles = StyleSheet.create({
     right: 0,
     height: 88,
     backgroundColor: 'transparent',
-    borderTopWidth: 0,
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(0, 0, 0, 0.05)',
     elevation: 0,
-    shadowOpacity: 0,
     paddingBottom: 34,
     paddingTop: 8,
   },
@@ -136,10 +140,11 @@ const styles = StyleSheet.create({
   },
   glassBackground: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 253, 208, 0.85)',
+  },
+  androidBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.cream,
   },
   tabBarItem: {
     paddingVertical: 4,
