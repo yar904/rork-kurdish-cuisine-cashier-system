@@ -113,7 +113,7 @@ export default function LandingPage() {
         />
       ) : (
         <Video
-          source={{ uri: 'REPLACE_WITH_YOUR_VIDEO_URL' }}
+          source={{ uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV' }}
           style={styles.background}
           resizeMode={ResizeMode.COVER}
           shouldPlay
