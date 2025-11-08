@@ -11,7 +11,7 @@ import {
   Animated,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { UtensilsCrossed, Plus, Minus, Send, ChefHat, Star } from 'lucide-react-native';
+import { UtensilsCrossed, Plus, Minus, Send, Star } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -304,7 +304,11 @@ export default function CustomerOrderScreen() {
           <View style={styles.cartSummary}>
             <View style={styles.cartHeader}>
               <View style={styles.cartIconBadge}>
-                <ChefHat size={18} color="#fff" />
+                <Image 
+                  source={require('@/assets/images/icon.png')} 
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.cartTitle}>{cart.length} items</Text>
               <Text style={styles.cartTotal}>${cartTotal.toFixed(2)}</Text>
@@ -712,5 +716,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 24,
+    height: 24,
   },
 });
