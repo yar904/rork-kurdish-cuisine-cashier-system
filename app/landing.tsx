@@ -178,7 +178,7 @@ export default function LandingPage() {
 
               <View style={styles.footerContainer}>
                 <RNText style={styles.footerText}>
-                  {selectedLang === 'en' ? 'Thank you for dining with us' : selectedLang === 'ku' ? 'سوپاس بۆ خواردنتان لەگەڵمان' : 'شكراً لتناولكم الطعام معنا'}
+                  {selectedLang === 'en' ? 'Welcome to our restaurant\nExperience authentic Kurdish cuisine' : selectedLang === 'ku' ? 'بەخێربێن بۆ چێشتخانەکەمان\nتامی خواردنی کوردی ڕەسەن' : 'مرحباً بكم في مطعمنا\nاستمتع بالمطبخ الكردي الأصيل'}
                 </RNText>
               </View>
             </View>
