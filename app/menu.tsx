@@ -342,72 +342,66 @@ export default function PublicMenuScreen() {
                       <Circle cx="100" cy="100" r="65" stroke="#D4AF37" strokeWidth="1.5" opacity="0.5" />
                       
                       <Path
-                        d="M 60 90 L 60 95 L 60 105"
+                        d="M 100 55 L 75 65 L 75 75 Q 75 100 85 105 L 85 140"
                         stroke="#D4AF37"
                         strokeWidth="2.5"
                         strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
                       />
+                      
                       <Path
-                        d="M 60 105 L 60 130"
+                        d="M 100 55 L 125 65 L 125 75 Q 125 100 115 105 L 115 140"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                      
+                      <Path
+                        d="M 70 140 Q 100 150 130 140"
                         stroke="#D4AF37"
                         strokeWidth="3"
                         strokeLinecap="round"
-                      />
-                      <Path
-                        d="M 54 90 L 54 100"
-                        stroke="#D4AF37"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <Path
-                        d="M 66 90 L 66 100"
-                        stroke="#D4AF37"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      
-                      <Path
-                        d="M 140 90 L 140 105 L 135 108 L 135 130"
-                        stroke="#D4AF37"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <Path
-                        d="M 130 94 L 135 100 L 145 100 L 150 94"
-                        stroke="#D4AF37"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
                         fill="none"
                       />
                       
                       <Ellipse
                         cx="100"
-                        cy="110"
-                        rx="28"
-                        ry="25"
+                        cy="115"
+                        rx="32"
+                        ry="28"
                         fill="none"
                         stroke="#D4AF37"
                         strokeWidth="2.5"
                       />
+                      
+                      <Circle cx="92" cy="108" r="3" fill="#D4AF37" />
+                      <Circle cx="108" cy="108" r="3" fill="#D4AF37" />
+                      
+                      <Path
+                        d="M 88 122 Q 100 128 112 122"
+                        stroke="#D4AF37"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                      
+                      <Path
+                        d="M 70 55 L 65 50 Q 60 45 60 40 Q 60 35 65 32 L 135 32 Q 140 35 140 40 Q 140 45 135 50 L 130 55 Z"
+                        fill="#D4AF37"
+                        opacity="0.7"
+                      />
                       <Ellipse
                         cx="100"
-                        cy="108"
-                        rx="24"
-                        ry="21"
-                        fill="none"
-                        stroke="#D4AF37"
-                        strokeWidth="1.5"
+                        cy="55"
+                        rx="35"
+                        ry="12"
+                        fill="#D4AF37"
                         opacity="0.5"
                       />
-                      <Path
-                        d="M 75 110 Q 100 120 125 110"
-                        stroke="#D4AF37"
-                        strokeWidth="1.5"
-                        fill="none"
-                        opacity="0.4"
-                      />
+                      <Circle cx="100" cy="40" r="4" fill="#FFFDD0" />
                     </Svg>
                   </View>
                 </View>
