@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
-import { supabase } from '@/backend/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export const getCustomerOrderHistoryProcedure = publicProcedure
   .input(
@@ -23,7 +23,7 @@ export const getCustomerOrderHistoryProcedure = publicProcedure
       throw new Error('Failed to fetch order history');
     }
 
-    return data.map((record) => ({
+    return data.map((record: any) => ({
       id: record.id,
       tableNumber: record.table_number,
       orderId: record.order_id,

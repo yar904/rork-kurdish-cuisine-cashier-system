@@ -115,7 +115,6 @@
 ## 🤖 AI Features (Powered by Rork AI)
 
 ### 1. **AI Chatbot** - Baran
-- **Location**: `components/AIChatbot.tsx`
 - **SDK**: `useRorkAgent` hook
 - **Capabilities**:
   - Answer menu questions
@@ -226,7 +225,6 @@ EXPO_PUBLIC_RORK_API_BASE_URL
 - `react-native` - UI components
 - `@tanstack/react-query` - Server state
 - `@trpc/client` - Type-safe API
-- `@rork/toolkit-sdk` - AI features
 - `@supabase/supabase-js` - Database client
 - `lucide-react-native` - Icons
 - `expo-camera` - QR scanning

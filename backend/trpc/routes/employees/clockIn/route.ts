@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../../create-context";
-import { supabase } from "@/backend/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { z } from "zod";
 
 export const clockInProcedure = publicProcedure
@@ -8,7 +8,7 @@ export const clockInProcedure = publicProcedure
       employeeId: z.string(),
     })
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: { employeeId: string } }) => {
     const { data: existingRecord } = await supabase
       .from("clock_records")
       .select("*")

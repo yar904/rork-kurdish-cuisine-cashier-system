@@ -426,7 +426,6 @@ https://your-domain.com/menu?table=5
 - Suggestions: Shorba (soup), Salad, Ayran (drink)
 
 #### **C. AI Chatbot** 💬
-**Status**: Implemented via `components/AIChatbot.tsx`
 
 **Purpose**: Answer menu questions
 

@@ -1,5 +1,5 @@
 import { publicProcedure } from "../../../create-context";
-import { supabase } from "@/backend/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { z } from "zod";
 
 export const createEmployeeProcedure = publicProcedure
@@ -12,7 +12,7 @@ export const createEmployeeProcedure = publicProcedure
       hourlyRate: z.number(),
     })
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: { name: string; role: string; phone?: string; email?: string; hourlyRate: number } }) => {
     const { data, error } = await supabase
       .from("employees")
       .insert({

@@ -10,7 +10,6 @@ import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { useEffect } from "react";
-import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
 
 const queryClient = new QueryClient();
 
@@ -41,30 +40,19 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    NotoNaskhArabic_400Regular,
-    NotoNaskhArabic_600SemiBold,
-    NotoNaskhArabic_700Bold,
-  });
-
   useEffect(() => {
     if (Platform.OS === "web") {
       const style = document.createElement("style");
       style.innerHTML = `
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
         * {
-          font-family: 'Noto Naskh Arabic', 'Montserrat', 'Segoe UI', Roboto, sans-serif;
+          font-family: 'Montserrat', 'Segoe UI', Roboto, sans-serif;
           font-weight: 600;
         }
       `;
       document.head.appendChild(style);
     }
   }, []);
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} {...({} as any)}>

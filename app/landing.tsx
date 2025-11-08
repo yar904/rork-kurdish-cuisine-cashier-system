@@ -7,10 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   ScrollView,
-  useWindowDimensions,
-  Platform,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
 
 import { useRouter } from 'expo-router';
 import { Globe } from 'lucide-react-native';
@@ -33,8 +30,6 @@ export default function LandingPage() {
   const [showLanguages, setShowLanguages] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width > 768;
 
   const handleLanguageSelect = async (lang: Language) => {
     setSelectedLang(lang);
@@ -52,24 +47,6 @@ export default function LandingPage() {
       case 'ku': return 'مینۆ';
       case 'ar': return 'القائمة';
       default: return 'مینۆ';
-    }
-  };
-
-  const getWelcomeText = () => {
-    switch(selectedLang) {
-      case 'en': return 'Welcome to our restaurant';
-      case 'ku': return 'بەخێربێن بۆ چێشتخانەکەمان';
-      case 'ar': return 'مرحباً بكم في مطعمنا';
-      default: return 'بەخێربێن بۆ چێشتخانەکەمان';
-    }
-  };
-
-  const getWelcomeSubtext = () => {
-    switch(selectedLang) {
-      case 'en': return 'Experience authentic Kurdish cuisine';
-      case 'ku': return 'تامی خواردنی کوردی ڕەسەن';
-      case 'ar': return 'استمتع بالمطبخ الكردي الأصيل';
-      default: return 'تامی خواردنی کوردی ڕەسەن';
     }
   };
 
@@ -104,36 +81,14 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      {isLargeScreen ? (
-        <LinearGradient
-          colors={['#1a0000', '#3d0101', '#1a0000']}
-          style={styles.background}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
-      ) : (
-        <Video
-          source={{ 
-            uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV',
-            overrideFileExtensionAndroid: 'mov',
-          }}
-          style={styles.videoBackground}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-          useNativeControls={false}
-          videoStyle={styles.videoStyle}
-          posterSource={undefined}
-          usePoster={false}
-          rate={1.0}
-          onLoad={() => console.log('Video loaded successfully')}
-          onError={(error) => console.error('Video error:', error)}
-        />
-      )}
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+        style={styles.background}
+        resizeMode="cover"
+      />
       <View style={styles.absoluteOverlay}>
         <LinearGradient
-          colors={isLargeScreen ? ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.6)'] : ['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)']}
+          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
           style={styles.overlay}
         >
           <ScrollView 
@@ -179,12 +134,7 @@ export default function LandingPage() {
 
             <View style={styles.spacer} />
             
-            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>              
-              <View style={styles.welcomeContainer}>
-                <RNText style={styles.welcomeTitle}>{getWelcomeText()}</RNText>
-                <RNText style={styles.welcomeSubtitle}>{getWelcomeSubtext()}</RNText>
-              </View>
-
+            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>
               <TouchableOpacity
                 style={styles.menuButton}
                 onPress={handleContinue}
@@ -203,7 +153,11 @@ export default function LandingPage() {
                 </RNText>
               </TouchableOpacity>
 
-
+              <View style={styles.footerContainer}>
+                <RNText style={styles.footerText}>
+                  {translations[selectedLang].footerText}
+                </RNText>
+              </View>
             </View>
           </ScrollView>
         </LinearGradient>
@@ -221,21 +175,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
-  },
-  videoBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#000',
-  },
-  videoStyle: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'transparent',
   },
   videoPlaceholder: {
     flex: 1,
@@ -343,29 +282,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     gap: 20,
-  },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
-    gap: 12,
-  },
-  welcomeTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 32,
-    color: Colors.gold,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.6)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  welcomeSubtitle: {
-    fontFamily: fonts.regular,
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.85)',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    lineHeight: 24,
   },
   titleContainer: {
     alignItems: 'center',

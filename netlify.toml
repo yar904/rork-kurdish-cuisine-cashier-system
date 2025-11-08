@@ -1,28 +1,32 @@
+# ================================
+#  Netlify configuration for Rork Kurdish Cuisine System
+#  (Expo Web + Hono Backend + Supabase)
+# ================================
+
 [build]
-  command = "npx expo export -p web"
+  command = "npm install --legacy-peer-deps && npm run build:backend && npm run build:web"
   publish = "dist"
-  
+  functions = "netlify/functions"
+
 [build.environment]
+  NODE_ENV = "production"
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
-  EXPO_NO_DOTENV = "1"
-  CI = "true"
 
+# Ensure backend dependencies are available
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@supabase/supabase-js", "superjson", "hono"]
+  included_files = ["backend/**"]
+
+# Redirect all API calls to the backend function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Redirect all other routes to index.html (SPA)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"

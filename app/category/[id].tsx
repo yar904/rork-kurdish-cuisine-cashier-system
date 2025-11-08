@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Platform, Modal, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Platform,
+  Modal,
+  Alert,
+} from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft, UtensilsCrossed, Plus, Minus, X } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -170,7 +181,7 @@ export default function CategoryDetailScreen() {
                   style={styles.modalAddButton}
                   onPress={handleAddToCart}
                 >
-                  <UtensilsCrossed size={20} color="#fff" />
+                  <ShoppingCart size={20} color="#fff" />
                   <Text style={styles.modalAddButtonText}>
                     {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
                   </Text>
@@ -444,7 +455,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    justifyContent: 'space-between' as const,
+    gap: 16,
+    justifyContent: 'flex-start' as const,
     paddingTop: 20,
     ...Platform.select({
       web: {
@@ -455,13 +467,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCard: {
-    width: '48%' as const,
+    width: '47%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
-    overflow: 'hidden' as const,
+    overflow: 'visible' as const,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    marginBottom: 16,
+    marginBottom: 12,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -482,15 +494,17 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 130,
+    height: 120,
     backgroundColor: '#F9FAFB',
-    borderRadius: 0,
+    borderRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 150,
+        height: 140,
       },
     }),
   },
@@ -499,22 +513,24 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-    padding: 12,
+    padding: 0,
     position: 'relative' as const,
   },
   menuItemName: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 20,
+    lineHeight: 22,
     letterSpacing: 0.3,
-    marginBottom: 8,
+    marginBottom: 6,
+    marginTop: 10,
     textAlign: 'center' as const,
+    paddingHorizontal: 10,
     ...Platform.select({
       web: {
-        fontSize: 17,
-        lineHeight: 22,
+        fontSize: 18,
+        lineHeight: 24,
       },
     }),
   },
@@ -533,10 +549,11 @@ const styles = StyleSheet.create({
     }),
   },
   priceContainer: {
+    marginBottom: 10,
     alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -544,7 +561,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 16,
+        fontSize: 17,
       },
     }),
   },

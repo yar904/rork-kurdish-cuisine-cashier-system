@@ -1,6 +1,6 @@
 import { publicProcedure } from "../../../create-context";
 import { z } from "zod";
-import { supabase } from "@/backend/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 const updateMenuItemSchema = z.object({
   id: z.string().min(1, "ID is required"),

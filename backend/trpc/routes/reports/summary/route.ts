@@ -1,6 +1,6 @@
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { z } from "zod";
-import { supabase } from "@/backend/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const reportsSummaryProcedure = publicProcedure
   .input(

@@ -7,7 +7,6 @@ The AI Chatbot feature requires an OpenAI API key to function. This guide will w
 
 ### 1. Get Your OpenAI API Key
 
-1. Go to [OpenAI Platform](https://platform.openai.com/)
 2. Sign up or log in to your account
 3. Navigate to **API Keys** section
 4. Click **Create new secret key**
@@ -22,7 +21,6 @@ Open your `.env` file in the root directory and update:
 EXPO_PUBLIC_OPENAI_API_KEY=sk-proj-your-actual-api-key-here
 ```
 
-**Replace** `your_openai_api_key_here` with your actual OpenAI API key.
 
 ### 3. Restart Development Server
 
@@ -105,7 +103,6 @@ Remove or hide the AI Chatbot button from the menu page.
 The system also includes Rork's AI SDK that can be used as an alternative:
 
 ```typescript
-import { generateText } from "@rork/toolkit-sdk";
 
 const response = await generateText({
   messages: [{ role: "user", content: "Hello!" }]
@@ -124,7 +121,3 @@ For issues related to:
 
 ## References
 
-- [OpenAI Platform](https://platform.openai.com/)
-- [OpenAI API Documentation](https://platform.openai.com/docs/api-reference)
-- [OpenAI Pricing](https://openai.com/api/pricing/)
-- [OpenAI Rate Limits](https://platform.openai.com/docs/guides/rate-limits)
