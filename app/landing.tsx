@@ -176,11 +176,7 @@ export default function LandingPage() {
                 </RNText>
               </TouchableOpacity>
 
-              <View style={styles.footerContainer}>
-                <RNText style={styles.footerText}>
-                  {selectedLang === 'en' ? 'Welcome to our restaurant\nExperience authentic Kurdish cuisine' : selectedLang === 'ku' ? 'بەخێربێن بۆ چێشتخانەکەمان\nتامی خواردنی کوردی ڕەسەن' : 'مرحباً بكم في مطعمنا\nاستمتع بالمطبخ الكردي الأصيل'}
-                </RNText>
-              </View>
+
             </View>
           </ScrollView>
         </LinearGradient>
