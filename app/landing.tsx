@@ -50,6 +50,24 @@ export default function LandingPage() {
     }
   };
 
+  const getWelcomeText = () => {
+    switch(selectedLang) {
+      case 'en': return 'Welcome to our restaurant';
+      case 'ku': return 'بەخێربێن بۆ چێشتخانەکەمان';
+      case 'ar': return 'مرحباً بكم في مطعمنا';
+      default: return 'بەخێربێن بۆ چێشتخانەکەمان';
+    }
+  };
+
+  const getWelcomeSubtext = () => {
+    switch(selectedLang) {
+      case 'en': return 'Experience authentic Kurdish cuisine';
+      case 'ku': return 'تامی خواردنی کوردی ڕەسەن';
+      case 'ar': return 'استمتع بالمطبخ الكردي الأصيل';
+      default: return 'تامی خواردنی کوردی ڕەسەن';
+    }
+  };
+
   React.useEffect(() => {
     if (!isLoading) {
       setSelectedLang(language);
@@ -134,7 +152,12 @@ export default function LandingPage() {
 
             <View style={styles.spacer} />
             
-            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>
+            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>              
+              <View style={styles.welcomeContainer}>
+                <RNText style={styles.welcomeTitle}>{getWelcomeText()}</RNText>
+                <RNText style={styles.welcomeSubtitle}>{getWelcomeSubtext()}</RNText>
+              </View>
+
               <TouchableOpacity
                 style={styles.menuButton}
                 onPress={handleContinue}
@@ -282,6 +305,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     gap: 20,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+    gap: 12,
+  },
+  welcomeTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 32,
+    color: Colors.gold,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  welcomeSubtitle: {
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    lineHeight: 24,
   },
   titleContainer: {
     alignItems: 'center',
