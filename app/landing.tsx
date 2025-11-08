@@ -8,7 +8,9 @@ import {
   ActivityIndicator,
   ScrollView,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 
 import { useRouter } from 'expo-router';
 import { Globe } from 'lucide-react-native';
@@ -110,10 +112,14 @@ export default function LandingPage() {
           end={{ x: 1, y: 1 }}
         />
       ) : (
-        <ImageBackground
-          source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+        <Video
+          source={{ uri: 'REPLACE_WITH_YOUR_VIDEO_URL' }}
           style={styles.background}
-          resizeMode="cover"
+          resizeMode={ResizeMode.COVER}
+          shouldPlay
+          isLooping
+          isMuted
+          useNativeControls={false}
         />
       )}
       <View style={styles.absoluteOverlay}>
