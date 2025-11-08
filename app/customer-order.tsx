@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,13 @@ import {
   Alert,
   Image,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, Search, Phone } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell, Search, Phone, ChevronRight } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { CATEGORY_NAMES } from '@/constants/menu';
 
 type CartItem = {
   menuItem: {
@@ -43,6 +45,8 @@ export default function CustomerOrderScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [addAnimations] = useState(new Map<string, Animated.Value>());
+  const scrollViewRef = useRef<ScrollView>(null);
+  const categoryRefs = useRef<Map<string, number>>(new Map());
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
@@ -82,8 +86,33 @@ export default function CustomerOrderScreen() {
 
   const categories = useMemo(() => {
     const cats = new Set(menuQuery.data?.map(item => item.category) || []);
-    return ['all', ...Array.from(cats)];
+    return Array.from(cats).filter(cat => cat !== 'all');
   }, [menuQuery.data]);
+
+  const getCategoryIcon = (category: string) => {
+    const icons: Record<string, string> = {
+      appetizers: '🥗',
+      soups: '🍲',
+      salads: '🥙',
+      kebabs: '🍖',
+      'rice-dishes': '🍚',
+      stews: '🍛',
+      seafood: '🦞',
+      breads: '🍞',
+      desserts: '🍰',
+      drinks: '🥤',
+      shisha: '💨',
+      'hot-drinks': '☕',
+    };
+    return icons[category] || '🍽️';
+  };
+
+  const scrollToCategory = (category: string) => {
+    const yOffset = categoryRefs.current.get(category);
+    if (yOffset !== undefined && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: yOffset - 20, animated: true });
+    }
+  };
 
   const filteredMenu = useMemo(() => {
     if (!menuQuery.data) return [];
@@ -299,34 +328,43 @@ export default function CustomerOrderScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesScroll}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryChip,
-              selectedCategory === category && styles.categoryChipActive,
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text
-              style={[
-                styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive,
-              ]}
+      <View style={styles.exploreCategoriesSection}>
+        <View style={styles.exploreCategoriesHeader}>
+          <Text style={styles.exploreCategoriesTitle}>Explore Categories</Text>
+          <ChevronRight size={20} color={Colors.primary} strokeWidth={3} />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryCardsContainer}
+          decelerationRate="fast"
+          snapToInterval={Dimensions.get('window').width * 0.35 + 12}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={styles.categoryCard}
+              onPress={() => {
+                setSelectedCategory(category);
+                scrollToCategory(category);
+              }}
+              activeOpacity={0.8}
             >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <View style={styles.categoryCardGradient}>
+                <Text style={styles.categoryCardIcon}>{getCategoryIcon(category)}</Text>
+                <Text style={styles.categoryCardTitle}>
+                  {CATEGORY_NAMES[category] || category}
+                </Text>
+                <View style={styles.categoryCardArrow}>
+                  <ChevronRight size={16} color="rgba(255,255,255,0.8)" strokeWidth={3} />
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-      <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.menuList} showsVerticalScrollIndicator={false}>
         {filteredMenu.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🍽️</Text>
@@ -335,7 +373,28 @@ export default function CustomerOrderScreen() {
           </View>
         ) : (
           <>
-            {filteredMenu.map((item) => {
+            {categories.map((category) => {
+              const categoryItems = filteredMenu.filter(item => item.category === category);
+              if (categoryItems.length === 0) return null;
+              
+              return (
+                <View 
+                  key={category}
+                  onLayout={(event) => {
+                    const { y } = event.nativeEvent.layout;
+                    categoryRefs.current.set(category, y);
+                  }}
+                >
+                  <View style={styles.categorySection}>
+                    <View style={styles.categorySectionHeader}>
+                      <Text style={styles.categorySectionIcon}>{getCategoryIcon(category)}</Text>
+                      <Text style={styles.categorySectionTitle}>
+                        {CATEGORY_NAMES[category] || category}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {categoryItems.map((item) => {
               const itemReviews = mockReviews.filter(r => r.menuItemId === item.id);
               const avgRating = itemReviews.length > 0 
                 ? itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length 
@@ -346,46 +405,49 @@ export default function CustomerOrderScreen() {
                 addAnimations.set(item.id, scaleAnim);
               }
 
-              return (
-                <Animated.View 
-                  key={item.id} 
-                  style={[styles.menuItem, { transform: [{ scale: scaleAnim }] }]}
-                >
-                  {item.image && (
-                    <View style={styles.imageContainer}>
-                      <Image source={{ uri: item.image }} style={styles.menuImage} />
-                      {avgRating > 0 && (
-                        <View style={styles.ratingBadge}>
-                          <Star size={12} color="#fff" fill="#fff" />
-                          <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                    return (
+                      <Animated.View 
+                        key={item.id} 
+                        style={[styles.menuItem, { transform: [{ scale: scaleAnim }] }]}
+                      >
+                        {item.image && (
+                          <View style={styles.imageContainer}>
+                            <Image source={{ uri: item.image }} style={styles.menuImage} />
+                            {avgRating > 0 && (
+                              <View style={styles.ratingBadge}>
+                                <Star size={12} color="#fff" fill="#fff" />
+                                <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
+                        <View style={styles.menuInfo}>
+                          <Text style={styles.menuName}>{item.name}</Text>
+                          <Text style={styles.menuDescription} numberOfLines={2}>
+                            {item.description}
+                          </Text>
+                          <View style={styles.priceContainer}>
+                            <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
+                          </View>
                         </View>
-                      )}
-                    </View>
-                  )}
-                  <View style={styles.menuInfo}>
-                    <Text style={styles.menuName}>{item.name}</Text>
-                    <Text style={styles.menuDescription} numberOfLines={2}>
-                      {item.description}
-                    </Text>
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => addToCart({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      description: item.description,
-                      image: item.image,
-                      category: item.category,
-                    })}
-                    activeOpacity={0.7}
-                  >
-                    <Plus size={22} color="#fff" strokeWidth={2.5} />
-                  </TouchableOpacity>
-                </Animated.View>
+                        <TouchableOpacity
+                          style={styles.addButton}
+                          onPress={() => addToCart({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            description: item.description,
+                            image: item.image,
+                            category: item.category,
+                          })}
+                          activeOpacity={0.7}
+                        >
+                          <Plus size={22} color="#fff" strokeWidth={2.5} />
+                        </TouchableOpacity>
+                      </Animated.View>
+                    );
+                  })}
+                </View>
               );
             })}
             
@@ -504,35 +566,89 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.backgroundGray,
   },
-  categoriesScroll: {
+  exploreCategoriesSection: {
     backgroundColor: Colors.background,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  categoriesContent: {
-    padding: 12,
-    gap: 8,
+  exploreCategoriesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
-  categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  exploreCategoriesTitle: {
+    fontSize: 22,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    letterSpacing: -0.5,
+  },
+  categoryCardsContainer: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  categoryCard: {
+    width: Dimensions.get('window').width * 0.35,
+    height: 140,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundGray,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    overflow: 'hidden',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  categoryChipActive: {
+  categoryCardGradient: {
+    flex: 1,
     backgroundColor: Colors.primary,
+    padding: 16,
+    justifyContent: 'space-between',
+    position: 'relative',
   },
-  categoryText: {
+  categoryCardIcon: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  categoryCardTitle: {
     fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.textSecondary,
-    textTransform: 'capitalize' as const,
-  },
-  categoryTextActive: {
+    fontWeight: '800' as const,
     color: '#fff',
+    letterSpacing: -0.3,
+    lineHeight: 18,
+  },
+  categoryCardArrow: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categorySection: {
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  categorySectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.primary,
+  },
+  categorySectionIcon: {
+    fontSize: 28,
+  },
+  categorySectionTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    letterSpacing: -0.5,
   },
   menuList: {
     flex: 1,
