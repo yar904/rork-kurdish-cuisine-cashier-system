@@ -913,7 +913,7 @@ export default function PublicMenuScreen() {
           <View style={styles.footerDivider} />
           
           <Text style={styles.footerText}>
-            {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
+            {language === 'en' ? 'Thank you for dining with us' : language === 'ku' ? 'سوپاس بۆ خواردنتان لەگەڵمان' : 'شكراً لتناولكم الطعام معنا'}
           </Text>
         </View>
       </ScrollView>

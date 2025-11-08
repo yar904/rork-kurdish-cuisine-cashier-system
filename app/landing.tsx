@@ -155,7 +155,7 @@ export default function LandingPage() {
 
               <View style={styles.footerContainer}>
                 <RNText style={styles.footerText}>
-                  {translations[selectedLang].footerText}
+                  {selectedLang === 'en' ? 'Thank you for dining with us' : selectedLang === 'ku' ? 'سوپاس بۆ خواردنتان لەگەڵمان' : 'شكراً لتناولكم الطعام معنا'}
                 </RNText>
               </View>
             </View>
