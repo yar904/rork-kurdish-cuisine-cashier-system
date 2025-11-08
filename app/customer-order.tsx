@@ -329,17 +329,7 @@ export default function CustomerOrderScreen() {
       <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
         {filteredMenu.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-              <View style={styles.iconRing1} />
-              <View style={styles.iconRing2} />
-              <View style={styles.iconCircle}>
-                <Image 
-                  source={require('@/assets/images/icon.png')} 
-                  style={styles.emptyLogo}
-                  resizeMode="contain"
-                />
-              </View>
-            </View>
+            <Text style={styles.emptyIcon}>🍽️</Text>
             <Text style={styles.emptyTitle}>No items available</Text>
             <Text style={styles.emptySubtitle}>Try selecting a different category</Text>
           </View>
@@ -728,39 +718,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 100,
   },
-  emptyIconContainer: {
-    position: 'relative',
-    width: 200,
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  iconRing1: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 2,
-    borderColor: 'rgba(203, 161, 53, 0.3)',
-  },
-  iconRing2: {
-    position: 'absolute',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 2,
-    borderColor: 'rgba(203, 161, 53, 0.5)',
-  },
-  iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(203, 161, 53, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: Colors.gold,
+  emptyIcon: {
+    fontSize: 80,
+    marginBottom: 24,
   },
   emptyTitle: {
     fontSize: 24,
