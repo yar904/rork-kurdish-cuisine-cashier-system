@@ -11,7 +11,7 @@ import {
   Animated,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { UtensilsCrossed, Plus, Minus, Send, Star } from 'lucide-react-native';
+import { Plus, Minus, Send, Star } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -200,7 +200,11 @@ export default function CustomerOrderScreen() {
               <View style={styles.iconRing1} />
               <View style={styles.iconRing2} />
               <View style={styles.iconCircle}>
-                <UtensilsCrossed size={48} color={Colors.gold} strokeWidth={1.5} />
+                <Image 
+                  source={require('@/assets/images/icon.png')} 
+                  style={styles.emptyLogo}
+                  resizeMode="contain"
+                />
               </View>
             </View>
             <Text style={styles.emptyTitle}>No items available</Text>
@@ -721,5 +725,9 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 24,
     height: 24,
+  },
+  emptyLogo: {
+    width: 60,
+    height: 60,
   },
 });
