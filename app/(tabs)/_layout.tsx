@@ -59,7 +59,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="waiter"
         options={{
-          title: t('waiter'),
+          title: 'Manager',
           tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/waiter' : null,
         }}

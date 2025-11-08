@@ -11,7 +11,7 @@ import {
   Animated,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
@@ -63,6 +63,19 @@ export default function CustomerOrderScreen() {
     },
     onError: (error) => {
       Alert.alert('Error', error.message);
+    },
+  });
+
+  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
+    onSuccess: (data) => {
+      Alert.alert(
+        'Request Sent!',
+        'A staff member will assist you shortly.',
+        [{ text: 'OK' }]
+      );
+    },
+    onError: (error) => {
+      Alert.alert('Error', 'Failed to send request. Please try again.');
     },
   });
 
@@ -145,6 +158,51 @@ export default function CustomerOrderScreen() {
     });
   };
 
+  const handleCallWaiter = () => {
+    if (!table) {
+      Alert.alert('Error', 'Table number not found');
+      return;
+    }
+
+    Alert.alert(
+      'Request Service',
+      'What do you need help with?',
+      [
+        {
+          text: 'Call Waiter',
+          onPress: () => {
+            createServiceRequestMutation.mutate({
+              tableNumber: parseInt(table),
+              requestType: 'waiter',
+              message: 'Customer requesting assistance',
+            });
+          },
+        },
+        {
+          text: 'Request Bill',
+          onPress: () => {
+            createServiceRequestMutation.mutate({
+              tableNumber: parseInt(table),
+              requestType: 'bill',
+              message: 'Customer requesting bill',
+            });
+          },
+        },
+        {
+          text: 'Report Issue',
+          onPress: () => {
+            createServiceRequestMutation.mutate({
+              tableNumber: parseInt(table),
+              requestType: 'wrong-order',
+              message: 'Customer reporting an issue',
+            });
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
   if (menuQuery.isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -163,6 +221,19 @@ export default function CustomerOrderScreen() {
           headerTitleStyle: {
             fontWeight: '700' as const,
           },
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handleCallWaiter}
+              style={styles.callWaiterButton}
+              disabled={createServiceRequestMutation.isPending}
+            >
+              {createServiceRequestMutation.isPending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Bell size={24} color="#fff" />
+              )}
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -729,5 +800,11 @@ const styles = StyleSheet.create({
   emptyLogo: {
     width: 60,
     height: 60,
+  },
+  callWaiterButton: {
+    padding: 8,
+    marginRight: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

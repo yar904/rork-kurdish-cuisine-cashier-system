@@ -10,7 +10,7 @@ import { Colors } from '@/constants/colors';
 
 
 
-export default function WaiterScreen() {
+export default function ManagerScreen() {
   const { orders, updateOrderStatus, readyNotification } = useRestaurant();
   const { t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
@@ -147,7 +147,7 @@ export default function WaiterScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - ${t('waiter')}`,
+        title: `${t('restaurantName')} - Manager`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
