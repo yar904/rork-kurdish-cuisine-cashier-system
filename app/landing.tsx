@@ -7,6 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
@@ -30,6 +31,8 @@ export default function LandingPage() {
   const [showLanguages, setShowLanguages] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
 
   const handleLanguageSelect = async (lang: Language) => {
     setSelectedLang(lang);
@@ -99,14 +102,23 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
-        style={styles.background}
-        resizeMode="cover"
-      />
+      {isLargeScreen ? (
+        <LinearGradient
+          colors={['#1a0000', '#3d0101', '#1a0000']}
+          style={styles.background}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      ) : (
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+          style={styles.background}
+          resizeMode="cover"
+        />
+      )}
       <View style={styles.absoluteOverlay}>
         <LinearGradient
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
+          colors={isLargeScreen ? ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.6)'] : ['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
           style={styles.overlay}
         >
           <ScrollView 
