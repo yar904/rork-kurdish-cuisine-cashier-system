@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   },
   exploreCategoriesSection: {
     paddingVertical: 12,
-    marginBottom: -8,
+    marginBottom: 0,
   },
   exploreCategoriesHeader: {
     flexDirection: 'row',
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold,
   },
   categorySection: {
-    marginTop: 8,
+    marginTop: 0,
     marginBottom: 12,
   },
   categorySectionHeader: {
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
   },
   menuListContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 0,
     paddingBottom: 140,
   },
   menuItem: {
