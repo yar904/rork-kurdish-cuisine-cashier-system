@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 .npm-cache/
+bun.lockb
 
 # Expo
 .expo/
@@ -33,6 +34,8 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.bak
 .env*.local
 
 # typescript

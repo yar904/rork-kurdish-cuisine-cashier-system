@@ -4,20 +4,20 @@
   "description": "Full-stack Expo + Supabase + Hono backend deployed on Netlify",
   "main": "expo-router/entry",
   "scripts": {
-    "prestart": "bash scripts/startup-sync.sh",
-    "start": "npx expo start --tunnel",
-    "start:web": "npx expo start --web --tunnel",
-    "start:mobile": "npx expo start --tunnel",
-    "dev": "concurrently \"npm run start\" \"npm --prefix backend run start\"",
+    "sync": "bash scripts/startup-sync.sh && bash scripts/auto-heal.sh",
+    "start": "npm run start:mobile",
+    "start:web": "npm run sync && expo start --web --tunnel",
+    "start:mobile": "npm run sync && expo start --tunnel",
+    "start:fullstack": "npm run sync && cd backend && npm run dev",
+    "dev": "concurrently \"npm run start:mobile\" \"npm --prefix backend run start\"",
     "build:backend": "node scripts/install-backend.js && npm --prefix backend run build",
     "build:web": "npx expo export --platform web --output-dir dist --clear",
     "build:full": "npm run build:backend && npm run build:web",
-    "build": "node scripts/automated-build.mjs",
+    "build": "npm run sync && npx netlify deploy --prod",
     "doctor": "npx expo doctor",
     "prebuild": "npx expo prebuild --clean",
     "health:check": "node scripts/auto-health-check.mjs",
-    "resync": "node scripts/resync-live.mjs",
-    "sync:start": "bash scripts/startup-sync.sh"
+    "resync": "node scripts/resync-live.mjs"
   },
   "dependencies": {
     "@nkzw/create-context-hook": "1.1.0",
@@ -53,6 +53,7 @@
     "concurrently": "8.2.2",
     "eslint": "9.31.0",
     "eslint-config-expo": "9.2.0",
+    "netlify-cli": "17.34.1",
     "typescript": "5.7.3"
   },
   "private": true
