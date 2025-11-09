@@ -12,7 +12,8 @@
     "build": "node scripts/automated-build.mjs",
     "doctor": "npx expo doctor",
     "prebuild": "npx expo prebuild --clean",
-    "health:check": "node scripts/auto-health-check.mjs"
+    "health:check": "node scripts/auto-health-check.mjs",
+    "resync": "node scripts/resync-live.mjs"
   },
   "dependencies": {
     "@nkzw/create-context-hook": "1.1.0",

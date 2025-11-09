@@ -56,6 +56,17 @@ npm run dev
 - Access backend endpoints at `http://localhost:3000/api/*` while the server is running.
 
 ## 5. Building and validation
+### Resync to the latest live branch
+To mirror the production GitHub branch, run the automated resync script. It executes the `git fetch && git reset --hard` workflow, clears local installs, reinstalls dependencies, runs the full build, and falls back to Expo web preview if the build fails.
+
+```bash
+npm run resync
+```
+
+- Requires an `origin` remote pointing at the live repository.
+- Clears both root and backend `node_modules` folders along with lock files before reinstalling with npm (no bun involvement).
+- If `npm run build` exits non-zero the script automatically starts `npx expo start --web --tunnel` so the preview stays available while you investigate logs.
+
 ### Backend build
 ```bash
 npm run build:backend
