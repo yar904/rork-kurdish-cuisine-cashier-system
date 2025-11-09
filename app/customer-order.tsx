@@ -14,7 +14,7 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, Search, Phone, ChevronRight, Globe, Utensils } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell, Search, Phone, ChevronRight, Globe, Utensils, Receipt, MessageCircle } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES } from '@/constants/menu';
@@ -58,6 +58,13 @@ export default function CustomerOrderScreen() {
   const lastScrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const categoryTranslateY = useRef(new Animated.Value(0)).current;
+  
+  const [buttonScales] = useState({
+    reviews: new Animated.Value(1),
+    waiter: new Animated.Value(1),
+    order: new Animated.Value(1),
+    bill: new Animated.Value(1),
+  });
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
@@ -249,49 +256,61 @@ export default function CustomerOrderScreen() {
     scrollY.current = currentScrollY;
   }, [headerTranslateY, categoryTranslateY]);
 
+  const animateButton = (button: keyof typeof buttonScales) => {
+    Animated.sequence([
+      Animated.timing(buttonScales[button], {
+        toValue: 0.85,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonScales[button], {
+        toValue: 1,
+        friction: 3,
+        tension: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleCallWaiter = () => {
+    animateButton('waiter');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
-    Alert.alert(
-      'Request Service',
-      'What do you need help with?',
-      [
-        {
-          text: 'Call Waiter',
-          onPress: () => {
-            createServiceRequestMutation.mutate({
-              tableNumber: parseInt(table),
-              requestType: 'waiter',
-              message: 'Customer requesting assistance',
-            });
-          },
-        },
-        {
-          text: 'Request Bill',
-          onPress: () => {
-            createServiceRequestMutation.mutate({
-              tableNumber: parseInt(table),
-              requestType: 'bill',
-              message: 'Customer requesting bill',
-            });
-          },
-        },
-        {
-          text: 'Report Issue',
-          onPress: () => {
-            createServiceRequestMutation.mutate({
-              tableNumber: parseInt(table),
-              requestType: 'wrong-order',
-              message: 'Customer reporting an issue',
-            });
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
+    createServiceRequestMutation.mutate({
+      tableNumber: parseInt(table),
+      requestType: 'waiter',
+      message: 'Customer requesting assistance',
+    });
+  };
+
+  const handleRequestBill = () => {
+    animateButton('bill');
+    if (!table) {
+      Alert.alert('Error', 'Table number not found');
+      return;
+    }
+
+    createServiceRequestMutation.mutate({
+      tableNumber: parseInt(table),
+      requestType: 'bill',
+      message: 'Customer requesting bill',
+    });
+  };
+
+  const handleViewOrder = () => {
+    animateButton('order');
+    if (cart.length === 0) {
+      Alert.alert('No Items', 'Your cart is empty. Browse our menu to add items!');
+      return;
+    }
+  };
+
+  const handleReviews = () => {
+    animateButton('reviews');
+    Alert.alert('Reviews', 'Customer reviews coming soon!');
   };
 
   if (menuQuery.isLoading) {
@@ -524,6 +543,52 @@ export default function CustomerOrderScreen() {
         )}
       </ScrollView>
 
+      <View style={styles.bottomActionsBar}>
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={handleReviews}
+          activeOpacity={1}
+        >
+          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
+            <Star size={20} color={Colors.gold} strokeWidth={2.5} />
+            <Text style={styles.actionButtonText}>Reviews</Text>
+          </Animated.View>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={handleCallWaiter}
+          activeOpacity={1}
+        >
+          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
+            <Bell size={20} color={Colors.cream} strokeWidth={2.5} />
+            <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call Waiter</Text>
+          </Animated.View>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.actionButtonHighlight]}
+          onPress={handleViewOrder}
+          activeOpacity={1}
+        >
+          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
+            <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+            <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
+          </Animated.View>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={handleRequestBill}
+          activeOpacity={1}
+        >
+          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
+            <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+            <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request Bill</Text>
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
           <View style={styles.cartSummary}>
@@ -741,7 +806,7 @@ const styles = StyleSheet.create({
   menuListContent: {
     paddingHorizontal: 16,
     paddingTop: 0,
-    paddingBottom: 140,
+    paddingBottom: 220,
   },
   menuItem: {
     flexDirection: 'row',
@@ -828,13 +893,69 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  bottomActionsBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    paddingBottom: 14,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 16,
+    gap: 6,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  actionButtonHighlight: {
+    backgroundColor: Colors.gold,
+    borderColor: Colors.goldDark,
+  },
+  actionButtonInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  actionButtonText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: Colors.cream,
+    textAlign: 'center' as const,
+    letterSpacing: -0.2,
+  },
+  actionButtonTextLight: {
+    color: Colors.cream,
+  },
+  actionButtonTextDark: {
+    color: Colors.primary,
+  },
   cartFooter: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
     backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 16,
+    maxHeight: 320,
   },
   cartSummary: {
     marginBottom: 12,
