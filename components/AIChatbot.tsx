@@ -9,10 +9,11 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { Send, Sparkles, X, Info, Bell, Users, MessageCircle } from "lucide-react-native";
+import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
+import { useRorkAgent } from "@/lib/rork-toolkit-sdk";
 
 interface AIChatbotProps {
   onClose: () => void;
@@ -20,72 +21,70 @@ interface AIChatbotProps {
 }
 
 export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { selectedTable } = useRestaurant();
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<ScrollView>(null);
+  const hasShownWelcome = useRef(false);
 
-  // 🌍 SYSTEM prompt
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
-You help customers place orders, track their meals, and call staff when needed.
+You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently with perfect understanding.
+You help customers place orders, track their meals, answer questions about menu items, and call staff when needed.
 The current table is ${selectedTable}.
-Be concise, friendly, and reply in ${language}.`;
 
-  // 🧠 Send message to OpenAI API (real responses)
-  const sendMessage = async () => {
+Language Rules:
+- If the customer writes in Kurdish (کوردی), reply in Kurdish
+- If the customer writes in Arabic (عربي), reply in Arabic
+- If the customer writes in English, reply in English
+- You can understand and switch between all three languages seamlessly
+- Maintain the same language throughout the conversation unless the customer switches
+
+Personality:
+- Be warm, welcoming, and helpful
+- Use culturally appropriate greetings and expressions
+- Show Kurdish hospitality and friendliness
+- Be professional yet personable
+- Help customers feel comfortable and valued
+
+Capabilities:
+- Answer questions about menu items, ingredients, and preparation
+- Help customers place orders
+- Track order status
+- Call waiters or staff when needed
+- Provide recommendations based on preferences
+- Assist with special dietary requirements or allergies
+- Explain Kurdish dishes and traditions
+
+Remember: You represent Tapse's commitment to excellent customer service in all languages.`;
+
+  const { messages, sendMessage: sendRorkMessage } = useRorkAgent({
+    systemPrompt,
+    tools: {},
+  });
+
+  const sendMessage = () => {
     if (!input.trim()) return;
-
-    const newMessage = { role: "user", content: input };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
+    const message = input;
     setInput("");
-
-    try {
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...updated.map((m) => ({
-                role: m.role as "user" | "assistant",
-                content: m.content,
-              })),
-            ],
-          }),
-        }
-      );
-
-      const data = await response.json();
-      const aiReply = data.choices?.[0]?.message?.content || "Sorry, I couldn’t respond.";
-
-      setMessages((prev) => [...prev, { role: "assistant", content: aiReply }]);
-    } catch (err) {
-      console.error("AI error:", err);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "⚠️ Network error. Try again." },
-      ]);
-    }
+    sendRorkMessage(message);
   };
 
   useEffect(() => {
-    if (visible && messages.length === 0) {
-      setMessages([
-        {
-          role: "assistant",
-          content: t("welcomeMessage") || "👋 Welcome! I'm Baran, your AI assistant. How can I help?",
-        },
-      ]);
+    if (visible && !hasShownWelcome.current) {
+      const welcomeMessage = language === 'ku' 
+        ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
+        : language === 'ar'
+        ? `مرحباً بك في مطعم تابسي السليماني! 🌟\n\nأنا باران، مساعدك الرقمي الذكي. يمكنني مساعدتك في:\n\n✨ الاستفسار عن القائمة والأطباق\n🍽️ طلب الطعام\n📋 تتبع طلبك\n👋 استدعاء النادل\n\nكيف يمكنني مساعدتك اليوم؟ 😊`
+        : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
+      
+      sendRorkMessage(welcomeMessage);
+      hasShownWelcome.current = true;
     }
-  }, [visible]);
+    
+    if (!visible) {
+      hasShownWelcome.current = false;
+    }
+  }, [visible, language]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
@@ -95,15 +94,18 @@ Be concise, friendly, and reply in ${language}.`;
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.aiIcon}>
             <Sparkles size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Baran AI Assistant</Text>
-            <Text style={styles.headerSubtitle}>Your digital waiter at Tapse</Text>
+            <Text style={styles.headerTitle}>
+              {language === 'ku' ? 'یاریدەدەری AI بارانم' : language === 'ar' ? 'مساعد بارانم الذكي' : 'Baran AI Assistant'}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {language === 'ku' ? 'چۆخدارە دیجیتاڵیت لە تەپسی' : language === 'ar' ? 'نادلك الرقمي في تابسي' : 'Your digital waiter at Tapse'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -111,36 +113,43 @@ Be concise, friendly, and reply in ${language}.`;
         </TouchableOpacity>
       </View>
 
-      {/* Messages */}
       <ScrollView ref={scrollRef} style={styles.messages}>
-        {messages.map((msg, i) => (
-          <View
-            key={i}
-            style={[
-              styles.message,
-              msg.role === "user" ? styles.userMsg : styles.aiMsg,
-            ]}
-          >
-            <Text
-              style={[
-                styles.messageText,
-                msg.role === "user" ? styles.userText : styles.aiText,
-              ]}
-            >
-              {msg.content}
-            </Text>
+        {messages.map((msg) => (
+          <View key={msg.id}>
+            {msg.parts.map((part: any, i: number) => {
+              if (part.type === "text") {
+                return (
+                  <View
+                    key={`${msg.id}-${i}`}
+                    style={[
+                      styles.message,
+                      msg.role === "user" ? styles.userMsg : styles.aiMsg,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.messageText,
+                        msg.role === "user" ? styles.userText : styles.aiText,
+                      ]}
+                    >
+                      {part.text}
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            })}
           </View>
         ))}
       </ScrollView>
 
-      {/* Input */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.inputRow}
       >
         <TextInput
           style={styles.input}
-          placeholder="Ask Baran..."
+          placeholder={language === 'ku' ? 'پرسیار لە بارانم بکە...' : language === 'ar' ? 'اسأل بارانم...' : 'Ask Baran...'}
           placeholderTextColor="#999"
           value={input}
           onChangeText={setInput}

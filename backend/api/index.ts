@@ -10,7 +10,11 @@ export const config = { runtime: 'edge' }
 const app = new Hono().basePath('/api')
 
 app.use('*', cors({
-  origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:8081',
+    process.env.FRONTEND_URL || '*'
+  ],
   credentials: true,
 }))
 

@@ -1,17 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle, Printer } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
-import VoiceOrderButton from '@/components/VoiceOrderButton';
 import AIRecommendations from '@/components/AIRecommendations';
-import AIChatbot from '@/components/AIChatbot';
 
 
 
@@ -32,12 +30,18 @@ export default function CashierScreen() {
   const { t, tc } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
-  const [showChatbot, setShowChatbot] = useState(false);
+
   const { width } = useWindowDimensions();
   
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
+
+  const itemWidth = useMemo(() => {
+    if (isDesktop) return '23.5%';
+    if (isTablet) return '31%';
+    return '48%';
+  }, [isDesktop, isTablet]);
 
   const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
 
@@ -80,7 +84,8 @@ export default function CashierScreen() {
               } else {
                 Alert.alert(t('success'), t('orderSubmitted'));
               }
-            } catch (error) {
+            } catch (err) {
+              console.error('Submit order error:', err);
               Alert.alert('Error', 'Failed to submit order');
             }
           },
@@ -160,7 +165,7 @@ export default function CashierScreen() {
               return (
                 <TouchableOpacity
                   key={item.id}
-                  style={[styles.menuItem, isPhone && styles.menuItemPhone]}
+                  style={[styles.menuItem, isPhone && styles.menuItemPhone, !isPhone && { width: itemWidth }]}
                   onPress={() => addItemToCurrentOrder(item.id)}
                 >
                   {item.image && (
@@ -180,7 +185,7 @@ export default function CashierScreen() {
                       {item.description}
                     </Text>
                     <View style={styles.addButton}>
-                      <Plus size={18} color="#fff" />
+                      <Plus size={24} color="#fff" />
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -242,22 +247,6 @@ export default function CashierScreen() {
             tableNumber={selectedTable}
             onSelectItem={(itemId) => addItemToCurrentOrder(itemId)}
           />
-
-          <View style={styles.aiButtons}>
-            <VoiceOrderButton
-              onTranscript={(text) => {
-                console.log('Voice transcript:', text);
-                Alert.alert('Voice Order', text);
-              }}
-            />
-            <TouchableOpacity
-              style={styles.chatbotButton}
-              onPress={() => setShowChatbot(true)}
-            >
-              <MessageCircle size={20} color="#fff" />
-              <Text style={styles.chatbotButtonText}>AI Assistant</Text>
-            </TouchableOpacity>
-          </View>
 
           <ScrollView style={styles.orderItems}>
             {currentOrder.length === 0 ? (
@@ -321,17 +310,7 @@ export default function CashierScreen() {
         </View>
       </View>
 
-      <Modal
-        visible={showChatbot}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowChatbot(false)}
-      >
-        <AIChatbot
-          visible={showChatbot}
-          onClose={() => setShowChatbot(false)}
-        />
-      </Modal>
+
     </View>
   );
 }
@@ -364,6 +343,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
     backgroundColor: Colors.background,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+      },
+    }),
   },
   categoryScrollContent: {
     padding: 12,
@@ -372,12 +356,39 @@ const styles = StyleSheet.create({
   categoryButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: Colors.backgroundGray,
     marginRight: 8,
+    minWidth: 100,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   categoryButtonActive: {
     backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   categoryButtonText: {
     fontSize: 14,
@@ -389,32 +400,34 @@ const styles = StyleSheet.create({
   },
   itemsScroll: {
     flex: 1,
+    backgroundColor: Colors.backgroundGray,
   },
   itemsGrid: {
-    padding: 16,
+    padding: 24,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 12,
-    justifyContent: 'space-between' as const,
+    gap: 20,
   },
   menuItem: {
-    width: '48%',
-    minWidth: 180,
+    minWidth: 220,
     backgroundColor: Colors.background,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: 2,
     borderColor: Colors.border,
     overflow: 'hidden' as const,
-    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 3,
+        elevation: 4,
+      },
+      web: {
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
       },
     }),
   },
@@ -423,62 +436,80 @@ const styles = StyleSheet.create({
   },
   menuItemImage: {
     width: '100%',
-    height: 140,
+    height: 180,
     backgroundColor: Colors.backgroundGray,
   },
   menuItemContent: {
-    padding: 12,
+    padding: 16,
   },
   menuItemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   menuItemName: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     flex: 1,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
+    marginLeft: 8,
   },
   menuItemKurdish: {
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  menuItemDescription: {
     fontSize: 14,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  menuItemDescription: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: Colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
+    marginBottom: 8,
   },
   addButton: {
-    marginTop: 8,
+    marginTop: 12,
     alignSelf: 'flex-end',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   orderSection: {
-    width: 400,
+    width: 440,
     backgroundColor: Colors.background,
-    borderLeftWidth: 1,
+    borderLeftWidth: 2,
     borderColor: Colors.border,
+    ...Platform.select({
+      web: {
+        boxShadow: '-4px 0 12px rgba(0,0,0,0.08)',
+      },
+    }),
   },
   orderSectionTablet: {
-    width: 380,
+    width: 400,
   },
   orderSectionDesktop: {
-    width: 420,
+    width: 480,
   },
   orderSectionMobile: {
     width: '100%',
@@ -527,21 +558,43 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tableButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 12,
     backgroundColor: Colors.backgroundGray,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   tableButtonActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   tableButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
@@ -551,48 +604,17 @@ const styles = StyleSheet.create({
   waiterInput: {
     margin: 16,
     marginTop: 0,
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     backgroundColor: Colors.backgroundGray,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.border,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.text,
+
   },
-  aiButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  chatbotButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#8B4513',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  chatbotButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-  },
+
   orderItems: {
     flex: 1,
     padding: 16,
@@ -610,58 +632,82 @@ const styles = StyleSheet.create({
   },
   orderItem: {
     backgroundColor: Colors.backgroundGray,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: Colors.border,
   },
   orderItemInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   orderItemName: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
     flex: 1,
   },
   orderItemPrice: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
   },
   orderItemControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   quantityText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
-    minWidth: 30,
+    minWidth: 40,
     textAlign: 'center' as const,
   },
   deleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderWidth: 2,
+    borderColor: Colors.error,
     marginLeft: 'auto' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.error,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   orderFooter: {
     padding: 16,
@@ -673,32 +719,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 12,
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
   },
   totalAmount: {
-    fontSize: 24,
+    fontSize: 28,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
   },
   submitButton: {
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   submitButtonDisabled: {
     backgroundColor: Colors.textLight,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#fff',
   },

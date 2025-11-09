@@ -93,6 +93,7 @@ export const translations = {
     close: 'Close',
     new: 'New',
     pleaseSelectTableFirst: 'Please select a table first',
+    pleaseScannQRCode: 'Please scan QR code',
     orderSubmittedSuccess: 'Order submitted successfully! The kitchen will begin preparing your items.',
     chooseTableDescription: 'Tap on your table number to continue',
     notAvailable: 'Not Available',
@@ -189,6 +190,7 @@ export const translations = {
     footerText: 'Experience authentic Kurdish cuisine crafted with passion and tradition',
     footerTagline: 'تەپسی سلێمانی - Where Tradition Meets Excellence',
     footerThankYou: 'Thank you for visiting!',
+    selectLanguage: 'Select Language',
   },
   ku: {
     restaurantName: 'تەپسی سلێمانی',
@@ -282,6 +284,7 @@ export const translations = {
     close: 'داخستن',
     new: 'نوێ',
     pleaseSelectTableFirst: 'تکایە یەکەم مێزێک هەڵبژێرە',
+    pleaseScannQRCode: 'تکایە کۆدی QR بسکەن',
     orderSubmittedSuccess: 'داواکاری بە سەرکەوتوویی نێردرا! چێشتخانە دەستی پێدەکات بە ئامادەکردنی شتەکانت.',
     chooseTableDescription: 'دەستی لێدە لەسەر ژمارەی مێزەکەت بۆ بەردەوامبوون',
     notAvailable: 'بەردەست نییە',
@@ -378,6 +381,7 @@ export const translations = {
     footerText: 'تامی خواردنی کوردی بە دڵسۆزی و نەریتی ڕەسەن',
     footerTagline: 'تەپسی سلێمانی - شوێنی کۆبوونەوەی نەریت و باشترین',
     footerThankYou: 'سوپاس بۆ سەردانیکردنتان!',
+    selectLanguage: 'هەڵبژاردنی زمان',
   },
   ar: {
     restaurantName: 'تەپسی سلێمانی',
@@ -471,6 +475,7 @@ export const translations = {
     close: 'إغلاق',
     new: 'جديد',
     pleaseSelectTableFirst: 'يرجى اختيار طاولة أولاً',
+    pleaseScannQRCode: 'يرجى مسح رمز QR',
     orderSubmittedSuccess: 'تم إرسال الطلب بنجاح! سيبدأ المطبخ في تحضير طلباتك.',
     chooseTableDescription: 'اضغط على رقم طاولتك للمتابعة',
     notAvailable: 'غير متاح',
@@ -567,6 +572,7 @@ export const translations = {
     footerText: 'تجربة المطبخ الكردي الأصيل المُعد بشغف وتقاليد عريقة',
     footerTagline: 'تەپسی سلێمانی - حيث يلتقي التقليد بالتميز',
     footerThankYou: 'شكراً لزيارتكم!',
+    selectLanguage: 'اختر اللغة',
   },
 };
 

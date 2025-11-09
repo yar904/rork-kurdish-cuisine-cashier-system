@@ -1,0 +1,3 @@
+# Logs directory for build health reports
+build_health.json
+*.log

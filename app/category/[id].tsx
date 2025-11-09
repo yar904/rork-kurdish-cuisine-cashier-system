@@ -1,26 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  useWindowDimensions,
-  Platform,
-  Modal,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Platform, Modal, Alert } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ArrowLeft, ShoppingCart, Plus, Minus, X } from 'lucide-react-native';
+import { Search, Globe, ArrowLeft, UtensilsCrossed, Plus, Minus, X } from 'lucide-react-native';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
-import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 
@@ -37,7 +24,6 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
-  const { width } = useWindowDimensions();
   
 
 
@@ -77,37 +63,38 @@ export default function CategoryDetailScreen() {
 
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     return (
-      <TouchableOpacity 
+      <View 
         key={item.id} 
         style={styles.menuItemCard}
-        activeOpacity={0.95}
-        onPress={() => {
-          setSelectedItem(item);
-          setItemQuantity(1);
-          setItemNotes('');
-        }}
       >
-        {item.image && (
-          <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.menuItemImage}
-              resizeMode="cover"
-            />
+        <TouchableOpacity 
+          style={{ flex: 1 }}
+          activeOpacity={0.95}
+          onPress={() => {
+            setSelectedItem(item);
+            setItemQuantity(1);
+            setItemNotes('');
+          }}
+        >
+          {item.image && (
+            <View style={styles.imageContainer}>
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.menuItemImage}
+                resizeMode="cover"
+              />
+            </View>
+          )}
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemName} numberOfLines={2}>
+              {getItemName(item)}
+            </Text>
+            <View style={styles.priceContainer}>
+              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+            </View>
           </View>
-        )}
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemName} numberOfLines={1}>
-            {getItemName(item)}
-          </Text>
-          <Text style={styles.menuItemDescription} numberOfLines={2}>
-            {getItemDescription(item)}
-          </Text>
-          <View style={styles.priceContainer}>
-            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -183,7 +170,7 @@ export default function CategoryDetailScreen() {
                   style={styles.modalAddButton}
                   onPress={handleAddToCart}
                 >
-                  <ShoppingCart size={20} color="#fff" />
+                  <UtensilsCrossed size={20} color="#fff" />
                   <Text style={styles.modalAddButtonText}>
                     {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
                   </Text>
@@ -258,12 +245,6 @@ export default function CategoryDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.plaidPattern} />
-        <View style={styles.citadelPattern}>
-          <View style={styles.citadelSilhouette}>
-            <Text style={styles.citadelText}>🏰</Text>
-          </View>
-        </View>
         <View style={styles.menuGrid}>
           {filteredItems.map(renderMenuItem)}
         </View>
@@ -295,15 +276,15 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D4C5A9',
+    backgroundColor: '#3d0101',
+    position: 'relative' as const,
     ...Platform.select({
       web: {
-        maxWidth: 1920,
-        alignSelf: 'center' as const,
         width: '100%',
-        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/upm1xqonvujbq14bwsvhc')`,
+        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
       },
     }),
@@ -440,33 +421,16 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
   },
   plaidPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
-    zIndex: 0,
+    display: 'none' as const,
   },
   citadelPattern: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 300,
-    opacity: 0.12,
-    zIndex: 1,
-    overflow: 'hidden' as const,
+    display: 'none' as const,
   },
   citadelSilhouette: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: '50%' as const,
-    transform: [{ translateX: -75 }],
-    width: 150,
-    height: 150,
+    display: 'none' as const,
   },
   citadelText: {
-    fontSize: 150,
-    color: '#1A1A1A',
-    opacity: 0.3,
-    textAlign: 'center' as const,
+    display: 'none' as const,
   },
   contentContainer: {
     paddingBottom: 32,
@@ -477,87 +441,112 @@ const styles = StyleSheet.create({
     }),
   },
   menuGrid: {
+    paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    paddingHorizontal: 16,
+    justifyContent: 'space-between' as const,
     paddingTop: 20,
-    gap: 16,
-    justifyContent: 'space-evenly' as const,
     ...Platform.select({
       web: {
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
-        width: '100%',
+        justifyContent: 'center' as const,
+        gap: 20,
+        paddingHorizontal: 32,
       },
     }),
   },
   menuItemCard: {
-    width: '47%',
-    minWidth: 160,
-    maxWidth: 240,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    width: '48%' as const,
+    backgroundColor: '#3d0101',
     borderRadius: 16,
     overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(74, 21, 21, 0.1)',
+    position: 'relative' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#4A1515',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
         shadowRadius: 12,
       },
       android: {
-        elevation: 3,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 2px 16px rgba(74, 21, 21, 0.12)',
+        minWidth: 160,
+        maxWidth: 280,
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
+    height: 130,
     backgroundColor: '#F9FAFB',
+    borderRadius: 0,
+    overflow: 'hidden' as const,
+    marginBottom: 0,
+    position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        height: 150,
+      },
+    }),
   },
   menuItemImage: {
     width: '100%',
     height: '100%',
   },
   menuItemContent: {
-    padding: 14,
+    padding: 12,
+    position: 'relative' as const,
   },
   menuItemName: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1A1A1A',
-    marginBottom: 6,
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
     lineHeight: 20,
     letterSpacing: 0.3,
+    marginBottom: 8,
+    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 17,
+        lineHeight: 22,
+      },
+    }),
+  },
+  menuItemDescription: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 18,
+    fontWeight: '400' as const,
+    marginBottom: 12,
+    textAlign: 'center' as const,
+    paddingHorizontal: 12,
     ...Platform.select({
       web: {
         fontFamily: 'NotoNaskhArabic_400Regular',
       },
     }),
   },
-  menuItemDescription: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
-    fontWeight: '400' as const,
-    marginBottom: 10,
-    minHeight: 32,
-  },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center' as const,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
-    color: '#1A1A1A',
-    letterSpacing: -0.5,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.3,
+    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 16,
+      },
+    }),
   },
   emptyState: {
     padding: 60,
@@ -606,6 +595,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 1,
   },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

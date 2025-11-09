@@ -1,5 +1,5 @@
 import { publicProcedure } from "@/backend/trpc/create-context";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/backend/lib/supabase";
 import { z } from "zod";
 
 export default publicProcedure
@@ -48,6 +48,42 @@ export default publicProcedure
     if (itemsError) {
       console.error('Error creating order items:', itemsError);
       throw new Error('Failed to create order items');
+    }
+
+    for (const item of input.items) {
+      const { data: ingredients } = await supabase
+        .from('menu_item_ingredients')
+        .select('inventory_item_id, quantity_needed')
+        .eq('menu_item_id', item.menuItemId);
+
+      if (ingredients && ingredients.length > 0) {
+        for (const ingredient of ingredients) {
+          const quantityToDeduct = ingredient.quantity_needed * item.quantity;
+
+          const { data: inventoryItem } = await supabase
+            .from('inventory_items')
+            .select('current_stock')
+            .eq('id', ingredient.inventory_item_id)
+            .single();
+
+          if (inventoryItem) {
+            const newStock = inventoryItem.current_stock - quantityToDeduct;
+
+            await supabase
+              .from('inventory_items')
+              .update({ current_stock: newStock })
+              .eq('id', ingredient.inventory_item_id);
+
+            await supabase.from('stock_movements').insert({
+              inventory_item_id: ingredient.inventory_item_id,
+              movement_type: 'order',
+              quantity: -quantityToDeduct,
+              reference_id: order.id,
+              notes: `Order #${order.id} - Table ${input.tableNumber}`,
+            });
+          }
+        }
+      }
     }
 
     const { error: tableError } = await supabase

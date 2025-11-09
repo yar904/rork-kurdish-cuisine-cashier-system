@@ -250,6 +250,221 @@ export interface Database {
           created_at?: string;
         };
       };
+      employees: {
+        Row: {
+          id: string;
+          name: string;
+          role: string;
+          phone: string | null;
+          email: string | null;
+          hourly_rate: number;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          role: string;
+          phone?: string | null;
+          email?: string | null;
+          hourly_rate: number;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          role?: string;
+          phone?: string | null;
+          email?: string | null;
+          hourly_rate?: number;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      shifts: {
+        Row: {
+          id: string;
+          employee_id: string;
+          start_time: string;
+          end_time: string;
+          shift_date: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          start_time: string;
+          end_time: string;
+          shift_date: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          start_time?: string;
+          end_time?: string;
+          shift_date?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
+      clock_records: {
+        Row: {
+          id: string;
+          employee_id: string;
+          clock_in: string;
+          clock_out: string | null;
+          break_minutes: number;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          clock_in: string;
+          clock_out?: string | null;
+          break_minutes?: number;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          clock_in?: string;
+          clock_out?: string | null;
+          break_minutes?: number;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
+      inventory_items: {
+        Row: {
+          id: string;
+          name: string;
+          category: string;
+          unit: string;
+          current_stock: number;
+          minimum_stock: number;
+          cost_per_unit: number;
+          supplier_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: string;
+          unit: string;
+          current_stock: number;
+          minimum_stock: number;
+          cost_per_unit: number;
+          supplier_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          category?: string;
+          unit?: string;
+          current_stock?: number;
+          minimum_stock?: number;
+          cost_per_unit?: number;
+          supplier_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      suppliers: {
+        Row: {
+          id: string;
+          name: string;
+          contact_person: string | null;
+          phone: string | null;
+          email: string | null;
+          address: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          contact_person?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          address?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          contact_person?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          address?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      stock_movements: {
+        Row: {
+          id: string;
+          inventory_item_id: string;
+          movement_type: string;
+          quantity: number;
+          reference_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          inventory_item_id: string;
+          movement_type: string;
+          quantity: number;
+          reference_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          inventory_item_id?: string;
+          movement_type?: string;
+          quantity?: number;
+          reference_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
+      menu_item_ingredients: {
+        Row: {
+          id: string;
+          menu_item_id: string;
+          inventory_item_id: string;
+          quantity_needed: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          menu_item_id: string;
+          inventory_item_id: string;
+          quantity_needed: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          menu_item_id?: string;
+          inventory_item_id?: string;
+          quantity_needed?: number;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

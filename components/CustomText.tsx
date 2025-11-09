@@ -3,6 +3,7 @@ import { fonts } from '@/constants/colors';
 
 interface CustomTextProps extends TextProps {
   variant?: 'regular' | 'bold' | 'medium' | 'semiBold';
+  style?: any;
 }
 
 export function Text({ variant = 'regular', style, ...props }: CustomTextProps) {

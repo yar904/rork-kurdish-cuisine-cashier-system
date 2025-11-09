@@ -1,19 +1,28 @@
 {
-  "name": "backend",
+  "name": "kurdish-cuisine-cashier-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Backend server for Kurdish Cuisine Cashier System built with Hono, Bun, and Supabase",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "bun run --watch index.ts",
+    "start": "bun run index.ts",
+    "build": "bun build index.ts --outdir dist",
+    "lint": "eslint . --ext .ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@tanstack/react-query": "^5.90.7",
-    "expo": "^54.0.23",
-    "expo-cli": "^6.3.12",
-    "hono": "^4.10.4",
-    "react-query": "^3.39.3"
-  }
+    "hono": "^4.6.0",
+    "@hono/node-server": "^1.9.0",
+    "@hono/trpc-server": "^0.2.1",
+    "@trpc/server": "^10.45.22",
+    "@supabase/supabase-js": "^2.44.2",
+    "cors": "^2.8.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "eslint": "^8.56.0",
+    "@types/node": "^20.10.5"
+  },
+  "type": "module",
+  "license": "MIT"
 }

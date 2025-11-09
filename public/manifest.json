@@ -1,0 +1,49 @@
+{
+  "short_name": "Tapse",
+  "name": "Tapse Kurdish Restaurant System",
+  "description": "Complete restaurant management system for ordering, kitchen operations, and analytics",
+  "icons": [
+    {
+      "src": "/assets/images/icon.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#D84315",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["business", "food", "productivity"],
+  "lang": "en-US",
+  "dir": "auto",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Customer Menu",
+      "short_name": "Menu",
+      "url": "/menu",
+      "description": "View restaurant menu"
+    },
+    {
+      "name": "Kitchen Display",
+      "short_name": "Kitchen",
+      "url": "/kitchen",
+      "description": "View kitchen orders"
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "url": "/analytics",
+      "description": "View business analytics"
+    }
+  ]
+}

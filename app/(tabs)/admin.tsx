@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platf
 import { useState, useEffect, useRef } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare } from 'lucide-react-native';
+import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare, Package, Briefcase } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -27,7 +27,7 @@ export default function AdminScreen() {
   const [showPasswords, setShowPasswords] = useState(false);
 
   useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+    const subscription = Dimensions.addEventListener('change', ({ window }: { window: { width: number; height: number; scale: number; fontScale: number } }) => {
       setDimensions(window);
     });
     return () => subscription?.remove();
@@ -347,21 +347,59 @@ export default function AdminScreen() {
         {user.role === 'admin' && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MenuSquare size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Menu Management</Text>
+              <Settings size={24} color={Colors.primary} />
+              <Text style={styles.sectionTitle}>Management</Text>
             </View>
 
-            <TouchableOpacity
-              style={styles.menuManagementCard}
-              onPress={() => router.push('/menu-management')}
-              activeOpacity={0.7}
-            >
-              <MenuSquare size={48} color={Colors.primary} />
-              <Text style={styles.menuManagementTitle}>Manage Menu Items</Text>
-              <Text style={styles.menuManagementSubtitle}>
-                Add, edit, or remove menu items. Update prices, descriptions, and availability.
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.managementGrid}>
+              <TouchableOpacity
+                style={styles.managementCard}
+                onPress={() => router.push('/menu-management')}
+                activeOpacity={0.7}
+              >
+                <MenuSquare size={40} color={Colors.primary} />
+                <Text style={styles.managementCardTitle}>Menu Items</Text>
+                <Text style={styles.managementCardSubtitle}>
+                  Add, edit, or remove menu items
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.managementCard}
+                onPress={() => router.push('/employees')}
+                activeOpacity={0.7}
+              >
+                <Users size={40} color="#10b981" />
+                <Text style={styles.managementCardTitle}>Employees</Text>
+                <Text style={styles.managementCardSubtitle}>
+                  Manage staff, shifts & clock records
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.managementCard}
+                onPress={() => router.push('/inventory')}
+                activeOpacity={0.7}
+              >
+                <Package size={40} color="#f59e0b" />
+                <Text style={styles.managementCardTitle}>Inventory</Text>
+                <Text style={styles.managementCardSubtitle}>
+                  Track stock levels & suppliers
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.managementCard}
+                onPress={() => router.push('/table-qr-codes')}
+                activeOpacity={0.7}
+              >
+                <QrCode size={40} color="#8b5cf6" />
+                <Text style={styles.managementCardTitle}>QR Self-Order</Text>
+                <Text style={styles.managementCardSubtitle}>
+                  Customers order from their table
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -1182,5 +1220,44 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center' as const,
     lineHeight: 22,
+  },
+  managementGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  managementCard: {
+    flexBasis: '47%',
+    minWidth: 160,
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  managementCardTitle: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  managementCardSubtitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    fontWeight: '600' as const,
   },
 });
