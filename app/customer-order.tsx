@@ -628,8 +628,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 36,
-    height: 36,
+    width: 50,
+    height: 50,
   },
   tableIndicator: {
     flexDirection: 'row',
@@ -649,6 +649,7 @@ const styles = StyleSheet.create({
   },
   exploreCategoriesSection: {
     paddingVertical: 12,
+    marginBottom: -8,
   },
   exploreCategoriesHeader: {
     flexDirection: 'row',
@@ -715,7 +716,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold,
   },
   categorySection: {
-    marginTop: 16,
+    marginTop: 8,
     marginBottom: 12,
   },
   categorySectionHeader: {
@@ -723,6 +724,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingBottom: 8,
+    backgroundColor: 'transparent',
   },
   categorySectionIcon: {
     fontSize: 28,
