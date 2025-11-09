@@ -15,7 +15,7 @@ import {
   Modal,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES } from '@/constants/menu';
@@ -49,6 +49,7 @@ export default function CustomerOrderScreen() {
   
   const isCustomerMode = !!table;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isGridView, setIsGridView] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [addAnimations] = useState(new Map<string, Animated.Value>());
   const scrollViewRef = useRef<ScrollView>(null);
@@ -426,7 +427,17 @@ export default function CustomerOrderScreen() {
       <Animated.View style={[styles.exploreCategoriesSection, { transform: [{ translateY: categoryTranslateY }] }]}>
         <View style={styles.exploreCategoriesHeader}>
           <Text style={styles.exploreCategoriesTitle}>Explore Categories</Text>
-          <ChevronRight size={20} color={Colors.primary} strokeWidth={3} />
+          <TouchableOpacity 
+            onPress={() => setIsGridView(!isGridView)}
+            style={styles.viewToggleButton}
+            activeOpacity={0.7}
+          >
+            {isGridView ? (
+              <Grid3x3 size={20} color={Colors.primary} strokeWidth={2} />
+            ) : (
+              <List size={20} color={Colors.primary} strokeWidth={2} />
+            )}
+          </TouchableOpacity>
         </View>
         <ScrollView
           horizontal
@@ -504,22 +515,26 @@ export default function CustomerOrderScreen() {
                     </View>
                   </View>
                   
-                  {categoryItems.map((item) => {
-              const itemReviews = mockReviews.filter(r => r.menuItemId === item.id);
-              const avgRating = itemReviews.length > 0 
-                ? itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length 
-                : 0;
-              
-              const scaleAnim = addAnimations.get(item.id) || new Animated.Value(1);
-              if (!addAnimations.has(item.id)) {
-                addAnimations.set(item.id, scaleAnim);
-              }
+                  <View style={isGridView ? styles.menuItemsGrid : styles.menuItemsList}>
+                    {categoryItems.map((item) => {
+                const itemReviews = mockReviews.filter(r => r.menuItemId === item.id);
+                const avgRating = itemReviews.length > 0 
+                  ? itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length 
+                  : 0;
+                
+                const scaleAnim = addAnimations.get(item.id) || new Animated.Value(1);
+                if (!addAnimations.has(item.id)) {
+                  addAnimations.set(item.id, scaleAnim);
+                }
 
-                    return (
-                      <Animated.View 
-                        key={item.id} 
-                        style={[styles.menuItem, { transform: [{ scale: scaleAnim }] }]}
-                      >
+                      return (
+                        <Animated.View 
+                          key={item.id} 
+                          style={[
+                            isGridView ? styles.menuItemGrid : styles.menuItem, 
+                            { transform: [{ scale: scaleAnim }] }
+                          ]}
+                        >
                         {item.image && (
                           <View style={styles.imageContainer}>
                             <Image source={{ uri: item.image }} style={styles.menuImage} />
@@ -554,9 +569,10 @@ export default function CustomerOrderScreen() {
                         >
                           <Plus size={22} color="#fff" strokeWidth={2.5} />
                         </TouchableOpacity>
-                      </Animated.View>
-                    );
-                  })}
+                        </Animated.View>
+                      );
+                    })}
+                  </View>
                 </View>
               );
             })}
@@ -908,7 +924,10 @@ const styles = StyleSheet.create({
   },
   exploreCategoriesSection: {
     paddingVertical: 12,
-    marginBottom: 0,
+    marginBottom: 20,
+    backgroundColor: Colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   exploreCategoriesHeader: {
     flexDirection: 'row',
@@ -922,6 +941,16 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: Colors.text,
     letterSpacing: -0.5,
+  },
+  viewToggleButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.backgroundGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   categoryCardsContainer: {
     paddingHorizontal: 20,
@@ -975,8 +1004,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold,
   },
   categorySection: {
-    marginTop: 0,
-    marginBottom: 12,
+    marginTop: 24,
+    marginBottom: 24,
   },
   categorySectionHeader: {
     flexDirection: 'row',
@@ -999,7 +1028,7 @@ const styles = StyleSheet.create({
   },
   menuListContent: {
     paddingHorizontal: 16,
-    paddingTop: 0,
+    paddingTop: 20,
     paddingBottom: 220,
   },
   menuItem: {
@@ -1007,7 +1036,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: '#000',
@@ -1015,6 +1044,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 4,
+  },
+  menuItemGrid: {
+    width: '48%',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  menuItemsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  menuItemsList: {
+    flexDirection: 'column',
   },
   imageContainer: {
     position: 'relative',
