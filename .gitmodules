@@ -1,0 +1,4 @@
+# This repository does not use Git submodules.
+# Netlify previously attempted to update a phantom submodule named
+# "rork-kurdish-cuisine-cashier-system". Leaving this file present but empty
+# prevents Git from inheriting stale configuration from older clones.
