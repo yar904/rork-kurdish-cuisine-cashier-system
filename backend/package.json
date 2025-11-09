@@ -1,27 +1,19 @@
 {
-  "name": "restaurant-backend",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Backend for Rork Kurdish Cuisine Cashier System",
-  "main": "api/index.ts",
+  "main": "index.js",
   "scripts": {
-    "dev": "tsx watch --env-file=.env api/index.ts",
-    "build": "tsc",
-    "start": "tsx api/index.ts",
-    "vercel-build": "echo '✅ Edge runtime build complete'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "hono": "^4.4.3",
-    "@hono/node-server": "^1.12.0",
-    "@hono/trpc-server": "^0.3.0",
-    "@supabase/supabase-js": "^2.45.0",
-    "dotenv": "^16.4.5",
-    "zod": "^3.23.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.24",
-    "tsx": "^4.19.0",
-    "typescript": "^5.3.3"
-  },
-  "author": "Yar Khader",
-  "license": "MIT"
+    "@tanstack/react-query": "^5.90.7",
+    "expo": "^54.0.23",
+    "expo-cli": "^6.3.12",
+    "hono": "^4.10.4",
+    "react-query": "^3.39.3"
+  }
 }
