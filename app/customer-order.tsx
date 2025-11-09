@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,10 @@ import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Modal,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, Search, Phone, ChevronRight, Globe, Utensils, Receipt, MessageCircle } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES } from '@/constants/menu';
@@ -65,6 +66,11 @@ export default function CustomerOrderScreen() {
     order: new Animated.Value(1),
     bill: new Animated.Value(1),
   });
+
+  const [orderModalVisible, setOrderModalVisible] = useState(false);
+  const chefAnimScale = useRef(new Animated.Value(1)).current;
+  const chefAnimRotate = useRef(new Animated.Value(0)).current;
+  const plateAnimY = useRef(new Animated.Value(0)).current;
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
@@ -302,16 +308,65 @@ export default function CustomerOrderScreen() {
 
   const handleViewOrder = () => {
     animateButton('order');
-    if (cart.length === 0) {
-      Alert.alert('No Items', 'Your cart is empty. Browse our menu to add items!');
-      return;
-    }
+    setOrderModalVisible(true);
   };
 
   const handleReviews = () => {
     animateButton('reviews');
     Alert.alert('Reviews', 'Customer reviews coming soon!');
   };
+
+  useEffect(() => {
+    if (orderModalVisible && cart.length === 0) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(chefAnimScale, {
+              toValue: 1.08,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(chefAnimRotate, {
+              toValue: 1,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(chefAnimScale, {
+              toValue: 1,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(chefAnimRotate, {
+              toValue: 0,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+          ]),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(plateAnimY, {
+            toValue: -12,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(plateAnimY, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      chefAnimScale.stopAnimation();
+      chefAnimRotate.stopAnimation();
+      plateAnimY.stopAnimation();
+    }
+  }, [orderModalVisible, cart.length, chefAnimScale, chefAnimRotate, plateAnimY]);
 
   if (menuQuery.isLoading) {
     return (
@@ -588,6 +643,145 @@ export default function CustomerOrderScreen() {
           </Animated.View>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={orderModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setOrderModalVisible(false)}
+      >
+        <View style={styles.orderModalOverlay}>
+          <View style={styles.orderModalContent}>
+            <View style={styles.orderModalHeader}>
+              <Text style={styles.orderModalTitle}>Your Order</Text>
+              <TouchableOpacity
+                style={styles.orderModalCloseButton}
+                onPress={() => setOrderModalVisible(false)}
+              >
+                <X size={24} color="#fff" strokeWidth={2.5} />
+              </TouchableOpacity>
+            </View>
+
+            {cart.length === 0 ? (
+              <View style={styles.emptyOrderState}>
+                <View style={styles.circularGlowBackground}>
+                  <View style={[styles.circularGlowRing, styles.glowRing1]} />
+                  <View style={[styles.circularGlowRing, styles.glowRing2]} />
+                  <View style={[styles.circularGlowRing, styles.glowRing3]} />
+                </View>
+
+                <Animated.View
+                  style={[
+                    styles.chefCharacter,
+                    {
+                      transform: [
+                        { scale: chefAnimScale },
+                        {
+                          rotate: chefAnimRotate.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '5deg'],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <View style={styles.chefHead}>
+                    <View style={styles.chefHat}>
+                      <ChefHat size={80} color={Colors.gold} strokeWidth={1.5} />
+                    </View>
+                    <View style={styles.chefFace}>
+                      <View style={styles.chefEyesContainer}>
+                        <View style={styles.chefEye}>
+                          <View style={styles.chefPupil} />
+                        </View>
+                        <View style={styles.chefEye}>
+                          <View style={styles.chefPupil} />
+                        </View>
+                      </View>
+                      <View style={styles.chefSmile} />
+                    </View>
+                  </View>
+                </Animated.View>
+
+                <Animated.View
+                  style={[
+                    styles.floatingPlate,
+                    { transform: [{ translateY: plateAnimY }] },
+                  ]}
+                >
+                  <Text style={styles.plateEmoji}>🍽️</Text>
+                </Animated.View>
+
+                <Text style={styles.emptyOrderTitle}>Waiting on your order!</Text>
+                <Text style={styles.emptyOrderSubtitle}>
+                  Browse our delicious menu and start adding items
+                </Text>
+
+                <View style={styles.sparklesContainer}>
+                  <Text style={styles.sparkle}>✨</Text>
+                  <Text style={styles.sparkle}>✨</Text>
+                  <Text style={styles.sparkle}>✨</Text>
+                </View>
+              </View>
+            ) : (
+              <>
+                <ScrollView style={styles.orderModalItems}>
+                  {cart.map((item) => (
+                    <View key={item.menuItem.id} style={styles.orderModalItem}>
+                      <View style={styles.orderModalItemInfo}>
+                        <Text style={styles.orderModalItemName}>{item.menuItem.name}</Text>
+                        <Text style={styles.orderModalItemPrice}>
+                          ${(item.menuItem.price * item.quantity).toFixed(2)}
+                        </Text>
+                      </View>
+                      <View style={styles.quantityControls}>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => updateQuantity(item.menuItem.id, -1)}
+                        >
+                          <Minus size={16} color={Colors.primary} />
+                        </TouchableOpacity>
+                        <Text style={styles.quantity}>{item.quantity}</Text>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => updateQuantity(item.menuItem.id, 1)}
+                        >
+                          <Plus size={16} color={Colors.primary} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.orderModalFooter}>
+                  <View style={styles.orderModalTotal}>
+                    <Text style={styles.orderModalTotalLabel}>Total:</Text>
+                    <Text style={styles.orderModalTotalValue}>${cartTotal.toFixed(2)} IQD</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.orderModalSubmitButton}
+                    onPress={() => {
+                      handleSubmitOrder();
+                      setOrderModalVisible(false);
+                    }}
+                    disabled={createOrderMutation.isPending}
+                  >
+                    {createOrderMutation.isPending ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <>
+                        <Send size={20} color="#fff" strokeWidth={2.5} />
+                        <Text style={styles.orderModalSubmitText}>Submit Order</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
@@ -1161,5 +1355,229 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center' as const,
     paddingHorizontal: 32,
+  },
+  orderModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  orderModalContent: {
+    backgroundColor: Colors.primary,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: '85%',
+    overflow: 'hidden',
+  },
+  orderModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 24,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  orderModalTitle: {
+    fontSize: 28,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: -0.5,
+  },
+  orderModalCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyOrderState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+    minHeight: 500,
+  },
+  circularGlowBackground: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 80,
+  },
+  circularGlowRing: {
+    position: 'absolute',
+    borderRadius: 200,
+    borderWidth: 1.5,
+  },
+  glowRing1: {
+    width: 280,
+    height: 280,
+    borderColor: 'rgba(212, 175, 55, 0.15)',
+  },
+  glowRing2: {
+    width: 220,
+    height: 220,
+    borderColor: 'rgba(212, 175, 55, 0.25)',
+  },
+  glowRing3: {
+    width: 160,
+    height: 160,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+  },
+  chefCharacter: {
+    alignItems: 'center',
+    zIndex: 2,
+    marginBottom: 40,
+  },
+  chefHead: {
+    alignItems: 'center',
+  },
+  chefHat: {
+    marginBottom: -12,
+  },
+  chefFace: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#FEE8C8',
+    borderWidth: 3,
+    borderColor: Colors.gold,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  chefEyesContainer: {
+    flexDirection: 'row',
+    gap: 20,
+    marginBottom: 8,
+  },
+  chefEye: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chefPupil: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#3D0101',
+  },
+  chefSmile: {
+    width: 30,
+    height: 15,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderColor: '#3D0101',
+    backgroundColor: 'transparent',
+  },
+  floatingPlate: {
+    position: 'absolute',
+    bottom: 140,
+    right: 40,
+  },
+  plateEmoji: {
+    fontSize: 48,
+  },
+  emptyOrderTitle: {
+    fontSize: 26,
+    fontWeight: '800' as const,
+    color: Colors.gold,
+    marginBottom: 12,
+    textAlign: 'center' as const,
+    letterSpacing: -0.5,
+  },
+  emptyOrderSubtitle: {
+    fontSize: 15,
+    fontWeight: '500' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center' as const,
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  sparklesContainer: {
+    flexDirection: 'row',
+    gap: 20,
+    marginTop: 8,
+  },
+  sparkle: {
+    fontSize: 24,
+  },
+  orderModalItems: {
+    maxHeight: 400,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  orderModalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  orderModalItemInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  orderModalItemName: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  orderModalItemPrice: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: Colors.gold,
+  },
+  orderModalFooter: {
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  orderModalTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  orderModalTotalLabel: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  orderModalTotalValue: {
+    fontSize: 26,
+    fontWeight: '900' as const,
+    color: Colors.gold,
+    letterSpacing: -0.5,
+  },
+  orderModalSubmitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: Colors.gold,
+    paddingVertical: 18,
+    borderRadius: 16,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  orderModalSubmitText: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: Colors.primary,
+    letterSpacing: 0.5,
   },
 });
