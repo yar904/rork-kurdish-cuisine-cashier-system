@@ -1402,11 +1402,13 @@ const styles = StyleSheet.create({
     color: '#3d0101',
   },
   categoryImageScrollContainer: {
-    backgroundColor: 'rgba(61, 1, 1, 0.6)',
+    backgroundColor: 'transparent',
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
-    marginTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
+    marginTop: 0,
+    marginBottom: 10,
   },
   categoryImageScrollContent: {
     paddingHorizontal: 16,
