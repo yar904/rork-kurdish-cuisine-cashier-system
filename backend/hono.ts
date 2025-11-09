@@ -1,26 +1,31 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
-import { appRouter } from "./trpc/app-router";
-import { createContext } from "./trpc/create-context";
+import { appRouter } from "./trpc/app-router.js";
+import { createContext } from "./trpc/create-context.js";
 import "dotenv/config";
 
 const app = new Hono();
 
-// ✅ Allow both Netlify + Localhost
+const defaultOrigins = [
+  "http://localhost:3000",
+  "http://localhost:8081",
+  "exp://127.0.0.1:8081",
+];
+
+const configuredOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   "*",
   cors({
-    origin: [
-      "https://tapse.netlify.app",
-      "http://localhost:8081",
-      "http://localhost:3000",
-    ],
+    origin: [...configuredOrigins, ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []), ...defaultOrigins],
     credentials: true,
   })
 );
 
-// ✅ tRPC API Routes
 app.use(
   "/api/trpc/*",
   trpcServer({
@@ -29,7 +34,6 @@ app.use(
   })
 );
 
-// ✅ Health Check
 app.get("/api/health", (c) =>
   c.json({
     status: "ok",
@@ -38,11 +42,10 @@ app.get("/api/health", (c) =>
   })
 );
 
-// ✅ Supabase Test Route
 app.get("/api/test", (c) =>
   c.json({
     message: "Supabase connected successfully!",
-    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+    supabaseUrl: process.env.SUPABASE_URL || null,
   })
 );
 

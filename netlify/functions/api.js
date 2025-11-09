@@ -1,2 +1,3 @@
-import app from "../../backend/hono";
+import app from "../../backend/dist/hono.js";
+
 export default app;

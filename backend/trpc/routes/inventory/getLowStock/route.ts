@@ -1,5 +1,5 @@
-import { publicProcedure } from "../../../create-context";
-import { supabase } from "@/lib/supabase";
+import { publicProcedure } from "../../../create-context.js";
+import { supabase } from "../../../../../lib/supabase.js";
 
 export const getLowStockProcedure = publicProcedure.query(async () => {
   const { data: allItems, error } = await supabase

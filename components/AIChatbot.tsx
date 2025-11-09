@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
-import { useRorkAgent } from "@rork/toolkit-sdk";
+import { useRorkAgent } from "@/lib/rorkAgent";
 
 interface AIChatbotProps {
   onClose: () => void;
@@ -56,7 +56,7 @@ Capabilities:
 
 Remember: You represent Tapse's commitment to excellent customer service in all languages.`;
 
-  const { messages, sendMessage: sendRorkMessage } = useRorkAgent({
+  const { messages, sendMessage: sendAgentMessage, appendAssistantMessage } = useRorkAgent({
     systemPrompt,
     tools: {},
   });
@@ -65,20 +65,26 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
     if (!input.trim()) return;
     const message = input;
     setInput("");
-    sendRorkMessage(message);
+    sendAgentMessage(message);
   };
+
+  const welcomeMessage = useMemo(() => {
+    if (language === 'ku') {
+      return `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`;
+    }
+
+    if (language === 'ar') {
+      return `مرحباً بك في مطعم تابسي السليماني! 🌟\n\nأنا باران، مساعدك الرقمي الذكي. يمكنني مساعدتك في:\n\n✨ الاستفسار عن القائمة والأطباق\n🍽️ طلب الطعام\n📋 تتبع طلبك\n👋 استدعاء النادل\n\nكيف يمكنني مساعدتك اليوم؟ 😊`;
+    }
+
+    return `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
+  }, [language]);
 
   useEffect(() => {
     if (visible && messages.length === 0) {
-      const welcomeMessage = language === 'ku' 
-        ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
-        : language === 'ar'
-        ? `مرحباً بك في مطعم تابسي السليماني! 🌟\n\nأنا باران، مساعدك الرقمي الذكي. يمكنني مساعدتك في:\n\n✨ الاستفسار عن القائمة والأطباق\n🍽️ طلب الطعام\n📋 تتبع طلبك\n👋 استدعاء النادل\n\nكيف يمكنني مساعدتك اليوم؟ 😊`
-        : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
-      
-      sendRorkMessage(welcomeMessage);
+      appendAssistantMessage(welcomeMessage);
     }
-  }, [visible, language, messages.length, sendRorkMessage]);
+  }, [visible, messages.length, appendAssistantMessage, welcomeMessage]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
