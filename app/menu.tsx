@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon } from 'lucide-react-native';
+import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
@@ -187,21 +187,52 @@ export default function PublicMenuScreen() {
     });
   };
 
+  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
+    onSuccess: () => {
+      setShowWaiterToast(true);
+      Animated.sequence([
+        Animated.timing(waiterToastOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2000),
+        Animated.timing(waiterToastOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setShowWaiterToast(false));
+    },
+    onError: () => {
+      Alert.alert(t('error'), t('failedToSubmitRequest'));
+    },
+  });
+
   const handleCallWaiter = () => {
-    setShowWaiterToast(true);
-    Animated.sequence([
-      Animated.timing(waiterToastOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.delay(2000),
-      Animated.timing(waiterToastOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setShowWaiterToast(false));
+    if (!selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    createServiceRequestMutation.mutate({
+      tableNumber: selectedTable,
+      requestType: 'waiter',
+      message: 'Customer requesting assistance',
+    });
+  };
+
+  const handleRequestBill = () => {
+    if (!selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    createServiceRequestMutation.mutate({
+      tableNumber: selectedTable,
+      requestType: 'bill',
+      message: 'Customer requesting bill',
+    });
   };
 
   const handleScrollToCategories = () => {
@@ -961,7 +992,17 @@ export default function PublicMenuScreen() {
         >
           <ChefHat size={20} color="#D4AF37" strokeWidth={2} />
           <Text style={styles.waiterToastText}>
-            {language === 'en' ? 'Waiter has been notified 🍷' : language === 'ku' ? 'گارسۆن ئاگادار کرایەوە 🍷' : 'تم إعلام النادل 🍷'}
+            {language === 'en' 
+              ? (createServiceRequestMutation.variables?.requestType === 'bill' 
+                ? 'Bill request sent 💳' 
+                : 'Waiter has been notified 🍷')
+              : language === 'ku' 
+              ? (createServiceRequestMutation.variables?.requestType === 'bill'
+                ? 'داواکاری حیساب نێردرا 💳'
+                : 'گارسۆن ئاگادار کرایەوە 🍷')
+              : (createServiceRequestMutation.variables?.requestType === 'bill'
+                ? 'تم إرسال طلب الفاتورة 💳'
+                : 'تم إعلام النادل 🍷')}
           </Text>
         </Animated.View>
       )}
@@ -1074,14 +1115,14 @@ export default function PublicMenuScreen() {
 
         <TouchableOpacity
           style={styles.fabButton}
-          onPress={handleScrollToCategories}
+          onPress={handleRequestBill}
           activeOpacity={0.7}
         >
           <Animated.View style={styles.fabIconContainer}>
-            <Search size={22} color="#FFFFFF" strokeWidth={2} />
+            <Receipt size={22} color="#FFFFFF" strokeWidth={2} />
           </Animated.View>
           <Text style={styles.fabLabel}>
-            {language === 'en' ? 'Menu Search' : language === 'ku' ? 'گەڕان' : 'بحث القائمة'}
+            {language === 'en' ? 'Request Bill' : language === 'ku' ? 'داواکردنی حیساب' : 'طلب الفاتورة'}
           </Text>
         </TouchableOpacity>
       </Animated.View>
