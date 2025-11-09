@@ -1,26 +1,76 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, TextInput, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ClipboardList, DollarSign, Users, X } from 'lucide-react-native';
-import { useRestaurant } from '@/contexts/RestaurantContext';
+import { ClipboardList, DollarSign, Users, X, Bell, Receipt } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
+import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 
 
 export default function ManagerScreen() {
-  const { orders, updateOrderStatus, readyNotification } = useRestaurant();
   const { t } = useLanguage();
+  const { notifyServiceRequest } = useNotifications();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [splitBillModal, setSplitBillModal] = useState<{ visible: boolean; order: Order | null }>({ visible: false, order: null });
   const [splitPeople, setSplitPeople] = useState<string>('2');
   const { width } = useWindowDimensions();
+  const previousServiceRequestsRef = useRef<any[]>([]);
   
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
+
+  const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
+
+  const serviceRequestsQuery = trpc.serviceRequests.getAll.useQuery(undefined, {
+    refetchInterval: 3000,
+  });
+
+  const updateOrderMutation = trpc.orders.updateStatus.useMutation({
+    onSuccess: () => {
+      ordersQuery.refetch();
+    },
+  });
+
+  const updateServiceRequestMutation = trpc.serviceRequests.updateStatus.useMutation({
+    onSuccess: () => {
+      serviceRequestsQuery.refetch();
+    },
+  });
+
+  const orders = ordersQuery.data || [];
+  const serviceRequests = serviceRequestsQuery.data || [];
+
+  useEffect(() => {
+    const pendingRequests = serviceRequests.filter(r => r.status === 'pending');
+    const previousPendingRequests = previousServiceRequestsRef.current.filter(r => r.status === 'pending');
+    
+    if (pendingRequests.length > previousPendingRequests.length) {
+      const newRequests = pendingRequests.filter(nr => 
+        !previousPendingRequests.some(pr => pr.id === nr.id)
+      );
+      
+      newRequests.forEach(request => {
+        console.log(`🔔 SERVICE REQUEST: Table ${request.tableNumber} - ${request.requestType}`);
+        notifyServiceRequest(request.tableNumber, request.requestType);
+        
+        if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification('Service Request! 🔔', {
+            body: `Table ${request.tableNumber} needs ${request.requestType}`,
+            icon: '/assets/images/icon.png',
+          });
+        }
+      });
+    }
+    
+    previousServiceRequestsRef.current = serviceRequests;
+  }, [serviceRequests, notifyServiceRequest]);
 
   const filteredOrders = useMemo(() => {
     if (selectedFilter === 'all') return orders;
@@ -69,8 +119,43 @@ export default function ManagerScreen() {
     return `${Math.floor(diff / 60)}h ${diff % 60}m ago`;
   };
 
-  const handleMarkPaid = (orderId: string) => {
-    updateOrderStatus(orderId, 'paid');
+  const handleMarkPaid = async (orderId: string) => {
+    try {
+      await updateOrderMutation.mutateAsync({
+        orderId,
+        status: 'paid',
+      });
+      Alert.alert('Success', 'Order marked as paid');
+    } catch (error) {
+      console.error('Error marking order as paid:', error);
+      Alert.alert('Error', 'Failed to mark order as paid');
+    }
+  };
+
+  const handleServeOrder = async (orderId: string) => {
+    try {
+      await updateOrderMutation.mutateAsync({
+        orderId,
+        status: 'served',
+      });
+      Alert.alert('Success', 'Order marked as served');
+    } catch (error) {
+      console.error('Error marking order as served:', error);
+      Alert.alert('Error', 'Failed to mark order as served');
+    }
+  };
+
+  const handleResolveServiceRequest = async (requestId: string) => {
+    try {
+      await updateServiceRequestMutation.mutateAsync({
+        requestId,
+        status: 'resolved',
+      });
+      Alert.alert('Success', 'Service request resolved');
+    } catch (error) {
+      console.error('Error resolving service request:', error);
+      Alert.alert('Error', 'Failed to resolve service request');
+    }
   };
 
   const handleSplitBill = (order: Order) => {
@@ -82,8 +167,19 @@ export default function ManagerScreen() {
     return (total / people).toFixed(2);
   };
 
+  const pendingServiceRequests = useMemo(() => 
+    serviceRequests.filter(r => r.status === 'pending' || r.status === 'in-progress'),
+    [serviceRequests]
+  );
+
+  const readyOrders = useMemo(() => 
+    orders.filter(o => o.status === 'ready'),
+    [orders]
+  );
+
   const renderOrder = (order: Order) => {
     const canMarkPaid = order.status === 'served';
+    const canServe = order.status === 'ready';
     
     return (
       <View key={order.id} style={styles.orderCard}>
@@ -121,6 +217,15 @@ export default function ManagerScreen() {
             <Text style={styles.totalLabel}>{t('total')}:</Text>
             <Text style={styles.totalAmount}>{formatPrice(order.total)}</Text>
           </View>
+          {canServe && (
+            <TouchableOpacity
+              style={styles.serveButton}
+              onPress={() => handleServeOrder(order.id)}
+            >
+              <ClipboardList size={16} color="#fff" />
+              <Text style={styles.paidButtonText}>Mark as Served</Text>
+            </TouchableOpacity>
+          )}
           {canMarkPaid && (
             <View style={styles.orderActions}>
               <TouchableOpacity
@@ -147,24 +252,38 @@ export default function ManagerScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - Manager`,
+        title: `${t('restaurantName')} - Waiter`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
 
-      {readyNotification && (() => {
-        const readyOrder = orders.find(o => o.id === readyNotification);
-        if (readyOrder) {
-          return (
+      {(pendingServiceRequests.length > 0 || readyOrders.length > 0) && (
+        <View style={styles.alertsSection}>
+          {readyOrders.length > 0 && (
             <View style={styles.readyNotification}>
               <Text style={styles.readyNotificationText}>
-                Order {readyOrder.id} for Table {readyOrder.tableNumber} is READY for serving!
+                ✅ {readyOrders.length} order{readyOrders.length > 1 ? 's' : ''} ready to serve!
               </Text>
             </View>
-          );
-        }
-        return null;
-      })()}
+          )}
+          {pendingServiceRequests.map(request => (
+            <View key={request.id} style={styles.serviceRequestAlert}>
+              <View style={styles.serviceRequestHeader}>
+                <Bell size={20} color={Colors.warning} />
+                <Text style={styles.serviceRequestText}>
+                  Table {request.tableNumber} - {request.requestType === 'bill' ? '💵 Bill Request' : '👤 Waiter Call'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.resolveButton}
+                onPress={() => handleResolveServiceRequest(request.id)}
+              >
+                <Text style={styles.resolveButtonText}>Resolve</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View style={styles.filterBar}>
         <TouchableOpacity
@@ -548,6 +667,56 @@ const styles = StyleSheet.create({
   },
   paidButtonText: {
     fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  serveButton: {
+    flexDirection: 'row',
+    backgroundColor: Colors.statusReady,
+    borderRadius: 8,
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  alertsSection: {
+    padding: 12,
+    gap: 8,
+    backgroundColor: Colors.backgroundGray,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  serviceRequestAlert: {
+    backgroundColor: '#FFF4E6',
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.warning,
+  },
+  serviceRequestHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  serviceRequestText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    flex: 1,
+  },
+  resolveButton: {
+    backgroundColor: Colors.success,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  resolveButtonText: {
+    fontSize: 13,
     fontWeight: '700' as const,
     color: '#fff',
   },
