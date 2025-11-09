@@ -36,7 +36,9 @@ Ensure the following keys are present:
 ```bash
 npm install
 ```
-This installs all Expo, React Native, Supabase, Hono, and tRPC packages pinned to the versions validated for production.
+This installs all Expo, React Native, Supabase, Hono, and tRPC packages pinned to the versions validated for production. The
+local `.npmrc` unlocks the public registry and configures a fallback mirror so `npm install` succeeds even if the primary
+registry responds with HTTP 403.
 
 ## 4. Local development
 ### Expo preview (Rork tunnel)
