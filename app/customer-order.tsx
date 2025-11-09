@@ -433,9 +433,9 @@ export default function CustomerOrderScreen() {
             activeOpacity={0.7}
           >
             {isGridView ? (
-              <Grid3x3 size={20} color={Colors.primary} strokeWidth={2} />
+              <Grid3x3 size={22} color="#fff" strokeWidth={2.5} />
             ) : (
-              <List size={20} color={Colors.primary} strokeWidth={2} />
+              <List size={22} color="#fff" strokeWidth={2.5} />
             )}
           </TouchableOpacity>
         </View>
@@ -443,8 +443,6 @@ export default function CustomerOrderScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryCardsContainer}
-          decelerationRate="fast"
-          snapToInterval={Dimensions.get('window').width * 0.35 + 12}
         >
           {categories.map((category) => (
             <TouchableOpacity
@@ -923,8 +921,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   exploreCategoriesSection: {
-    paddingVertical: 12,
-    marginBottom: 20,
+    paddingVertical: 16,
+    marginBottom: 16,
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
@@ -943,18 +941,21 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   viewToggleButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.backgroundGray,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   categoryCardsContainer: {
     paddingHorizontal: 20,
-    gap: 12,
+    gap: 16,
   },
   categoryCard: {
     width: Dimensions.get('window').width * 0.35,
