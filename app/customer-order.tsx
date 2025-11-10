@@ -457,68 +457,51 @@ export default function CustomerOrderScreen() {
         onClose={() => setLanguageModalVisible(false)}
       />
 
-      <Animated.View style={[styles.exploreCategoriesSection, { transform: [{ translateY: categoryTranslateY }] }]}>
-        <View style={styles.categoryPatternBackground}>
-          <View style={styles.exploreCategoriesHeader}>
-            <Text style={styles.exploreCategoriesTitle}>Explore Categories</Text>
-            <TouchableOpacity 
-              onPress={() => setIsGridView(!isGridView)}
-              style={styles.viewToggleButton}
+      <Animated.View style={[styles.categoryFilterSection, { transform: [{ translateY: categoryTranslateY }] }]}>
+        <View style={styles.categoryFilterHeader}>
+          <Text style={styles.categoryFilterTitle}>Categories</Text>
+          <TouchableOpacity 
+            onPress={() => setIsGridView(!isGridView)}
+            style={styles.viewToggleButton}
+            activeOpacity={0.7}
+          >
+            {isGridView ? (
+              <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
+            ) : (
+              <List size={20} color={Colors.gold} strokeWidth={2.5} />
+            )}
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScrollContent}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryChip,
+                selectedCategory === category && styles.categoryChipActive
+              ]}
+              onPress={() => {
+                setSelectedCategory(category);
+                if (category !== 'all') {
+                  scrollToCategory(category);
+                }
+              }}
               activeOpacity={0.7}
             >
-              {isGridView ? (
-                <Grid3x3 size={22} color={Colors.gold} strokeWidth={2.5} />
-              ) : (
-                <List size={22} color={Colors.gold} strokeWidth={2.5} />
-              )}
+              <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
+              <Text style={[
+                styles.categoryChipText,
+                selectedCategory === category && styles.categoryChipTextActive
+              ]}>
+                {CATEGORY_NAMES[category] || category}
+              </Text>
             </TouchableOpacity>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryCardsContainer}
-          >
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryCard,
-                  selectedCategory === category && styles.categoryCardSelected
-                ]}
-                onPress={() => {
-                  setSelectedCategory(category);
-                  if (category !== 'all') {
-                    scrollToCategory(category);
-                  }
-                }}
-                activeOpacity={0.8}
-              >
-                <View style={[
-                  styles.categoryCardGradient,
-                  selectedCategory === category && styles.categoryCardGradientSelected
-                ]}>
-                  {category !== 'all' ? (
-                    <View style={styles.categoryImageWrapper}>
-                      <Image 
-                        source={{ uri: `https://images.unsplash.com/photo-${getCategoryImage(category)}?w=300&q=80` }} 
-                        style={styles.categoryImage}
-                        resizeMode="cover"
-                      />
-                      <View style={styles.categoryImageOverlay} />
-                    </View>
-                  ) : (
-                    <View style={styles.allCategoryIconWrapper}>
-                      <Text style={styles.allCategoryIcon}>🍽️</Text>
-                    </View>
-                  )}
-                  <Text style={styles.categoryCardTitle}>
-                    {CATEGORY_NAMES[category] || category}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+          ))}
+        </ScrollView>
       </Animated.View>
 
       <ScrollView 
@@ -965,117 +948,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.backgroundGray,
   },
-  exploreCategoriesSection: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    marginBottom: 0,
-    backgroundColor: '#3D0101',
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.gold,
+  categoryFilterSection: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
-  categoryPatternBackground: {
-    position: 'relative',
-  },
-  exploreCategoriesHeader: {
+  categoryFilterHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  exploreCategoriesTitle: {
-    fontSize: 22,
+  categoryFilterTitle: {
+    fontSize: 18,
     fontWeight: '800' as const,
     color: Colors.gold,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   viewToggleButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: Colors.gold,
   },
-  categoryCardsContainer: {
-    paddingLeft: 16,
-    paddingRight: 16,
+  categoryScrollContent: {
+    paddingHorizontal: 16,
+    gap: 10,
   },
-  categoryCard: {
-    width: 160,
-    height: 180,
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: Colors.gold,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
-    marginRight: 12,
-  },
-  categoryCardGradient: {
-    flex: 1,
-    backgroundColor: '#4A0808',
-    justifyContent: 'flex-end',
-    position: 'relative',
-    padding: 12,
-  },
-  categoryImageWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  categoryImage: {
-    width: '100%',
-    height: '100%',
-  },
-  categoryImageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(61, 1, 1, 0.35)',
-  },
-  allCategoryIconWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
+  categoryChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  allCategoryIcon: {
-    fontSize: 64,
-  },
-  categoryCardTitle: {
-    fontSize: 15,
-    fontWeight: '800' as const,
-    color: '#fff',
-    letterSpacing: -0.2,
-    lineHeight: 19,
-    textAlign: 'center' as const,
-    backgroundColor: 'rgba(61, 1, 1, 0.7)',
+    gap: 6,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
-  categoryCardSelected: {
+  categoryChipActive: {
+    backgroundColor: Colors.gold,
     borderColor: Colors.gold,
-    borderWidth: 4,
-    shadowOpacity: 0.6,
-    elevation: 12,
   },
-  categoryCardGradientSelected: {
-    backgroundColor: '#5A1010',
+  categoryChipIcon: {
+    fontSize: 18,
+  },
+  categoryChipText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: Colors.cream,
+    letterSpacing: -0.2,
+  },
+  categoryChipTextActive: {
+    color: Colors.primary,
   },
   categorySection: {
     marginTop: 12,
