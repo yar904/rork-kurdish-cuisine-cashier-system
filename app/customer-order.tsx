@@ -935,8 +935,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   exploreCategoriesSection: {
-    paddingVertical: 16,
-    marginBottom: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
@@ -1019,8 +1019,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold,
   },
   categorySection: {
-    marginTop: 24,
-    marginBottom: 24,
+    marginTop: 12,
+    marginBottom: 12,
   },
   categorySectionHeader: {
     flexDirection: 'row',
@@ -1043,7 +1043,7 @@ const styles = StyleSheet.create({
   },
   menuListContent: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 8,
     paddingBottom: 220,
   },
   menuItem: {

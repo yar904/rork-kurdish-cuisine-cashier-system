@@ -105,7 +105,7 @@ Remove or hide the AI Chatbot button from the menu page.
 The system also includes Rork's AI SDK that can be used as an alternative:
 
 ```typescript
-import { generateText } from "@rork/toolkit-sdk";
+import { generateText } from "@rork-ai/toolkit-sdk";
 
 const response = await generateText({
   messages: [{ role: "user", content: "Hello!" }]
