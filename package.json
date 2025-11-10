@@ -1,4 +1,5 @@
-  "name": "rork-kurdish-cuisine-cashier-system",
+  {
+"name": "rork-kurdish-cuisine-cashier-system",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {},
