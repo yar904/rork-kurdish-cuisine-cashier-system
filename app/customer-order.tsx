@@ -14,9 +14,11 @@ import {
   NativeSyntheticEvent,
   Modal,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES } from '@/constants/menu';
@@ -48,6 +50,8 @@ type Review = {
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
   const { notifyServiceRequest } = useNotifications();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
   const [cart, setCart] = useState<CartItem[]>([]);
   
   const isCustomerMode = !!table;
@@ -421,6 +425,14 @@ export default function CustomerOrderScreen() {
 
   return (
     <View style={styles.container}>
+      {isLargeScreen && (
+        <LinearGradient
+          colors={['#1a0000', '#3d0101', '#1a0000']}
+          style={styles.backgroundGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      )}
       <Stack.Screen
         options={{
           headerShown: false,
@@ -896,6 +908,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundGray,
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   customHeader: {
     flexDirection: 'row',
