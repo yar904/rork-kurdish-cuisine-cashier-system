@@ -60,7 +60,7 @@ export default function LanguageSwitcher({ visible, onClose, style }: LanguageSw
                 {lang.name}
               </Text>
               {language === lang.code && (
-                <Check size={16} color={Colors.primary} strokeWidth={3} />
+                <Check size={14} color={Colors.primary} strokeWidth={3} />
               )}
             </TouchableOpacity>
           ))}
@@ -80,21 +80,21 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    minWidth: 140,
+    borderRadius: 10,
+    minWidth: 110,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15)',
       } as any,
     }),
     borderWidth: 1,
@@ -103,9 +103,9 @@ const styles = StyleSheet.create({
   languageItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 8,
     backgroundColor: '#ffffff',
   },
   firstItem: {
@@ -120,10 +120,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   flag: {
-    fontSize: 20,
+    fontSize: 18,
   },
   languageName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     color: Colors.text,
     flex: 1,

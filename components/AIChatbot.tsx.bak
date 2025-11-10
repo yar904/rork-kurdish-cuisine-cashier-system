@@ -13,7 +13,7 @@ import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
-import { useRorkAgent } from "@rork/toolkit-sdk";
+import { useRorkAgent } from "@rork-ai/toolkit-sdk";
 
 interface AIChatbotProps {
   onClose: () => void;

@@ -4,7 +4,11 @@
     "slug": "tapse",
     "version": "1.0.0",
     "orientation": "portrait",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "icon": "./assets/images/icon.png",
     "scheme": "rork",
     "userInterfaceStyle": "automatic",
@@ -16,14 +20,23 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.kurdish-cuisine-cashier"
+      "bundleIdentifier": "app.rork.kurdish-cuisine-cashier",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ],
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.kurdish-cuisine-cashier"
+      "package": "app.rork.kurdish-cuisine-cashier",
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -34,6 +47,18 @@
         "expo-router",
         {
           "origin": "https://rork.com/"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
     ],
