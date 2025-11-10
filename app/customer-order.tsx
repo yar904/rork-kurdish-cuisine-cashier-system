@@ -971,11 +971,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   categoryCardsContainer: {
-    paddingHorizontal: 20,
-    gap: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center' as const,
   },
   categoryCard: {
-    width: Dimensions.get('window').width * 0.35,
+    minWidth: 120,
     height: 140,
     borderRadius: 20,
     overflow: 'hidden',
@@ -984,6 +984,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 8,
+    marginHorizontal: 6,
   },
   categoryCardGradient: {
     flex: 1,
