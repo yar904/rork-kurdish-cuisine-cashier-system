@@ -1,9 +1,5 @@
 import { publicProcedure } from "../../../create-context";
-<<<<<<< HEAD
-import { supabase } from "@/lib/supabase";
-=======
 import { supabase } from "@/backend/lib/supabase";
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { z } from "zod";
 
 export const updateEmployeeProcedure = publicProcedure

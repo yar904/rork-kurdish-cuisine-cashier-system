@@ -25,10 +25,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
-<<<<<<< HEAD
-=======
 
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { trpc } from '@/lib/trpc';
 
 export default function PublicMenuScreen() {
@@ -52,19 +49,10 @@ export default function PublicMenuScreen() {
   const [ratingComment, setRatingComment] = useState('');
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
-<<<<<<< HEAD
-  const autoScrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const categorySlideHeight = useRef(new Animated.Value(1)).current;
-  const lastScrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('down');
-  const currentSlideIndex = useRef(0);
-  const fabSlideAnimation = useRef(new Animated.Value(0)).current;
-=======
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
   useEffect(() => {
     if (params.table) {
@@ -83,11 +71,6 @@ export default function PublicMenuScreen() {
       tension: 50,
       friction: 7,
     }).start();
-<<<<<<< HEAD
-  }, []);
-
-  const handleAddToCart = () => {
-=======
   }, [fabSlideAnimation]);
 
   const handleOpenItemModal = (item: MenuItem) => {
@@ -103,7 +86,6 @@ export default function PublicMenuScreen() {
   };
 
   const handleAddToCartFromModal = () => {
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     if (selectedItem) {
       addItemToCurrentOrder(selectedItem.id, modalQuantity, modalNotes || undefined);
       Alert.alert(t('success'), t('itemAddedToCart'));
@@ -358,80 +340,6 @@ export default function PublicMenuScreen() {
     return categoryItems.length > 0;
   });
 
-<<<<<<< HEAD
-  const startAutoScroll = useCallback(() => {
-    if (autoScrollInterval.current) {
-      clearInterval(autoScrollInterval.current);
-    }
-    
-    const interval = setInterval(() => {
-      const nextIndex = (currentSlideIndex.current + 1) % availableCategories.length;
-      const cardWidth = 150;
-      const gap = 16;
-      const scrollPosition = nextIndex * (cardWidth + gap);
-      
-      categoryScrollRef.current?.scrollTo({
-        x: scrollPosition,
-        animated: true,
-      });
-      
-      currentSlideIndex.current = nextIndex;
-    }, 3000);
-    
-    autoScrollInterval.current = interval;
-  }, [availableCategories.length]);
-
-  useEffect(() => {
-    startAutoScroll();
-    return () => {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-      }
-    };
-  }, [startAutoScroll]);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    
-    if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
-      if (scrollDirection.current !== 'down') {
-        scrollDirection.current = 'down';
-        Animated.timing(categorySlideHeight, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
-      }
-    } else if (currentScrollY < lastScrollY.current) {
-      if (scrollDirection.current !== 'up') {
-        scrollDirection.current = 'up';
-        Animated.timing(categorySlideHeight, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: false,
-        }).start();
-      }
-    }
-    
-    lastScrollY.current = currentScrollY;
-  };
-
-  const menuCategoryIds: MenuCategory[] = categories.map(c => c.id as MenuCategory);
-  
-  const filteredCategories = menuCategoryIds.filter((category) => {
-    if (searchQuery === '') return true;
-    const categoryName = tc(category).toLowerCase();
-    const categoryItems = MENU_ITEMS.filter(item => item.category === category);
-    const hasMatchingItems = categoryItems.some(item =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.nameKurdish.includes(searchQuery) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    return categoryName.includes(searchQuery.toLowerCase()) || hasMatchingItems;
-  });
-
-=======
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   const getItemName = (item: typeof MENU_ITEMS[0]) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
@@ -760,148 +668,10 @@ export default function PublicMenuScreen() {
                         </Text>
                       </View>
 
-<<<<<<< HEAD
-      <Modal
-        visible={showAIAssistant}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowAIAssistant(false)}
-      >
-      </Modal>
-
-      <Modal
-        visible={showSearchModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowSearchModal(false)}
-      >
-        <View style={[styles.searchModalContainer, { paddingTop: insets.top }]}>
-          <View style={styles.searchModalHeader}>
-            <TouchableOpacity
-              style={styles.searchModalBackButton}
-              onPress={() => {
-                setShowSearchModal(false);
-                setSearchQuery('');
-              }}
-            >
-              <ArrowLeft size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            <Text style={styles.searchModalTitle}>
-              {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان بکە' : 'ابحث'}
-            </Text>
-            <TouchableOpacity
-              style={styles.searchModalSearchIcon}
-              onPress={() => {}}
-            >
-              <Search size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.searchModalInputContainer}>
-            <Search size={20} color="rgba(255, 255, 255, 0.7)" style={styles.searchModalInputIcon} />
-            <TextInput
-              style={styles.searchModalInput}
-              placeholder={language === 'en' ? 'Search for dishes...' : language === 'ku' ? 'گەڕان لە خواردن...' : 'ابحث عن الأطباق...'}
-              placeholderTextColor="rgba(255, 255, 255, 0.5)"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-            {searchQuery !== '' && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                style={styles.searchModalClearButton}
-              >
-                <X size={18} color="rgba(255, 255, 255, 0.7)" />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <ScrollView style={styles.searchModalResults} showsVerticalScrollIndicator={false}>
-            {searchQuery === '' ? (
-              <View style={styles.searchModalContent}>
-                {availableCategories.map((category) => {
-                  const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-                  if (categoryItems.length === 0) return null;
-                  
-                  const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-                  
-                  return (
-                    <View key={category.id} style={styles.searchCategorySection}>
-                      <View style={styles.searchCategoryHeader}>
-                        <View style={styles.searchCategoryDecorLeft} />
-                        <Text style={styles.searchCategoryTitle}>{categoryName}</Text>
-                        <View style={styles.searchCategoryDecorRight} />
-                      </View>
-                      
-                      {categoryItems.map((item) => {
-                        const itemStats = ratingsStats[item.id];
-                        const hasRatings = itemStats && itemStats.totalRatings > 0;
-                        
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={styles.searchResultItem}
-                            onPress={() => {
-                              setSelectedItem(item);
-                              setItemQuantity(1);
-                              setItemNotes('');
-                              setShowSearchModal(false);
-                              setSearchQuery('');
-                            }}
-                            activeOpacity={0.8}
-                          >
-                            <View style={styles.searchResultItemContent}>
-                              <View style={styles.searchResultItemInfo}>
-                                <Text style={styles.searchResultItemName} numberOfLines={2}>
-                                  {getItemName(item)}
-                                </Text>
-                                {hasRatings && (
-                                  <View style={styles.searchResultRatingBadge}>
-                                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                    <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                                  </View>
-                                )}
-                              </View>
-                              <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <View style={styles.searchModalContent}>
-                <View style={styles.searchResultsList}>
-                  {MENU_ITEMS.filter((item) => {
-                    const matchesSearch =
-                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchesSearch && item.available;
-                  }).map((item) => {
-                    const itemStats = ratingsStats[item.id];
-                    const hasRatings = itemStats && itemStats.totalRatings > 0;
-                    
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={styles.searchResultItem}
-                        onPress={() => {
-                          setSelectedItem(item);
-                          setItemQuantity(1);
-                          setItemNotes('');
-                          setShowSearchModal(false);
-                          setSearchQuery('');
-                        }}
-                        activeOpacity={0.8}
-=======
                       <ScrollView 
                         style={styles.modalReviewsList}
                         showsVerticalScrollIndicator={false}
                         nestedScrollEnabled
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
                       >
                         {itemRatingsQuery.data.ratings.map((review: any) => (
                           <View key={review.id} style={styles.modalReviewCard}>
@@ -1109,11 +879,6 @@ export default function PublicMenuScreen() {
           <TouchableOpacity 
             style={styles.headerIconButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
-<<<<<<< HEAD
-          >
-            <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
-          </TouchableOpacity>
-=======
             activeOpacity={0.7}
           >
             <Globe size={24} color="#D4AF37" strokeWidth={2} />
@@ -1133,7 +898,6 @@ export default function PublicMenuScreen() {
               <Text style={styles.headerTableBadgeText}>{selectedTable}</Text>
             )}
           </View>
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
         </View>
 
         {showLanguageMenu && (
@@ -1243,71 +1007,6 @@ export default function PublicMenuScreen() {
         </Animated.View>
       )}
 
-<<<<<<< HEAD
-      <Animated.View style={[
-        styles.categorySliderContainer,
-        {
-          height: categorySlideHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 160],
-          }),
-          opacity: categorySlideHeight,
-        },
-      ]}>
-        <View style={styles.categoryTitleContainer}>
-          <View style={styles.categoryDecorLeft} />
-          <Text style={styles.categorySliderTitle}>{t('exploreCategories')}</Text>
-          <View style={styles.categoryDecorRight} />
-        </View>
-        <ScrollView 
-          ref={categoryScrollRef}
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categorySlider}
-          onScrollBeginDrag={() => {
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-            }
-          }}
-          onScrollEndDrag={startAutoScroll}
-        >
-          {availableCategories.map((category) => {
-            const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-            
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                activeOpacity={0.9}
-                onPress={() => {
-                  if (autoScrollInterval.current) {
-                    clearInterval(autoScrollInterval.current);
-                  }
-                  router.push(`/category/${category.id}`);
-                }}
-              >
-                <View style={styles.categoryCardImageContainer}>
-                  {categoryItems[0]?.image && (
-                    <Image 
-                      source={{ uri: categoryItems[0].image }} 
-                      style={styles.categoryCardImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.categoryCardOverlay} />
-                </View>
-                <View style={styles.categoryCardFooter}>
-                  <Text style={styles.categoryCardTitle}>{categoryName}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </Animated.View>
-
-=======
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       <ScrollView 
         ref={contentScrollRef}
         style={styles.content} 
@@ -1363,40 +1062,6 @@ export default function PublicMenuScreen() {
       >
         <TouchableOpacity
           style={styles.fabButton}
-<<<<<<< HEAD
-          onPress={() => setShowAIAssistant(true)}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <MessageCircle size={24} color="#FFFFFF" strokeWidth={2} />
-          </Animated.View>
-          <Text style={styles.fabLabel}>
-            {language === 'en' ? 'AI Chat' : language === 'ku' ? 'وتووێژی AI' : 'دردشة AI'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.fabButton, styles.fabButtonPrimary]}
-          onPress={() => setShowCart(true)}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <Utensils size={24} color="#3d0101" strokeWidth={2} />
-            {cartItemCount > 0 && (
-              <View style={styles.fabCartBadge}>
-                <Text style={styles.fabCartBadgeText}>{cartItemCount}</Text>
-              </View>
-            )}
-          </Animated.View>
-          <Text style={[styles.fabLabel, styles.fabLabelPrimary]}>
-            {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.fabButton}
-=======
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           onPress={() => {
             if (Platform.OS === 'web') {
               window.open('https://www.google.com/search?q=Tapsi+Sulaymaniyah+reviews', '_blank');
@@ -1410,11 +1075,7 @@ export default function PublicMenuScreen() {
           activeOpacity={0.7}
         >
           <Animated.View style={styles.fabIconContainer}>
-<<<<<<< HEAD
-            <Star size={24} color="#FFFFFF" strokeWidth={2} />
-=======
             <Star size={22} color="#FFFFFF" strokeWidth={2} />
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
@@ -1423,16 +1084,6 @@ export default function PublicMenuScreen() {
 
         <TouchableOpacity
           style={styles.fabButton}
-<<<<<<< HEAD
-          onPress={() => setShowSearchModal(true)}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <Search size={24} color="#FFFFFF" strokeWidth={2} />
-          </Animated.View>
-          <Text style={styles.fabLabel}>
-            {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
-=======
           onPress={handleCallWaiter}
           activeOpacity={0.7}
         >
@@ -1472,7 +1123,6 @@ export default function PublicMenuScreen() {
           </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Request Bill' : language === 'ku' ? 'داواکردنی حیساب' : 'طلب الفاتورة'}
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -1497,38 +1147,12 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-<<<<<<< HEAD
-    backgroundColor: '#3d0101',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
-    paddingBottom: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-=======
     backgroundColor: 'transparent',
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-<<<<<<< HEAD
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
-  headerLogo: {
-    width: 70,
-    height: 70,
-=======
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: 'transparent',
@@ -1553,7 +1177,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#D4AF37',
     minWidth: 60,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -1565,13 +1188,6 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
       web: {
-<<<<<<< HEAD
-        width: 80,
-        height: 80,
-      },
-    }),
-  },
-=======
         boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)',
       },
     }),
@@ -1913,7 +1529,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     flex: 1,
   },
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
 
   cartBadge: {
@@ -3095,17 +2710,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-<<<<<<< HEAD
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'center' as const,
-    gap: 3,
-  },
-  ratingText: {
-    fontSize: 12,
-=======
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -3138,17 +2742,12 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '700' as const,
     color: '#D4AF37',
   },
   ratingCount: {
-<<<<<<< HEAD
-    fontSize: 11,
-=======
     fontSize: 12,
     fontFamily: 'NotoNaskhArabic_600SemiBold',
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '600' as const,
     color: 'rgba(255, 255, 255, 0.6)',
   },
@@ -3537,15 +3136,6 @@ const styles = StyleSheet.create({
   },
   floatingMenu: {
     position: 'absolute' as const,
-<<<<<<< HEAD
-    bottom: Platform.select({ ios: 24, android: 16, default: 20 }),
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(61, 1, 1, 0.97)',
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-=======
     bottom: Platform.select({ ios: 34, android: 20, default: 24 }),
     left: 12,
     right: 12,
@@ -3553,17 +3143,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(61, 1, 1, 0.97)',
     paddingVertical: 12,
     paddingHorizontal: 8,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     borderRadius: 24,
     borderWidth: 2,
     borderTopColor: 'rgba(212, 175, 55, 0.6)',
     borderBottomColor: 'rgba(212, 175, 55, 0.6)',
     borderLeftColor: 'rgba(212, 175, 55, 0.6)',
     borderRightColor: 'rgba(212, 175, 55, 0.6)',
-<<<<<<< HEAD
-=======
     gap: 8,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -3585,20 +3171,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-<<<<<<< HEAD
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    marginHorizontal: 5,
-    minHeight: 68,
-=======
     paddingVertical: 8,
     paddingHorizontal: 4,
     borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     minHeight: 64,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.4)',
     ...Platform.select({
@@ -3612,11 +3189,7 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-<<<<<<< HEAD
-        minHeight: 76,
-=======
         minHeight: 70,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         backdropFilter: 'blur(15px)',
         WebkitBackdropFilter: 'blur(15px)',
@@ -3648,15 +3221,6 @@ const styles = StyleSheet.create({
     }),
   },
   fabIconContainer: {
-<<<<<<< HEAD
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-=======
     width: 38,
     height: 38,
     borderRadius: 19,
@@ -3664,34 +3228,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 3,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     position: 'relative' as const,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
   },
   fabLabel: {
     fontFamily: 'NotoNaskhArabic_600SemiBold',
-<<<<<<< HEAD
-    fontSize: 11,
-    color: '#FFFFFF',
-    textAlign: 'center' as const,
-    letterSpacing: 0.4,
-    lineHeight: 15,
-=======
     fontSize: 10,
     color: '#FFFFFF',
     textAlign: 'center' as const,
     letterSpacing: 0.3,
     lineHeight: 14,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '700' as const,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
-<<<<<<< HEAD
-=======
     paddingHorizontal: 2,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   },
   fabLabelPrimary: {
     color: '#3d0101',
@@ -3716,8 +3268,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700' as const,
   },
-<<<<<<< HEAD
-=======
   itemModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.92)',
@@ -4008,5 +3558,4 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     letterSpacing: 0.3,
   },
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 });

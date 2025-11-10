@@ -1,9 +1,5 @@
 import { publicProcedure } from "../../../create-context";
-<<<<<<< HEAD
-import { supabase } from "@/lib/supabase";
-=======
 import { supabase } from "@/backend/lib/supabase";
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { z } from "zod";
 
 export const getShiftsProcedure = publicProcedure
@@ -14,11 +10,7 @@ export const getShiftsProcedure = publicProcedure
       endDate: z.string().optional(),
     })
   )
-<<<<<<< HEAD
-  .query(async ({ input }: { input: { employeeId?: string; startDate?: string; endDate?: string } }) => {
-=======
   .query(async ({ input }) => {
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     let query = supabase
       .from("shifts")
       .select("*, employees(name, role)")

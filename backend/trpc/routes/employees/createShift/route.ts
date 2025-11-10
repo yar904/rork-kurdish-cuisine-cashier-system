@@ -1,9 +1,5 @@
 import { publicProcedure } from "../../../create-context";
-<<<<<<< HEAD
-import { supabase } from "@/lib/supabase";
-=======
 import { supabase } from "@/backend/lib/supabase";
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { z } from "zod";
 
 export const createShiftProcedure = publicProcedure
@@ -16,11 +12,7 @@ export const createShiftProcedure = publicProcedure
       notes: z.string().optional(),
     })
   )
-<<<<<<< HEAD
-  .mutation(async ({ input }: { input: { employeeId: string; shiftDate: string; startTime: string; endTime: string; notes?: string } }) => {
-=======
   .mutation(async ({ input }) => {
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     const { data, error } = await supabase
       .from("shifts")
       .insert({

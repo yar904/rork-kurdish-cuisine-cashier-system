@@ -487,10 +487,7 @@ bun start
 │   │   └── routes/       # Organized by feature
 │   └── hono.ts           # Server entry point
 ├── components/           # Reusable UI components
-<<<<<<< HEAD
-=======
 │   ├── AIChatbot.tsx    # AI assistant
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 │   ├── LanguageSwitcher.tsx
 │   └── OfflineBanner.tsx
 ├── contexts/            # State management

@@ -12,11 +12,7 @@ import {
 import { Video, ResizeMode } from 'expo-av';
 
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
-import { Globe } from 'lucide-react-native';
-=======
 import { Globe, Instagram } from 'lucide-react-native';
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -82,13 +78,6 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-<<<<<<< HEAD
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
-        style={styles.background}
-        resizeMode="cover"
-      />
-=======
       {isLargeScreen ? (
         <LinearGradient
           colors={['#1a0000', '#3d0101', '#1a0000']}
@@ -117,7 +106,6 @@ export default function LandingPage() {
           }}
         />
       )}
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       <View style={styles.absoluteOverlay}>
         <LinearGradient
           colors={isLargeScreen ? ['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.4)'] : ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.6)']}
@@ -180,26 +168,6 @@ export default function LandingPage() {
                 onPress={() => Linking.openURL('https://www.instagram.com/tapse_slimane/')}
                 activeOpacity={0.7}
               >
-<<<<<<< HEAD
-                <RNText style={styles.menuButtonText}>{getMenuText()}</RNText>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.staffButton}
-                onPress={() => router.push('/staff-login')}
-                activeOpacity={0.7}
-              >
-                <RNText style={styles.staffButtonText}>
-                  {selectedLang === 'en' ? 'Staff Login' : selectedLang === 'ku' ? 'چوونەژوورەوەی کارمەندان' : 'تسجيل دخول الموظفين'}
-                </RNText>
-              </TouchableOpacity>
-
-              <View style={styles.footerContainer}>
-                <RNText style={styles.footerText}>
-                  {translations[selectedLang].footerText}
-                </RNText>
-              </View>
-=======
                 <Instagram size={22} color="rgba(255, 255, 255, 0.9)" strokeWidth={1.5} />
               </TouchableOpacity>
               
@@ -207,7 +175,6 @@ export default function LandingPage() {
               
               <RNText style={styles.poweredBy}>Powered by</RNText>
               <RNText style={styles.brandName}>Yar</RNText>
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
             </View>
           </ScrollView>
         </LinearGradient>
@@ -302,11 +269,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   languageButtonText: {
-<<<<<<< HEAD
-    fontFamily: fonts.regular,
-=======
     fontFamily: fonts.medium,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontSize: 14,
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -423,50 +386,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase' as const,
   },
 
-<<<<<<< HEAD
-  menuButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.gold,
-    width: '100%',
-    maxWidth: 220,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    marginBottom: 16,
-  },
-  staffButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
-    width: '100%',
-    maxWidth: 220,
-  },
-  staffButtonText: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  menuButtonText: {
-    fontFamily: fonts.bold,
-    fontSize: 20,
-    color: Colors.gold,
-    textAlign: 'center',
-    letterSpacing: 1,
-  },
-=======
 
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
   footerContainer: {
     marginTop: 32,

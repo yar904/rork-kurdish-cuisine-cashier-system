@@ -26,11 +26,7 @@ export default function ClockInOutScreen() {
       clockRecordsQuery.refetch();
       Alert.alert('Success', 'Clocked in successfully');
     },
-<<<<<<< HEAD
-    onError: (error: any) => {
-=======
     onError: (error) => {
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       Alert.alert('Error', error.message);
     },
   });
@@ -40,21 +36,13 @@ export default function ClockInOutScreen() {
       clockRecordsQuery.refetch();
       Alert.alert('Success', 'Clocked out successfully');
     },
-<<<<<<< HEAD
-    onError: (error: any) => {
-=======
     onError: (error) => {
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       Alert.alert('Error', error.message);
     },
   });
 
   const activeRecord = clockRecordsQuery.data?.find(
-<<<<<<< HEAD
-    (record: any) => record.clock_out === null
-=======
     (record) => record.clock_out === null
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   );
 
   const handleClockIn = () => {
@@ -146,11 +134,7 @@ export default function ClockInOutScreen() {
 
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>Recent Clock Records</Text>
-<<<<<<< HEAD
-        {clockRecordsQuery.data?.map((record: any) => (
-=======
         {clockRecordsQuery.data?.map((record) => (
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           <View key={record.id} style={styles.recordCard}>
             <View style={styles.recordHeader}>
               <Clock size={20} color={Colors.primary} />

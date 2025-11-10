@@ -1,20 +1,5 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  Modal,
-  Alert,
-} from 'react-native';
-=======
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Platform, Modal, Alert } from 'react-native';
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ArrowLeft, UtensilsCrossed, Plus, Minus, X } from 'lucide-react-native';
@@ -459,12 +444,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-<<<<<<< HEAD
-    gap: 16,
-    justifyContent: 'flex-start' as const,
-=======
     justifyContent: 'space-between' as const,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     paddingTop: 20,
     ...Platform.select({
       web: {
@@ -475,15 +455,6 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCard: {
-<<<<<<< HEAD
-    width: '47%' as const,
-    backgroundColor: '#3d0101',
-    borderRadius: 16,
-    overflow: 'visible' as const,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-    marginBottom: 12,
-=======
     width: '48%' as const,
     backgroundColor: '#3d0101',
     borderRadius: 16,
@@ -491,7 +462,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#D4AF37',
     marginBottom: 16,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -512,27 +482,15 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-<<<<<<< HEAD
-    height: 120,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-=======
     height: 130,
     backgroundColor: '#F9FAFB',
     borderRadius: 0,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     overflow: 'hidden' as const,
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       web: {
-<<<<<<< HEAD
-        height: 140,
-=======
         height: 150,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       },
     }),
   },
@@ -541,26 +499,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContent: {
-<<<<<<< HEAD
-    padding: 0,
-    position: 'relative' as const,
-  },
-  menuItemName: {
-    fontSize: 16,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '800' as const,
-    color: '#E8C968',
-    lineHeight: 22,
-    letterSpacing: 0.3,
-    marginBottom: 6,
-    marginTop: 10,
-    textAlign: 'center' as const,
-    paddingHorizontal: 10,
-    ...Platform.select({
-      web: {
-        fontSize: 18,
-        lineHeight: 24,
-=======
     padding: 12,
     position: 'relative' as const,
   },
@@ -577,7 +515,6 @@ const styles = StyleSheet.create({
       web: {
         fontSize: 17,
         lineHeight: 22,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       },
     }),
   },
@@ -596,18 +533,10 @@ const styles = StyleSheet.create({
     }),
   },
   priceContainer: {
-<<<<<<< HEAD
-    marginBottom: 10,
-    alignItems: 'center' as const,
-  },
-  menuItemPrice: {
-    fontSize: 16,
-=======
     alignItems: 'center' as const,
   },
   menuItemPrice: {
     fontSize: 15,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
@@ -615,11 +544,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-<<<<<<< HEAD
-        fontSize: 17,
-=======
         fontSize: 16,
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       },
     }),
   },

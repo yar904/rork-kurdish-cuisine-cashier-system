@@ -67,10 +67,7 @@ The AI assistant "Baran" is fully multilingual and welcomes customers in their l
 
 **Location in App:**
 ```
-<<<<<<< HEAD
-=======
 components/AIChatbot.tsx
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 ```
 
 **How It Works:**
@@ -277,10 +274,7 @@ All key files have been updated:
 ```
 ✅ backend/trpc/routes/menu/create/route.ts - Flexible validation
 ✅ app/menu-management.tsx - Kurdish-first form
-<<<<<<< HEAD
-=======
 ✅ components/AIChatbot.tsx - Multilingual AI
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 ✅ lib/printer.ts - Printer service working
 ✅ app/(tabs)/cashier.tsx - Receipt printing integrated
 ✅ app/(tabs)/kitchen.tsx - Kitchen ticket printing

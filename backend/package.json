@@ -1,25 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "kurdish-cuisine-backend",
-  "version": "1.0.0",
-  "description": "Backend for Kurdish Cuisine Cashier System",
-  "main": "dist/index.js",
-  "type": "module",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
-    "clean": "rm -rf dist node_modules && npm install"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.12.4",
-    "@hono/trpc-server": "^0.4.0",
-    "@supabase/supabase-js": "2.78.7",
-    "@trpc/server": "^11.7.1",
-    "dotenv": "^16.6.1",
-    "hono": "^4.10.4",
-    "superjson": "^2.2.5",
-=======
   "name": "kurdish-cuisine-cashier-backend",
   "version": "1.0.0",
   "description": "Backend server for Kurdish Cuisine Cashier System built with Hono, Bun, and Supabase",
@@ -37,7 +16,6 @@
     "@trpc/server": "^10.45.22",
     "@supabase/supabase-js": "^2.44.2",
     "cors": "^2.8.5",
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -47,5 +25,4 @@
   },
   "type": "module",
   "license": "MIT"
-}
 }

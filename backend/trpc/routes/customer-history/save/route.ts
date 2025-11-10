@@ -2,22 +2,22 @@ import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
 import { supabase } from '@/backend/lib/supabase';
 
-const saveInputSchema = z.object({
-  tableNumber: z.number(),
-  orderId: z.string(),
-  orderData: z.object({
-    id: z.string(),
-    tableNumber: z.number(),
-    items: z.array(z.any()),
-    total: z.number(),
-    status: z.string(),
-    createdAt: z.string(),
-  }),
-});
-
 export const saveCustomerOrderHistoryProcedure = publicProcedure
-  .input(saveInputSchema)
-  .mutation(async ({ input }: { input: z.infer<typeof saveInputSchema> }) => {
+  .input(
+    z.object({
+      tableNumber: z.number(),
+      orderId: z.string(),
+      orderData: z.object({
+        id: z.string(),
+        tableNumber: z.number(),
+        items: z.array(z.any()),
+        total: z.number(),
+        status: z.string(),
+        createdAt: z.string(),
+      }),
+    })
+  )
+  .mutation(async ({ input }) => {
     const { tableNumber, orderId, orderData } = input;
 
     const { data, error } = await supabase

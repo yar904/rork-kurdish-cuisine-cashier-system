@@ -2,11 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-<<<<<<< HEAD
-import { ShoppingCart, Plus, Minus, Trash2, Send, MessageCircle } from 'lucide-react-native';
-=======
 import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -314,20 +310,7 @@ export default function CashierScreen() {
         </View>
       </View>
 
-<<<<<<< HEAD
-      <Modal
-        visible={showChatbot}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowChatbot(false)}
-      >
-          visible={showChatbot}
-          onClose={() => setShowChatbot(false)}
-        />
-      </Modal>
-=======
 
->>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     </View>
   );
 }
