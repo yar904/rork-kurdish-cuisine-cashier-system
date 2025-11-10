@@ -13,6 +13,7 @@ import { Send, Sparkles, X } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRestaurant } from "@/contexts/RestaurantContext";
+import { useRorkAgent } from "@/lib/rork-toolkit-sdk";
 
 interface AIChatbotProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ export default function AIChatbot({ onClose, visible }: AIChatbotProps) {
   const { selectedTable } = useRestaurant();
   const [input, setInput] = useState("");
   const scrollRef = useRef<ScrollView>(null);
+  const hasShownWelcome = useRef(false);
 
   const systemPrompt = `You are Baran, an AI waiter assistant at Tapse Kurdish Restaurant.
 You are multilingual and can speak English, Kurdish (Sorani), and Arabic fluently with perfect understanding.
@@ -68,7 +70,11 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     if (visible && messages.length === 0) {
+=======
+    if (visible && !hasShownWelcome.current) {
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       const welcomeMessage = language === 'ku' 
         ? `بەخێربێیت بۆ تەپسی سلێمانی! 🌟\n\nمن بارانم، یاریدەدەری زیرەکی دیجیتاڵیت. دەتوانم یارمەتیت بدەم لە:\n\n✨ پرسیار لەسەر مینیو و خواردنەکان\n🍽️ داواکردنی خواردن\n📋 شوێنکەوتنی داواکاریەکەت\n👋 بانگهێشتنی گارسۆن\n\nچۆن دەتوانم یارمەتیت بدەم ئەمڕۆ؟ 😊`
         : language === 'ar'
@@ -76,8 +82,18 @@ Remember: You represent Tapse's commitment to excellent customer service in all 
         : `Welcome to Tapse Sulaymaniyah! 🌟\n\nI'm Baran, your digital AI assistant. I can help you with:\n\n✨ Questions about menu and dishes\n🍽️ Placing orders\n📋 Tracking your order\n👋 Calling a waiter\n\nHow may I assist you today? 😊`;
       
       sendRorkMessage(welcomeMessage);
+<<<<<<< HEAD
     }
   }, [visible, language, messages.length, sendRorkMessage]);
+=======
+      hasShownWelcome.current = true;
+    }
+    
+    if (!visible) {
+      hasShownWelcome.current = false;
+    }
+  }, [visible, language]);
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });

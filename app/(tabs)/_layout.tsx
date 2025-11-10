@@ -4,7 +4,8 @@ import React, { useEffect } from "react";
 import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
+import { BlurView } from "expo-blur";
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -33,11 +34,23 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textSecondary,
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.background,
-          borderTopColor: Colors.border,
-        },
+        tabBarStyle: Platform.OS === 'ios' ? styles.iosTabBar : styles.androidTabBar,
+        tabBarBackground: () => (
+          Platform.OS === 'ios' ? (
+            <BlurView
+              intensity={80}
+              tint="light"
+              style={styles.glassBackground}
+            />
+          ) : (
+            <View style={styles.androidBackground} />
+          )
+        ),
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarIconStyle: styles.tabBarIcon,
       }}
     >
       <Tabs.Screen
@@ -59,7 +72,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="waiter"
         options={{
-          title: t('waiter'),
+          title: 'Manager',
           tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/waiter' : null,
         }}
@@ -98,5 +111,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.background,
+  },
+  iosTabBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 88,
+    backgroundColor: 'transparent',
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(0, 0, 0, 0.05)',
+    elevation: 0,
+    paddingBottom: 34,
+    paddingTop: 8,
+  },
+  androidTabBar: {
+    backgroundColor: Colors.cream,
+    borderTopColor: Colors.border,
+    borderTopWidth: 1,
+    height: 65,
+    paddingBottom: 8,
+    paddingTop: 8,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  glassBackground: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  androidBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.cream,
+  },
+  tabBarItem: {
+    paddingVertical: 4,
+  },
+  tabBarLabel: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    letterSpacing: -0.2,
+    marginTop: 2,
+  },
+  tabBarIcon: {
+    marginBottom: -2,
   },
 });

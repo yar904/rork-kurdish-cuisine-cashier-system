@@ -1,31 +1,80 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, ArrowRight, Printer } from 'lucide-react-native';
-import { useRestaurant } from '@/contexts/RestaurantContext';
 import { printKitchenTicket } from '@/lib/printer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Order, OrderStatus } from '@/types/restaurant';
-import { Alert } from 'react-native';
 import { Colors } from '@/constants/colors';
+import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 
 
 export default function KitchenScreen() {
-  const { orders, updateOrderStatus, readyNotification, optimizeKitchenQueue } = useRestaurant();
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
+  const { notifyOrderReady } = useNotifications();
+  const previousOrdersRef = useRef<Order[]>([]);
   
   const isPhone = width < 768;
   const isTablet = width >= 768 && width < 1200;
   const isDesktop = width >= 1200;
 
+  const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
+    refetchInterval: 3000,
+  });
+
+  const updateOrderMutation = trpc.orders.updateStatus.useMutation({
+    onSuccess: () => {
+      ordersQuery.refetch();
+    },
+  });
+
+  const orders = ordersQuery.data || [];
+
+  useEffect(() => {
+    const newOrders = orders.filter(o => o.status === 'new');
+    const previousNewOrders = previousOrdersRef.current.filter(o => o.status === 'new');
+    
+    if (newOrders.length > previousNewOrders.length) {
+      const addedOrders = newOrders.filter(no => 
+        !previousNewOrders.some(po => po.id === no.id)
+      );
+      
+      addedOrders.forEach(order => {
+        console.log(`🔔 NEW ORDER: #${order.id} for Table ${order.tableNumber}`);
+        if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification('New Order! 🍽️', {
+            body: `Order #${order.id} for Table ${order.tableNumber}`,
+            icon: '/assets/images/icon.png',
+          });
+        }
+      });
+    }
+    
+    previousOrdersRef.current = orders;
+  }, [orders]);
+
   const activeOrders = useMemo(() => {
     const filtered = orders.filter(order => 
       order.status === 'new' || order.status === 'preparing' || order.status === 'ready'
     );
-    return optimizeKitchenQueue(filtered);
-  }, [orders, optimizeKitchenQueue]);
+    
+    return filtered.sort((a, b) => {
+      if (a.status === 'preparing' && b.status === 'new') return -1;
+      if (a.status === 'new' && b.status === 'preparing') return 1;
+      
+      const aItemCount = a.items.reduce((sum, item) => sum + item.quantity, 0);
+      const bItemCount = b.items.reduce((sum, item) => sum + item.quantity, 0);
+      
+      if (aItemCount !== bItemCount) {
+        return aItemCount - bItemCount;
+      }
+      
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+  }, [orders]);
 
   const newOrders = useMemo(() => 
     activeOrders.filter(o => o.status === 'new'), 
@@ -71,10 +120,54 @@ export default function KitchenScreen() {
     }
   };
 
-  const handleStatusUpdate = (orderId: string, currentStatus: OrderStatus) => {
+  const handleStatusUpdate = async (orderId: string, currentStatus: OrderStatus) => {
     const nextStatus = getNextStatus(currentStatus);
     if (nextStatus) {
-      updateOrderStatus(orderId, nextStatus);
+      try {
+        await updateOrderMutation.mutateAsync({
+          orderId,
+          status: nextStatus,
+        });
+        
+        if (nextStatus === 'ready') {
+          const order = orders.find(o => o.id === orderId);
+          if (order) {
+            console.log(`✅ Order #${orderId} for Table ${order.tableNumber} is READY!`);
+            await notifyOrderReady(orderId, order.tableNumber);
+            
+            if (Platform.OS === 'web') {
+              try {
+                const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = 1000;
+                gainNode.gain.value = 0.4;
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+                setTimeout(() => {
+                  const osc2 = audioContext.createOscillator();
+                  const gain2 = audioContext.createGain();
+                  osc2.connect(gain2);
+                  gain2.connect(audioContext.destination);
+                  osc2.frequency.value = 1200;
+                  gain2.gain.value = 0.4;
+                  osc2.start(audioContext.currentTime);
+                  osc2.stop(audioContext.currentTime + 0.15);
+                }, 150);
+              } catch (error) {
+                console.log('Sound playback error:', error);
+              }
+            }
+          }
+        }
+        
+        Alert.alert('Success', `Order updated to ${nextStatus}`);
+      } catch (error) {
+        console.error('Error updating order status:', error);
+        Alert.alert('Error', 'Failed to update order status');
+      }
     }
   };
 
@@ -165,20 +258,6 @@ export default function KitchenScreen() {
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
-      
-      {readyNotification && (() => {
-        const readyOrder = orders.find(o => o.id === readyNotification);
-        if (readyOrder) {
-          return (
-            <View style={styles.readyNotification}>
-              <Text style={styles.readyNotificationText}>
-                Order {readyOrder.id} for Table {readyOrder.tableNumber} is READY!
-              </Text>
-            </View>
-          );
-        }
-        return null;
-      })()}
 
       <ScrollView style={styles.content}>
         {activeOrders.length === 0 ? (

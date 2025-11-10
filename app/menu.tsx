@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,14 @@ import {
   TextInput,
   Platform,
   Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Modal,
   Alert,
-  useWindowDimensions,
+  Dimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Globe, ShoppingCart, Plus, Minus, X, Send, MessageCircle, Star, Utensils, ArrowLeft } from 'lucide-react-native';
+import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
+import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -25,49 +24,54 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
-import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { trpc } from '@/lib/trpc';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { language, setLanguage, t, tc } = useLanguage();
-  const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
+  const { addItemToCurrentOrder, currentOrder, submitOrder, updateItemQuantity: updateCartQuantity, removeItemFromCurrentOrder, calculateTotal, selectedTable, setSelectedTable } = useRestaurant();
   const { tables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
-  const searchSlideAnim = useRef(new Animated.Value(0)).current;
+
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [itemNotes, setItemNotes] = useState('');
-  const [itemQuantity, setItemQuantity] = useState(1);
+  const [modalQuantity, setModalQuantity] = useState(1);
+  const [modalNotes, setModalNotes] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-  const [showTableSelector, setShowTableSelector] = useState(false);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
+
+
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingItem, setRatingItem] = useState<MenuItem | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
-  const { width } = useWindowDimensions();
-
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
+<<<<<<< HEAD
   const autoScrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const categorySlideHeight = useRef(new Animated.Value(1)).current;
   const lastScrollY = useRef(0);
   const scrollDirection = useRef<'up' | 'down'>('down');
   const currentSlideIndex = useRef(0);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
+=======
+  const fabSlideAnimation = useRef(new Animated.Value(0)).current;
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showWaiterToast, setShowWaiterToast] = useState(false);
+  const waiterToastOpacity = useRef(new Animated.Value(0)).current;
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
   useEffect(() => {
-    if (!selectedTable && !params.table) {
-      setShowTableSelector(true);
-    } else if (params.table) {
+    if (params.table) {
       const tableNum = parseInt(params.table as string);
-      if (!isNaN(tableNum)) {
+      if (!isNaN(tableNum) && tableNum !== selectedTable) {
         setSelectedTable(tableNum);
+        console.log(`Auto-detected table ${tableNum} from QR code scan`);
       }
     }
   }, [params.table, setSelectedTable, selectedTable]);
@@ -79,16 +83,36 @@ export default function PublicMenuScreen() {
       tension: 50,
       friction: 7,
     }).start();
+<<<<<<< HEAD
   }, []);
 
   const handleAddToCart = () => {
+=======
+  }, [fabSlideAnimation]);
+
+  const handleOpenItemModal = (item: MenuItem) => {
+    setSelectedItem(item);
+    setModalQuantity(1);
+    setModalNotes('');
+  };
+
+  const handleCloseItemModal = () => {
+    setSelectedItem(null);
+    setModalQuantity(1);
+    setModalNotes('');
+  };
+
+  const handleAddToCartFromModal = () => {
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     if (selectedItem) {
-      addItemToCurrentOrder(selectedItem.id, itemQuantity, itemNotes || undefined);
-      setSelectedItem(null);
-      setItemNotes('');
-      setItemQuantity(1);
+      addItemToCurrentOrder(selectedItem.id, modalQuantity, modalNotes || undefined);
       Alert.alert(t('success'), t('itemAddedToCart'));
+      handleCloseItemModal();
     }
+  };
+
+  const updateModalQuantity = (delta: number) => {
+    setModalQuantity(prev => Math.max(1, prev + delta));
   };
 
   const handleSubmitOrder = () => {
@@ -99,7 +123,6 @@ export default function PublicMenuScreen() {
 
     if (!selectedTable) {
       Alert.alert(t('selectTable'), t('pleaseSelectTableFirst'));
-      setShowTableSelector(true);
       return;
     }
 
@@ -141,6 +164,11 @@ export default function PublicMenuScreen() {
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
   const ratingsStats = ratingsStatsQuery.data || {};
 
+  const itemRatingsQuery = trpc.ratings.getByMenuItem.useQuery(
+    { menuItemId: selectedItem?.id || '' },
+    { enabled: !!selectedItem?.id }
+  );
+
   const createRatingMutation = trpc.ratings.create.useMutation({
     onSuccess: () => {
       Alert.alert(t('success'), t('ratingSubmitted'));
@@ -149,6 +177,9 @@ export default function PublicMenuScreen() {
       setUserRating(0);
       setRatingComment('');
       ratingsStatsQuery.refetch();
+      if (selectedItem?.id) {
+        itemRatingsQuery.refetch();
+      }
     },
     onError: () => {
       Alert.alert(t('error'), t('failedToSubmitRequest'));
@@ -174,19 +205,152 @@ export default function PublicMenuScreen() {
     });
   };
 
+  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
+    onSuccess: () => {
+      setShowWaiterToast(true);
+      Animated.sequence([
+        Animated.timing(waiterToastOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2000),
+        Animated.timing(waiterToastOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setShowWaiterToast(false));
+    },
+    onError: () => {
+      Alert.alert(t('error'), t('failedToSubmitRequest'));
+    },
+  });
+
+  const handleCallWaiter = () => {
+    if (!selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    createServiceRequestMutation.mutate({
+      tableNumber: selectedTable,
+      requestType: 'waiter',
+      message: 'Customer requesting assistance',
+    });
+  };
+
+  const handleRequestBill = () => {
+    if (!selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    createServiceRequestMutation.mutate({
+      tableNumber: selectedTable,
+      requestType: 'bill',
+      message: 'Customer requesting bill',
+    });
+  };
+
+  const handleScrollToCategories = () => {
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTo({ y: 0, animated: true });
+    }
+  };
+
   const categories = [
-    { id: 'appetizers', nameKu: 'دەستپێکەکان', nameEn: 'Appetizers', nameAr: 'مقبلات' },
-    { id: 'soups', nameKu: 'سوپەکان', nameEn: 'Soups', nameAr: 'شوربات' },
-    { id: 'salads', nameKu: 'زەڵاتە', nameEn: 'Salads', nameAr: 'سلطات' },
-    { id: 'kebabs', nameKu: 'کەبابەکان', nameEn: 'Kebabs', nameAr: 'كباب' },
-    { id: 'rice-dishes', nameKu: 'خواردنی برنج', nameEn: 'Rice Dishes', nameAr: 'أطباق أرز' },
-    { id: 'stews', nameKu: 'خۆراک', nameEn: 'Stews', nameAr: 'يخنات' },
-    { id: 'seafood', nameKu: 'ماسی', nameEn: 'Seafood', nameAr: 'مأكولات بحرية' },
-    { id: 'breads', nameKu: 'نان', nameEn: 'Breads', nameAr: 'خبز' },
-    { id: 'desserts', nameKu: 'خواردنی شیرین', nameEn: 'Desserts', nameAr: 'حلويات' },
-    { id: 'hot-drinks', nameKu: 'چا و قاوە', nameEn: 'Tea & Coffee', nameAr: 'شاي وقهوة' },
-    { id: 'drinks', nameKu: 'خواردنی سارد', nameEn: 'Cold Drinks', nameAr: 'مشروبات باردة' },
-    { id: 'shisha', nameKu: 'شیەشە', nameEn: 'Shisha', nameAr: 'شيشة' },
+    { 
+      id: 'all', 
+      nameKu: 'هەموو', 
+      nameEn: 'All', 
+      nameAr: 'الكل',
+      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'appetizers', 
+      nameKu: 'دەستپێکەکان', 
+      nameEn: 'Appetizers', 
+      nameAr: 'مقبلات',
+      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'soups', 
+      nameKu: 'سوپەکان', 
+      nameEn: 'Soups', 
+      nameAr: 'شوربات',
+      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'salads', 
+      nameKu: 'زەڵاتە', 
+      nameEn: 'Salads', 
+      nameAr: 'سلطات',
+      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'kebabs', 
+      nameKu: 'کەبابەکان', 
+      nameEn: 'Kebabs', 
+      nameAr: 'كباب',
+      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'rice-dishes', 
+      nameKu: 'خواردنی برنج', 
+      nameEn: 'Rice Dishes', 
+      nameAr: 'أطباق أرز',
+      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'stews', 
+      nameKu: 'خۆراک', 
+      nameEn: 'Stews', 
+      nameAr: 'يخنات',
+      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'seafood', 
+      nameKu: 'ماسی', 
+      nameEn: 'Seafood', 
+      nameAr: 'مأكولات بحرية',
+      image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'breads', 
+      nameKu: 'نان', 
+      nameEn: 'Breads', 
+      nameAr: 'خبز',
+      image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'desserts', 
+      nameKu: 'خواردنی شیرین', 
+      nameEn: 'Desserts', 
+      nameAr: 'حلويات',
+      image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'hot-drinks', 
+      nameKu: 'چا و قاوە', 
+      nameEn: 'Tea & Coffee', 
+      nameAr: 'شاي وقهوة',
+      image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'drinks', 
+      nameKu: 'خواردنی سارد', 
+      nameEn: 'Cold Drinks', 
+      nameAr: 'مشروبات باردة',
+      image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'shisha', 
+      nameKu: 'شیەشە', 
+      nameEn: 'Shisha', 
+      nameAr: 'شيشة',
+      image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
+    },
   ];
 
   const availableCategories = categories.filter((category) => {
@@ -194,6 +358,7 @@ export default function PublicMenuScreen() {
     return categoryItems.length > 0;
   });
 
+<<<<<<< HEAD
   const startAutoScroll = useCallback(() => {
     if (autoScrollInterval.current) {
       clearInterval(autoScrollInterval.current);
@@ -265,6 +430,8 @@ export default function PublicMenuScreen() {
     return categoryName.includes(searchQuery.toLowerCase()) || hasMatchingItems;
   });
 
+=======
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   const getItemName = (item: typeof MENU_ITEMS[0]) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
@@ -290,11 +457,7 @@ export default function PublicMenuScreen() {
         <TouchableOpacity
           style={styles.menuItemTouchable}
           activeOpacity={0.95}
-          onPress={() => {
-            setSelectedItem(item);
-            setItemQuantity(1);
-            setItemNotes('');
-          }}
+          onPress={() => handleOpenItemModal(item as MenuItem)}
         >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
@@ -304,6 +467,12 @@ export default function PublicMenuScreen() {
                   style={styles.menuItemImageHorizontal}
                   resizeMode="cover"
                 />
+                {hasRatings && (
+                  <View style={styles.ratingBadgeOnImage}>
+                    <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                    <Text style={styles.ratingTextOnImage}>{itemStats.averageRating.toFixed(1)}</Text>
+                  </View>
+                )}
               </View>
             )}
             
@@ -314,14 +483,6 @@ export default function PublicMenuScreen() {
             <View style={styles.priceHighlight}>
               <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
             </View>
-            
-            {hasRatings && (
-              <View style={styles.ratingBadgeCentered}>
-                <Star size={16} color="#D4AF37" fill="#D4AF37" />
-                <Text style={styles.ratingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                <Text style={styles.ratingCount}>({itemStats.totalRatings})</Text>
-              </View>
-            )}
           </View>
         </TouchableOpacity>
         
@@ -341,32 +502,40 @@ export default function PublicMenuScreen() {
     );
   };
 
-  const renderCategorySection = (category: MenuCategory) => {
-    const categoryItems = MENU_ITEMS.filter((item) => {
-      const matchesCategory = item.category === category;
-      const matchesSearch =
-        searchQuery === '' ||
-        getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch && item.available;
-    });
+  const filteredItems = MENU_ITEMS.filter((item) => {
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesSearch =
+      searchQuery === '' ||
+      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch && item.available;
+  });
 
-    if (categoryItems.length === 0) return null;
+  const renderAllCategories = () => {
+    return availableCategories.map((category) => {
+      if (category.id === 'all') return null;
+      
+      const categoryItems = filteredItems.filter((item) => item.category === category.id);
 
-    return (
-      <View key={category} style={styles.categorySection}>
-        <View style={styles.categoryHeader}>
-          <View style={styles.categoryTitleContainer}>
-            <View style={styles.categoryDecorLeft} />
-            <Text style={styles.categoryTitle}>{tc(category)}</Text>
-            <View style={styles.categoryDecorRight} />
+      if (categoryItems.length === 0) return null;
+
+      const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+
+      return (
+        <View key={category.id} style={styles.categorySection}>
+          <View style={styles.categoryHeader}>
+            <View style={styles.categoryTitleContainer}>
+              <View style={styles.categoryDecorLeft} />
+              <Text style={styles.categoryTitle}>{categoryName}</Text>
+              <View style={styles.categoryDecorRight} />
+            </View>
+          </View>
+          <View style={styles.categoryItemsGrid}>
+            {categoryItems.map(renderMenuItem)}
           </View>
         </View>
-        <View style={styles.categoryItemsGrid}>
-          {categoryItems.map(renderMenuItem)}
-        </View>
-      </View>
-    );
+      );
+    });
   };
 
   return (
@@ -378,84 +547,7 @@ export default function PublicMenuScreen() {
         resizeMode="cover"
       />
 
-      <Modal
-        visible={selectedItem !== null}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setSelectedItem(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {selectedItem?.image && (
-                <Image 
-                  source={{ uri: selectedItem.image }} 
-                  style={styles.modalImage}
-                  resizeMode="cover"
-                />
-              )}
-              
-              <View style={styles.modalBody}>
-                <TouchableOpacity 
-                  style={styles.modalCloseButton}
-                  onPress={() => setSelectedItem(null)}
-                  activeOpacity={0.8}
-                >
-                  <X size={22} color="#FFFFFF" strokeWidth={2.5} />
-                </TouchableOpacity>
 
-                <Text style={styles.modalItemName}>{selectedItem ? getItemName(selectedItem) : ''}</Text>
-                <Text style={styles.modalItemPrice}>{selectedItem ? formatPrice(selectedItem.price) : ''}</Text>
-                <Text style={styles.modalItemDescription}>{selectedItem ? getItemDescription(selectedItem) : ''}</Text>
-
-                <View style={styles.modalDivider} />
-
-                <View style={styles.quantitySelector}>
-                  <Text style={styles.quantitySelectorLabel}>{t('quantity')}:</Text>
-                  <View style={styles.quantityControls}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-                    >
-                      <Minus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityValue}>{itemQuantity}</Text>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setItemQuantity(itemQuantity + 1)}
-                    >
-                      <Plus size={20} color="#3d0101" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.notesContainer}>
-                  <Text style={styles.notesLabel}>{t('specialRequirements')}:</Text>
-                  <TextInput
-                    style={styles.notesInput}
-                    placeholder={t('anySpecialRequirements')}
-                    placeholderTextColor="rgba(26, 26, 26, 0.4)"
-                    value={itemNotes}
-                    onChangeText={setItemNotes}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={styles.modalAddButton}
-                  onPress={handleAddToCart}
-                >
-                  <ShoppingCart size={20} color="#fff" />
-                  <Text style={styles.modalAddButtonText}>
-                    {t('addToCart')} - {formatPrice((selectedItem?.price ?? 0) * itemQuantity)}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
 
       <Modal
         visible={showCart}
@@ -475,8 +567,80 @@ export default function PublicMenuScreen() {
           <ScrollView style={styles.cartItems}>
             {currentOrder.length === 0 ? (
               <View style={styles.emptyCart}>
-                <ShoppingCart size={64} color="rgba(255, 255, 255, 0.3)" />
+                <View style={styles.emptyCartIconContainer}>
+                  <View style={styles.emptyCartIconInner}>
+                    <Svg width="140" height="140" viewBox="0 0 200 200" fill="none">
+                      <Circle cx="100" cy="100" r="70" fill="#2A0A0A" opacity="0.4" />
+                      <Circle cx="100" cy="100" r="65" stroke="#D4AF37" strokeWidth="1.5" opacity="0.5" />
+                      
+                      <Path
+                        d="M 100 55 L 75 65 L 75 75 Q 75 100 85 105 L 85 140"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                      
+                      <Path
+                        d="M 100 55 L 125 65 L 125 75 Q 125 100 115 105 L 115 140"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                      
+                      <Path
+                        d="M 70 140 Q 100 150 130 140"
+                        stroke="#D4AF37"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                      
+                      <Ellipse
+                        cx="100"
+                        cy="115"
+                        rx="32"
+                        ry="28"
+                        fill="none"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                      />
+                      
+                      <Circle cx="92" cy="108" r="3" fill="#D4AF37" />
+                      <Circle cx="108" cy="108" r="3" fill="#D4AF37" />
+                      
+                      <Path
+                        d="M 88 122 Q 100 128 112 122"
+                        stroke="#D4AF37"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                      
+                      <Path
+                        d="M 70 55 L 65 50 Q 60 45 60 40 Q 60 35 65 32 L 135 32 Q 140 35 140 40 Q 140 45 135 50 L 130 55 Z"
+                        fill="#D4AF37"
+                        opacity="0.7"
+                      />
+                      <Ellipse
+                        cx="100"
+                        cy="55"
+                        rx="35"
+                        ry="12"
+                        fill="#D4AF37"
+                        opacity="0.5"
+                      />
+                      <Circle cx="100" cy="40" r="4" fill="#FFFDD0" />
+                    </Svg>
+                  </View>
+                </View>
                 <Text style={styles.emptyCartText}>{t('noItemsInOrder')}</Text>
+                <Text style={styles.emptyCartSubtext}>
+                  {language === 'en' ? 'Start adding items to your order' : language === 'ku' ? 'دەست بکە بە زیادکردنی بڕگەکان بۆ داواکاریت' : 'ابدأ بإضافة العناصر إلى طلبك'}
+                </Text>
               </View>
             ) : (
               currentOrder.map((item, index) => (
@@ -493,14 +657,14 @@ export default function PublicMenuScreen() {
                   <View style={styles.cartItemControls}>
                     <TouchableOpacity
                       style={styles.cartQuantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity - 1)}
+                      onPress={() => updateCartQuantity(index, item.quantity - 1)}
                     >
                       <Minus size={16} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.cartQuantityText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.cartQuantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity + 1)}
+                      onPress={() => updateCartQuantity(index, item.quantity + 1)}
                     >
                       <Plus size={16} color="#fff" />
                     </TouchableOpacity>
@@ -518,21 +682,14 @@ export default function PublicMenuScreen() {
 
           <View style={styles.cartFooter}>
             {selectedTable && (
-              <TouchableOpacity 
-                style={styles.tableInfo}
-                onPress={() => setShowTableSelector(true)}
-              >
+              <View style={styles.tableInfo}>
                 <Text style={styles.tableInfoText}>{t('table')}: {selectedTable}</Text>
-                <Text style={styles.tableInfoChange}>{t('change')}</Text>
-              </TouchableOpacity>
+              </View>
             )}
             {!selectedTable && (
-              <TouchableOpacity 
-                style={styles.selectTableButton}
-                onPress={() => setShowTableSelector(true)}
-              >
-                <Text style={styles.selectTableButtonText}>{t('selectTable')}</Text>
-              </TouchableOpacity>
+              <View style={styles.selectTableButton}>
+                <Text style={styles.selectTableButtonText}>{t('pleaseScannQRCode')}</Text>
+              </View>
             )}
             <View style={styles.cartTotal}>
               <Text style={styles.cartTotalLabel}>{t('total')}:</Text>
@@ -550,82 +707,60 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
 
+
+
+
+
+
+
       <Modal
-        visible={showTableSelector}
+        visible={!!selectedItem}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => {
-          if (selectedTable) {
-            setShowTableSelector(false);
-          }
-        }}
+        onRequestClose={handleCloseItemModal}
       >
-        <View style={styles.tableSelectorOverlay}>
-          <View style={styles.tableSelectorContent}>
-            <View style={styles.tableSelectorHeader}>
-              <Text style={styles.tableSelectorTitle}>{t('selectYourTable')}</Text>
-              <Text style={styles.tableSelectorSubtitle}>{t('chooseTableDescription')}</Text>
-            </View>
-            
-            <ScrollView 
-              contentContainerStyle={styles.tableGrid}
-              showsVerticalScrollIndicator={false}
+        <View style={styles.itemModalOverlay}>
+          <View style={styles.itemModalContent}>
+            <TouchableOpacity 
+              style={styles.itemModalCloseButton}
+              onPress={handleCloseItemModal}
+              activeOpacity={0.8}
             >
-              {tables.map(table => {
-                const isSelected = selectedTable === table.number;
-                const isAvailable = table.status === 'available' || table.status === 'occupied';
-                
-                return (
-                  <TouchableOpacity
-                    key={table.number}
-                    style={[
-                      styles.tableCard,
-                      isSelected && styles.tableCardSelected,
-                      !isAvailable && styles.tableCardDisabled,
-                    ]}
-                    onPress={() => {
-                      setSelectedTable(table.number);
-                      setShowTableSelector(false);
-                    }}
-                    disabled={!isAvailable}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[styles.tableCardInner, isSelected && styles.tableCardInnerSelected]}>
-                      <Text style={[styles.tableCardNumber, isSelected && styles.tableCardNumberSelected]}>
-                        {table.number}
-                      </Text>
-                      <View style={styles.tableCardInfo}>
-                        <Text style={[styles.tableCardCapacity, isSelected && styles.tableCardCapacitySelected]}>
-                          {table.capacity} {t('seats')}
-                        </Text>
-                        {!isAvailable && (
-                          <Text style={styles.tableCardStatus}>{t('notAvailable')}</Text>
-                        )}
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            
-            {selectedTable && (
-              <TouchableOpacity
-                style={styles.tableSelectorClose}
-                onPress={() => setShowTableSelector(false)}
-              >
-                <Text style={styles.tableSelectorCloseText}>{t('close')}</Text>
-              </TouchableOpacity>
-            )}
-            
-            {!selectedTable && (
-              <View style={styles.tableSelectorFooter}>
-                <Text style={styles.tableSelectorFooterText}>{t('tapTableToSelect')}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </Modal>
+              <X size={20} color="#FFFFFF" strokeWidth={2.5} />
+            </TouchableOpacity>
 
+            {selectedItem && (
+              <>
+                {selectedItem.image && (
+                  <Image 
+                    source={{ uri: selectedItem.image }} 
+                    style={styles.itemModalImage}
+                    resizeMode="cover"
+                  />
+                )}
+                
+                <View style={styles.itemModalBody}>
+                  <Text style={styles.itemModalTitle}>
+                    {getItemName(selectedItem)}
+                  </Text>
+                  
+                  <Text style={styles.itemModalDescription} numberOfLines={2}>
+                    {getItemDescription(selectedItem)}
+                  </Text>
+
+                  {itemRatingsQuery.data && itemRatingsQuery.data.totalRatings > 0 && (
+                    <View style={styles.modalReviewsSection}>
+                      <View style={styles.modalReviewsHeader}>
+                        <Star size={16} color="#D4AF37" fill="#D4AF37" />
+                        <Text style={styles.modalReviewsRating}>
+                          {itemRatingsQuery.data.averageRating.toFixed(1)}
+                        </Text>
+                        <Text style={styles.modalReviewsCount}>
+                          ({itemRatingsQuery.data.totalRatings} {language === 'en' ? 'reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'تقييم'})
+                        </Text>
+                      </View>
+
+<<<<<<< HEAD
       <Modal
         visible={showAIAssistant}
         animationType="slide"
@@ -761,42 +896,99 @@ export default function PublicMenuScreen() {
                           setSearchQuery('');
                         }}
                         activeOpacity={0.8}
+=======
+                      <ScrollView 
+                        style={styles.modalReviewsList}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
                       >
-                        <View style={styles.searchResultItemContent}>
-                          <View style={styles.searchResultItemInfo}>
-                            <Text style={styles.searchResultItemName} numberOfLines={2}>
-                              {getItemName(item)}
-                            </Text>
-                            {hasRatings && (
-                              <View style={styles.searchResultRatingBadge}>
-                                <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                <Text style={styles.searchResultRatingText}>{itemStats.averageRating.toFixed(1)}</Text>
-                              </View>
+                        {itemRatingsQuery.data.ratings.map((review: any) => (
+                          <View key={review.id} style={styles.modalReviewCard}>
+                            <View style={styles.modalReviewStars}>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={14}
+                                  color="#D4AF37"
+                                  fill={star <= review.rating ? '#D4AF37' : 'transparent'}
+                                  strokeWidth={1.5}
+                                />
+                              ))}
+                              <Text style={styles.modalReviewDate}>
+                                {new Date(review.created_at).toLocaleDateString(language === 'en' ? 'en-US' : language === 'ku' ? 'ku-IQ' : 'ar-IQ', { month: 'short', day: 'numeric' })}
+                              </Text>
+                            </View>
+                            {review.comment && (
+                              <Text style={styles.modalReviewComment}>
+                                {review.comment}
+                              </Text>
                             )}
                           </View>
-                          <Text style={styles.searchResultItemPrice}>{formatPrice(item.price)}</Text>
-                        </View>
+                        ))}
+                      </ScrollView>
+
+                      <TouchableOpacity
+                        style={styles.modalRateThisDishButton}
+                        onPress={() => {
+                          setRatingItem(selectedItem);
+                          setUserRating(0);
+                          setRatingComment('');
+                          setShowRatingModal(true);
+                          handleCloseItemModal();
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Star size={16} color="#D4AF37" strokeWidth={2} />
+                        <Text style={styles.modalRateThisDishButtonText}>
+                          {language === 'en' ? 'Rate this dish' : language === 'ku' ? 'هەڵسەنگاندنی ئەم خواردنە' : 'قيم هذا الطبق'}
+                        </Text>
                       </TouchableOpacity>
-                    );
-                  })}
-                  
-                  {MENU_ITEMS.filter((item) => {
-                    const matchesSearch =
-                      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchesSearch && item.available;
-                  }).length === 0 && (
-                    <View style={styles.searchModalEmpty}>
-                      <Search size={64} color="rgba(255, 255, 255, 0.3)" />
-                      <Text style={styles.searchModalEmptyText}>
-                        {t('noItemsFound')}
-                      </Text>
                     </View>
                   )}
+
+                  <View style={styles.itemModalQuantitySection}>
+                    <Text style={styles.itemModalQuantityLabel}>{t('quantity')}:</Text>
+                    <View style={styles.itemModalQuantityControls}>
+                      <TouchableOpacity
+                        style={styles.itemModalQuantityButton}
+                        onPress={() => updateModalQuantity(-1)}
+                      >
+                        <Minus size={18} color="#3d0101" strokeWidth={3} />
+                      </TouchableOpacity>
+                      <Text style={styles.itemModalQuantityValue}>{modalQuantity}</Text>
+                      <TouchableOpacity
+                        style={styles.itemModalQuantityButton}
+                        onPress={() => updateModalQuantity(1)}
+                      >
+                        <Plus size={18} color="#3d0101" strokeWidth={3} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TextInput
+                    style={styles.itemModalNotesInput}
+                    placeholder={t('anySpecialRequirements')}
+                    placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                    value={modalNotes}
+                    onChangeText={setModalNotes}
+                    multiline
+                    numberOfLines={2}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.itemModalAddButton}
+                    onPress={handleAddToCartFromModal}
+                  >
+                    <Utensils size={20} color="#3d0101" strokeWidth={2.5} />
+                    <Text style={styles.itemModalAddButtonText}>
+                      {t('addToCart')} - {formatPrice(selectedItem.price * modalQuantity)}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
+              </>
             )}
-          </ScrollView>
+          </View>
         </View>
       </Modal>
 
@@ -912,25 +1104,36 @@ export default function PublicMenuScreen() {
         </View>
       </Modal>
       
-      <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.replace('/landing')}
-          >
-            <ArrowLeft size={20} color="#FFFFFF" strokeWidth={1.5} />
-          </TouchableOpacity>
-          <Image 
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-          <TouchableOpacity
-            style={styles.languageButton}
+          <TouchableOpacity 
+            style={styles.headerIconButton}
             onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+<<<<<<< HEAD
           >
             <Globe size={22} color="#FFFFFF" strokeWidth={1.5} />
           </TouchableOpacity>
+=======
+            activeOpacity={0.7}
+          >
+            <Globe size={24} color="#D4AF37" strokeWidth={2} />
+          </TouchableOpacity>
+          
+          <View style={styles.headerLogoContainer}>
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+          </View>
+          
+          <View style={styles.headerTableBadge}>
+            <UtensilsIcon size={18} color="#D4AF37" strokeWidth={2} />
+            {selectedTable && (
+              <Text style={styles.headerTableBadgeText}>{selectedTable}</Text>
+            )}
+          </View>
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
         </View>
 
         {showLanguageMenu && (
@@ -946,11 +1149,14 @@ export default function PublicMenuScreen() {
                   setLanguage(lang);
                   setShowLanguageMenu(false);
                 }}
+                activeOpacity={0.8}
               >
-                <Text style={[
-                  styles.languageOptionText,
-                  language === lang && styles.languageOptionTextActive,
-                ]}>
+                <Text
+                  style={[
+                    styles.languageOptionText,
+                    language === lang && styles.languageOptionTextActive,
+                  ]}
+                >
                   {lang === 'en' ? 'English' : lang === 'ku' ? 'کوردی' : 'العربية'}
                 </Text>
               </TouchableOpacity>
@@ -959,48 +1165,85 @@ export default function PublicMenuScreen() {
         )}
       </View>
 
-      {showSearch && (
-        <Animated.View
+
+      <ScrollView 
+        ref={categoryScrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryImageScrollContainer}
+        contentContainerStyle={styles.categoryImageScrollContent}
+        pagingEnabled={Platform.OS !== 'web'}
+        snapToInterval={Platform.OS !== 'web' ? 140 : undefined}
+        decelerationRate="fast"
+      >
+        {categories.map((category) => {
+          const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+          const isActive = selectedCategory === category.id;
+          
+          return (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryImageCard,
+                isActive && styles.categoryImageCardActive,
+              ]}
+              onPress={() => setSelectedCategory(category.id)}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={{ uri: category.image }}
+                style={styles.categoryImage}
+                resizeMode="cover"
+              />
+              <View style={styles.categoryImageOverlay} />
+              <View style={styles.categoryImageTextContainer}>
+                <Text style={[
+                  styles.categoryImageText,
+                  isActive && styles.categoryImageTextActive,
+                ]}>
+                  {categoryName}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {showWaiterToast && (
+        <Animated.View 
           style={[
-            styles.searchContainer,
+            styles.waiterToast,
             {
+              opacity: waiterToastOpacity,
               transform: [
                 {
-                  translateY: searchSlideAnim.interpolate({
+                  translateY: waiterToastOpacity.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [-60, 0],
+                    outputRange: [-20, 0],
                   }),
                 },
               ],
-              opacity: searchSlideAnim,
             },
           ]}
         >
-          <Search size={18} color="rgba(255, 255, 255, 0.7)" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('searchMenu')}
-            placeholderTextColor="rgba(255, 255, 255, 0.5)"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          <TouchableOpacity
-            onPress={() => {
-              setSearchQuery('');
-              setShowSearch(false);
-              Animated.spring(searchSlideAnim, {
-                toValue: 0,
-                useNativeDriver: true,
-              }).start();
-            }}
-            style={styles.closeSearchButton}
-          >
-            <X size={18} color="rgba(255, 255, 255, 0.7)" />
-          </TouchableOpacity>
+          <ChefHat size={20} color="#D4AF37" strokeWidth={2} />
+          <Text style={styles.waiterToastText}>
+            {language === 'en' 
+              ? (createServiceRequestMutation.variables?.requestType === 'bill' 
+                ? 'Bill request sent 💳' 
+                : 'Waiter has been notified 🍷')
+              : language === 'ku' 
+              ? (createServiceRequestMutation.variables?.requestType === 'bill'
+                ? 'داواکاری حیساب نێردرا 💳'
+                : 'گارسۆن ئاگادار کرایەوە 🍷')
+              : (createServiceRequestMutation.variables?.requestType === 'bill'
+                ? 'تم إرسال طلب الفاتورة 💳'
+                : 'تم إعلام النادل 🍷')}
+          </Text>
         </Animated.View>
       )}
 
+<<<<<<< HEAD
       <Animated.View style={[
         styles.categorySliderContainer,
         {
@@ -1063,13 +1306,13 @@ export default function PublicMenuScreen() {
         </ScrollView>
       </Animated.View>
 
+=======
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       <ScrollView 
         ref={contentScrollRef}
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
       >
         <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
@@ -1078,10 +1321,10 @@ export default function PublicMenuScreen() {
           </View>
         </View>
         <View style={styles.menuSections}>
-          {filteredCategories.map(renderCategorySection)}
+          {renderAllCategories()}
         </View>
 
-        {filteredCategories.length === 0 && (
+        {availableCategories.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
           </View>
@@ -1097,7 +1340,7 @@ export default function PublicMenuScreen() {
           <View style={styles.footerDivider} />
           
           <Text style={styles.footerText}>
-            {language === 'en' ? 'Thank you for choosing Tapsi Sulaymaniyah' : language === 'ku' ? 'سوپاس بۆ هەڵبژاردنی تەپسی سلێمانی' : 'شكراً لاختياركم تابسي السليمانية'}
+            {language === 'en' ? 'Thank you for dining with us' : language === 'ku' ? 'سوپاس بۆ خواردنتان لەگەڵمان' : 'شكراً لتناولكم الطعام معنا'}
           </Text>
         </View>
       </ScrollView>
@@ -1120,6 +1363,7 @@ export default function PublicMenuScreen() {
       >
         <TouchableOpacity
           style={styles.fabButton}
+<<<<<<< HEAD
           onPress={() => setShowAIAssistant(true)}
           activeOpacity={0.7}
         >
@@ -1151,6 +1395,8 @@ export default function PublicMenuScreen() {
 
         <TouchableOpacity
           style={styles.fabButton}
+=======
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           onPress={() => {
             if (Platform.OS === 'web') {
               window.open('https://www.google.com/search?q=Tapsi+Sulaymaniyah+reviews', '_blank');
@@ -1164,7 +1410,11 @@ export default function PublicMenuScreen() {
           activeOpacity={0.7}
         >
           <Animated.View style={styles.fabIconContainer}>
+<<<<<<< HEAD
             <Star size={24} color="#FFFFFF" strokeWidth={2} />
+=======
+            <Star size={22} color="#FFFFFF" strokeWidth={2} />
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Reviews' : language === 'ku' ? 'هەڵسەنگاندن' : 'التقييمات'}
@@ -1173,6 +1423,7 @@ export default function PublicMenuScreen() {
 
         <TouchableOpacity
           style={styles.fabButton}
+<<<<<<< HEAD
           onPress={() => setShowSearchModal(true)}
           activeOpacity={0.7}
         >
@@ -1181,6 +1432,47 @@ export default function PublicMenuScreen() {
           </Animated.View>
           <Text style={styles.fabLabel}>
             {language === 'en' ? 'Search' : language === 'ku' ? 'گەڕان' : 'بحث'}
+=======
+          onPress={handleCallWaiter}
+          activeOpacity={0.7}
+        >
+          <Animated.View style={styles.fabIconContainer}>
+            <ChefHat size={22} color="#FFFFFF" strokeWidth={2} />
+          </Animated.View>
+          <Text style={styles.fabLabel}>
+            {language === 'en' ? 'Call Waiter' : language === 'ku' ? 'بانگهێشتی گارسۆن' : 'اتصل بالنادل'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.fabButton, styles.fabButtonPrimary]}
+          onPress={() => setShowCart(true)}
+          activeOpacity={0.7}
+        >
+          <Animated.View style={styles.fabIconContainer}>
+            <UtensilsCrossed size={22} color="#3d0101" strokeWidth={2} />
+            {cartItemCount > 0 && (
+              <View style={styles.fabCartBadge}>
+                <Text style={styles.fabCartBadgeText}>{cartItemCount}</Text>
+              </View>
+            )}
+          </Animated.View>
+          <Text style={[styles.fabLabel, styles.fabLabelPrimary]}>
+            {language === 'en' ? 'My Order' : language === 'ku' ? 'داواکاریم' : 'طلبي'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={handleRequestBill}
+          activeOpacity={0.7}
+        >
+          <Animated.View style={styles.fabIconContainer}>
+            <Receipt size={22} color="#FFFFFF" strokeWidth={2} />
+          </Animated.View>
+          <Text style={styles.fabLabel}>
+            {language === 'en' ? 'Request Bill' : language === 'ku' ? 'داواکردنی حیساب' : 'طلب الفاتورة'}
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -1205,6 +1497,7 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
+<<<<<<< HEAD
     backgroundColor: '#3d0101',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
@@ -1220,24 +1513,407 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
     }),
+=======
+    backgroundColor: 'transparent',
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+<<<<<<< HEAD
     paddingHorizontal: 16,
     paddingVertical: 6,
   },
   headerLogo: {
     width: 70,
     height: 70,
+=======
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+  },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTableBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: '#D4AF37',
+    minWidth: 60,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
       web: {
+<<<<<<< HEAD
         width: 80,
         height: 80,
       },
     }),
   },
+=======
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  headerTableBadgeText: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+      },
+    }),
+  },
+  headerLogoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  headerLogo: {
+    width: 65,
+    height: 65,
+    ...Platform.select({
+      web: {
+        width: 75,
+        height: 75,
+      },
+    }),
+  },
+  headerSecondBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 16,
+    gap: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 3px 12px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  headerSecondBarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  headerSecondBarDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  headerTableNumber: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    marginLeft: 4,
+    fontWeight: '700' as const,
+  },
+  menuButtonsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(61, 1, 1, 0.7)',
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  menuButton: {
+    flex: 1,
+    backgroundColor: 'rgba(212, 175, 55, 0.95)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 70,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 3px 12px rgba(212, 175, 55, 0.4)',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+      },
+    }),
+  },
+  menuButtonIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative' as const,
+    borderWidth: 1.5,
+    borderColor: 'rgba(61, 1, 1, 0.2)',
+  },
+  menuButtonBadge: {
+    position: 'absolute' as const,
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  menuButtonBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700' as const,
+  },
+  menuButtonText: {
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontSize: 10,
+    color: '#3d0101',
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+    fontWeight: '700' as const,
+    lineHeight: 14,
+  },
+  categoryScrollContainer: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  categoryScrollContent: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  categoryChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 22,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    marginRight: 4,
+  },
+  categoryChipActive: {
+    backgroundColor: '#D4AF37',
+    borderColor: '#D4AF37',
+  },
+  categoryChipText: {
+    fontFamily: 'DMSans_500Medium',
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: '#D4AF37',
+    letterSpacing: 0.5,
+  },
+  categoryChipTextActive: {
+    fontWeight: '700' as const,
+    color: '#3d0101',
+  },
+  categoryImageScrollContainer: {
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
+    marginTop: 0,
+    marginBottom: 10,
+  },
+  categoryImageScrollContent: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  categoryImageCard: {
+    width: 130,
+    height: 160,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+      },
+    }),
+  },
+  categoryImageCardActive: {
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    transform: [{ scale: 1.05 }],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+  },
+  categoryImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  categoryImageTextContainer: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopWidth: 2,
+    borderTopColor: '#D4AF37',
+  },
+  categoryImageText: {
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+    lineHeight: 18,
+  },
+  categoryImageTextActive: {
+    color: '#FFFFFF',
+    textShadowColor: '#D4AF37',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  waiterToast: {
+    position: 'absolute' as const,
+    top: Platform.select({ ios: 120, android: 110, default: 115 }),
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(45, 0, 0, 0.95)',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 1000,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
+  waiterToastText: {
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#FFFFFF',
+    flex: 1,
+  },
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
 
   cartBadge: {
@@ -1490,8 +2166,27 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  topNavCartBadge: {
+    position: 'absolute' as const,
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  topNavCartBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700' as const,
+  },
   menuSections: {
-    paddingTop: 24,
+    paddingTop: 0,
     paddingBottom: 24,
   },
   categorySection: {
@@ -1788,13 +2483,13 @@ const styles = StyleSheet.create({
     }),
   },
   addToCartButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#3d0101',
+    fontSize: 15,
     fontWeight: '700' as const,
     letterSpacing: 0.3,
     ...Platform.select({
       web: {
-        fontFamily: 'NotoNaskhArabic_400Regular',
+        fontFamily: 'NotoNaskhArabic_600SemiBold',
       },
     }),
   },
@@ -1885,12 +2580,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
+    marginTop: 8,
   },
   quantitySelectorLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600' as const,
-    color: '#1A1A1A',
+    color: '#E8C968',
   },
   quantityControls: {
     flexDirection: 'row',
@@ -1898,9 +2594,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   quantityButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFDD0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1908,10 +2604,10 @@ const styles = StyleSheet.create({
     borderColor: '#3d0101',
   },
   quantityValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
-    color: '#1A1A1A',
-    minWidth: 40,
+    color: '#FFFFFF',
+    minWidth: 35,
     textAlign: 'center' as const,
   },
   notesContainer: {
@@ -1924,15 +2620,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   notesInput: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
+    backgroundColor: 'rgba(26, 26, 26, 0.6)',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 13,
+    color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    minHeight: 80,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+    minHeight: 60,
     textAlignVertical: 'top' as const,
+    marginBottom: 12,
   },
   modalAddButton: {
     flexDirection: 'row',
@@ -1962,6 +2659,7 @@ const styles = StyleSheet.create({
   cartContainer: {
     flex: 1,
     backgroundColor: '#3d0101',
+    position: 'relative' as const,
   },
   cartHeader: {
     flexDirection: 'row',
@@ -1985,13 +2683,58 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 80,
+    marginTop: 60,
   },
   emptyCartText: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginTop: 16,
-    fontWeight: '500' as const,
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    marginTop: 28,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
+  },
+  emptyCartIconContainer: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(61, 1, 1, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 3,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)',
+      },
+    }),
+  },
+  emptyCartIconInner: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyCartSubtext: {
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 12,
+    textAlign: 'center' as const,
+    paddingHorizontal: 40,
+    lineHeight: 22,
   },
   cartItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -2352,6 +3095,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
     backgroundColor: 'rgba(212, 175, 55, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -2361,13 +3105,52 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
+=======
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    alignSelf: 'center' as const,
+    gap: 4,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  ratingBadgeOnImage: {
+    position: 'absolute' as const,
+    bottom: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
+  },
+  ratingTextOnImage: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+  },
+  ratingText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '700' as const,
     color: '#D4AF37',
   },
   ratingCount: {
+<<<<<<< HEAD
     fontSize: 11,
+=======
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '600' as const,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   menuItemActions: {
     flexDirection: 'row',
@@ -2754,6 +3537,7 @@ const styles = StyleSheet.create({
   },
   floatingMenu: {
     position: 'absolute' as const,
+<<<<<<< HEAD
     bottom: Platform.select({ ios: 24, android: 16, default: 20 }),
     left: 16,
     right: 16,
@@ -2761,12 +3545,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(61, 1, 1, 0.97)',
     paddingVertical: 14,
     paddingHorizontal: 10,
+=======
+    bottom: Platform.select({ ios: 34, android: 20, default: 24 }),
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(61, 1, 1, 0.97)',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     borderRadius: 24,
     borderWidth: 2,
     borderTopColor: 'rgba(212, 175, 55, 0.6)',
     borderBottomColor: 'rgba(212, 175, 55, 0.6)',
     borderLeftColor: 'rgba(212, 175, 55, 0.6)',
     borderRightColor: 'rgba(212, 175, 55, 0.6)',
+<<<<<<< HEAD
+=======
+    gap: 8,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -2788,12 +3585,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+<<<<<<< HEAD
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderRadius: 18,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     marginHorizontal: 5,
     minHeight: 68,
+=======
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    minHeight: 64,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.4)',
     ...Platform.select({
@@ -2807,7 +3612,11 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
+<<<<<<< HEAD
         minHeight: 76,
+=======
+        minHeight: 70,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         backdropFilter: 'blur(15px)',
         WebkitBackdropFilter: 'blur(15px)',
@@ -2839,6 +3648,7 @@ const styles = StyleSheet.create({
     }),
   },
   fabIconContainer: {
+<<<<<<< HEAD
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -2846,21 +3656,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
+=======
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 3,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     position: 'relative' as const,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.2)',
   },
   fabLabel: {
     fontFamily: 'NotoNaskhArabic_600SemiBold',
+<<<<<<< HEAD
     fontSize: 11,
     color: '#FFFFFF',
     textAlign: 'center' as const,
     letterSpacing: 0.4,
     lineHeight: 15,
+=======
+    fontSize: 10,
+    color: '#FFFFFF',
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+    lineHeight: 14,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontWeight: '700' as const,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
+<<<<<<< HEAD
+=======
+    paddingHorizontal: 2,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
   },
   fabLabelPrimary: {
     color: '#3d0101',
@@ -2885,4 +3716,297 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700' as const,
   },
+<<<<<<< HEAD
+=======
+  itemModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      },
+    }),
+  },
+  itemModalContent: {
+    backgroundColor: '#2d0000',
+    borderRadius: 28,
+    overflow: 'hidden' as const,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    marginHorizontal: 16,
+    alignSelf: 'center' as const,
+    width: '92%',
+    maxWidth: 480,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.8,
+        shadowRadius: 24,
+      },
+      android: {
+        elevation: 24,
+      },
+      web: {
+        maxWidth: 440,
+        boxShadow: '0 8px 48px rgba(212, 175, 55, 0.8), 0 0 60px rgba(212, 175, 55, 0.4)',
+      },
+    }),
+  },
+  itemModalCloseButton: {
+    position: 'absolute' as const,
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  itemModalImage: {
+    width: '100%',
+    height: 220,
+    backgroundColor: '#1a0000',
+    ...Platform.select({
+      web: {
+        height: 240,
+      },
+    }),
+  },
+  itemModalBody: {
+    padding: 20,
+    gap: 16,
+  },
+  itemModalTitle: {
+    fontSize: 24,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+    lineHeight: 32,
+    textShadowColor: 'rgba(212, 175, 55, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
+  },
+  itemModalDescription: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 20,
+    textAlign: 'center' as const,
+    paddingHorizontal: 4,
+  },
+  itemModalQuantitySection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+  },
+  itemModalQuantityLabel: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    letterSpacing: 0.2,
+  },
+  itemModalQuantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  itemModalQuantityButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFDD0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  itemModalQuantityValue: {
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    minWidth: 40,
+    textAlign: 'center' as const,
+  },
+  itemModalNotesInput: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 14,
+    color: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    minHeight: 70,
+    maxHeight: 70,
+    textAlignVertical: 'top' as const,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+  },
+  itemModalAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#D4AF37',
+    paddingVertical: 18,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E8C968',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  itemModalAddButtonText: {
+    color: '#3d0101',
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
+  },
+  itemModalScrollView: {
+    flex: 1,
+  },
+  modalReviewsSection: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+  },
+  modalReviewsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.25)',
+  },
+  modalReviewsRating: {
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
+  modalReviewsCount: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  modalReviewsList: {
+    maxHeight: 140,
+    marginBottom: 12,
+  },
+  modalReviewCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  modalReviewStars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 8,
+  },
+  modalReviewDate: {
+    fontSize: 11,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginLeft: 8,
+  },
+  modalReviewComment: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.75)',
+    lineHeight: 18,
+  },
+  modalRateThisDishButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+  },
+  modalRateThisDishButtonText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: '#D4AF37',
+    fontWeight: '600' as const,
+  },
+  modalReviewsLink: {
+    fontSize: 13,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    color: '#D4AF37',
+    textAlign: 'center' as const,
+  },
+  itemModalRateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    marginTop: 8,
+  },
+  itemModalRateButtonText: {
+    color: '#D4AF37',
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    letterSpacing: 0.3,
+  },
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 });

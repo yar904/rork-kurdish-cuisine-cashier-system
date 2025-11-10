@@ -49,6 +49,10 @@ self.addEventListener('fetch', (event) => {
 
   if (event.request.url.includes('/api/') || 
       event.request.url.includes('supabase.co') ||
+<<<<<<< HEAD
+=======
+      event.request.url.includes('openai.com') ||
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       event.request.url.includes('toolkit.rork.com')) {
     event.respondWith(
       fetch(event.request)

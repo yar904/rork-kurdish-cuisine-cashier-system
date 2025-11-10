@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/backend/lib/supabase';
 
 export const createServiceRequestProcedure = publicProcedure
   .input(
@@ -30,5 +30,5 @@ export const createServiceRequestProcedure = publicProcedure
     }
 
     console.log(`Service request created: ${requestType} for table ${tableNumber}`);
-    return { requestId: data.id, success: true };
+    return { requestId: data.id, requestType: data.request_type, success: true };
   });

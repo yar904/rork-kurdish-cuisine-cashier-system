@@ -4,18 +4,24 @@ import {
   Text as RNText,
   StyleSheet,
   TouchableOpacity,
-  ImageBackground,
   ActivityIndicator,
   ScrollView,
+  useWindowDimensions,
+  Linking,
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 
 import { useRouter } from 'expo-router';
+<<<<<<< HEAD
 import { Globe } from 'lucide-react-native';
+=======
+import { Globe, Instagram } from 'lucide-react-native';
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Colors, fonts } from '@/constants/colors';
-import { Language, translations } from '@/constants/i18n';
+import { Language } from '@/constants/i18n';
 
 const LANGUAGES = [
   { code: 'ku' as Language, label: 'کوردی' },
@@ -30,6 +36,8 @@ export default function LandingPage() {
   const [showLanguages, setShowLanguages] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
 
   const handleLanguageSelect = async (lang: Language) => {
     setSelectedLang(lang);
@@ -41,14 +49,7 @@ export default function LandingPage() {
     router.replace('/menu');
   };
 
-  const getMenuText = () => {
-    switch(selectedLang) {
-      case 'en': return 'Menu';
-      case 'ku': return 'مینۆ';
-      case 'ar': return 'القائمة';
-      default: return 'مینۆ';
-    }
-  };
+
 
   React.useEffect(() => {
     if (!isLoading) {
@@ -81,14 +82,45 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
+<<<<<<< HEAD
       <ImageBackground
         source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
         style={styles.background}
         resizeMode="cover"
       />
+=======
+      {isLargeScreen ? (
+        <LinearGradient
+          colors={['#1a0000', '#3d0101', '#1a0000']}
+          style={styles.background}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      ) : (
+        <Video
+          source={{ 
+            uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV',
+            overrideFileExtensionAndroid: 'mov',
+          }}
+          style={styles.videoBackground}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay
+          isLooping
+          isMuted
+          useNativeControls={false}
+          videoStyle={styles.videoStyle}
+          onError={(error) => {
+            console.error('Video playback error:', error);
+          }}
+          onLoad={() => {
+            console.log('Video loaded successfully');
+          }}
+        />
+      )}
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
       <View style={styles.absoluteOverlay}>
         <LinearGradient
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
+          colors={isLargeScreen ? ['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.4)'] : ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.6)']}
           style={styles.overlay}
         >
           <ScrollView 
@@ -134,12 +166,21 @@ export default function LandingPage() {
 
             <View style={styles.spacer} />
             
-            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>
+            <View style={[styles.bottomSection, { paddingBottom: Math.max(insets.bottom, 20) + 32 }]}>              
               <TouchableOpacity
                 style={styles.menuButton}
                 onPress={handleContinue}
+                activeOpacity={0.8}
+              >
+                <RNText style={styles.menuButtonText}>Menu</RNText>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={() => Linking.openURL('https://www.instagram.com/tapse_slimane/')}
                 activeOpacity={0.7}
               >
+<<<<<<< HEAD
                 <RNText style={styles.menuButtonText}>{getMenuText()}</RNText>
               </TouchableOpacity>
 
@@ -158,6 +199,15 @@ export default function LandingPage() {
                   {translations[selectedLang].footerText}
                 </RNText>
               </View>
+=======
+                <Instagram size={22} color="rgba(255, 255, 255, 0.9)" strokeWidth={1.5} />
+              </TouchableOpacity>
+              
+              <View style={styles.separator} />
+              
+              <RNText style={styles.poweredBy}>Powered by</RNText>
+              <RNText style={styles.brandName}>Yar</RNText>
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
             </View>
           </ScrollView>
         </LinearGradient>
@@ -176,6 +226,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  videoBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    width: '100%',
+    height: '100%',
+  },
+  videoStyle: {
+    width: '100%',
+    height: '100%',
+  },
   videoPlaceholder: {
     flex: 1,
     justifyContent: 'center',
@@ -187,7 +250,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   videoPlaceholderSubtext: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.extraBold,
     fontSize: 18,
     color: Colors.gold,
     letterSpacing: 2,
@@ -239,7 +302,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   languageButtonText: {
+<<<<<<< HEAD
     fontFamily: fonts.regular,
+=======
+    fontFamily: fonts.medium,
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
     fontSize: 14,
     color: '#FFFFFF',
     letterSpacing: 0.5,
@@ -259,6 +326,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    alignSelf: 'flex-start',
   },
   languageOption: {
     paddingHorizontal: 20,
@@ -270,18 +338,66 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold + '20',
   },
   languageOptionText: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.medium,
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.9)',
   },
   languageOptionTextActive: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.semiBold,
     color: Colors.gold,
   },
   bottomSection: {
     alignItems: 'center',
     paddingHorizontal: 32,
-    gap: 20,
+    gap: 12,
+  },
+  menuButton: {
+    width: '100%',
+    maxWidth: 400,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.gold + '60',
+    alignItems: 'center',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  menuButtonText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 16,
+    color: Colors.gold,
+    letterSpacing: 1,
+  },
+  socialButton: {
+    marginTop: 4,
+    padding: 8,
+  },
+  separator: {
+    width: '100%',
+    maxWidth: 400,
+    height: 1,
+    backgroundColor: 'rgba(139, 69, 19, 0.2)',
+    marginTop: 4,
+  },
+  poweredBy: {
+    fontFamily: fonts.regular,
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.3)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    marginTop: 8,
+  },
+  brandName: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: 'rgba(139, 69, 19, 0.7)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   titleContainer: {
     alignItems: 'center',
@@ -289,8 +405,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   restaurantName: {
-    fontFamily: fonts.bold,
-    fontSize: 40,
+    fontFamily: fonts.heading,
+    fontSize: 44,
     color: Colors.gold,
     textAlign: 'center',
     letterSpacing: 1,
@@ -299,7 +415,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   subtitle: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.medium,
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
@@ -307,6 +423,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase' as const,
   },
 
+<<<<<<< HEAD
   menuButton: {
     backgroundColor: Colors.primary,
     paddingVertical: 8,
@@ -347,6 +464,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 1,
   },
+=======
+
+>>>>>>> 3d65eb3cb3ed8162e20b96c17185529fc5c9cee3
 
   footerContainer: {
     marginTop: 32,
@@ -367,7 +487,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   footerTagline: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.semiBold,
     fontSize: 12,
     color: Colors.gold,
     textAlign: 'center',
