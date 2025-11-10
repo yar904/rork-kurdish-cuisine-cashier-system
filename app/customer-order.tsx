@@ -966,12 +966,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   exploreCategoriesSection: {
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
     marginBottom: 0,
     backgroundColor: '#3D0101',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.gold,
   },
   categoryPatternBackground: {
     position: 'relative',
@@ -980,8 +980,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 10,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   exploreCategoriesTitle: {
     fontSize: 22,
@@ -1000,8 +1000,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.gold,
   },
   categoryCardsContainer: {
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   categoryCard: {
     width: 160,
@@ -1015,6 +1015,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
+    marginRight: 12,
   },
   categoryCardGradient: {
     flex: 1,
