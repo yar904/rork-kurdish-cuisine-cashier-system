@@ -146,6 +146,24 @@ export default function CustomerOrderScreen() {
     return icons[category] || '🍽️';
   };
 
+  const getCategoryImage = (category: string) => {
+    const imageIds: Record<string, string> = {
+      appetizers: '1546069901-120a39972937',
+      soups: '1547592166-23ac45744acd',
+      salads: '1512621776951-5a09ec56c8f7',
+      kebabs: '1529692236671-f1f6cf9683ba',
+      'rice-dishes': '1516714435131-44d6b64dc6a2',
+      stews: '1543352632-5a4b7d4c7b5a',
+      seafood: '1559847844-5315695dadae',
+      breads: '1509440159596-0249088772ff',
+      desserts: '1551024506-0bccd828d307',
+      drinks: '1514933651356-89db8e11e23f',
+      shisha: '1534422298391-304a23b3c7e6',
+      'hot-drinks': '1543007630-9710e4a00a1c',
+    };
+    return imageIds[category] || '1546069901-120a39972937';
+  };
+
   const scrollToCategory = (category: string) => {
     const yOffset = categoryRefs.current.get(category);
     if (yOffset !== undefined && scrollViewRef.current) {
@@ -439,55 +457,67 @@ export default function CustomerOrderScreen() {
       />
 
       <Animated.View style={[styles.exploreCategoriesSection, { transform: [{ translateY: categoryTranslateY }] }]}>
-        <View style={styles.exploreCategoriesHeader}>
-          <Text style={styles.exploreCategoriesTitle}>Explore Categories</Text>
-          <TouchableOpacity 
-            onPress={() => setIsGridView(!isGridView)}
-            style={styles.viewToggleButton}
-            activeOpacity={0.7}
-          >
-            {isGridView ? (
-              <Grid3x3 size={22} color="#fff" strokeWidth={2.5} />
-            ) : (
-              <List size={22} color="#fff" strokeWidth={2.5} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryCardsContainer}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryCard,
-                selectedCategory === category && styles.categoryCardSelected
-              ]}
-              onPress={() => {
-                setSelectedCategory(category);
-                if (category !== 'all') {
-                  scrollToCategory(category);
-                }
-              }}
-              activeOpacity={0.8}
+        <View style={styles.categoryPatternBackground}>
+          <View style={styles.exploreCategoriesHeader}>
+            <Text style={styles.exploreCategoriesTitle}>Explore Categories</Text>
+            <TouchableOpacity 
+              onPress={() => setIsGridView(!isGridView)}
+              style={styles.viewToggleButton}
+              activeOpacity={0.7}
             >
-              <View style={[
-                styles.categoryCardGradient,
-                selectedCategory === category && styles.categoryCardGradientSelected
-              ]}>
-                <Text style={styles.categoryCardIcon}>{getCategoryIcon(category)}</Text>
-                <Text style={styles.categoryCardTitle}>
-                  {CATEGORY_NAMES[category] || category}
-                </Text>
-                <View style={styles.categoryCardArrow}>
-                  <ChevronRight size={16} color="rgba(255,255,255,0.8)" strokeWidth={3} />
-                </View>
-              </View>
+              {isGridView ? (
+                <Grid3x3 size={22} color={Colors.gold} strokeWidth={2.5} />
+              ) : (
+                <List size={22} color={Colors.gold} strokeWidth={2.5} />
+              )}
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryCardsContainer}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryCard,
+                  selectedCategory === category && styles.categoryCardSelected
+                ]}
+                onPress={() => {
+                  setSelectedCategory(category);
+                  if (category !== 'all') {
+                    scrollToCategory(category);
+                  }
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={[
+                  styles.categoryCardGradient,
+                  selectedCategory === category && styles.categoryCardGradientSelected
+                ]}>
+                  {category !== 'all' ? (
+                    <View style={styles.categoryImageWrapper}>
+                      <Image 
+                        source={{ uri: `https://images.unsplash.com/photo-${getCategoryImage(category)}?w=300&q=80` }} 
+                        style={styles.categoryImage}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.categoryImageOverlay} />
+                    </View>
+                  ) : (
+                    <View style={styles.allCategoryIconWrapper}>
+                      <Text style={styles.allCategoryIcon}>🍽️</Text>
+                    </View>
+                  )}
+                  <Text style={styles.categoryCardTitle}>
+                    {CATEGORY_NAMES[category] || category}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </Animated.View>
 
       <ScrollView 
@@ -935,89 +965,115 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   exploreCategoriesSection: {
-    paddingVertical: 12,
+    paddingVertical: 16,
     marginBottom: 8,
-    backgroundColor: Colors.background,
+    backgroundColor: '#3D0101',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  categoryPatternBackground: {
+    position: 'relative',
   },
   exploreCategoriesHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 14,
   },
   exploreCategoriesTitle: {
     fontSize: 22,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: Colors.gold,
     letterSpacing: -0.5,
   },
   viewToggleButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 2,
+    borderColor: Colors.gold,
   },
   categoryCardsContainer: {
-    paddingHorizontal: 12,
-    alignItems: 'center' as const,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+    gap: 12,
   },
   categoryCard: {
-    minWidth: 120,
-    height: 140,
-    borderRadius: 20,
+    width: 160,
+    height: 180,
+    borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: Colors.primary,
+    borderWidth: 3,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     elevation: 8,
-    marginHorizontal: 6,
   },
   categoryCardGradient: {
     flex: 1,
-    backgroundColor: Colors.primary,
-    padding: 16,
-    justifyContent: 'space-between',
+    backgroundColor: '#4A0808',
+    justifyContent: 'flex-end',
     position: 'relative',
+    padding: 12,
   },
-  categoryCardIcon: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  categoryCardTitle: {
-    fontSize: 14,
-    fontWeight: '800' as const,
-    color: '#fff',
-    letterSpacing: -0.3,
-    lineHeight: 18,
-  },
-  categoryCardArrow: {
+  categoryImageWrapper: {
     position: 'absolute',
-    bottom: 12,
-    right: 12,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+  },
+  categoryImageOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(61, 1, 1, 0.35)',
+  },
+  allCategoryIconWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  allCategoryIcon: {
+    fontSize: 64,
+  },
+  categoryCardTitle: {
+    fontSize: 15,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: -0.2,
+    lineHeight: 19,
+    textAlign: 'center' as const,
+    backgroundColor: 'rgba(61, 1, 1, 0.7)',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   categoryCardSelected: {
-    shadowOpacity: 0.4,
+    borderColor: Colors.gold,
+    borderWidth: 4,
+    shadowOpacity: 0.6,
     elevation: 12,
   },
   categoryCardGradientSelected: {
-    backgroundColor: Colors.gold,
+    backgroundColor: '#5A1010',
   },
   categorySection: {
     marginTop: 12,
