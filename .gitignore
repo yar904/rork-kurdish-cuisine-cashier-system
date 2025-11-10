@@ -13,6 +13,9 @@ web-build/
 logs/
 expo-env.d.ts
 
+# prevent Netlify from treating a stray .gitmodules file as a real submodule config
+/.gitmodules
+
 # Native
 *.orig.*
 *.jks
