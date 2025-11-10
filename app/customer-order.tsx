@@ -101,12 +101,13 @@ export default function CustomerOrderScreen() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: (data) => {
+      const requestType = data?.requestType || 'assistance';
       if (data && table) {
-        notifyServiceRequest(parseInt(table), data.requestType);
+        notifyServiceRequest(parseInt(table), requestType);
         
         if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
           new Notification('Service Request! 🔔', {
-            body: `Table ${table} needs ${data.requestType}`,
+            body: `Table ${table} needs ${requestType}`,
             icon: '/assets/images/icon.png',
           });
         }
