@@ -966,8 +966,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   exploreCategoriesSection: {
-    paddingVertical: 16,
-    marginBottom: 8,
+    paddingTop: 12,
+    paddingBottom: 12,
+    marginBottom: 0,
     backgroundColor: '#3D0101',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
@@ -980,7 +981,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   exploreCategoriesTitle: {
     fontSize: 22,
@@ -1000,7 +1001,6 @@ const styles = StyleSheet.create({
   },
   categoryCardsContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 4,
     gap: 12,
   },
   categoryCard: {
