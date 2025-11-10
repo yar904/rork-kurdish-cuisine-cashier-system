@@ -1,41 +1,47 @@
-  {
+ {
 "name": "rork-kurdish-cuisine-cashier-system",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {},
-  "dependencies": {
-    "@supabase/supabase-js": "2.78.0",
-    "@tanstack/react-query": "5.51.20",
-    "@trpc/client": "11.7.1",
-    "@trpc/server": "11.7.1",
-    "expo": "~52.0.4",
-    "expo-av": "~14.0.1",
-    "expo-router": "~4.0.21",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-native": "0.76.3",
-    "react-native-web": "0.19.10",
-    "zod": "3.24.1"
-  },
-  "devDependencies": {
-    "@types/react": "~18.3.12",
-    "@types/react-native": "~0.76.3",
-    "typescript": "~5.3.3",
-    "concurrently": "8.2.2"
-  },
-  "private": true,
-  "description": "## Project info",
-  "directories": {
-    "lib": "lib"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system/issues"
-  },
-  "homepage": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system#readme"
+"version": "1.0.0",
+"main": "index.js",
+"scripts": {
+  "start": "expo start",
+  "android": "expo start --android",
+  "ios": "expo start --ios",
+  "web": "expo start --web"
+},
+"dependencies": {
+  "@supabase/supabase-js": "2.78.0",
+  "@tanstack/react-query": "5.51.20",
+  "@trpc/client": "11.7.1",
+  "@trpc/server": "11.7.1",
+  "expo": "~52.0.4",
+  "expo-av": "~14.0.1",
+  "expo-router": "~4.0.21",
+  "react": "18.3.1",
+  "react-dom": "18.3.1",
+  "react-native": "0.76.3",
+  "react-native-web": "0.19.10",
+  "zod": "3.24.1"
+},
+"devDependencies": {
+  "@types/react": "~18.3.12",
+  "@types/react-native": "~0.76.3",
+  "typescript": "~5.3.3",
+  "concurrently": "8.2.2"
+},
+"private": true,
+"description": "Kurdish Cuisine Cashier System",
+"directories": {
+  "lib": "lib"
+},
+"repository": {
+  "type": "git",
+  "url": "git+https://github.com/yar904/rork-kurdish-cuisine-cashier-system.git"
+},
+"keywords": [],
+"author": "",
+"license": "ISC",
+"bugs": {
+  "url": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system/issues"
+},
+"homepage": "https://github.com/yar904/rork-kurdish-cuisine-cashier-system#readme"
+}
