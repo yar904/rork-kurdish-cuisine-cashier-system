@@ -950,7 +950,8 @@ const styles = StyleSheet.create({
   },
   categoryFilterSection: {
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
@@ -959,7 +960,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   categoryFilterTitle: {
     fontSize: 18,
@@ -979,18 +980,18 @@ const styles = StyleSheet.create({
   },
   categoryScrollContent: {
     paddingHorizontal: 16,
-    gap: 10,
   },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.3)',
+    marginRight: 10,
   },
   categoryChipActive: {
     backgroundColor: Colors.gold,
@@ -1009,8 +1010,8 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   categorySection: {
-    marginTop: 12,
-    marginBottom: 12,
+    marginTop: 8,
+    marginBottom: 8,
   },
   categorySectionHeader: {
     flexDirection: 'row',
