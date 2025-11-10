@@ -1,0 +1,3 @@
+# build_log.txt
+# This file is automatically rewritten by scripts/auto-heal.sh with the latest install and build output.
+# The current contents are a placeholder to keep the file versioned.

@@ -1,5 +1,5 @@
-import { publicProcedure } from "../../../create-context";
-import { supabase } from "@/lib/supabase";
+import { publicProcedure } from "../../../create-context.js";
+import { supabase } from "../../../../../lib/supabase.js";
 import { z } from "zod";
 
 export const updateEmployeeProcedure = publicProcedure

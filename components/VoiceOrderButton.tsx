@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Mic, X, CheckCircle } from 'lucide-react-native';
-import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio';
+import { Audio } from 'expo-av';
 import { Colors } from '@/constants/colors';
 
 
@@ -10,22 +10,68 @@ interface VoiceOrderButtonProps {
 }
 
 export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps) {
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [transcript, setTranscript] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') {
-      AudioModule.requestRecordingPermissionsAsync().catch(console.error);
-    }
+    let cancelled = false;
+
+    const prepareAudio = async () => {
+      if (Platform.OS === 'web') {
+        return;
+      }
+
+      try {
+        const { status } = await Audio.requestPermissionsAsync();
+        if (status !== 'granted' && !cancelled) {
+          alert('Microphone permission is required for voice orders.');
+        }
+
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+        });
+      } catch (error) {
+        console.error('Failed to configure audio recording', error);
+      }
+    };
+
+    prepareAudio();
+
+    return () => {
+      cancelled = true;
+      const activeRecording = recordingRef.current;
+      if (activeRecording) {
+        activeRecording.stopAndUnloadAsync().catch(() => undefined);
+        recordingRef.current = null;
+      }
+      const activeMediaRecorder = mediaRecorderRef.current;
+      if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
+        activeMediaRecorder.stop();
+      }
+    };
   }, []);
 
   const startRecordingMobile = async () => {
     try {
       console.log('Starting recording...');
-      await recorder.record();
+      const recording = recordingRef.current;
+      if (recording) {
+        await recording.stopAndUnloadAsync().catch(() => undefined);
+      }
+
+      const { recording: freshRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      recordingRef.current = freshRecording;
+      setIsRecording(true);
       console.log('Recording started');
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -36,10 +82,17 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
   const stopRecordingMobile = async () => {
     try {
       console.log('Stopping recording...');
-      await recorder.stop();
-      const uri = recorder.uri;
+      const recording = recordingRef.current;
+      if (!recording) {
+        return;
+      }
+
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      recordingRef.current = null;
+      setIsRecording(false);
       console.log('Recording stopped, stored at', uri);
-      
+
       if (uri) {
         await processAudio(uri);
       }
@@ -65,6 +118,7 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
       };
 
       recorder.start();
+      mediaRecorderRef.current = recorder;
       setMediaRecorder(recorder);
       console.log('Web recording started');
     } catch (err) {
@@ -74,8 +128,10 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
   };
 
   const stopRecordingWeb = () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
+    const activeMediaRecorder = mediaRecorderRef.current;
+    if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
+      activeMediaRecorder.stop();
+      mediaRecorderRef.current = null;
       setMediaRecorder(null);
       console.log('Web recording stopped');
     }
@@ -151,11 +207,11 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
   };
 
   const handlePress = async () => {
-    const isRecording = Platform.OS === 'web' 
+    const recordingActive = Platform.OS === 'web'
       ? mediaRecorder?.state === 'recording'
-      : recorder.isRecording;
-      
-    if (isRecording) {
+      : isRecording;
+
+    if (recordingActive) {
       if (Platform.OS === 'web') {
         stopRecordingWeb();
       } else {
@@ -175,7 +231,7 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
       <TouchableOpacity
         style={[
           styles.button,
-          (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : recorder.isRecording) && styles.buttonRecording,
+          (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : isRecording) && styles.buttonRecording,
           isProcessing && styles.buttonDisabled,
         ]}
         onPress={handlePress}
@@ -187,7 +243,11 @@ export default function VoiceOrderButton({ onTranscript }: VoiceOrderButtonProps
           <Mic size={20} color="#fff" />
         )}
         <Text style={styles.buttonText}>
-          {isProcessing ? 'Processing...' : (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : recorder.isRecording) ? 'Stop Recording' : 'Voice Order'}
+          {isProcessing
+            ? 'Processing...'
+            : (Platform.OS === 'web' ? mediaRecorder?.state === 'recording' : isRecording)
+            ? 'Stop Recording'
+            : 'Voice Order'}
         </Text>
       </TouchableOpacity>
 

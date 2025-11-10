@@ -1,6 +1,6 @@
-import { publicProcedure } from "../../../create-context";
+import { publicProcedure } from "../../../create-context.js";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../lib/supabase.js";
 
 const deleteMenuItemSchema = z.object({
   id: z.string().min(1, "ID is required"),

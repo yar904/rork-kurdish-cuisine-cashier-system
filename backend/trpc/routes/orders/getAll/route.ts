@@ -1,5 +1,5 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { supabase } from "@/lib/supabase";
+import { publicProcedure } from "../../../../create-context.js";
+import { supabase } from "../../../../../lib/supabase.js";
 
 export default publicProcedure.query(async () => {
   const { data: orders, error: ordersError } = await supabase
