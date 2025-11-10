@@ -13,6 +13,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Modal,
+  Platform,
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List } from 'lucide-react-native';
@@ -20,6 +21,7 @@ import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type CartItem = {
   menuItem: {
@@ -45,6 +47,7 @@ type Review = {
 
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
+  const { notifyServiceRequest } = useNotifications();
   const [cart, setCart] = useState<CartItem[]>([]);
   
   const isCustomerMode = !!table;
@@ -98,6 +101,17 @@ export default function CustomerOrderScreen() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: (data) => {
+      if (data && table) {
+        notifyServiceRequest(parseInt(table), data.requestType);
+        
+        if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification('Service Request! 🔔', {
+            body: `Table ${table} needs ${data.requestType}`,
+            icon: '/assets/images/icon.png',
+          });
+        }
+      }
+      
       Alert.alert(
         'Request Sent!',
         'A staff member will assist you shortly.',
