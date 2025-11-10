@@ -940,9 +940,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
-    alignSelf: 'flex-start',
-    width: 'auto',
-    maxWidth: '100%',
   },
   exploreCategoriesHeader: {
     flexDirection: 'row',
