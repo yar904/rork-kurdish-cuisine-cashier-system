@@ -114,8 +114,8 @@ export default function CustomerOrderScreen() {
   });
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: (data) => {
-      const requestType = data?.requestType || 'assistance';
+    onSuccess: (data, variables) => {
+      const requestType = variables.requestType;
       if (data && table) {
         notifyServiceRequest(parseInt(table), requestType);
         
@@ -129,6 +129,8 @@ export default function CustomerOrderScreen() {
       
       const message = requestType === 'bill' 
         ? '✅ Bill request sent! Staff will bring your bill shortly.'
+        : requestType === 'assistance'
+        ? '✅ Assistance requested! Staff will help you shortly.'
         : '✅ Waiter called! Someone will assist you shortly.';
       
       setRequestStatus({
@@ -378,7 +380,7 @@ export default function CustomerOrderScreen() {
     createServiceRequestMutation.mutate({
       tableNumber: parseInt(table),
       requestType: 'waiter',
-      message: 'Customer requesting assistance',
+      messageText: 'Customer requesting assistance',
     });
   };
 
@@ -394,7 +396,7 @@ export default function CustomerOrderScreen() {
     createServiceRequestMutation.mutate({
       tableNumber: parseInt(table),
       requestType: 'bill',
-      message: 'Customer requesting bill',
+      messageText: 'Customer requesting bill',
     });
   };
 
