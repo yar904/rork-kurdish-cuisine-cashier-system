@@ -22,7 +22,7 @@ import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
-import { CATEGORY_NAMES } from '@/constants/menu';
+import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
 
@@ -91,6 +91,8 @@ export default function CustomerOrderScreen() {
   const plateAnimY = useRef(new Animated.Value(0)).current;
 
   const menuQuery = trpc.menu.getAll.useQuery();
+  
+  const menuData = menuQuery.data && menuQuery.data.length > 0 ? menuQuery.data : MENU_ITEMS;
   
   const mockReviews: Review[] = [
     { id: '1', userName: 'Ahmed K.', rating: 5, comment: 'Absolutely delicious! The best kebab I\'ve ever had.', date: '2024-01-15', menuItemId: '7' },
@@ -181,9 +183,9 @@ export default function CustomerOrderScreen() {
   });
 
   const categories = useMemo(() => {
-    const cats = new Set(menuQuery.data?.map(item => item.category) || []);
+    const cats = new Set(menuData?.map(item => item.category) || []);
     return ['all', ...Array.from(cats)];
-  }, [menuQuery.data]);
+  }, [menuData]);
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
@@ -229,8 +231,8 @@ export default function CustomerOrderScreen() {
   };
 
   const filteredMenu = useMemo(() => {
-    if (!menuQuery.data) return [];
-    let items = menuQuery.data.filter(item => item.available);
+    if (!menuData) return [];
+    let items = menuData.filter(item => item.available);
     
     if (selectedCategory !== 'all') {
       items = items.filter(item => item.category === selectedCategory);
@@ -244,7 +246,7 @@ export default function CustomerOrderScreen() {
     }
     
     return items;
-  }, [menuQuery.data, selectedCategory, searchQuery]);
+  }, [menuData, selectedCategory, searchQuery]);
 
   const cartTotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
