@@ -1032,14 +1032,15 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   categorySection: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 4,
+    marginBottom: 0,
   },
   categorySectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingBottom: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 4,
     backgroundColor: 'transparent',
   },
   categorySectionIcon: {
@@ -1056,7 +1057,7 @@ const styles = StyleSheet.create({
   },
   menuListContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 220,
   },
   menuItem: {
