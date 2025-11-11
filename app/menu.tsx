@@ -16,7 +16,7 @@ import {
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
-import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
+import Svg, { Path, Circle, Ellipse, Defs, Pattern, Rect, G } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
 import { MenuCategory, MenuItem } from '@/types/restaurant';
@@ -448,12 +448,68 @@ export default function PublicMenuScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.backgroundPattern}>
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <Pattern id="persianPattern" patternUnits="userSpaceOnUse" width="120" height="120">
+              <Rect width="120" height="120" fill="#1a0000" />
+              
+              <G opacity="0.15">
+                <Path
+                  d="M 60 10 L 70 40 L 100 40 L 75 60 L 85 90 L 60 70 L 35 90 L 45 60 L 20 40 L 50 40 Z"
+                  fill="#D4AF37"
+                />
+              </G>
+              
+              <G opacity="0.08">
+                <Path
+                  d="M 0 0 L 20 20 L 0 40 L 20 40 L 40 20 L 40 0 Z"
+                  fill="#8B0000"
+                />
+                <Path
+                  d="M 80 0 L 100 20 L 80 40 L 100 40 L 120 20 L 120 0 Z"
+                  fill="#8B0000"
+                />
+                <Path
+                  d="M 0 80 L 20 100 L 0 120 L 20 120 L 40 100 L 40 80 Z"
+                  fill="#8B0000"
+                />
+                <Path
+                  d="M 80 80 L 100 100 L 80 120 L 100 120 L 120 100 L 120 80 Z"
+                  fill="#8B0000"
+                />
+              </G>
+              
+              <G opacity="0.12">
+                <Rect x="5" y="5" width="110" height="110" fill="none" stroke="#D4AF37" strokeWidth="0.5" />
+                <Rect x="15" y="15" width="90" height="90" fill="none" stroke="#8B0000" strokeWidth="0.5" />
+                <Rect x="25" y="25" width="70" height="70" fill="none" stroke="#D4AF37" strokeWidth="0.5" />
+              </G>
+              
+              <G opacity="0.1">
+                <Path
+                  d="M 60 30 Q 70 40 60 50 Q 50 40 60 30 Z"
+                  fill="#D4AF37"
+                />
+                <Path
+                  d="M 30 60 Q 40 70 30 80 Q 20 70 30 60 Z"
+                  fill="#D4AF37"
+                />
+                <Path
+                  d="M 90 60 Q 100 70 90 80 Q 80 70 90 60 Z"
+                  fill="#D4AF37"
+                />
+                <Path
+                  d="M 60 90 Q 70 100 60 110 Q 50 100 60 90 Z"
+                  fill="#D4AF37"
+                />
+              </G>
+            </Pattern>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#persianPattern)" />
+        </Svg>
+      </View>
       <Stack.Screen options={{ headerShown: false }} />
-      <Image
-        source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956' }}
-        style={[StyleSheet.absoluteFillObject, Platform.select({ web: { display: 'none' as const } })]}
-        resizeMode="cover"
-      />
 
 
 
@@ -1133,18 +1189,17 @@ export default function PublicMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3d0101',
+    backgroundColor: '#1a0000',
     position: 'relative' as const,
-    ...Platform.select({
-      web: {
-        width: '100%',
-        backgroundImage: `url('https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/qb12yvk9zoc3zrfv2t956')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-      },
-    }),
+  },
+  backgroundPattern: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   header: {
     backgroundColor: 'transparent',
