@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Vibration, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Vibration, RefreshControl, ActivityIndicator, ImageBackground } from 'react-native';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { AlertCircle, Bell, CheckCircle, Clock, ArrowLeft } from 'lucide-react-native';
@@ -125,7 +125,11 @@ export default function ServiceRequestsAdminScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/juf3yljg9vndbtlpfh59p' }}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <Stack.Screen
         options={{
           title: 'Service Requests',
@@ -266,14 +270,13 @@ export default function ServiceRequestsAdminScreen() {
           })
         )}
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
   },
   backButton: {
     padding: 8,
