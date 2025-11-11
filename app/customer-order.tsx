@@ -484,6 +484,7 @@ export default function CustomerOrderScreen() {
   }, [orderModalVisible, cart.length, chefAnimScale, chefAnimRotate, plateAnimY]);
 
   if (menuQuery.isLoading) {
+    console.log('[CustomerOrder] Loading menu data...');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -492,6 +493,7 @@ export default function CustomerOrderScreen() {
   }
 
   if (!table) {
+    console.log('[CustomerOrder] No table number provided');
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>No table number provided</Text>
@@ -499,6 +501,8 @@ export default function CustomerOrderScreen() {
       </View>
     );
   }
+
+  console.log('[CustomerOrder] Rendering customer order screen for table:', table);
 
   return (
     <View style={styles.container}>
