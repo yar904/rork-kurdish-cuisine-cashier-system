@@ -67,6 +67,8 @@ export default function CustomerOrderScreen() {
   const lastScrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const categoryTranslateY = useRef(new Animated.Value(0)).current;
+  const categoryScrollViewRef = useRef<ScrollView>(null);
+  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -355,6 +357,29 @@ export default function CustomerOrderScreen() {
   };
 
   useEffect(() => {
+    let currentIndex = 0;
+    const scrollToNextCategory = () => {
+      if (!categoryScrollViewRef.current) return;
+      
+      currentIndex = (currentIndex + 1) % categories.length;
+      const scrollPosition = currentIndex * 140;
+      
+      categoryScrollViewRef.current.scrollTo({ 
+        x: scrollPosition, 
+        animated: true 
+      });
+    };
+
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+
+    return () => {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+      }
+    };
+  }, [categories.length]);
+
+  useEffect(() => {
     if (orderModalVisible && cart.length === 0) {
       Animated.loop(
         Animated.sequence([
@@ -485,9 +510,28 @@ export default function CustomerOrderScreen() {
           </TouchableOpacity>
         </View>
         <ScrollView
+          ref={categoryScrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScrollContent}
+          onTouchStart={() => {
+            if (autoScrollInterval.current) {
+              clearInterval(autoScrollInterval.current);
+            }
+          }}
+          onMomentumScrollEnd={() => {
+            let currentIndex = 0;
+            const scrollToNextCategory = () => {
+              if (!categoryScrollViewRef.current) return;
+              currentIndex = (currentIndex + 1) % categories.length;
+              const scrollPosition = currentIndex * 140;
+              categoryScrollViewRef.current.scrollTo({ 
+                x: scrollPosition, 
+                animated: true 
+              });
+            };
+            autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+          }}
         >
           {categories.map((category) => (
             <TouchableOpacity
