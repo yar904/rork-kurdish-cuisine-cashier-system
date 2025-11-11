@@ -16,12 +16,12 @@ export const createServiceRequestProcedure = publicProcedure
     console.log(`Creating service request: ${requestType} for table ${tableNumber}`);
 
     const { data, error } = await supabase
-      .from('service_requests')
+      .from('table_service_requests')
       .insert({
         table_number: tableNumber,
         request_type: requestType,
         status: 'pending',
-        message_text: messageText || '',
+        message: messageText || '',
         created_at: new Date().toISOString(),
       })
       .select()
@@ -33,5 +33,5 @@ export const createServiceRequestProcedure = publicProcedure
     }
 
     console.log(`✅ Service request created successfully: ${data.id}`);
-    return { success: true };
+    return { success: true, message: 'Request sent successfully', data };
   });
