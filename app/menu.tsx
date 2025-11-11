@@ -1805,11 +1805,32 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   categorySection: {
-    marginBottom: 40,
+    marginBottom: 48,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(61, 1, 1, 0.6)',
+    borderRadius: 20,
+    paddingVertical: 20,
+    marginHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
+      },
+    }),
   },
   categoryHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    paddingHorizontal: 4,
+    marginBottom: 24,
   },
   categoryTitleContainer: {
     flexDirection: 'row',
@@ -1859,7 +1880,7 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 16,
@@ -1931,28 +1952,28 @@ const styles = StyleSheet.create({
   },
   menuItemCardHorizontal: {
     width: '47%' as const,
-    backgroundColor: '#3d0101',
-    borderRadius: 16,
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
+    borderRadius: 18,
     overflow: 'visible' as const,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#D4AF37',
-    marginBottom: 12,
+    marginBottom: 16,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
       web: {
         width: '31%',
         minWidth: 160,
         maxWidth: 220,
-        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.3)',
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
       },
     }),
   },
@@ -1995,7 +2016,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   menuItemContentHorizontal: {
-    padding: 0,
+    padding: 12,
   },
   menuItemNameHorizontal: {
     fontSize: 16,
@@ -2004,10 +2025,10 @@ const styles = StyleSheet.create({
     color: '#E8C968',
     lineHeight: 22,
     letterSpacing: 0.3,
-    marginBottom: 6,
-    marginTop: 10,
+    marginBottom: 8,
+    marginTop: 0,
     textAlign: 'center' as const,
-    paddingHorizontal: 10,
+    paddingHorizontal: 4,
     ...Platform.select({
       web: {
         fontSize: 18,
@@ -2016,8 +2037,14 @@ const styles = StyleSheet.create({
     }),
   },
   priceHighlight: {
-    marginBottom: 10,
+    marginBottom: 0,
     alignItems: 'center' as const,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignSelf: 'center' as const,
+    minWidth: '70%' as const,
   },
   menuItemPriceHorizontal: {
     fontSize: 16,
