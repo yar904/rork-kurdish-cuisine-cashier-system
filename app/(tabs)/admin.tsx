@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platf
 import { useState, useEffect, useRef } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare, Package, Briefcase } from 'lucide-react-native';
+import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare, Package, Briefcase, Bell } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -397,6 +397,18 @@ export default function AdminScreen() {
                 <Text style={styles.managementCardTitle}>QR Self-Order</Text>
                 <Text style={styles.managementCardSubtitle}>
                   Customers order from their table
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.managementCard}
+                onPress={() => router.push('/service-requests-admin')}
+                activeOpacity={0.7}
+              >
+                <Bell size={40} color="#ef4444" />
+                <Text style={styles.managementCardTitle}>Service Requests</Text>
+                <Text style={styles.managementCardSubtitle}>
+                  Handle waiter calls & bill requests
                 </Text>
               </TouchableOpacity>
             </View>
