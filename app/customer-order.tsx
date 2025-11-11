@@ -77,6 +77,13 @@ export default function CustomerOrderScreen() {
     bill: new Animated.Value(1),
   });
 
+  const [requestStatus, setRequestStatus] = useState<{
+    type: 'waiter' | 'bill' | null;
+    message: string;
+    visible: boolean;
+  }>({ type: null, message: '', visible: false });
+  const statusOpacity = useRef(new Animated.Value(0)).current;
+
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefAnimScale = useRef(new Animated.Value(1)).current;
   const chefAnimRotate = useRef(new Animated.Value(0)).current;
@@ -119,14 +126,54 @@ export default function CustomerOrderScreen() {
         }
       }
       
-      Alert.alert(
-        'Request Sent!',
-        'A staff member will assist you shortly.',
-        [{ text: 'OK' }]
-      );
+      const message = requestType === 'bill' 
+        ? '✅ Bill request sent! Staff will bring your bill shortly.'
+        : '✅ Waiter called! Someone will assist you shortly.';
+      
+      setRequestStatus({
+        type: requestType as 'waiter' | 'bill',
+        message,
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
     },
     onError: (error) => {
-      Alert.alert('Error', 'Failed to send request. Please try again.');
+      setRequestStatus({
+        type: null,
+        message: '❌ Failed to send request. Please try again.',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
     },
   });
 
@@ -325,6 +372,8 @@ export default function CustomerOrderScreen() {
       return;
     }
 
+    setRequestStatus({ type: 'waiter', message: '', visible: false });
+
     createServiceRequestMutation.mutate({
       tableNumber: parseInt(table),
       requestType: 'waiter',
@@ -338,6 +387,8 @@ export default function CustomerOrderScreen() {
       Alert.alert('Error', 'Table number not found');
       return;
     }
+
+    setRequestStatus({ type: 'bill', message: '', visible: false });
 
     createServiceRequestMutation.mutate({
       tableNumber: parseInt(table),
@@ -712,10 +763,17 @@ export default function CustomerOrderScreen() {
           style={styles.actionButton}
           onPress={handleCallWaiter}
           activeOpacity={1}
+          disabled={createServiceRequestMutation.isPending}
         >
           <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-            <Bell size={20} color={Colors.cream} strokeWidth={2.5} />
-            <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call Waiter</Text>
+            {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
+              <ActivityIndicator size="small" color={Colors.cream} />
+            ) : (
+              <>
+                <Bell size={20} color={Colors.cream} strokeWidth={2.5} />
+                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call Waiter</Text>
+              </>
+            )}
           </Animated.View>
         </TouchableOpacity>
 
@@ -734,10 +792,17 @@ export default function CustomerOrderScreen() {
           style={styles.actionButton}
           onPress={handleRequestBill}
           activeOpacity={1}
+          disabled={createServiceRequestMutation.isPending}
         >
           <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-            <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
-            <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request Bill</Text>
+            {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
+              <ActivityIndicator size="small" color={Colors.cream} />
+            ) : (
+              <>
+                <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request Bill</Text>
+              </>
+            )}
           </Animated.View>
         </TouchableOpacity>
       </View>
@@ -880,6 +945,17 @@ export default function CustomerOrderScreen() {
           </View>
         </View>
       </Modal>
+
+      {requestStatus.visible && (
+        <Animated.View 
+          style={[
+            styles.statusToast,
+            { opacity: statusOpacity }
+          ]}
+        >
+          <Text style={styles.statusToastText}>{requestStatus.message}</Text>
+        </Animated.View>
+      )}
 
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
@@ -1704,5 +1780,30 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: Colors.primary,
     letterSpacing: 0.5,
+  },
+  statusToast: {
+    position: 'absolute',
+    top: 80,
+    left: 16,
+    right: 16,
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    zIndex: 1000,
+  },
+  statusToastText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#fff',
+    textAlign: 'center' as const,
+    lineHeight: 22,
   },
 });
