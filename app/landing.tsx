@@ -31,6 +31,7 @@ export default function LandingPage() {
   const [selectedLang, setSelectedLang] = useState<Language>(language);
   const [showLanguages, setShowLanguages] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
@@ -85,11 +86,17 @@ export default function LandingPage() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
+      ) : videoError ? (
+        <LinearGradient
+          colors={['#1a0000', '#3d0101', '#1a0000']}
+          style={styles.background}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
       ) : (
         <Video
           source={{ 
             uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV',
-            overrideFileExtensionAndroid: 'mov',
           }}
           style={styles.videoBackground}
           resizeMode={ResizeMode.COVER}
@@ -99,10 +106,15 @@ export default function LandingPage() {
           useNativeControls={false}
           videoStyle={styles.videoStyle}
           onError={(error) => {
-            console.error('Video playback error:', error);
+            console.error('Video playback error:', JSON.stringify(error));
+            setVideoError(true);
           }}
           onLoad={() => {
             console.log('Video loaded successfully');
+            setVideoError(false);
+          }}
+          onLoadStart={() => {
+            console.log('Video loading started');
           }}
         />
       )}
