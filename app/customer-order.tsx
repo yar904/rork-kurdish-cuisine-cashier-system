@@ -1000,7 +1000,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.gold,
   },
   categoryScrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
   },
   categoryChip: {
     flexDirection: 'row',
@@ -1012,7 +1013,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.3)',
-    marginRight: 10,
+    marginHorizontal: 6,
   },
   categoryChipActive: {
     backgroundColor: Colors.gold,
