@@ -126,7 +126,7 @@ export default function ServiceRequestsAdminScreen() {
 
   return (
     <ImageBackground
-      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/juf3yljg9vndbtlpfh59p' }}
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/juf3yljg9vndbtlpfh59p?v=' + Date.now() }}
       style={styles.container}
       resizeMode="cover"
     >
