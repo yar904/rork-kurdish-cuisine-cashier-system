@@ -1429,24 +1429,10 @@ const styles = StyleSheet.create({
     color: '#3d0101',
   },
   categorySection: {
-    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    backgroundColor: 'transparent',
     paddingVertical: 16,
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.4)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
-      },
-    }),
   },
   categoryScrollNew: {
     backgroundColor: 'transparent',
@@ -2113,16 +2099,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    gap: 16,
+    gap: 12,
     ...Platform.select({
       web: {
         justifyContent: 'flex-start' as const,
-        gap: 20,
+        gap: 16,
       },
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: '48.5%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -2141,9 +2127,9 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        width: 'calc(33.333% - 14px)',
+        width: 'calc(50% - 8px)',
         minWidth: 180,
-        maxWidth: 240,
+        maxWidth: 300,
         boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
       },
     }),
