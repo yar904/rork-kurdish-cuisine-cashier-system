@@ -89,9 +89,13 @@ export default function CustomerOrderScreen() {
   const statusOpacity = useRef(new Animated.Value(0)).current;
 
   const [orderModalVisible, setOrderModalVisible] = useState(false);
-  const chefAnimScale = useRef(new Animated.Value(1)).current;
-  const chefAnimRotate = useRef(new Animated.Value(0)).current;
-  const plateAnimY = useRef(new Animated.Value(0)).current;
+  const chefFloatY = useRef(new Animated.Value(0)).current;
+  const chefHatFloat = useRef(new Animated.Value(0)).current;
+  const sparkleScale1 = useRef(new Animated.Value(1)).current;
+  const sparkleScale2 = useRef(new Animated.Value(1)).current;
+  const sparkleScale3 = useRef(new Animated.Value(1)).current;
+  const pulseScale = useRef(new Animated.Value(1)).current;
+  const plateRotate = useRef(new Animated.Value(0)).current;
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
@@ -485,53 +489,113 @@ export default function CustomerOrderScreen() {
     if (orderModalVisible && cart.length === 0) {
       Animated.loop(
         Animated.sequence([
-          Animated.parallel([
-            Animated.timing(chefAnimScale, {
-              toValue: 1.08,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(chefAnimRotate, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(chefAnimScale, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(chefAnimRotate, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ]),
+          Animated.timing(chefFloatY, {
+            toValue: -15,
+            duration: 2500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(chefFloatY, {
+            toValue: 0,
+            duration: 2500,
+            useNativeDriver: true,
+          }),
         ])
       ).start();
 
       Animated.loop(
         Animated.sequence([
-          Animated.timing(plateAnimY, {
-            toValue: -12,
+          Animated.timing(chefHatFloat, {
+            toValue: -8,
+            duration: 1800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(chefHatFloat, {
+            toValue: 0,
+            duration: 1800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseScale, {
+            toValue: 1.1,
             duration: 1500,
             useNativeDriver: true,
           }),
-          Animated.timing(plateAnimY, {
-            toValue: 0,
+          Animated.timing(pulseScale, {
+            toValue: 1,
             duration: 1500,
             useNativeDriver: true,
           }),
         ])
       ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(sparkleScale1, {
+            toValue: 1.3,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(sparkleScale1, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(300),
+          Animated.timing(sparkleScale2, {
+            toValue: 1.4,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(sparkleScale2, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(600),
+          Animated.timing(sparkleScale3, {
+            toValue: 1.2,
+            duration: 1100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(sparkleScale3, {
+            toValue: 1,
+            duration: 1100,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.timing(plateRotate, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        })
+      ).start();
     } else {
-      chefAnimScale.stopAnimation();
-      chefAnimRotate.stopAnimation();
-      plateAnimY.stopAnimation();
+      chefFloatY.stopAnimation();
+      chefHatFloat.stopAnimation();
+      sparkleScale1.stopAnimation();
+      sparkleScale2.stopAnimation();
+      sparkleScale3.stopAnimation();
+      pulseScale.stopAnimation();
+      plateRotate.stopAnimation();
     }
-  }, [orderModalVisible, cart.length, chefAnimScale, chefAnimRotate, plateAnimY]);
+  }, [orderModalVisible, cart.length, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
 
   if (menuQuery.isLoading) {
     console.log('[CustomerOrder] Loading menu data...');
@@ -915,64 +979,56 @@ export default function CustomerOrderScreen() {
 
             {cart.length === 0 ? (
               <View style={styles.emptyOrderState}>
-                <View style={styles.circularGlowBackground}>
-                  <View style={[styles.circularGlowRing, styles.glowRing1]} />
-                  <View style={[styles.circularGlowRing, styles.glowRing2]} />
-                  <View style={[styles.circularGlowRing, styles.glowRing3]} />
-                </View>
-
-                <Animated.View
-                  style={[
-                    styles.chefCharacter,
-                    {
-                      transform: [
-                        { scale: chefAnimScale },
-                        {
-                          rotate: chefAnimRotate.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0deg', '5deg'],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                >
-                  <View style={styles.chefHead}>
-                    <View style={styles.chefHat}>
-                      <ChefHat size={80} color={Colors.gold} strokeWidth={1.5} />
-                    </View>
-                    <View style={styles.chefFace}>
-                      <View style={styles.chefEyesContainer}>
-                        <View style={styles.chefEye}>
-                          <View style={styles.chefPupil} />
-                        </View>
-                        <View style={styles.chefEye}>
-                          <View style={styles.chefPupil} />
+                <Animated.View style={[styles.chefAnimationContainer, { transform: [{ translateY: chefFloatY }] }]}>
+                  <Animated.View style={[styles.glowPulse, { transform: [{ scale: pulseScale }] }]} />
+                  
+                  <View style={styles.chefCharacterNew}>
+                    <Animated.View style={[styles.chefHatWrapper, { transform: [{ translateY: chefHatFloat }] }]}>
+                      <Text style={styles.chefHatEmoji}>👨‍🍳</Text>
+                    </Animated.View>
+                    
+                    <View style={styles.chefBodyWrapper}>
+                      <View style={styles.chefBodyCircle}>
+                        <View style={styles.chefFaceNew}>
+                          <View style={styles.chefEyesNew}>
+                            <View style={styles.chefEyeNew} />
+                            <View style={styles.chefEyeNew} />
+                          </View>
+                          <View style={styles.chefMouthNew} />
                         </View>
                       </View>
-                      <View style={styles.chefSmile} />
                     </View>
                   </View>
                 </Animated.View>
 
-                <Animated.View
-                  style={[
-                    styles.floatingPlate,
-                    { transform: [{ translateY: plateAnimY }] },
-                  ]}
-                >
-                  <Text style={styles.plateEmoji}>🍽️</Text>
+                <Animated.View style={[styles.floatingPlateNew, { 
+                  transform: [{ 
+                    rotate: plateRotate.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg'],
+                    })
+                  }] 
+                }]}>
+                  <Text style={styles.plateEmojiNew}>🍽️</Text>
                 </Animated.View>
 
-                <Text style={styles.emptyOrderTitle}>Awaiting Your Order!</Text>
-                <Text style={styles.emptyOrderSubtitle}>
-                  Our chef is ready to prepare something delicious for you
-                </Text>
+                <View style={styles.emptyOrderTextContainer}>
+                  <Text style={styles.emptyOrderTitleNew}>Waiting for Your Order</Text>
+                  <Text style={styles.emptyOrderSubtitleNew}>
+                    Our chef is ready to cook something amazing!
+                  </Text>
+                </View>
 
-                <View style={styles.sparklesContainer}>
-                  <Text style={styles.sparkle}>✨</Text>
-                  <Text style={styles.sparkle}>✨</Text>
-                  <Text style={styles.sparkle}>✨</Text>
+                <View style={styles.sparklesContainerNew}>
+                  <Animated.View style={{ transform: [{ scale: sparkleScale1 }] }}>
+                    <Text style={styles.sparkleNew}>✨</Text>
+                  </Animated.View>
+                  <Animated.View style={{ transform: [{ scale: sparkleScale2 }] }}>
+                    <Text style={styles.sparkleNew}>⭐</Text>
+                  </Animated.View>
+                  <Animated.View style={{ transform: [{ scale: sparkleScale3 }] }}>
+                    <Text style={styles.sparkleNew}>✨</Text>
+                  </Animated.View>
                 </View>
               </View>
             ) : (
@@ -1681,123 +1737,125 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyOrderState: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: 80,
     paddingHorizontal: 32,
-    minHeight: 500,
+    minHeight: 520,
   },
-  circularGlowBackground: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    justifyContent: 'center',
+  chefAnimationContainer: {
     alignItems: 'center',
-    top: 80,
+    justifyContent: 'center',
+    marginBottom: 50,
   },
-  circularGlowRing: {
+  glowPulse: {
     position: 'absolute',
-    borderRadius: 200,
-    borderWidth: 1.5,
-  },
-  glowRing1: {
-    width: 280,
-    height: 280,
-    borderColor: 'rgba(212, 175, 55, 0.15)',
-  },
-  glowRing2: {
-    width: 220,
-    height: 220,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.25)',
   },
-  glowRing3: {
-    width: 160,
-    height: 160,
-    borderColor: 'rgba(212, 175, 55, 0.35)',
-  },
-  chefCharacter: {
+  chefCharacterNew: {
     alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 2,
-    marginBottom: 40,
   },
-  chefHead: {
+  chefHatWrapper: {
+    marginBottom: -30,
+    zIndex: 3,
+  },
+  chefHatEmoji: {
+    fontSize: 100,
+  },
+  chefBodyWrapper: {
     alignItems: 'center',
   },
-  chefHat: {
-    marginBottom: -12,
-  },
-  chefFace: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#FEE8C8',
-    borderWidth: 3,
+  chefBodyCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(254, 232, 200, 0.95)',
+    borderWidth: 4,
     borderColor: Colors.gold,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  chefEyesContainer: {
-    flexDirection: 'row',
-    gap: 20,
-    marginBottom: 8,
-  },
-  chefEye: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+  chefFaceNew: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  chefPupil: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#3D0101',
+  chefEyesNew: {
+    flexDirection: 'row',
+    gap: 28,
+    marginBottom: 12,
   },
-  chefSmile: {
-    width: 30,
-    height: 15,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
+  chefEyeNew: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+    borderWidth: 2,
+    borderColor: '#3D0101',
+  },
+  chefMouthNew: {
+    width: 40,
+    height: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
     borderColor: '#3D0101',
     backgroundColor: 'transparent',
   },
-  floatingPlate: {
+  floatingPlateNew: {
     position: 'absolute',
-    bottom: 140,
-    right: 40,
+    top: 160,
+    right: 30,
   },
-  plateEmoji: {
-    fontSize: 48,
+  plateEmojiNew: {
+    fontSize: 56,
   },
-  emptyOrderTitle: {
-    fontSize: 26,
-    fontWeight: '800' as const,
+  emptyOrderTextContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  emptyOrderTitleNew: {
+    fontSize: 32,
+    fontWeight: '900' as const,
     color: Colors.gold,
-    marginBottom: 12,
+    marginBottom: 16,
     textAlign: 'center' as const,
-    letterSpacing: -0.5,
+    letterSpacing: -1,
+    textShadowColor: 'rgba(212, 175, 55, 0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
-  emptyOrderSubtitle: {
-    fontSize: 15,
-    fontWeight: '500' as const,
-    color: 'rgba(255, 255, 255, 0.7)',
+  emptyOrderSubtitleNew: {
+    fontSize: 17,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center' as const,
-    lineHeight: 22,
-    marginBottom: 32,
+    lineHeight: 26,
+    maxWidth: 300,
   },
-  sparklesContainer: {
+  sparklesContainerNew: {
     flexDirection: 'row',
-    gap: 20,
-    marginTop: 8,
+    gap: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sparkle: {
-    fontSize: 24,
+  sparkleNew: {
+    fontSize: 32,
   },
   orderModalItems: {
     maxHeight: 400,
