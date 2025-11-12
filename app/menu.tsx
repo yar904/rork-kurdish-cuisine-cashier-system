@@ -192,29 +192,7 @@ export default function PublicMenuScreen() {
     }
   };
 
-  useEffect(() => {
-    if (Platform.OS !== 'web' && categories.length > 0) {
-      scrollIntervalRef.current = setInterval(() => {
-        setCurrentCategoryIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % categories.length;
-          if (categoryScrollRef.current) {
-            categoryScrollRef.current.scrollTo({
-              x: nextIndex * 148,
-              y: 0,
-              animated: true,
-            });
-          }
-          return nextIndex;
-        });
-      }, 3500);
 
-      return () => {
-        if (scrollIntervalRef.current) {
-          clearInterval(scrollIntervalRef.current);
-        }
-      };
-    }
-  }, []);
 
   const handleOpenItemModal = (item: MenuItem) => {
     setSelectedItem(item);
@@ -979,87 +957,51 @@ export default function PublicMenuScreen() {
       </View>
 
 
-      {/* CATEGORIES SECTION - TEMPORARILY HIDDEN FOR TESTING */}
-      {false && (
-        <Animated.ScrollView 
-          ref={categoryScrollRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryImageScrollContainer}
-          contentContainerStyle={styles.categoryImageScrollContent}
-          pagingEnabled={false}
-          snapToInterval={Platform.OS !== 'web' ? 148 : undefined}
-          snapToAlignment="center"
-          decelerationRate="fast"
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: categoryScrollX } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
-        >
-          {categories.map((category, index) => {
-            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-            const isActive = selectedCategory === category.id;
-            
-            const inputRange = [
-              (index - 1) * 148,
-              index * 148,
-              (index + 1) * 148,
-            ];
-            
-            const scale = categoryScrollX.interpolate({
-              inputRange,
-              outputRange: [0.92, 1.05, 0.92],
-              extrapolate: 'clamp',
-            });
-            
-            const opacity = categoryScrollX.interpolate({
-              inputRange,
-              outputRange: [0.7, 1, 0.7],
-              extrapolate: 'clamp',
-            });
-            
-            return (
-              <TouchableOpacity
-                key={category.id}
-                activeOpacity={0.85}
-                onPress={() => handleCategoryPress(category.id, index)}
-              >
-                <Animated.View
-                  style={[
-                    styles.categoryImageCard,
-                    isActive && styles.categoryImageCardActive,
-                    {
-                      transform: [{ scale }],
-                      opacity,
-                    },
-                  ]}
-                >
-                  <Image
-                    source={{ uri: category.image }}
-                    style={styles.categoryImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.categoryImageOverlay} />
-                  {isActive && (
-                    <View style={styles.activeCategoryIndicator}>
-                      <View style={styles.activeCategoryPulse} />
-                    </View>
-                  )}
-                  <View style={styles.categoryImageTextContainer}>
-                    <Text style={[
-                      styles.categoryImageText,
-                      isActive && styles.categoryImageTextActive,
-                    ]}>
-                      {categoryName}
-                    </Text>
-                  </View>
-                </Animated.View>
-              </TouchableOpacity>
-            );
-          })}
-        </Animated.ScrollView>
-      )}
+          <ScrollView 
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryScrollNew}
+        contentContainerStyle={styles.categoryScrollContentNew}
+        decelerationRate="fast"
+      >
+        {categories.map((category, index) => {
+          const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+          const isActive = selectedCategory === category.id;
+          
+          return (
+            <TouchableOpacity
+              key={category.id}
+              activeOpacity={0.7}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                setSelectedCategory(category.id);
+              }}
+            >
+              <View style={[
+                styles.categoryCardNew,
+                isActive && styles.categoryCardNewActive,
+              ]}>
+                <Image
+                  source={{ uri: category.image }}
+                  style={styles.categoryImageNew}
+                  resizeMode="cover"
+                />
+                <View style={styles.categoryOverlayNew} />
+                <View style={styles.categoryTextContainerNew}>
+                  <Text style={[
+                    styles.categoryTextNew,
+                    isActive && styles.categoryTextNewActive,
+                  ]} numberOfLines={2}>
+                    {categoryName}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
       {showWaiterToast && (
         <Animated.View 
@@ -1498,6 +1440,92 @@ const styles = StyleSheet.create({
   categoryChipTextActive: {
     fontWeight: '700' as const,
     color: '#3d0101',
+  },
+  categoryScrollNew: {
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    marginBottom: 6,
+  },
+  categoryScrollContentNew: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  categoryCardNew: {
+    width: 110,
+    height: 140,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    backgroundColor: '#1a0000',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  categoryCardNewActive: {
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    transform: [{ scale: 1.02 }],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  categoryImageNew: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute' as const,
+  },
+  categoryOverlayNew: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  categoryTextContainerNew: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderTopWidth: 2,
+    borderTopColor: '#D4AF37',
+  },
+  categoryTextNew: {
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.2,
+    lineHeight: 16,
+  },
+  categoryTextNewActive: {
+    color: '#FFFFFF',
+    textShadowColor: '#D4AF37',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   categoryImageScrollContainer: {
     backgroundColor: 'transparent',
