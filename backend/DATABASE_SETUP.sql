@@ -9,7 +9,7 @@
 -- 1. SERVICE REQUESTS TABLE
 -- =====================================================
 
--- Create service_requests table (additional to table_service_requests)
+-- Create service_requests table (PRIMARY table for all service requests)
 CREATE TABLE IF NOT EXISTS public.service_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   table_number INT NOT NULL,
@@ -83,80 +83,10 @@ AFTER INSERT ON public.service_requests
 FOR EACH ROW EXECUTE FUNCTION notify_new_service_request();
 
 -- =====================================================
--- 3. UPDATE EXISTING TABLE_SERVICE_REQUESTS (if needed)
+-- 3. DEPRECATED TABLE CLEANUP
 -- =====================================================
-
--- Ensure table_service_requests has correct structure
-DO $$ 
-BEGIN
-  -- Add resolved_at column if not exists
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'table_service_requests' 
-    AND column_name = 'resolved_at'
-  ) THEN
-    ALTER TABLE public.table_service_requests 
-    ADD COLUMN resolved_at TIMESTAMPTZ;
-  END IF;
-
-  -- Add resolved_by column if not exists
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'table_service_requests' 
-    AND column_name = 'resolved_by'
-  ) THEN
-    ALTER TABLE public.table_service_requests 
-    ADD COLUMN resolved_by TEXT;
-  END IF;
-END $$;
-
--- Enable RLS on table_service_requests if not enabled
-ALTER TABLE public.table_service_requests ENABLE ROW LEVEL SECURITY;
-
--- Create policies for table_service_requests
-DROP POLICY IF EXISTS "allow_insert_table_service_requests" ON public.table_service_requests;
-CREATE POLICY "allow_insert_table_service_requests"
-ON public.table_service_requests
-FOR INSERT
-WITH CHECK (true);
-
-DROP POLICY IF EXISTS "allow_select_table_service_requests" ON public.table_service_requests;
-CREATE POLICY "allow_select_table_service_requests"
-ON public.table_service_requests
-FOR SELECT
-USING (true);
-
-DROP POLICY IF EXISTS "allow_update_table_service_requests" ON public.table_service_requests;
-CREATE POLICY "allow_update_table_service_requests"
-ON public.table_service_requests
-FOR UPDATE
-USING (true)
-WITH CHECK (true);
-
--- Create trigger for table_service_requests
-CREATE OR REPLACE FUNCTION notify_table_service_request()
-RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM pg_notify(
-    'service_alerts',
-    json_build_object(
-      'id', NEW.id,
-      'table_number', NEW.table_number,
-      'request_type', NEW.request_type,
-      'message', NEW.message,
-      'status', NEW.status,
-      'created_at', NEW.created_at
-    )::text
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS table_service_request_notify_trigger ON public.table_service_requests;
-
-CREATE TRIGGER table_service_request_notify_trigger
-AFTER INSERT ON public.table_service_requests
-FOR EACH ROW EXECUTE FUNCTION notify_table_service_request();
+-- NOTE: table_service_requests is DEPRECATED
+-- All queries should use 'service_requests' instead
 
 -- =====================================================
 -- 4. VERIFICATION QUERIES
@@ -169,7 +99,7 @@ SELECT
   data_type,
   is_nullable
 FROM information_schema.columns
-WHERE table_name IN ('service_requests', 'table_service_requests')
+WHERE table_name = 'service_requests'
 ORDER BY table_name, ordinal_position;
 
 -- Check RLS policies
@@ -181,7 +111,7 @@ SELECT
   roles,
   cmd
 FROM pg_policies
-WHERE tablename IN ('service_requests', 'table_service_requests');
+WHERE tablename = 'service_requests';
 
 -- Check triggers
 SELECT 
@@ -190,7 +120,7 @@ SELECT
   event_object_table,
   action_statement
 FROM information_schema.triggers
-WHERE event_object_table IN ('service_requests', 'table_service_requests');
+WHERE event_object_table = 'service_requests';
 
 -- =====================================================
 -- 5. TEST DATA (Optional - for testing)

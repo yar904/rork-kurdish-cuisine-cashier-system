@@ -14,8 +14,8 @@ The Service Requests system allows customers to call waiters, request bills, and
    - `backend/trpc/routes/service-requests/updateStatus/route.ts` - Update request status
 
 2. **Database Tables**
-   - `table_service_requests` - Main table (currently used)
-   - `service_requests` - Alternative table (create with setup script)
+   - `service_requests` - PRIMARY table (ACTIVE)
+   - `table_service_requests` - DEPRECATED (do not use)
 
 3. **Real-time Notifications**
    - PostgreSQL triggers send events to `service_alerts` channel
@@ -34,7 +34,7 @@ The Service Requests system allows customers to call waiters, request bills, and
 
 ### Step 2: Verify Table Structure
 
-**table_service_requests** columns:
+**service_requests** columns:
 ```
 - id (uuid, primary key)
 - table_number (integer)
@@ -48,9 +48,9 @@ The Service Requests system allows customers to call waiters, request bills, and
 
 ### Step 3: Enable Row Level Security (RLS)
 The SQL script automatically enables RLS and creates policies:
-- ✅ `allow_insert_table_service_requests` - Anyone can insert
-- ✅ `allow_select_table_service_requests` - Anyone can read
-- ✅ `allow_update_table_service_requests` - Anyone can update
+- ✅ `allow_insert_requests` - Anyone can insert
+- ✅ `allow_select_requests` - Anyone can read
+- ✅ `allow_update_status` - Anyone can update
 
 ---
 
@@ -187,7 +187,7 @@ useEffect(() => {
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
-      table: 'table_service_requests'
+      table: 'service_requests'
     }, (payload) => {
       // Show notification to staff
       Alert.alert('New Request!', `Table ${payload.new.table_number} needs ${payload.new.request_type}`);
@@ -213,12 +213,12 @@ useEffect(() => {
 ### Test 2: Database Verification
 ```sql
 -- Check pending requests
-SELECT * FROM table_service_requests 
+SELECT * FROM service_requests 
 WHERE status = 'pending' 
 ORDER BY created_at DESC;
 
 -- Check requests by table
-SELECT * FROM table_service_requests 
+SELECT * FROM service_requests 
 WHERE table_number = 5 
 ORDER BY created_at DESC;
 ```
@@ -296,7 +296,7 @@ return (
 
 ### ✅ Completed
 - [x] Backend TRPC routes
-- [x] Database table structure (table_service_requests)
+- [x] Database table structure (service_requests)
 - [x] RLS policies
 - [x] Frontend UI buttons
 - [x] Request creation mutation
