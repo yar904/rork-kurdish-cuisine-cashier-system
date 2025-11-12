@@ -997,37 +997,32 @@ export default function PublicMenuScreen() {
           });
           
           return (
-            <TouchableOpacity
+            <Animated.View
               key={category.id}
-              onPress={() => setSelectedCategory(category.id)}
-              activeOpacity={0.85}
+              style={[
+                styles.categoryImageCard,
+                isActive && styles.categoryImageCardActive,
+                {
+                  transform: [{ scale }],
+                  opacity,
+                },
+              ]}
             >
-              <Animated.View
-                style={[
-                  styles.categoryImageCard,
-                  isActive && styles.categoryImageCardActive,
-                  {
-                    transform: [{ scale }],
-                    opacity,
-                  },
-                ]}
-              >
-                <Image
-                  source={{ uri: category.image }}
-                  style={styles.categoryImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.categoryImageOverlay} />
-                <View style={styles.categoryImageTextContainer}>
-                  <Text style={[
-                    styles.categoryImageText,
-                    isActive && styles.categoryImageTextActive,
-                  ]}>
-                    {categoryName}
-                  </Text>
-                </View>
-              </Animated.View>
-            </TouchableOpacity>
+              <Image
+                source={{ uri: category.image }}
+                style={styles.categoryImage}
+                resizeMode="cover"
+              />
+              <View style={styles.categoryImageOverlay} />
+              <View style={styles.categoryImageTextContainer}>
+                <Text style={[
+                  styles.categoryImageText,
+                  isActive && styles.categoryImageTextActive,
+                ]}>
+                  {categoryName}
+                </Text>
+              </View>
+            </Animated.View>
           );
         })}
       </Animated.ScrollView>
