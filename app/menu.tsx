@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { ImageBackground } from 'react-native';
 import {
   View,
   Text,
@@ -49,6 +50,8 @@ export default function PublicMenuScreen() {
   const [ratingComment, setRatingComment] = useState('');
   const contentScrollRef = useRef<ScrollView>(null);
   const categoryScrollRef = useRef<ScrollView>(null);
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
@@ -72,6 +75,30 @@ export default function PublicMenuScreen() {
       friction: 7,
     }).start();
   }, [fabSlideAnimation]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      scrollIntervalRef.current = setInterval(() => {
+        setCurrentCategoryIndex((prevIndex) => {
+          const nextIndex = (prevIndex + 1) % categories.length;
+          if (categoryScrollRef.current) {
+            categoryScrollRef.current.scrollTo({
+              x: nextIndex * 142,
+              y: 0,
+              animated: true,
+            });
+          }
+          return nextIndex;
+        });
+      }, 3000);
+
+      return () => {
+        if (scrollIntervalRef.current) {
+          clearInterval(scrollIntervalRef.current);
+        }
+      };
+    }
+  }, [categories.length]);
 
   const handleOpenItemModal = (item: MenuItem) => {
     setSelectedItem(item);
@@ -447,7 +474,11 @@ export default function PublicMenuScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/pfi2xp2ednotg7b5lw52y' }}
+      style={styles.container}
+      resizeMode="cover"
+    >
 
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -1122,7 +1153,7 @@ export default function PublicMenuScreen() {
           </Text>
         </TouchableOpacity>
       </Animated.View>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -1132,9 +1163,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a0000',
     position: 'relative' as const,
   },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
 
   header: {
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(26, 0, 0, 0.85)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      },
+    }),
   },
   headerTop: {
     flexDirection: 'row',
@@ -1389,13 +1439,24 @@ const styles = StyleSheet.create({
     color: '#3d0101',
   },
   categoryImageScrollContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(26, 0, 0, 0.75)',
     paddingVertical: 16,
     paddingBottom: 10,
     borderBottomWidth: 0,
     borderBottomColor: 'transparent',
     marginTop: 0,
     marginBottom: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   categoryImageScrollContent: {
     paddingHorizontal: 16,
@@ -1794,7 +1855,7 @@ const styles = StyleSheet.create({
   categorySection: {
     marginBottom: 24,
     paddingHorizontal: 20,
-    backgroundColor: 'rgba(61, 1, 1, 0.85)',
+    backgroundColor: 'rgba(26, 0, 0, 0.92)',
     borderRadius: 24,
     paddingVertical: 24,
     marginHorizontal: 16,
@@ -1930,7 +1991,7 @@ const styles = StyleSheet.create({
   },
   menuItemCardHorizontal: {
     width: '47%' as const,
-    backgroundColor: 'rgba(61, 1, 1, 0.98)',
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
     borderWidth: 2.5,
@@ -3148,7 +3209,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    backgroundColor: 'rgba(61, 1, 1, 0.97)',
+    backgroundColor: 'rgba(26, 0, 0, 0.97)',
     paddingVertical: 16,
     paddingHorizontal: 12,
     paddingBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
