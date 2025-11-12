@@ -1302,6 +1302,12 @@ const styles = StyleSheet.create({
     color: '#D4AF37',
     fontWeight: '700' as const,
   },
+  viewOnlyBadgeText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
   headerButtons: {
     flexDirection: 'row',
     gap: 12,
