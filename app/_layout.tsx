@@ -15,6 +15,7 @@ import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, Noto
 import { PlayfairDisplay_400Regular, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold, PlayfairDisplay_900Black } from '@expo-google-fonts/playfair-display';
 import { CormorantGaramond_400Regular, CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
+import * as Font from 'expo-font';
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,10 @@ export default function RootLayout() {
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_700Bold,
+    'DroidKufi-Regular': require('../assets/fonts/DroidKufi-Regular.ttf'),
+    'DroidKufi-Bold': require('../assets/fonts/DroidKufi-Bold.ttf'),
+    'NaPecZTI-Regular': require('../assets/fonts/NaPecZTI-Regular.ttf'),
+    'NaPecZTI-Bold': require('../assets/fonts/NaPecZTI-Bold.ttf'),
   });
 
   useEffect(() => {
@@ -77,6 +82,29 @@ export default function RootLayout() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
+        
+        @font-face {
+          font-family: 'DroidKufi';
+          src: url('/assets/fonts/DroidKufi-Regular.ttf') format('truetype');
+          font-display: swap;
+        }
+        @font-face {
+          font-family: 'DroidKufi';
+          src: url('/assets/fonts/DroidKufi-Bold.ttf') format('truetype');
+          font-weight: 700;
+          font-display: swap;
+        }
+        @font-face {
+          font-family: 'NaPecZTI';
+          src: url('/assets/fonts/NaPecZTI-Regular.ttf') format('truetype');
+          font-display: swap;
+        }
+        @font-face {
+          font-family: 'NaPecZTI';
+          src: url('/assets/fonts/NaPecZTI-Bold.ttf') format('truetype');
+          font-weight: 700;
+          font-display: swap;
+        }
       `;
       document.head.appendChild(style);
     }
