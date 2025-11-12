@@ -169,7 +169,7 @@ export interface Database {
           timestamp?: string;
         };
       };
-      table_service_requests: {
+      service_requests: {
         Row: {
           id: string;
           table_number: number;

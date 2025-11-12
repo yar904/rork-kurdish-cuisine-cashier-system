@@ -16,7 +16,7 @@ export const createServiceRequestProcedure = publicProcedure
     console.log(`Creating service request: ${requestType} for table ${tableNumber}`);
 
     const { data, error } = await supabase
-      .from('table_service_requests')
+      .from('service_requests')
       .insert({
         table_number: tableNumber,
         request_type: requestType,

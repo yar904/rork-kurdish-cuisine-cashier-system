@@ -3,7 +3,7 @@ import { supabase } from '@/backend/lib/supabase';
 
 export const getAllServiceRequestsProcedure = publicProcedure.query(async () => {
   const { data, error } = await supabase
-    .from('table_service_requests')
+    .from('service_requests')
     .select('*')
     .order('created_at', { ascending: false });
 

@@ -23,7 +23,7 @@ export const updateServiceRequestStatusProcedure = publicProcedure
     }
 
     const { error } = await supabase
-      .from('table_service_requests')
+      .from('service_requests')
       .update(updateData)
       .eq('id', requestId);
 
