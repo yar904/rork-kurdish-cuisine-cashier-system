@@ -189,7 +189,7 @@ export default function PublicMenuScreen() {
       }
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -305,7 +305,7 @@ export default function PublicMenuScreen() {
                 ]).start();
               }
             };
-            autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
+            autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
           }}
         >
           {categories.map((category) => {
@@ -624,15 +624,15 @@ const styles = StyleSheet.create({
     width: '48%',
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
-    padding: 12,
+    padding: 14,
     marginBottom: 16,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: Colors.gold,
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.9,
+    shadowRadius: 20,
+    elevation: 16,
   },
   menuItemsGrid: {
     flexDirection: 'row',
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   },
   imageContainerGrid: {
     position: 'relative',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   menuImage: {
     width: 90,
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   },
   menuImageGrid: {
     width: '100%',
-    height: 120,
+    height: 140,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.borderLight,
@@ -689,33 +689,39 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   menuName: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: Colors.text,
-    marginBottom: 6,
-    letterSpacing: -0.4,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+    textAlign: 'center' as const,
   },
   menuDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textSecondary,
-    marginBottom: 10,
+    marginBottom: 12,
     fontWeight: '500' as const,
-    lineHeight: 16,
+    lineHeight: 18,
+    textAlign: 'center' as const,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 'auto',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.2)',
   },
   menuPrice: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '900' as const,
-    color: Colors.primary,
-    letterSpacing: -0.5,
+    color: Colors.gold,
+    letterSpacing: -0.8,
   },
   emptyState: {
     flex: 1,
