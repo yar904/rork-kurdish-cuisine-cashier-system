@@ -40,7 +40,7 @@ export default function ServiceRequestsAdminScreen() {
       .channel('service_requests_realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'table_service_requests' },
+        { event: '*', schema: 'public', table: 'service_requests' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             const id = (payload.new as any)?.id;
