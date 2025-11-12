@@ -1,14 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Vibration,
-  RefreshControl,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Vibration, RefreshControl, ActivityIndicator, ImageBackground } from 'react-native';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { AlertCircle, Bell, CheckCircle, Clock, ArrowLeft } from 'lucide-react-native';
@@ -38,41 +28,53 @@ export default function ServiceRequestsAdminScreen() {
   });
 
   const updateStatusMutation = trpc.serviceRequests.updateStatus.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      refetch();
+    },
   });
 
   const pendingCount = useMemo(() => (data ?? []).filter(r => r.status === 'pending').length, [data]);
 
-  // ✅ Realtime listener (Supabase)
   useEffect(() => {
     const channel = supabase
       .channel('service_requests_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'table_service_requests' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          const id = (payload.new as any)?.id;
-          if (id && !lastSeenIds.current.has(id)) {
-            lastSeenIds.current.add(id);
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'table_service_requests' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const id = (payload.new as any)?.id;
+            if (id && !lastSeenIds.current.has(id)) {
+              lastSeenIds.current.add(id);
 
-            if (typeof window !== 'undefined' && audioRef.current) {
-              try {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play();
-              } catch {}
+              if (typeof window !== 'undefined' && audioRef.current) {
+                try {
+                  audioRef.current.currentTime = 0;
+                  audioRef.current.play();
+                } catch (e) {
+                  console.log('Audio play failed:', e);
+                }
+              }
+
+              if (Platform.OS === 'ios' || Platform.OS === 'android') {
+                Vibration.vibrate(300);
+              }
             }
-
-            if (Platform.OS !== 'web') Vibration.vibrate(250);
           }
+          refetch();
         }
-        refetch();
-      })
+      )
       .subscribe();
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [refetch]);
 
   const filteredData = useMemo(() => {
     if (!data) return [];
-    return filter === 'all' ? data : data.filter(r => r.status === filter);
+    if (filter === 'all') return data;
+    return data.filter(r => r.status === filter);
   }, [data, filter]);
 
   const handleUpdateStatus = (requestId: string, status: ServiceRequest['status']) => {
@@ -83,22 +85,51 @@ export default function ServiceRequestsAdminScreen() {
     });
   };
 
-  const getStatusColor = (status: ServiceRequest['status']) =>
-    status === 'pending'
-      ? Colors.error
-      : status === 'in-progress'
-      ? Colors.warning
-      : Colors.success;
+  const getStatusColor = (status: ServiceRequest['status']) => {
+    switch (status) {
+      case 'pending':
+        return Colors.error;
+      case 'in-progress':
+        return Colors.warning;
+      case 'resolved':
+        return Colors.success;
+      default:
+        return Colors.textLight;
+    }
+  };
 
-  const getRequestTypeLabel = (type: ServiceRequest['requestType']) =>
-    type === 'waiter' ? 'Call Waiter' : type === 'bill' ? 'Request Bill' : 'Wrong Order';
+  const getRequestTypeLabel = (type: ServiceRequest['requestType']) => {
+    switch (type) {
+      case 'waiter':
+        return 'Call Waiter';
+      case 'bill':
+        return 'Request Bill';
+      case 'wrong-order':
+        return 'Wrong Order';
+      default:
+        return type;
+    }
+  };
 
-  const getRequestTypeIcon = (type: ServiceRequest['requestType']) =>
-    type === 'waiter' ? Bell : type === 'bill' ? CheckCircle : AlertCircle;
+  const getRequestTypeIcon = (type: ServiceRequest['requestType']) => {
+    switch (type) {
+      case 'waiter':
+        return Bell;
+      case 'bill':
+        return CheckCircle;
+      case 'wrong-order':
+        return AlertCircle;
+      default:
+        return AlertCircle;
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* ✅ Header */}
+    <ImageBackground
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/5pm3z7ka52bfdd60obiem' }}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <Stack.Screen
         options={{
           title: 'Service Requests',
@@ -121,22 +152,21 @@ export default function ServiceRequestsAdminScreen() {
         }}
       />
 
-      {/* ✅ Audio Alert */}
       {typeof window !== 'undefined' && (
         <audio
           ref={(el) => (audioRef.current = el)}
-          src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBh..."
+          src="data:audio/wav;base64,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" 
           preload="auto"
         />
       )}
 
-      {/* ✅ Filter Tabs */}
       <View style={styles.filterContainer}>
         {(['all', 'pending', 'in-progress', 'resolved'] as const).map((f) => (
           <TouchableOpacity
             key={f}
             style={[styles.filterButton, filter === f && styles.filterButtonActive]}
             onPress={() => setFilter(f)}
+            activeOpacity={0.7}
           >
             <Text style={[styles.filterButtonText, filter === f && styles.filterButtonTextActive]}>
               {f.charAt(0).toUpperCase() + f.slice(1).replace('-', ' ')}
@@ -150,68 +180,88 @@ export default function ServiceRequestsAdminScreen() {
         ))}
       </View>
 
-      {/* ✅ Main List */}
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} colors={[Colors.primary]} />}
       >
         {isLoading && !data ? (
-          <View style={styles.loading}>
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.primary} />
           </View>
         ) : filteredData.length === 0 ? (
-          <View style={styles.empty}>
+          <View style={styles.emptyState}>
             <CheckCircle size={64} color={Colors.success} />
             <Text style={styles.emptyTitle}>All Clear!</Text>
             <Text style={styles.emptySubtitle}>
-              {filter === 'all' ? 'No service requests right now' : `No ${filter.replace('-', ' ')} requests`}
+              {filter === 'all'
+                ? 'No service requests at the moment'
+                : `No ${filter.replace('-', ' ')} requests`}
             </Text>
           </View>
         ) : (
-          filteredData.map((req) => {
-            const Icon = getRequestTypeIcon(req.requestType);
+          filteredData.map((request) => {
+            const RequestIcon = getRequestTypeIcon(request.requestType);
             return (
-              <View key={req.id} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <View style={styles.left}>
-                    <View style={[styles.iconBox, { backgroundColor: `${getStatusColor(req.status)}20` }]}>
-                      <Icon size={22} color={getStatusColor(req.status)} />
+              <View key={request.id} style={styles.requestCard}>
+                <View style={styles.requestHeader}>
+                  <View style={styles.requestHeaderLeft}>
+                    <View style={[styles.iconContainer, { backgroundColor: `${getStatusColor(request.status)}20` }]}>
+                      <RequestIcon size={24} color={getStatusColor(request.status)} />
                     </View>
                     <View>
-                      <Text style={styles.table}>Table {req.tableNumber}</Text>
-                      <Text style={styles.type}>{getRequestTypeLabel(req.requestType)}</Text>
+                      <Text style={styles.tableText}>Table {request.tableNumber}</Text>
+                      <Text style={styles.requestTypeText}>{getRequestTypeLabel(request.requestType)}</Text>
                     </View>
                   </View>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(req.status) }]}>
-                    <Text style={styles.statusText}>{req.status.toUpperCase()}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
+                    <Text style={styles.statusText}>{request.status.toUpperCase()}</Text>
                   </View>
                 </View>
 
-                {req.message && <Text style={styles.message}>{req.message}</Text>}
+                {request.message && (
+                  <Text style={styles.messageText}>{request.message}</Text>
+                )}
 
-                <View style={styles.time}>
+                <View style={styles.timeContainer}>
                   <Clock size={14} color={Colors.textSecondary} />
                   <Text style={styles.timeText}>
-                    {new Date(req.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(request.createdAt).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </Text>
+                  {request.resolvedAt && (
+                    <>
+                      <Text style={styles.timeSeparator}>•</Text>
+                      <Text style={styles.timeText}>
+                        Resolved {new Date(request.resolvedAt).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Text>
+                    </>
+                  )}
                 </View>
 
-                {req.status !== 'resolved' && (
-                  <View style={styles.actions}>
-                    {req.status === 'pending' && (
+                {request.status !== 'resolved' && (
+                  <View style={styles.actionsContainer}>
+                    {request.status === 'pending' && (
                       <TouchableOpacity
-                        style={[styles.btn, styles.btnProgress]}
-                        onPress={() => handleUpdateStatus(req.id, 'in-progress')}
+                        style={[styles.actionButton, styles.actionButtonProgress]}
+                        onPress={() => handleUpdateStatus(request.id, 'in-progress')}
+                        disabled={updateStatusMutation.isPending}
                       >
-                        <Text style={styles.btnText}>Start</Text>
+                        <Text style={styles.actionButtonText}>Start</Text>
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity
-                      style={[styles.btn, styles.btnResolve]}
-                      onPress={() => handleUpdateStatus(req.id, 'resolved')}
+                      style={[styles.actionButton, styles.actionButtonResolve]}
+                      onPress={() => handleUpdateStatus(request.id, 'resolved')}
+                      disabled={updateStatusMutation.isPending}
                     >
                       <CheckCircle size={16} color="#fff" />
-                      <Text style={styles.btnText}>Resolve</Text>
+                      <Text style={styles.actionButtonText}>Resolve</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -220,14 +270,21 @@ export default function ServiceRequestsAdminScreen() {
           })
         )}
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1A0B0B' },
-  backButton: { padding: 8, marginLeft: 8 },
-  headerRight: { marginRight: 16 },
+  container: {
+    flex: 1,
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  headerRight: {
+    marginRight: 16,
+  },
   headerBadge: {
     backgroundColor: Colors.error,
     borderRadius: 12,
@@ -236,64 +293,193 @@ const styles = StyleSheet.create({
     minWidth: 24,
     alignItems: 'center',
   },
-  headerBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  headerBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700' as const,
+  },
   filterContainer: {
     flexDirection: 'row',
-    backgroundColor: '#2B1616',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 6,
-    borderBottomColor: '#3A1E1E',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.background,
     borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    gap: 8,
   },
   filterButton: {
     flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3A1E1E',
+    gap: 6,
     paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: Colors.backgroundGray,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  filterButtonActive: { backgroundColor: Colors.primary },
-  filterButtonText: { color: '#E8E8E8', fontSize: 13, fontWeight: '600' },
-  filterButtonTextActive: { color: '#fff', fontWeight: '700' },
+  filterButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterButtonText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  filterButtonTextActive: {
+    color: '#fff',
+    fontWeight: '700' as const,
+  },
   filterBadge: {
     backgroundColor: Colors.error,
     borderRadius: 10,
-    paddingHorizontal: 5,
-    marginLeft: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    minWidth: 20,
+    alignItems: 'center',
   },
-  filterBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  scrollContent: { padding: 16, paddingBottom: 40 },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 100 },
-  empty: { flex: 1, alignItems: 'center', paddingVertical: 100 },
-  emptyTitle: { fontSize: 22, fontWeight: '800', color: Colors.text, marginTop: 16 },
-  emptySubtitle: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center' },
-  card: {
-    backgroundColor: '#2B1616',
+  filterBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700' as const,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+  },
+  requestCard: {
+    backgroundColor: Colors.background,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#3A1E1E',
+    borderColor: Colors.border,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
-      android: { elevation: 3 },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
     }),
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  left: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  iconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  table: { fontSize: 17, fontWeight: '700', color: '#FFF3D8' },
-  type: { fontSize: 13, color: '#E1D1A6' },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
-  statusText: { fontSize: 11, fontWeight: '700', color: '#fff' },
-  message: { fontSize: 14, color: '#E8E8E8', marginBottom: 10, lineHeight: 20 },
-  time: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  timeText: { color: Colors.textSecondary, fontSize: 13 },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  btn: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 10, borderRadius: 8 },
-  btnProgress: { backgroundColor: Colors.warning },
-  btnResolve: { backgroundColor: Colors.success },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  requestHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  requestHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tableText: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  requestTypeText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: Colors.textSecondary,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
+  messageText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  timeText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  timeSeparator: {
+    fontSize: 13,
+    color: Colors.textLight,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  actionButtonProgress: {
+    backgroundColor: Colors.warning,
+  },
+  actionButtonResolve: {
+    backgroundColor: Colors.success,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
 });
