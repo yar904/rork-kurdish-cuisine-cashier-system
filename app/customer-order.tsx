@@ -964,9 +964,9 @@ export default function CustomerOrderScreen() {
                   <Text style={styles.plateEmoji}>🍽️</Text>
                 </Animated.View>
 
-                <Text style={styles.emptyOrderTitle}>Waiting on your order!</Text>
+                <Text style={styles.emptyOrderTitle}>Awaiting Your Order!</Text>
                 <Text style={styles.emptyOrderSubtitle}>
-                  Browse our delicious menu and start adding items
+                  Our chef is ready to prepare something delicious for you
                 </Text>
 
                 <View style={styles.sparklesContainer}>
