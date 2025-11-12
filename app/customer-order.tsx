@@ -682,8 +682,8 @@ export default function CustomerOrderScreen() {
                           ]}
                         >
                         {item.image && (
-                          <View style={styles.imageContainer}>
-                            <Image source={{ uri: item.image }} style={styles.menuImage} />
+                          <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
+                            <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
                             {avgRating > 0 && (
                               <View style={styles.ratingBadge}>
                                 <Star size={12} color="#fff" fill="#fff" />
@@ -699,22 +699,22 @@ export default function CustomerOrderScreen() {
                           </Text>
                           <View style={styles.priceContainer}>
                             <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
+                            <TouchableOpacity
+                              style={styles.addButton}
+                              onPress={() => addToCart({
+                                id: item.id,
+                                name: item.name,
+                                price: item.price,
+                                description: item.description,
+                                image: item.image,
+                                category: item.category,
+                              })}
+                              activeOpacity={0.7}
+                            >
+                              <Plus size={20} color="#fff" strokeWidth={2.5} />
+                            </TouchableOpacity>
                           </View>
                         </View>
-                        <TouchableOpacity
-                          style={styles.addButton}
-                          onPress={() => addToCart({
-                            id: item.id,
-                            name: item.name,
-                            price: item.price,
-                            description: item.description,
-                            image: item.image,
-                            category: item.category,
-                          })}
-                          activeOpacity={0.7}
-                        >
-                          <Plus size={22} color="#fff" strokeWidth={2.5} />
-                        </TouchableOpacity>
                         </Animated.View>
                       );
                     })}
@@ -1098,8 +1098,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingTop: 16,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
   categoryFilterHeader: {
     flexDirection: 'row',
@@ -1190,13 +1188,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderWidth: 2,
+    borderColor: Colors.gold,
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 12,
   },
   menuItemGrid: {
     width: '48%',
@@ -1204,13 +1202,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderWidth: 2,
+    borderColor: Colors.gold,
     shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 12,
   },
   menuItemsGrid: {
     flexDirection: 'row',
@@ -1225,9 +1223,20 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: 12,
   },
+  imageContainerGrid: {
+    position: 'relative',
+    marginBottom: 8,
+  },
   menuImage: {
     width: 90,
     height: 90,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  menuImageGrid: {
+    width: '100%',
+    height: 120,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.borderLight,
@@ -1251,38 +1260,38 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   menuName: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800' as const,
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
     letterSpacing: -0.4,
   },
   menuDescription: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 10,
     fontWeight: '500' as const,
-    lineHeight: 18,
+    lineHeight: 16,
   },
   priceContainer: {
-    backgroundColor: 'rgba(61, 1, 1, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 'auto',
   },
   menuPrice: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '900' as const,
     color: Colors.primary,
     letterSpacing: -0.5,
   },
   addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
