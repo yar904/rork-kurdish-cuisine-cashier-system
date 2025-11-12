@@ -1789,10 +1789,10 @@ const styles = StyleSheet.create({
   },
   menuSections: {
     paddingTop: 0,
-    paddingBottom: 24,
+    paddingBottom: 16,
   },
   categorySection: {
-    marginBottom: 32,
+    marginBottom: 24,
     paddingHorizontal: 20,
     backgroundColor: 'rgba(61, 1, 1, 0.85)',
     borderRadius: 24,
@@ -1931,7 +1931,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingBottom: Platform.select({ ios: 100, android: 92, default: 92 }),
+    paddingBottom: Platform.select({ ios: 90, android: 85, default: 85 }),
     ...Platform.select({
       web: {
         paddingHorizontal: 0,
@@ -2674,10 +2674,11 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
   },
   footer: {
-    padding: 48,
+    padding: 32,
+    paddingBottom: 24,
     alignItems: 'center',
     backgroundColor: '#3d0101',
-    marginTop: 32,
+    marginTop: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -3156,7 +3157,7 @@ const styles = StyleSheet.create({
   },
   floatingMenu: {
     position: 'absolute' as const,
-    bottom: Platform.select({ ios: 34, android: 20, default: 24 }),
+    bottom: Platform.select({ ios: 10, android: 8, default: 10 }),
     left: 12,
     right: 12,
     flexDirection: 'row',
