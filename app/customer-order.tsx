@@ -70,6 +70,7 @@ export default function CustomerOrderScreen() {
   const categoryTranslateY = useRef(new Animated.Value(0)).current;
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const menuItemsOpacity = useRef(new Animated.Value(1)).current;
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -334,6 +335,11 @@ export default function CustomerOrderScreen() {
           duration: 300,
           useNativeDriver: true,
         }),
+        Animated.timing(menuItemsOpacity, {
+          toValue: 0.4,
+          duration: 300,
+          useNativeDriver: true,
+        }),
       ]).start();
     } else if (scrollDelta < 0) {
       Animated.parallel([
@@ -347,12 +353,17 @@ export default function CustomerOrderScreen() {
           duration: 300,
           useNativeDriver: true,
         }),
+        Animated.timing(menuItemsOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
       ]).start();
     }
     
     lastScrollY.current = currentScrollY;
     scrollY.current = currentScrollY;
-  }, [headerTranslateY, categoryTranslateY]);
+  }, [headerTranslateY, categoryTranslateY, menuItemsOpacity]);
 
   const animateButton = (button: keyof typeof buttonScales) => {
     Animated.sequence([
@@ -426,7 +437,7 @@ export default function CustomerOrderScreen() {
       });
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -583,7 +594,7 @@ export default function CustomerOrderScreen() {
                 animated: true 
               });
             };
-            autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+            autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
           }}
         >
           {categories.map((category) => (
@@ -667,7 +678,7 @@ export default function CustomerOrderScreen() {
                           key={item.id} 
                           style={[
                             isGridView ? styles.menuItemGrid : styles.menuItem, 
-                            { transform: [{ scale: scaleAnim }] }
+                            { transform: [{ scale: scaleAnim }], opacity: menuItemsOpacity }
                           ]}
                         >
                         {item.image && (
@@ -1125,13 +1136,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderWidth: 0,
     marginHorizontal: 6,
   },
   categoryChipActive: {
     backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
+    borderWidth: 0,
   },
   categoryChipIcon: {
     fontSize: 18,
@@ -1182,11 +1192,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
   menuItemGrid: {
     width: '48%',
@@ -1196,11 +1206,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
   menuItemsGrid: {
     flexDirection: 'row',
