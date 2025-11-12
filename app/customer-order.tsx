@@ -71,6 +71,8 @@ export default function CustomerOrderScreen() {
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const menuItemsOpacity = useRef(new Animated.Value(1)).current;
+  const [categoryScales] = useState(new Map<string, Animated.Value>());
+  const currentCategoryIndex = useRef(0);
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -424,17 +426,50 @@ export default function CustomerOrderScreen() {
   };
 
   useEffect(() => {
-    let currentIndex = 0;
+    categories.forEach(cat => {
+      if (!categoryScales.has(cat)) {
+        categoryScales.set(cat, new Animated.Value(1));
+      }
+    });
+  }, [categories, categoryScales]);
+
+  useEffect(() => {
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current) return;
       
-      currentIndex = (currentIndex + 1) % categories.length;
-      const scrollPosition = currentIndex * 140;
+      const prevIndex = currentCategoryIndex.current;
+      const prevScale = categoryScales.get(categories[prevIndex]);
+      if (prevScale) {
+        Animated.timing(prevScale, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+      
+      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
+      const scrollPosition = currentCategoryIndex.current * 140;
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
         animated: true 
       });
+      
+      const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
+      if (currentScale) {
+        Animated.sequence([
+          Animated.timing(currentScale, {
+            toValue: 1.15,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(currentScale, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
     };
 
     autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
@@ -444,7 +479,7 @@ export default function CustomerOrderScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories.length]);
+  }, [categories, categoryScales]);
 
   useEffect(() => {
     if (orderModalVisible && cart.length === 0) {
@@ -587,40 +622,80 @@ export default function CustomerOrderScreen() {
             let currentIndex = 0;
             const scrollToNextCategory = () => {
               if (!categoryScrollViewRef.current) return;
-              currentIndex = (currentIndex + 1) % categories.length;
-              const scrollPosition = currentIndex * 140;
+              
+              const prevIndex = currentCategoryIndex.current;
+              const prevScale = categoryScales.get(categories[prevIndex]);
+              if (prevScale) {
+                Animated.timing(prevScale, {
+                  toValue: 1,
+                  duration: 300,
+                  useNativeDriver: true,
+                }).start();
+              }
+              
+              currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
+              const scrollPosition = currentCategoryIndex.current * 140;
               categoryScrollViewRef.current.scrollTo({ 
                 x: scrollPosition, 
                 animated: true 
               });
+              
+              const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
+              if (currentScale) {
+                Animated.sequence([
+                  Animated.timing(currentScale, {
+                    toValue: 1.15,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(currentScale, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+              }
             };
             autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
           }}
         >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryChip,
-                selectedCategory === category && styles.categoryChipActive
-              ]}
-              onPress={() => {
-                setSelectedCategory(category);
-                if (category !== 'all') {
-                  scrollToCategory(category);
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
-              <Text style={[
-                styles.categoryChipText,
-                selectedCategory === category && styles.categoryChipTextActive
-              ]}>
-                {CATEGORY_NAMES[category] || category}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {categories.map((category) => {
+            const scaleAnim = categoryScales.get(category) || new Animated.Value(1);
+            if (!categoryScales.has(category)) {
+              categoryScales.set(category, scaleAnim);
+            }
+            
+            return (
+              <Animated.View
+                key={category}
+                style={{
+                  transform: [{ scale: scaleAnim }],
+                }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.categoryChip,
+                    selectedCategory === category && styles.categoryChipActive
+                  ]}
+                  onPress={() => {
+                    setSelectedCategory(category);
+                    if (category !== 'all') {
+                      scrollToCategory(category);
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
+                  <Text style={[
+                    styles.categoryChipText,
+                    selectedCategory === category && styles.categoryChipTextActive
+                  ]}>
+                    {CATEGORY_NAMES[category] || category}
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          })}
         </ScrollView>
       </Animated.View>
 
