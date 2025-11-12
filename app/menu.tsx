@@ -1009,7 +1009,6 @@ export default function PublicMenuScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
           <View style={styles.citadelSilhouette}>
             <Text style={styles.citadelText}>🏰</Text>
@@ -1788,7 +1787,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   menuSections: {
-    paddingTop: 0,
+    paddingTop: 16,
     paddingBottom: 16,
   },
   categorySection: {
@@ -1889,23 +1888,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     position: 'relative' as const,
   },
-  baobabPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
-    zIndex: 0,
-  },
-  baobabTree: {
-    position: 'absolute' as const,
-    width: 220,
-    height: 280,
-    opacity: 0.15,
-    transform: [{ rotate: '0deg' }],
-  },
-  plaidPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
-    zIndex: 0,
-  },
+
   citadelPattern: {
     position: 'absolute' as const,
     bottom: 0,
@@ -1931,10 +1914,11 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
+    paddingTop: 0,
     paddingBottom: Platform.select({ ios: 90, android: 85, default: 85 }),
+    paddingHorizontal: 0,
     ...Platform.select({
       web: {
-        paddingHorizontal: 0,
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
@@ -3157,19 +3141,21 @@ const styles = StyleSheet.create({
   },
   floatingMenu: {
     position: 'absolute' as const,
-    bottom: Platform.select({ ios: 10, android: 8, default: 10 }),
-    left: 12,
-    right: 12,
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     backgroundColor: 'rgba(61, 1, 1, 0.97)',
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 24,
+    paddingBottom: Platform.select({ ios: 22, android: 14, default: 14 }),
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderWidth: 2,
     borderTopColor: 'rgba(212, 175, 55, 0.6)',
-    borderBottomColor: 'rgba(212, 175, 55, 0.6)',
     borderLeftColor: 'rgba(212, 175, 55, 0.6)',
     borderRightColor: 'rgba(212, 175, 55, 0.6)',
+    borderBottomColor: 'transparent',
     gap: 8,
     ...Platform.select({
       ios: {
