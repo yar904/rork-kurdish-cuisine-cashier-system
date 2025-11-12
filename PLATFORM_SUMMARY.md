@@ -291,7 +291,8 @@ Bill Paid        →  System (💰 Revenue updated)
 - **orders** - Customer orders
 - **order_items** - Individual items in orders
 - **staff_activity** - Staff action logging
-- **table_service_requests** - Customer assistance requests
+- **service_requests** - Customer assistance requests (PRIMARY TABLE)
+- **table_service_requests** - DEPRECATED (do not use)
 - **customer_order_history** - Reorder functionality
 - **menu_item_ratings** - Customer reviews
 
