@@ -193,7 +193,7 @@ export default function PublicMenuScreen() {
   };
 
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS !== 'web' && categories.length > 0) {
       scrollIntervalRef.current = setInterval(() => {
         setCurrentCategoryIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % categories.length;
@@ -214,7 +214,7 @@ export default function PublicMenuScreen() {
         }
       };
     }
-  }, [categories.length]);
+  }, []);
 
   const handleOpenItemModal = (item: MenuItem) => {
     setSelectedItem(item);
@@ -2013,13 +2013,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 12,
     justifyContent: 'space-between' as const,
     paddingTop: 6,
+    rowGap: 12,
+    columnGap: 12,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
-        gap: 18,
+        rowGap: 18,
+        columnGap: 18,
       },
     }),
   },
@@ -2069,7 +2071,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48%' as const,
+    width: '47.5%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
