@@ -101,13 +101,7 @@ export default function CustomerOrderScreen() {
   
   const menuData = menuQuery.data && menuQuery.data.length > 0 ? menuQuery.data : MENU_ITEMS;
   
-  const mockReviews: Review[] = [
-    { id: '1', userName: 'Ahmed K.', rating: 5, comment: 'Absolutely delicious! The best kebab I\'ve ever had.', date: '2024-01-15', menuItemId: '7' },
-    { id: '2', userName: 'Sara M.', rating: 4, comment: 'Great biryani, very flavorful and aromatic.', date: '2024-01-14', menuItemId: '11' },
-    { id: '3', userName: 'Omar H.', rating: 5, comment: 'The dolma is just like my grandmother used to make!', date: '2024-01-13', menuItemId: '1' },
-    { id: '4', userName: 'Layla S.', rating: 5, comment: 'Best kunafa in town, perfectly sweet and crispy.', date: '2024-01-12', menuItemId: '22' },
-    { id: '5', userName: 'Khalid R.', rating: 4, comment: 'Mixed grill was excellent, generous portions.', date: '2024-01-11', menuItemId: '10' },
-  ];
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: () => {
@@ -802,10 +796,9 @@ export default function CustomerOrderScreen() {
                   
                   <View style={isGridView ? styles.menuItemsGrid : styles.menuItemsList}>
                     {categoryItems.map((item) => {
-                const itemReviews = mockReviews.filter(r => r.menuItemId === item.id);
-                const avgRating = itemReviews.length > 0 
-                  ? itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length 
-                  : 0;
+                const itemStats = ratingsStatsQuery.data?.find(stat => stat.menuItemId === item.id);
+                const avgRating = itemStats?.averageRating || 0;
+                const totalRatings = itemStats?.totalRatings || 0;
                 
                 const scaleAnim = addAnimations.get(item.id) || new Animated.Value(1);
                 if (!addAnimations.has(item.id)) {
@@ -827,6 +820,7 @@ export default function CustomerOrderScreen() {
                               <View style={styles.ratingBadge}>
                                 <Star size={12} color="#fff" fill="#fff" />
                                 <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                                <Text style={styles.ratingCount}>({totalRatings})</Text>
                               </View>
                             )}
                           </View>
@@ -862,37 +856,37 @@ export default function CustomerOrderScreen() {
               );
             })}
             
-            {mockReviews.length > 0 && (
+            {ratingsStatsQuery.data && ratingsStatsQuery.data.length > 0 && (
               <View style={styles.reviewsSection}>
-                <Text style={styles.reviewsTitle}>Customer Reviews</Text>
-                {mockReviews.slice(0, 3).map((review) => (
-                  <View key={review.id} style={styles.reviewCard}>
-                    <View style={styles.reviewHeader}>
-                      <View style={styles.reviewUserInfo}>
-                        <View style={styles.reviewAvatar}>
-                          <Text style={styles.reviewAvatarText}>{review.userName[0]}</Text>
-                        </View>
-                        <View>
-                          <Text style={styles.reviewUserName}>{review.userName}</Text>
-                          <View style={styles.reviewStars}>
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                size={14} 
-                                color={i < review.rating ? Colors.gold : Colors.border}
-                                fill={i < review.rating ? Colors.gold : 'transparent'}
-                              />
-                            ))}
-                          </View>
-                        </View>
-                      </View>
-                      <Text style={styles.reviewDate}>
-                        {new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </Text>
+                <Text style={styles.reviewsTitle}>⭐ Customer Reviews</Text>
+                <View style={styles.overallRatingCard}>
+                  <View style={styles.overallRatingNumber}>
+                    <Text style={styles.overallRatingValue}>
+                      {(ratingsStatsQuery.data.reduce((sum, s) => sum + s.averageRating, 0) / ratingsStatsQuery.data.length).toFixed(1)}
+                    </Text>
+                    <View style={styles.overallStars}>
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={20} 
+                          color={Colors.gold}
+                          fill={Colors.gold}
+                        />
+                      ))}
                     </View>
-                    <Text style={styles.reviewComment}>{review.comment}</Text>
+                    <Text style={styles.overallRatingCount}>
+                      Based on {ratingsStatsQuery.data.reduce((sum, s) => sum + s.totalRatings, 0)} reviews
+                    </Text>
                   </View>
-                ))}
+                </View>
+                <TouchableOpacity 
+                  style={styles.leaveReviewButton}
+                  onPress={() => Alert.alert('Leave a Review', 'Review feature will be available after your order is complete!')}
+                  activeOpacity={0.7}
+                >
+                  <Star size={20} color={Colors.gold} strokeWidth={2.5} />
+                  <Text style={styles.leaveReviewText}>Leave a Review</Text>
+                </TouchableOpacity>
               </View>
             )}
           </>
@@ -1389,6 +1383,11 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#fff',
   },
+  ratingCount: {
+    fontSize: 9,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
   menuInfo: {
     flex: 1,
     justifyContent: 'space-between',
@@ -1670,6 +1669,62 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     color: Colors.textSecondary,
     lineHeight: 20,
+  },
+  overallRatingCard: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 16,
+  },
+  overallRatingNumber: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  overallRatingValue: {
+    fontSize: 56,
+    fontWeight: '900' as const,
+    color: Colors.gold,
+    letterSpacing: -2,
+  },
+  overallStars: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  overallRatingCount: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  leaveReviewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  leaveReviewText: {
+    fontSize: 16,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: 0.5,
   },
   cartIconBadge: {
     width: 32,
