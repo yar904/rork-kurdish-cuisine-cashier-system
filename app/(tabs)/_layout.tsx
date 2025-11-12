@@ -57,7 +57,7 @@ export default function TabLayout() {
         name="cashier"
         options={{
           title: t('cashier'),
-          tabBarIcon: ({ color }) => <ShoppingCart size={24} color={color} />,
+          tabBarIcon: ({ color }) => <ShoppingCart size={20} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/cashier' : null,
         }}
       />
@@ -65,7 +65,7 @@ export default function TabLayout() {
         name="kitchen"
         options={{
           title: t('kitchen'),
-          tabBarIcon: ({ color }) => <ChefHat size={24} color={color} />,
+          tabBarIcon: ({ color }) => <ChefHat size={20} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/kitchen' : null,
         }}
       />
@@ -73,7 +73,7 @@ export default function TabLayout() {
         name="waiter"
         options={{
           title: 'Manager',
-          tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
+          tabBarIcon: ({ color }) => <ClipboardList size={20} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/waiter' : null,
         }}
       />
@@ -81,7 +81,7 @@ export default function TabLayout() {
         name="analytics"
         options={{
           title: t('analytics'),
-          tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
+          tabBarIcon: ({ color }) => <BarChart3 size={20} color={color} />,
           href: hasAccess('staff') ? '/(tabs)/analytics' : null,
         }}
       />
@@ -89,7 +89,7 @@ export default function TabLayout() {
         name="reports"
         options={{
           title: 'Reports',
-          tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
+          tabBarIcon: ({ color }) => <FileText size={20} color={color} />,
           href: (user.role === 'admin' || user.role === 'manager') ? '/(tabs)/reports' : null,
         }}
       />
@@ -97,7 +97,7 @@ export default function TabLayout() {
         name="admin"
         options={{
           title: user.role === 'admin' ? 'Super Admin' : 'Manager',
-          tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Settings size={20} color={color} />,
           href: (user.role === 'admin' || user.role === 'manager') ? '/(tabs)/admin' : null,
         }}
       />
@@ -117,21 +117,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 88,
+    height: 65,
     backgroundColor: 'transparent',
     borderTopWidth: 0.5,
     borderTopColor: 'rgba(0, 0, 0, 0.05)',
     elevation: 0,
-    paddingBottom: 34,
-    paddingTop: 8,
+    paddingBottom: 24,
+    paddingTop: 4,
   },
   androidTabBar: {
     backgroundColor: Colors.cream,
     borderTopColor: Colors.border,
     borderTopWidth: 1,
-    height: 65,
-    paddingBottom: 8,
-    paddingTop: 8,
+    height: 56,
+    paddingBottom: 6,
+    paddingTop: 6,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
@@ -147,15 +147,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cream,
   },
   tabBarItem: {
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   tabBarLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600' as const,
     letterSpacing: -0.2,
-    marginTop: 2,
+    marginTop: 1,
   },
   tabBarIcon: {
-    marginBottom: -2,
+    marginBottom: 0,
   },
 });
