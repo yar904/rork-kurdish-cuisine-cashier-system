@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ImageBackground,
   StyleSheet,
   Platform,
 } from 'react-native';
@@ -18,13 +17,6 @@ export default function MenuScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ✅ Background: single clean pattern */}
-      <ImageBackground
-        source={require('@/assets/patterns/citadelPattern.png')}
-        style={styles.background}
-        resizeMode="cover"
-      />
-
       {/* ✅ Scrollable menu content */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -77,10 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A0B0B',
   },
 
-  background: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.25,
-  },
+
 
   // ==== Scrollable area ====
   scrollContent: {
