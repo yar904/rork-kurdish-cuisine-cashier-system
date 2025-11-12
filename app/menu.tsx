@@ -1439,24 +1439,13 @@ const styles = StyleSheet.create({
     color: '#3d0101',
   },
   categoryImageScrollContainer: {
-    backgroundColor: 'rgba(26, 0, 0, 0.75)',
-    paddingVertical: 16,
-    paddingBottom: 10,
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: 0,
     borderBottomColor: 'transparent',
     marginTop: 0,
-    marginBottom: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    marginBottom: 6,
   },
   categoryImageScrollContent: {
     paddingHorizontal: 16,
@@ -1850,15 +1839,15 @@ const styles = StyleSheet.create({
   },
   menuSections: {
     paddingTop: 0,
-    paddingBottom: 0,
+    paddingBottom: 12,
   },
   categorySection: {
-    marginBottom: 24,
-    paddingHorizontal: 20,
+    marginBottom: 18,
+    paddingHorizontal: 16,
     backgroundColor: 'rgba(26, 0, 0, 0.92)',
-    borderRadius: 24,
-    paddingVertical: 24,
-    marginHorizontal: 16,
+    borderRadius: 20,
+    paddingVertical: 18,
+    marginHorizontal: 12,
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.6)',
     ...Platform.select({
@@ -1934,7 +1923,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 14,
+    gap: 12,
     justifyContent: 'space-between' as const,
     paddingTop: 4,
     ...Platform.select({
@@ -1976,10 +1965,9 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingTop: 24,
-    paddingBottom: 140,
+    paddingTop: 12,
+    paddingBottom: Platform.select({ ios: 100, android: 95, default: 95 }),
     paddingHorizontal: 12,
-    gap: 24,
     ...Platform.select({
       web: {
         paddingHorizontal: 12,
@@ -1990,13 +1978,13 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '47%' as const,
+    width: '48%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
     borderWidth: 2.5,
     borderColor: '#D4AF37',
-    marginBottom: 14,
+    marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
