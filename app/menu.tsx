@@ -52,6 +52,7 @@ export default function PublicMenuScreen() {
   const categoryScrollRef = useRef<ScrollView>(null);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const categoryScrollX = useRef(new Animated.Value(0)).current;
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
@@ -177,14 +178,14 @@ export default function PublicMenuScreen() {
           const nextIndex = (prevIndex + 1) % categories.length;
           if (categoryScrollRef.current) {
             categoryScrollRef.current.scrollTo({
-              x: nextIndex * 142,
+              x: nextIndex * 148,
               y: 0,
               animated: true,
             });
           }
           return nextIndex;
         });
-      }, 3000);
+      }, 3500);
 
       return () => {
         if (scrollIntervalRef.current) {
@@ -957,48 +958,79 @@ export default function PublicMenuScreen() {
       </View>
 
 
-      <ScrollView 
+      <Animated.ScrollView 
         ref={categoryScrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categoryImageScrollContainer}
         contentContainerStyle={styles.categoryImageScrollContent}
-        pagingEnabled={Platform.OS !== 'web'}
-        snapToInterval={Platform.OS !== 'web' ? 140 : undefined}
+        pagingEnabled={false}
+        snapToInterval={Platform.OS !== 'web' ? 148 : undefined}
+        snapToAlignment="center"
         decelerationRate="fast"
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: categoryScrollX } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       >
-        {categories.map((category) => {
+        {categories.map((category, index) => {
           const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
           const isActive = selectedCategory === category.id;
+          
+          const inputRange = [
+            (index - 1) * 148,
+            index * 148,
+            (index + 1) * 148,
+          ];
+          
+          const scale = categoryScrollX.interpolate({
+            inputRange,
+            outputRange: [0.92, 1.05, 0.92],
+            extrapolate: 'clamp',
+          });
+          
+          const opacity = categoryScrollX.interpolate({
+            inputRange,
+            outputRange: [0.7, 1, 0.7],
+            extrapolate: 'clamp',
+          });
           
           return (
             <TouchableOpacity
               key={category.id}
-              style={[
-                styles.categoryImageCard,
-                isActive && styles.categoryImageCardActive,
-              ]}
               onPress={() => setSelectedCategory(category.id)}
               activeOpacity={0.85}
             >
-              <Image
-                source={{ uri: category.image }}
-                style={styles.categoryImage}
-                resizeMode="cover"
-              />
-              <View style={styles.categoryImageOverlay} />
-              <View style={styles.categoryImageTextContainer}>
-                <Text style={[
-                  styles.categoryImageText,
-                  isActive && styles.categoryImageTextActive,
-                ]}>
-                  {categoryName}
-                </Text>
-              </View>
+              <Animated.View
+                style={[
+                  styles.categoryImageCard,
+                  isActive && styles.categoryImageCardActive,
+                  {
+                    transform: [{ scale }],
+                    opacity,
+                  },
+                ]}
+              >
+                <Image
+                  source={{ uri: category.image }}
+                  style={styles.categoryImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.categoryImageOverlay} />
+                <View style={styles.categoryImageTextContainer}>
+                  <Text style={[
+                    styles.categoryImageText,
+                    isActive && styles.categoryImageTextActive,
+                  ]}>
+                    {categoryName}
+                  </Text>
+                </View>
+              </Animated.View>
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {showWaiterToast && (
         <Animated.View 
@@ -1440,16 +1472,16 @@ const styles = StyleSheet.create({
   },
   categoryImageScrollContainer: {
     backgroundColor: 'transparent',
-    paddingVertical: 12,
-    paddingBottom: 12,
+    paddingVertical: 18,
+    paddingBottom: 18,
     borderBottomWidth: 0,
     borderBottomColor: 'transparent',
     marginTop: 0,
-    marginBottom: 6,
+    marginBottom: 12,
   },
   categoryImageScrollContent: {
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: 20,
+    gap: 16,
   },
   categoryImageCard: {
     width: 130,
@@ -1838,11 +1870,11 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   menuSections: {
-    paddingTop: 0,
-    paddingBottom: 12,
+    paddingTop: 6,
+    paddingBottom: 18,
   },
   categorySection: {
-    marginBottom: 18,
+    marginBottom: 24,
     paddingHorizontal: 16,
     backgroundColor: 'rgba(26, 0, 0, 0.92)',
     borderRadius: 20,
@@ -1925,7 +1957,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap' as const,
     gap: 12,
     justifyContent: 'space-between' as const,
-    paddingTop: 4,
+    paddingTop: 6,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
@@ -1965,9 +1997,10 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingTop: 12,
-    paddingBottom: Platform.select({ ios: 100, android: 95, default: 95 }),
+    paddingTop: 18,
+    paddingBottom: Platform.select({ ios: 140, android: 130, default: 130 }),
     paddingHorizontal: 12,
+    gap: 24,
     ...Platform.select({
       web: {
         paddingHorizontal: 12,
