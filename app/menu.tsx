@@ -1014,6 +1014,7 @@ export default function PublicMenuScreen() {
             <Text style={styles.citadelText}>🏰</Text>
           </View>
         </View>
+        
         <View style={styles.menuSections}>
           {renderAllCategories()}
         </View>
@@ -1788,7 +1789,7 @@ const styles = StyleSheet.create({
   },
   menuSections: {
     paddingTop: 0,
-    paddingBottom: 16,
+    paddingBottom: 0,
   },
   categorySection: {
     marginBottom: 24,
@@ -1914,10 +1915,13 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingBottom: 85,
+    paddingTop: 24,
+    paddingBottom: 140,
+    paddingHorizontal: 12,
+    gap: 24,
     ...Platform.select({
       web: {
-        paddingHorizontal: 0,
+        paddingHorizontal: 12,
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
@@ -3141,18 +3145,17 @@ const styles = StyleSheet.create({
   floatingMenu: {
     position: 'absolute' as const,
     bottom: 0,
-    left: 12,
-    right: 12,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     backgroundColor: 'rgba(61, 1, 1, 0.97)',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 24,
-    borderWidth: 2,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 2,
     borderTopColor: 'rgba(212, 175, 55, 0.6)',
-    borderBottomColor: 'rgba(212, 175, 55, 0.6)',
-    borderLeftColor: 'rgba(212, 175, 55, 0.6)',
-    borderRightColor: 'rgba(212, 175, 55, 0.6)',
     gap: 8,
     ...Platform.select({
       ios: {
