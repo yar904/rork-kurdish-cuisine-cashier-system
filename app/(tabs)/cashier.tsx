@@ -362,31 +362,38 @@ const styles = StyleSheet.create({
     minWidth: 100,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 3,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25), 0 0 20px rgba(212, 175, 55, 0.15)',
       },
     }),
   },
   categoryButtonActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    borderColor: '#E8C968',
+    borderWidth: 2.5,
     ...Platform.select({
       ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 4,
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
       },
     }),
   },
@@ -412,22 +419,23 @@ const styles = StyleSheet.create({
     minWidth: 220,
     backgroundColor: Colors.background,
     borderRadius: 16,
-    borderWidth: 2,
-    borderColor: Colors.border,
+    borderWidth: 2.5,
+    borderColor: '#D4AF37',
     overflow: 'hidden' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.5,
+        shadowRadius: 14,
       },
       android: {
-        elevation: 4,
+        elevation: 7,
       },
       web: {
         cursor: 'pointer',
         transition: 'all 0.2s ease',
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.5), 0 0 35px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
     }),
   },
@@ -565,31 +573,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 3px 12px rgba(212, 175, 55, 0.3), 0 0 20px rgba(212, 175, 55, 0.2)',
       },
     }),
   },
   tableButtonActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    borderColor: '#E8C968',
+    borderWidth: 2.5,
     ...Platform.select({
       ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.7,
+        shadowRadius: 14,
       },
       android: {
-        elevation: 5,
+        elevation: 9,
+      },
+      web: {
+        boxShadow: '0 5px 24px rgba(212, 175, 55, 0.7), 0 0 50px rgba(212, 175, 55, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
       },
     }),
   },
@@ -636,7 +651,21 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 3px 12px rgba(212, 175, 55, 0.3), 0 0 20px rgba(212, 175, 55, 0.2)',
+      },
+    }),
   },
   orderItemInfo: {
     flexDirection: 'row',

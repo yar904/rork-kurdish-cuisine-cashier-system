@@ -1537,15 +1537,15 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 3px 10px rgba(212, 175, 55, 0.25)',
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
     }),
   },
@@ -1556,15 +1556,15 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.5,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.8,
+        shadowRadius: 18,
       },
       android: {
-        elevation: 8,
+        elevation: 12,
       },
       web: {
-        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.5)',
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.8), 0 0 60px rgba(212, 175, 55, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
       },
     }),
   },
@@ -2203,17 +2203,17 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
+        shadowOpacity: 0.6,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
       web: {
         width: 'calc(50% - 6px)',
         minWidth: 180,
         maxWidth: 300,
-        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
     }),
   },
@@ -3056,7 +3056,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 32,
     maxHeight: '80%',
+    borderWidth: 3,
+    borderColor: '#D4AF37',
     ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.6,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 16,
+      },
       web: {
         maxWidth: 500,
         alignSelf: 'center' as const,
@@ -3066,6 +3077,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 24,
         maxHeight: '75%',
         marginTop: 'auto' as const,
+        boxShadow: '0 -6px 40px rgba(212, 175, 55, 0.6), 0 0 60px rgba(212, 175, 55, 0.4), inset 0 2px 0 rgba(212, 175, 55, 0.2)',
       },
     }),
   },
@@ -3629,16 +3641,16 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.8,
-        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.9,
+        shadowRadius: 30,
       },
       android: {
         elevation: 24,
       },
       web: {
         maxWidth: 440,
-        boxShadow: '0 8px 48px rgba(212, 175, 55, 0.8), 0 0 60px rgba(212, 175, 55, 0.4)',
+        boxShadow: '0 10px 60px rgba(212, 175, 55, 0.9), 0 0 80px rgba(212, 175, 55, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.15)',
       },
     }),
   },
