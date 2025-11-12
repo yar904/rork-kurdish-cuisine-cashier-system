@@ -8,7 +8,6 @@ import {
   Vibration,
   RefreshControl,
   ActivityIndicator,
-  ImageBackground,
 } from 'react-native';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
@@ -98,11 +97,7 @@ export default function ServiceRequestsAdminScreen() {
     type === 'waiter' ? Bell : type === 'bill' ? CheckCircle : AlertCircle;
 
   return (
-    <ImageBackground
-      source={require('@/assets/patterns/citadelPattern.png')}
-      style={styles.container}
-      resizeMode="cover"
-    >
+    <View style={styles.container}>
       {/* ✅ Header */}
       <Stack.Screen
         options={{
@@ -225,7 +220,7 @@ export default function ServiceRequestsAdminScreen() {
           })
         )}
       </ScrollView>
-    </ImageBackground>
+    </View>
   );
 }
 
