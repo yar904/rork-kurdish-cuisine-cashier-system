@@ -979,84 +979,87 @@ export default function PublicMenuScreen() {
       </View>
 
 
-      <Animated.ScrollView 
-        ref={categoryScrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryImageScrollContainer}
-        contentContainerStyle={styles.categoryImageScrollContent}
-        pagingEnabled={false}
-        snapToInterval={Platform.OS !== 'web' ? 148 : undefined}
-        snapToAlignment="center"
-        decelerationRate="fast"
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: categoryScrollX } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      >
-        {categories.map((category, index) => {
-          const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-          const isActive = selectedCategory === category.id;
-          
-          const inputRange = [
-            (index - 1) * 148,
-            index * 148,
-            (index + 1) * 148,
-          ];
-          
-          const scale = categoryScrollX.interpolate({
-            inputRange,
-            outputRange: [0.92, 1.05, 0.92],
-            extrapolate: 'clamp',
-          });
-          
-          const opacity = categoryScrollX.interpolate({
-            inputRange,
-            outputRange: [0.7, 1, 0.7],
-            extrapolate: 'clamp',
-          });
-          
-          return (
-            <TouchableOpacity
-              key={category.id}
-              activeOpacity={0.85}
-              onPress={() => handleCategoryPress(category.id, index)}
-            >
-              <Animated.View
-                style={[
-                  styles.categoryImageCard,
-                  isActive && styles.categoryImageCardActive,
-                  {
-                    transform: [{ scale }],
-                    opacity,
-                  },
-                ]}
+      {/* CATEGORIES SECTION - TEMPORARILY HIDDEN FOR TESTING */}
+      {false && (
+        <Animated.ScrollView 
+          ref={categoryScrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryImageScrollContainer}
+          contentContainerStyle={styles.categoryImageScrollContent}
+          pagingEnabled={false}
+          snapToInterval={Platform.OS !== 'web' ? 148 : undefined}
+          snapToAlignment="center"
+          decelerationRate="fast"
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: categoryScrollX } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          {categories.map((category, index) => {
+            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+            const isActive = selectedCategory === category.id;
+            
+            const inputRange = [
+              (index - 1) * 148,
+              index * 148,
+              (index + 1) * 148,
+            ];
+            
+            const scale = categoryScrollX.interpolate({
+              inputRange,
+              outputRange: [0.92, 1.05, 0.92],
+              extrapolate: 'clamp',
+            });
+            
+            const opacity = categoryScrollX.interpolate({
+              inputRange,
+              outputRange: [0.7, 1, 0.7],
+              extrapolate: 'clamp',
+            });
+            
+            return (
+              <TouchableOpacity
+                key={category.id}
+                activeOpacity={0.85}
+                onPress={() => handleCategoryPress(category.id, index)}
               >
-                <Image
-                  source={{ uri: category.image }}
-                  style={styles.categoryImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.categoryImageOverlay} />
-                {isActive && (
-                  <View style={styles.activeCategoryIndicator}>
-                    <View style={styles.activeCategoryPulse} />
+                <Animated.View
+                  style={[
+                    styles.categoryImageCard,
+                    isActive && styles.categoryImageCardActive,
+                    {
+                      transform: [{ scale }],
+                      opacity,
+                    },
+                  ]}
+                >
+                  <Image
+                    source={{ uri: category.image }}
+                    style={styles.categoryImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.categoryImageOverlay} />
+                  {isActive && (
+                    <View style={styles.activeCategoryIndicator}>
+                      <View style={styles.activeCategoryPulse} />
+                    </View>
+                  )}
+                  <View style={styles.categoryImageTextContainer}>
+                    <Text style={[
+                      styles.categoryImageText,
+                      isActive && styles.categoryImageTextActive,
+                    ]}>
+                      {categoryName}
+                    </Text>
                   </View>
-                )}
-                <View style={styles.categoryImageTextContainer}>
-                  <Text style={[
-                    styles.categoryImageText,
-                    isActive && styles.categoryImageTextActive,
-                  ]}>
-                    {categoryName}
-                  </Text>
-                </View>
-              </Animated.View>
-            </TouchableOpacity>
-          );
-        })}
-      </Animated.ScrollView>
+                </Animated.View>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.ScrollView>
+      )}
 
       {showWaiterToast && (
         <Animated.View 
@@ -1932,12 +1935,12 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   categorySection: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
+    marginBottom: 20,
+    paddingHorizontal: 14,
     backgroundColor: 'rgba(26, 0, 0, 0.92)',
     borderRadius: 20,
-    paddingVertical: 18,
-    marginHorizontal: 12,
+    paddingVertical: 16,
+    marginHorizontal: 0,
     borderWidth: 2,
     borderColor: 'rgba(212, 175, 55, 0.6)',
     ...Platform.select({
@@ -1957,8 +1960,8 @@ const styles = StyleSheet.create({
   },
   categoryHeader: {
     paddingHorizontal: 0,
-    marginBottom: 20,
-    paddingBottom: 16,
+    marginBottom: 16,
+    paddingBottom: 14,
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.3)',
   },
@@ -2010,18 +2013,15 @@ const styles = StyleSheet.create({
     }),
   },
   categoryItemsGrid: {
-    paddingHorizontal: 0,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     justifyContent: 'space-between' as const,
-    paddingTop: 6,
-    rowGap: 12,
-    columnGap: 12,
+    paddingTop: 4,
+    gap: 14,
     ...Platform.select({
       web: {
         justifyContent: 'center' as const,
-        rowGap: 18,
-        columnGap: 18,
+        gap: 18,
       },
     }),
   },
@@ -2057,13 +2057,12 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingTop: 18,
+    paddingTop: 12,
     paddingBottom: Platform.select({ ios: 140, android: 130, default: 130 }),
-    paddingHorizontal: 12,
-    gap: 24,
+    paddingHorizontal: 16,
     ...Platform.select({
       web: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 20,
         maxWidth: 1600,
         alignSelf: 'center' as const,
         width: '100%',
@@ -2071,7 +2070,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '47.5%' as const,
+    width: '48%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
