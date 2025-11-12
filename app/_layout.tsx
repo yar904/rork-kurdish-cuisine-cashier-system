@@ -10,6 +10,7 @@ import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { useEffect } from "react";
+import { LogBox } from "react-native";
 import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
 import { PlayfairDisplay_400Regular, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold, PlayfairDisplay_900Black } from '@expo-google-fonts/playfair-display';
 import { CormorantGaramond_400Regular, CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
@@ -44,6 +45,13 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'PostHog',
+      'PostHogFetchNetworkError',
+    ]);
+  }, []);
+
   const [fontsLoaded] = useFonts({
     NotoNaskhArabic_400Regular,
     NotoNaskhArabic_600SemiBold,
