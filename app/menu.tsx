@@ -957,51 +957,56 @@ export default function PublicMenuScreen() {
       </View>
 
 
-          <ScrollView 
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryScrollNew}
-        contentContainerStyle={styles.categoryScrollContentNew}
-        decelerationRate="fast"
-      >
-        {categories.map((category, index) => {
-          const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-          const isActive = selectedCategory === category.id;
-          
-          return (
-            <TouchableOpacity
-              key={category.id}
-              activeOpacity={0.7}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                setSelectedCategory(category.id);
-              }}
-            >
-              <View style={[
-                styles.categoryCardNew,
-                isActive && styles.categoryCardNewActive,
-              ]}>
-                <Image
-                  source={{ uri: category.image }}
-                  style={styles.categoryImageNew}
-                  resizeMode="cover"
-                />
-                <View style={styles.categoryOverlayNew} />
-                <View style={styles.categoryTextContainerNew}>
-                  <Text style={[
-                    styles.categoryTextNew,
-                    isActive && styles.categoryTextNewActive,
-                  ]} numberOfLines={2}>
-                    {categoryName}
-                  </Text>
+          <View style={styles.categorySection}>
+        <ScrollView 
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryScrollNew}
+          contentContainerStyle={styles.categoryScrollContentNew}
+          decelerationRate="fast"
+          snapToAlignment="start"
+          snapToInterval={122}
+        >
+          {categories.map((category, index) => {
+            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+            const isActive = selectedCategory === category.id;
+            
+            return (
+              <TouchableOpacity
+                key={category.id}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setSelectedCategory(category.id);
+                }}
+              >
+                <View style={[
+                  styles.categoryCardNew,
+                  isActive && styles.categoryCardNewActive,
+                ]}>
+                  {isActive && <View style={styles.activeIndicatorDot} />}
+                  <Image
+                    source={{ uri: category.image }}
+                    style={styles.categoryImageNew}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.categoryOverlayNew} />
+                  <View style={styles.categoryTextContainerNew}>
+                    <Text style={[
+                      styles.categoryTextNew,
+                      isActive && styles.categoryTextNewActive,
+                    ]} numberOfLines={2}>
+                      {categoryName}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
 
       {showWaiterToast && (
         <Animated.View 
@@ -1043,34 +1048,16 @@ export default function PublicMenuScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.citadelPattern}>
-          <View style={styles.citadelSilhouette}>
-            <Text style={styles.citadelText}>🏰</Text>
-          </View>
-        </View>
-        
-        <View style={styles.menuSections}>
-          {renderAllCategories()}
-        </View>
-
-        {availableCategories.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
-          </View>
-        )}
-
-        <View style={styles.footer}>
-          <Image 
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
-            style={styles.footerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.footerTitle}>تەپسی سلێمانی</Text>
-          <View style={styles.footerDivider} />
-          
-          <Text style={styles.footerText}>
-            {language === 'en' ? 'Thank you for dining with us' : language === 'ku' ? 'سوپاس بۆ خواردنتان لەگەڵمان' : 'شكراً لتناولكم الطعام معنا'}
-          </Text>
+        <View style={styles.menuItemsContainer}>
+          {filteredItems.length > 0 ? (
+            <View style={styles.menuGrid}>
+              {filteredItems.map(renderMenuItem)}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -1441,23 +1428,11 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#3d0101',
   },
-  categoryScrollNew: {
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
-    marginBottom: 6,
-  },
-  categoryScrollContentNew: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  categoryCardNew: {
-    width: 110,
-    height: 140,
-    borderRadius: 16,
-    overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
-    backgroundColor: '#1a0000',
+  categorySection: {
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(212, 175, 55, 0.4)',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -1466,29 +1441,87 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
       },
       android: {
-        elevation: 6,
+        elevation: 4,
       },
       web: {
         boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
+  categoryScrollNew: {
+    backgroundColor: 'transparent',
+  },
+  categoryScrollContentNew: {
+    paddingHorizontal: 16,
+    gap: 12,
+    paddingVertical: 4,
+  },
+  categoryCardNew: {
+    width: 110,
+    height: 130,
+    borderRadius: 14,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    backgroundColor: '#1a0000',
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 3px 10px rgba(212, 175, 55, 0.25)',
+      },
+    }),
+  },
   categoryCardNewActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
-    transform: [{ scale: 1.02 }],
+    transform: [{ scale: 1.05 }],
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.6,
+        shadowOpacity: 0.5,
         shadowRadius: 12,
       },
       android: {
-        elevation: 10,
+        elevation: 8,
       },
       web: {
-        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.6)',
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
+  activeIndicatorDot: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D4AF37',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.8)',
       },
     }),
   },
@@ -1962,30 +1995,6 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 18,
   },
-  categorySection: {
-    marginBottom: 20,
-    paddingHorizontal: 14,
-    backgroundColor: 'rgba(26, 0, 0, 0.92)',
-    borderRadius: 20,
-    paddingVertical: 16,
-    marginHorizontal: 0,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.6)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
-      },
-    }),
-  },
   categoryHeader: {
     paddingHorizontal: 0,
     marginBottom: 16,
@@ -2085,15 +2094,30 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingTop: 12,
+    paddingTop: 20,
     paddingBottom: Platform.select({ ios: 140, android: 130, default: 130 }),
     paddingHorizontal: 16,
     ...Platform.select({
       web: {
-        paddingHorizontal: 20,
-        maxWidth: 1600,
+        paddingHorizontal: 24,
+        maxWidth: 1400,
         alignSelf: 'center' as const,
         width: '100%',
+      },
+    }),
+  },
+  menuItemsContainer: {
+    flex: 1,
+  },
+  menuGrid: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    justifyContent: 'space-between' as const,
+    gap: 16,
+    ...Platform.select({
+      web: {
+        justifyContent: 'flex-start' as const,
+        gap: 20,
       },
     }),
   },
@@ -2110,17 +2134,17 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.5,
-        shadowRadius: 14,
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        width: '31%',
-        minWidth: 160,
-        maxWidth: 220,
-        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.5)',
+        width: 'calc(33.333% - 14px)',
+        minWidth: 180,
+        maxWidth: 240,
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
       },
     }),
   },
@@ -3317,29 +3341,29 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    backgroundColor: 'rgba(26, 0, 0, 0.97)',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    paddingBottom: Platform.select({ ios: 24, android: 20, default: 20 }),
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.6)',
+    backgroundColor: 'rgba(26, 0, 0, 0.98)',
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    paddingBottom: Platform.select({ ios: 28, android: 22, default: 22 }),
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderTopWidth: 3,
+    borderTopColor: '#D4AF37',
     gap: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: -8 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.6,
+        shadowRadius: 24,
       },
       android: {
-        elevation: 24,
+        elevation: 16,
       },
       web: {
-        boxShadow: '0 -8px 40px rgba(212, 175, 55, 0.5), 0 0 60px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
+        boxShadow: '0 -10px 50px rgba(212, 175, 55, 0.6), 0 0 80px rgba(212, 175, 55, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.15)',
+        backdropFilter: 'blur(40px)',
+        WebkitBackdropFilter: 'blur(40px)',
       },
     }),
   },
@@ -3347,78 +3371,78 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    minHeight: 64,
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 18,
+    backgroundColor: 'rgba(61, 1, 1, 0.8)',
+    minHeight: 72,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
       ios: {
-        shadowColor: 'rgba(212, 175, 55, 0.6)',
+        shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
         shadowRadius: 10,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        minHeight: 70,
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        backdropFilter: 'blur(15px)',
-        WebkitBackdropFilter: 'blur(15px)',
-        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        minHeight: 76,
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         cursor: 'pointer',
       },
     }),
   },
   fabButtonPrimary: {
-    backgroundColor: 'rgba(212, 175, 55, 0.98)',
-    borderColor: '#D4AF37',
-    borderWidth: 2.5,
-    transform: [{ scale: 1 }],
+    backgroundColor: '#D4AF37',
+    borderColor: '#E8C968',
+    borderWidth: 3,
+    transform: [{ scale: 1.02 }],
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.7,
-        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.8,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 12,
+        elevation: 10,
       },
       web: {
-        boxShadow: '0 6px 28px rgba(212, 175, 55, 0.7), 0 0 40px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(15px)',
-        WebkitBackdropFilter: 'blur(15px)',
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.8), 0 0 50px rgba(212, 175, 55, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.5)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       },
     }),
   },
   fabIconContainer: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 3,
+    marginBottom: 4,
     position: 'relative' as const,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
   },
   fabLabel: {
     fontFamily: 'NotoNaskhArabic_600SemiBold',
-    fontSize: 10,
-    color: '#FFFFFF',
+    fontSize: 11,
+    color: '#E8C968',
     textAlign: 'center' as const,
-    letterSpacing: 0.3,
-    lineHeight: 14,
+    letterSpacing: 0.2,
+    lineHeight: 15,
     fontWeight: '700' as const,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadowRadius: 4,
     paddingHorizontal: 2,
   },
   fabLabelPrimary: {
