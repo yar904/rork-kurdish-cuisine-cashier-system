@@ -2185,7 +2185,7 @@ const styles = StyleSheet.create({
     }),
   },
   menuItemCardHorizontal: {
-    width: '48.5%' as const,
+    width: '48%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
     overflow: 'visible' as const,
@@ -2204,7 +2204,7 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        width: 'calc(50% - 8px)',
+        width: 'calc(50% - 6px)',
         minWidth: 180,
         maxWidth: 300,
         boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
