@@ -14,6 +14,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
@@ -170,6 +171,26 @@ export default function PublicMenuScreen() {
       friction: 7,
     }).start();
   }, [fabSlideAnimation]);
+
+  const handleCategoryPress = (categoryId: string, index: number) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    setSelectedCategory(categoryId);
+    
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollTo({
+        x: index * 148 - 20,
+        y: 0,
+        animated: true,
+      });
+    }
+
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+    }
+  };
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -997,32 +1018,42 @@ export default function PublicMenuScreen() {
           });
           
           return (
-            <Animated.View
+            <TouchableOpacity
               key={category.id}
-              style={[
-                styles.categoryImageCard,
-                isActive && styles.categoryImageCardActive,
-                {
-                  transform: [{ scale }],
-                  opacity,
-                },
-              ]}
+              activeOpacity={0.85}
+              onPress={() => handleCategoryPress(category.id, index)}
             >
-              <Image
-                source={{ uri: category.image }}
-                style={styles.categoryImage}
-                resizeMode="cover"
-              />
-              <View style={styles.categoryImageOverlay} />
-              <View style={styles.categoryImageTextContainer}>
-                <Text style={[
-                  styles.categoryImageText,
-                  isActive && styles.categoryImageTextActive,
-                ]}>
-                  {categoryName}
-                </Text>
-              </View>
-            </Animated.View>
+              <Animated.View
+                style={[
+                  styles.categoryImageCard,
+                  isActive && styles.categoryImageCardActive,
+                  {
+                    transform: [{ scale }],
+                    opacity,
+                  },
+                ]}
+              >
+                <Image
+                  source={{ uri: category.image }}
+                  style={styles.categoryImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.categoryImageOverlay} />
+                {isActive && (
+                  <View style={styles.activeCategoryIndicator}>
+                    <View style={styles.activeCategoryPulse} />
+                  </View>
+                )}
+                <View style={styles.categoryImageTextContainer}>
+                  <Text style={[
+                    styles.categoryImageText,
+                    isActive && styles.categoryImageTextActive,
+                  ]}>
+                    {categoryName}
+                  </Text>
+                </View>
+              </Animated.View>
+            </TouchableOpacity>
           );
         })}
       </Animated.ScrollView>
@@ -1555,6 +1586,38 @@ const styles = StyleSheet.create({
     textShadowColor: '#D4AF37',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+  },
+  activeCategoryIndicator: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#D4AF37',
+    zIndex: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  activeCategoryPulse: {
+    position: 'absolute' as const,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#D4AF37',
+    opacity: 0.4,
   },
   waiterToast: {
     position: 'absolute' as const,
