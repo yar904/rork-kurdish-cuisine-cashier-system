@@ -13,6 +13,7 @@ import {
   Modal,
   Alert,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
@@ -58,6 +59,9 @@ export default function PublicMenuScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
+  const [refreshing, setRefreshing] = useState(false);
+  const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
+  const cardAnimations = useRef<Map<string, Animated.Value>>(new Map()).current;
 
   const categories = [
     { 
@@ -356,6 +360,31 @@ export default function PublicMenuScreen() {
     });
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await ratingsStatsQuery.refetch();
+    setTimeout(() => setRefreshing(false), 800);
+  };
+
+  const handleQuickAdd = (item: MenuItem) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setQuickAddingItem(item.id);
+    addItemToCurrentOrder(item.id, 1);
+    
+    setTimeout(() => {
+      setQuickAddingItem(null);
+    }, 600);
+  };
+
+  const getOrCreateCardAnimation = (itemId: string) => {
+    if (!cardAnimations.has(itemId)) {
+      cardAnimations.set(itemId, new Animated.Value(0));
+    }
+    return cardAnimations.get(itemId)!;
+  };
+
   const handleScrollToCategories = () => {
     if (contentScrollRef.current) {
       contentScrollRef.current.scrollTo({ y: 0, animated: true });
@@ -383,9 +412,10 @@ export default function PublicMenuScreen() {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
+    const isQuickAdding = quickAddingItem === item.id;
     
     return (
-      <View 
+      <Animated.View 
         key={item.id} 
         style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
       >
@@ -408,6 +438,11 @@ export default function PublicMenuScreen() {
                     <Text style={styles.ratingTextOnImage}>{itemStats.averageRating.toFixed(1)}</Text>
                   </View>
                 )}
+                {isPremium && (
+                  <View style={styles.premiumBadgeOnImage}>
+                    <Text style={styles.premiumBadgeOnImageText}>★</Text>
+                  </View>
+                )}
               </View>
             )}
             
@@ -421,19 +456,36 @@ export default function PublicMenuScreen() {
           </View>
         </TouchableOpacity>
         
-        <TouchableOpacity
-          style={styles.rateButtonOnCard}
-          onPress={(e: any) => {
-            setRatingItem(item);
-            setUserRating(0);
-            setRatingComment('');
-            setShowRatingModal(true);
-          }}
-          activeOpacity={0.7}
-        >
-          <Star size={18} color="#D4AF37" strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.cardActionsRow}>
+          <TouchableOpacity
+            style={styles.rateButtonOnCard}
+            onPress={(e: any) => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+              setRatingItem(item);
+              setUserRating(0);
+              setRatingComment('');
+              setShowRatingModal(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <Star size={16} color="#D4AF37" strokeWidth={2} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.quickAddButton, isQuickAdding && styles.quickAddButtonActive]}
+            onPress={() => handleQuickAdd(item as MenuItem)}
+            activeOpacity={0.7}
+          >
+            {isQuickAdding ? (
+              <Text style={styles.quickAddButtonTextActive}>✓</Text>
+            ) : (
+              <Plus size={18} color="#D4AF37" strokeWidth={2.5} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     );
   };
 
@@ -1047,6 +1099,15 @@ export default function PublicMenuScreen() {
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#D4AF37"
+            colors={['#D4AF37']}
+            progressBackgroundColor="rgba(26, 0, 0, 0.9)"
+          />
+        }
       >
         <View style={styles.menuItemsContainer}>
           {filteredItems.length > 0 ? (
@@ -1055,7 +1116,23 @@ export default function PublicMenuScreen() {
             </View>
           ) : (
             <View style={styles.emptyState}>
+              <View style={styles.emptyStateIconContainer}>
+                <Svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                  <Circle cx="50" cy="50" r="40" stroke="#D4AF37" strokeWidth="2" opacity="0.3" />
+                  <Path
+                    d="M35 45 L45 55 L65 35"
+                    stroke="#D4AF37"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                  />
+                </Svg>
+              </View>
               <Text style={styles.emptyStateText}>{t('noItemsFound')}</Text>
+              <Text style={styles.emptyStateSubtext}>
+                {language === 'en' ? 'Try adjusting your filters' : language === 'ku' ? 'هەوڵبدە فلتەرەکانت بگۆڕیت' : 'حاول تعديل الفلاتر'}
+              </Text>
             </View>
           )}
         </View>
@@ -2832,12 +2909,26 @@ const styles = StyleSheet.create({
   emptyState: {
     padding: 60,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  emptyStateIconContainer: {
+    marginBottom: 20,
+    opacity: 0.5,
   },
   emptyStateText: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500' as const,
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.5)',
+    textAlign: 'center' as const,
   },
   footer: {
     padding: 32,
@@ -3052,28 +3143,81 @@ const styles = StyleSheet.create({
   menuItemTouchable: {
     flex: 1,
   },
-  rateButtonOnCard: {
+  cardActionsRow: {
     position: 'absolute' as const,
     top: 6,
     right: 6,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    flexDirection: 'row',
+    gap: 6,
+    zIndex: 10,
+  },
+  rateButtonOnCard: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.4,
         shadowRadius: 4,
       },
       android: {
         elevation: 4,
       },
     }),
+  },
+  quickAddButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  quickAddButtonActive: {
+    backgroundColor: '#D4AF37',
+    borderColor: '#E8C968',
+    transform: [{ scale: 1.1 }],
+  },
+  quickAddButtonTextActive: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#3d0101',
+  },
+  premiumBadgeOnImage: {
+    position: 'absolute' as const,
+    top: 6,
+    left: 6,
+    backgroundColor: '#D4AF37',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E8C968',
+  },
+  premiumBadgeOnImageText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#3d0101',
   },
   goldCornerTopRight: {
     position: 'absolute' as const,
