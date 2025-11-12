@@ -1009,7 +1009,6 @@ export default function PublicMenuScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.plaidPattern} />
         <View style={styles.citadelPattern}>
           <View style={styles.citadelSilhouette}>
             <Text style={styles.citadelText}>🏰</Text>
@@ -1889,23 +1888,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     position: 'relative' as const,
   },
-  baobabPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
-    zIndex: 0,
-  },
-  baobabTree: {
-    position: 'absolute' as const,
-    width: 220,
-    height: 280,
-    opacity: 0.15,
-    transform: [{ rotate: '0deg' }],
-  },
-  plaidPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
-    zIndex: 0,
-  },
+
   citadelPattern: {
     position: 'absolute' as const,
     bottom: 0,
@@ -1931,7 +1914,7 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   contentContainer: {
-    paddingBottom: Platform.select({ ios: 90, android: 85, default: 85 }),
+    paddingBottom: 85,
     ...Platform.select({
       web: {
         paddingHorizontal: 0,
@@ -3157,7 +3140,7 @@ const styles = StyleSheet.create({
   },
   floatingMenu: {
     position: 'absolute' as const,
-    bottom: Platform.select({ ios: 10, android: 8, default: 10 }),
+    bottom: 0,
     left: 12,
     right: 12,
     flexDirection: 'row',
