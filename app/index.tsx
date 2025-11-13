@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,6 +9,20 @@ import { Colors } from '@/constants/colors';
 export default function DebugEntryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    console.log('✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅');
+    console.log('✅ INDEX PAGE LOADING - AUTO REDIRECTING TO CUSTOMER ORDER');
+    console.log('✅ BYPASSING DEBUG SCREEN');
+    console.log('✅ GOING DIRECTLY TO REAL ORDERING PAGE');
+    console.log('✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅');
+    
+    const timer = setTimeout(() => {
+      router.replace('/customer-order?table=1');
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [router]);
 
   const navigateToCustomerOrder = () => {
     console.log('[DebugEntry] Navigating to customer-order with table=1');
@@ -32,7 +46,11 @@ export default function DebugEntryScreen() {
         colors={[Colors.primary, '#2D0000', '#1A0000']}
         style={styles.gradient}
       >
-        <View style={[styles.content, { paddingTop: Math.max(insets.top, 60), paddingBottom: Math.max(insets.bottom, 40) }]}>
+        <View style={[styles.content, { paddingTop: Math.max(insets.top, 60), paddingBottom: Math.max(insets.bottom, 40), justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={Colors.gold} />
+          <Text style={{ color: Colors.gold, fontSize: 18, fontWeight: '700', marginTop: 20 }}>Loading Customer Order...</Text>
+        </View>
+        <View style={[styles.content, { paddingTop: Math.max(insets.top, 60), paddingBottom: Math.max(insets.bottom, 40), display: 'none' }]}>
           <View style={styles.header}>
             <Image 
               source={require('@/assets/images/icon.png')} 
