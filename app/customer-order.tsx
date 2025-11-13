@@ -76,8 +76,6 @@ export default function CustomerOrderScreen() {
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const menuItemsOpacity = useRef(new Animated.Value(1)).current;
   const [categoryScales] = useState(new Map<string, Animated.Value>());
-  const [categoryWidths] = useState(new Map<string, Animated.Value>());
-  const [categoryHeights] = useState(new Map<string, Animated.Value>());
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
@@ -432,12 +430,6 @@ export default function CustomerOrderScreen() {
       if (!categoryScales.has(cat)) {
         categoryScales.set(cat, new Animated.Value(index === 0 ? 1 : 0.75));
       }
-      if (!categoryWidths.has(cat)) {
-        categoryWidths.set(cat, new Animated.Value(index === 0 ? 110 : 110));
-      }
-      if (!categoryHeights.has(cat)) {
-        categoryHeights.set(cat, new Animated.Value(index === 0 ? 130 : 130));
-      }
     });
     
     filteredMenu.forEach(item => {
@@ -445,7 +437,7 @@ export default function CustomerOrderScreen() {
         itemScales.set(item.id, new Animated.Value(1));
       }
     });
-  }, [categories, categoryScales, categoryWidths, categoryHeights, filteredMenu, itemScales]);
+  }, [categories, categoryScales, filteredMenu, itemScales]);
 
   useEffect(() => {
     if (isUserScrolling) {
@@ -459,65 +451,35 @@ export default function CustomerOrderScreen() {
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current) return;
       
-      const prevIndex = currentCategoryIndex.current;
-      const prevScale = categoryScales.get(categories[prevIndex]);
-      const prevWidth = categoryWidths.get(categories[prevIndex]);
-      const prevHeight = categoryHeights.get(categories[prevIndex]);
+      const currentIndex = currentCategoryIndex.current;
+      const nextIndex = (currentIndex + 1) % categories.length;
       
-      if (prevScale && prevWidth && prevHeight) {
-        Animated.parallel([
-          Animated.timing(prevScale, {
-            toValue: 0.75,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(prevWidth, {
-            toValue: 110,
-            duration: 400,
-            useNativeDriver: false,
-          }),
-          Animated.timing(prevHeight, {
-            toValue: 130,
-            duration: 400,
-            useNativeDriver: false,
-          }),
-        ]).start();
+      const currentScale = categoryScales.get(categories[currentIndex]);
+      if (currentScale) {
+        Animated.timing(currentScale, {
+          toValue: 0.75,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
       }
       
-      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-      const scrollPosition = currentCategoryIndex.current * 140;
+      const nextScale = categoryScales.get(categories[nextIndex]);
+      if (nextScale) {
+        Animated.spring(nextScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }).start();
+      }
+      
+      const scrollPosition = nextIndex * 122;
+      currentCategoryIndex.current = nextIndex;
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
         animated: true 
       });
-      
-      const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
-      const currentWidth = categoryWidths.get(categories[currentCategoryIndex.current]);
-      const currentHeight = categoryHeights.get(categories[currentCategoryIndex.current]);
-      
-      if (currentScale && currentWidth && currentHeight) {
-        Animated.parallel([
-          Animated.spring(currentScale, {
-            toValue: 1,
-            friction: 8,
-            tension: 100,
-            useNativeDriver: true,
-          }),
-          Animated.spring(currentWidth, {
-            toValue: 110,
-            friction: 8,
-            tension: 100,
-            useNativeDriver: false,
-          }),
-          Animated.spring(currentHeight, {
-            toValue: 130,
-            friction: 8,
-            tension: 100,
-            useNativeDriver: false,
-          }),
-        ]).start();
-      }
     };
 
     autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
@@ -750,16 +712,7 @@ export default function CustomerOrderScreen() {
               if (!categoryScales.has(category)) {
                 categoryScales.set(category, new Animated.Value(0.75));
               }
-              if (!categoryWidths.has(category)) {
-                categoryWidths.set(category, new Animated.Value(110));
-              }
-              if (!categoryHeights.has(category)) {
-                categoryHeights.set(category, new Animated.Value(130));
-              }
-              
               const scaleAnim = categoryScales.get(category)!;
-              const widthAnim = categoryWidths.get(category)!;
-              const heightAnim = categoryHeights.get(category)!;
               
               return (
                 <TouchableOpacity
@@ -783,11 +736,7 @@ export default function CustomerOrderScreen() {
                   <Animated.View style={[
                     styles.categoryCard,
                     isActive && styles.categoryCardActive,
-                    { 
-                      transform: [{ scale: scaleAnim }],
-                      width: widthAnim,
-                      height: heightAnim,
-                    },
+                    { transform: [{ scale: scaleAnim }] },
                   ]}>
                     {isActive && <View style={styles.activeIndicatorDot} />}
                     {category !== 'all' && (
@@ -1323,8 +1272,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 65,
-    height: 65,
+    width: 80,
+    height: 80,
   },
   tableIndicator: {
     flexDirection: 'row',
