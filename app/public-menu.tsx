@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,15 @@ import {
   Image,
   ImageBackground,
   Platform,
+  Modal,
+  Animated,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Star, Globe } from 'lucide-react-native';
+import { Star, Globe, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
-import { MENU_ITEMS } from '@/constants/menu';
+import { MENU_ITEMS, CATEGORY_NAMES } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
 import { Language } from '@/constants/i18n';
@@ -25,103 +27,19 @@ export default function PublicMenuScreen() {
   const { language, setLanguage } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<typeof MENU_ITEMS[0] | null>(null);
+  const [itemModalVisible, setItemModalVisible] = useState(false);
+  const categoryScales = useRef(new Map<string, Animated.Value>()).current;
+  const categoryScrollViewRef = useRef<ScrollView>(null);
+  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const currentCategoryIndex = useRef(0);
+  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
   const ratingsStats = ratingsStatsQuery.data || {};
 
-  const categories = [
-    { 
-      id: 'all', 
-      nameKu: 'هەموو', 
-      nameEn: 'All', 
-      nameAr: 'الكل',
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'appetizers', 
-      nameKu: 'دەستپێکەکان', 
-      nameEn: 'Appetizers', 
-      nameAr: 'مقبلات',
-      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'soups', 
-      nameKu: 'سوپەکان', 
-      nameEn: 'Soups', 
-      nameAr: 'شوربات',
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'salads', 
-      nameKu: 'زەڵاتە', 
-      nameEn: 'Salads', 
-      nameAr: 'سلطات',
-      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'kebabs', 
-      nameKu: 'کەبابەکان', 
-      nameEn: 'Kebabs', 
-      nameAr: 'كباب',
-      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'rice-dishes', 
-      nameKu: 'خواردنی برنج', 
-      nameEn: 'Rice Dishes', 
-      nameAr: 'أطباق أرز',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'stews', 
-      nameKu: 'خۆراک', 
-      nameEn: 'Stews', 
-      nameAr: 'يخنات',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'seafood', 
-      nameKu: 'ماسی', 
-      nameEn: 'Seafood', 
-      nameAr: 'مأكولات بحرية',
-      image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'breads', 
-      nameKu: 'نان', 
-      nameEn: 'Breads', 
-      nameAr: 'خبز',
-      image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'desserts', 
-      nameKu: 'خواردنی شیرین', 
-      nameEn: 'Desserts', 
-      nameAr: 'حلويات',
-      image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'hot-drinks', 
-      nameKu: 'چا و قاوە', 
-      nameEn: 'Tea & Coffee', 
-      nameAr: 'شاي وقهوة',
-      image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'drinks', 
-      nameKu: 'خواردنی سارد', 
-      nameEn: 'Cold Drinks', 
-      nameAr: 'مشروبات باردة',
-      image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 'shisha', 
-      nameKu: 'شیەشە', 
-      nameEn: 'Shisha', 
-      nameAr: 'شيشة',
-      image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
-    },
-  ];
+
 
   const getItemName = (item: typeof MENU_ITEMS[0]) => {
     if (language === 'ar') return item.nameArabic;
@@ -135,6 +53,11 @@ export default function PublicMenuScreen() {
     return item.description;
   };
 
+  const categoriesList = useMemo(() => {
+    const cats = new Set(MENU_ITEMS.map(item => item.category));
+    return ['all', ...Array.from(cats)];
+  }, []);
+
   const filteredItems = useMemo(() => {
     return MENU_ITEMS.filter((item) => {
       const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -142,14 +65,42 @@ export default function PublicMenuScreen() {
     });
   }, [selectedCategory]);
 
+  const getCategoryIcon = (category: string) => {
+    const icons: Record<string, string> = {
+      appetizers: '🥗',
+      soups: '🍲',
+      salads: '🥙',
+      kebabs: '🍖',
+      'rice-dishes': '🍚',
+      stews: '🍛',
+      seafood: '🦞',
+      breads: '🍞',
+      desserts: '🍰',
+      drinks: '🥤',
+      shisha: '💨',
+      'hot-drinks': '☕',
+    };
+    return icons[category] || '🍽️';
+  };
+
+  const handleItemPress = (item: typeof MENU_ITEMS[0]) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setSelectedItem(item);
+    setItemModalVisible(true);
+  };
+
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
     
     return (
-      <View 
-        key={item.id} 
+      <TouchableOpacity 
+        key={item.id}
+        activeOpacity={0.8}
+        onPress={() => handleItemPress(item)}
         style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
       >
         {item.image && (
@@ -182,9 +133,73 @@ export default function PublicMenuScreen() {
             <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
+
+  React.useEffect(() => {
+    categoriesList.forEach(cat => {
+      if (!categoryScales.has(cat)) {
+        categoryScales.set(cat, new Animated.Value(1));
+      }
+    });
+  }, [categoriesList, categoryScales]);
+
+  React.useEffect(() => {
+    if (isUserScrolling) {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+        autoScrollInterval.current = null;
+      }
+      return;
+    }
+
+    const scrollToNextCategory = () => {
+      if (!categoryScrollViewRef.current) return;
+      
+      const prevIndex = currentCategoryIndex.current;
+      const prevScale = categoryScales.get(categoriesList[prevIndex]);
+      if (prevScale) {
+        Animated.timing(prevScale, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+      
+      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categoriesList.length;
+      const scrollPosition = currentCategoryIndex.current * 140;
+      
+      categoryScrollViewRef.current.scrollTo({ 
+        x: scrollPosition, 
+        animated: true 
+      });
+      
+      const currentScale = categoryScales.get(categoriesList[currentCategoryIndex.current]);
+      if (currentScale) {
+        Animated.sequence([
+          Animated.timing(currentScale, {
+            toValue: 1.15,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(currentScale, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+    };
+
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
+
+    return () => {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+      }
+    };
+  }, [categoriesList, categoryScales, isUserScrolling]);
 
   if (ratingsStatsQuery.isLoading) {
     return (
@@ -220,11 +235,7 @@ export default function PublicMenuScreen() {
             />
           </View>
           
-          <View style={styles.viewOnlyBadge}>
-            <Text style={styles.viewOnlyBadgeText}>
-              {language === 'en' ? 'Menu' : language === 'ku' ? 'لیست' : 'قائمة'}
-            </Text>
-          </View>
+          <View style={styles.viewOnlyBadge} />
         </View>
 
         {showLanguageMenu && (
@@ -258,48 +269,74 @@ export default function PublicMenuScreen() {
 
       <View style={styles.categorySection}>
         <ScrollView 
+          ref={categoryScrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoryScroll}
           contentContainerStyle={styles.categoryScrollContent}
           decelerationRate="fast"
+          onTouchStart={() => {
+            setIsUserScrolling(true);
+            if (autoScrollInterval.current) {
+              clearInterval(autoScrollInterval.current);
+              autoScrollInterval.current = null;
+            }
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
+            }
+          }}
+          onMomentumScrollEnd={() => {
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
+            }
+            userScrollTimeout.current = setTimeout(() => {
+              setIsUserScrolling(false);
+            }, 3000);
+          }}
         >
-          {categories.map((category) => {
-            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
-            const isActive = selectedCategory === category.id;
+          {categoriesList.map((category) => {
+            const scaleAnim = categoryScales.get(category) || new Animated.Value(1);
+            if (!categoryScales.has(category)) {
+              categoryScales.set(category, scaleAnim);
+            }
+            const categoryName = CATEGORY_NAMES[category] || category;
+            const isActive = selectedCategory === category;
             
             return (
-              <TouchableOpacity
-                key={category.id}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (Platform.OS !== 'web') {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                  setSelectedCategory(category.id);
+              <Animated.View
+                key={category}
+                style={{
+                  transform: [{ scale: scaleAnim }],
                 }}
               >
-                <View style={[
-                  styles.categoryCard,
-                  isActive && styles.categoryCardActive,
-                ]}>
-                  {isActive && <View style={styles.activeIndicatorDot} />}
-                  <Image
-                    source={{ uri: category.image }}
-                    style={styles.categoryImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.categoryOverlay} />
-                  <View style={styles.categoryTextContainer}>
-                    <Text style={[
-                      styles.categoryText,
-                      isActive && styles.categoryTextActive,
-                    ]} numberOfLines={2}>
-                      {categoryName}
-                    </Text>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setSelectedCategory(category);
+                  }}
+                >
+                  <View style={[
+                    styles.categoryCard,
+                    isActive && styles.categoryCardActive,
+                  ]}>
+                    {isActive && <View style={styles.activeIndicatorDot} />}
+                    <View style={styles.categoryIconContainer}>
+                      <Text style={styles.categoryIconText}>{getCategoryIcon(category)}</Text>
+                    </View>
+                    <View style={styles.categoryTextContainer}>
+                      <Text style={[
+                        styles.categoryText,
+                        isActive && styles.categoryTextActive,
+                      ]} numberOfLines={2}>
+                        {categoryName}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })}
         </ScrollView>
@@ -310,18 +347,88 @@ export default function PublicMenuScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.menuGrid}>
-          {filteredItems.length > 0 ? (
-            filteredItems.map(renderMenuItem)
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
-                {language === 'en' ? 'No items found' : language === 'ku' ? 'هیچ بڕگەیەک نەدۆزرایەوە' : 'لم يتم العثور على عناصر'}
-              </Text>
-            </View>
-          )}
-        </View>
+        {filteredItems.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              {language === 'en' ? 'No items found' : language === 'ku' ? 'هیچ بڕگەیەک نەدۆزرایەوە' : 'لم يتم العثور على عناصر'}
+            </Text>
+          </View>
+        ) : (
+          <>
+            {categoriesList.filter(cat => cat !== 'all').map((category) => {
+              const categoryItems = filteredItems.filter(item => item.category === category);
+              if (categoryItems.length === 0) return null;
+              
+              return (
+                <View key={category}>
+                  <View style={styles.categorySectionHeader}>
+                    <Text style={styles.categorySectionIcon}>{getCategoryIcon(category)}</Text>
+                    <Text style={styles.categorySectionTitle}>
+                      {CATEGORY_NAMES[category] || category}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.menuGrid}>
+                    {categoryItems.map(renderMenuItem)}
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        )}
       </ScrollView>
+
+      <Modal
+        visible={itemModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setItemModalVisible(false)}
+      >
+        <View style={styles.itemModalOverlay}>
+          <View style={styles.itemModalContent}>
+            {selectedItem && (
+              <>
+                <TouchableOpacity
+                  style={styles.itemModalCloseButton}
+                  onPress={() => setItemModalVisible(false)}
+                  activeOpacity={0.7}
+                >
+                  <X size={24} color="#fff" strokeWidth={2.5} />
+                </TouchableOpacity>
+
+                {selectedItem.image && (
+                  <Image
+                    source={{ uri: selectedItem.image }}
+                    style={styles.itemModalImage}
+                    resizeMode="cover"
+                  />
+                )}
+
+                <View style={styles.itemModalInfo}>
+                  <Text style={styles.itemModalName}>{getItemName(selectedItem)}</Text>
+                  <Text style={styles.itemModalDescription}>{getItemDescription(selectedItem)}</Text>
+                  
+                  {ratingsStats[selectedItem.id] && ratingsStats[selectedItem.id].totalRatings > 0 && (
+                    <View style={styles.itemModalRating}>
+                      <Star size={20} color="#D4AF37" fill="#D4AF37" />
+                      <Text style={styles.itemModalRatingText}>
+                        {ratingsStats[selectedItem.id].averageRating.toFixed(1)}
+                      </Text>
+                      <Text style={styles.itemModalRatingCount}>
+                        ({ratingsStats[selectedItem.id].totalRatings} reviews)
+                      </Text>
+                    </View>
+                  )}
+
+                  <View style={styles.itemModalPriceContainer}>
+                    <Text style={styles.itemModalPrice}>{formatPrice(selectedItem.price)}</Text>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
   );
 }
@@ -379,16 +486,8 @@ const styles = StyleSheet.create({
     height: 65,
   },
   viewOnlyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(61, 1, 1, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#D4AF37',
-    minWidth: 60,
+    width: 40,
+    height: 40,
   },
   viewOnlyBadgeText: {
     fontSize: 14,
@@ -686,5 +785,160 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 201, 104, 0.9)',
     fontWeight: '700' as const,
     textAlign: 'center' as const,
+  },
+  categoryIconContainer: {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingTop: 20,
+  },
+  categoryIconText: {
+    fontSize: 48,
+  },
+  categorySectionHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 4,
+    paddingTop: 12,
+    backgroundColor: 'transparent',
+  },
+  categorySectionIcon: {
+    fontSize: 28,
+  },
+  categorySectionTitle: {
+    fontSize: 24,
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    letterSpacing: -0.5,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+  },
+  itemModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  itemModalContent: {
+    backgroundColor: '#1a0000',
+    borderRadius: 24,
+    overflow: 'hidden' as const,
+    width: '90%' as const,
+    maxWidth: 500,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.6,
+        shadowRadius: 24,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  itemModalCloseButton: {
+    position: 'absolute' as const,
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      },
+    }),
+  },
+  itemModalImage: {
+    width: '100%' as const,
+    height: 250,
+    backgroundColor: '#F9FAFB',
+    ...Platform.select({
+      web: {
+        height: 300,
+      },
+    }),
+  },
+  itemModalInfo: {
+    padding: 24,
+  },
+  itemModalName: {
+    fontSize: 24,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    marginBottom: 12,
+    lineHeight: 32,
+    letterSpacing: 0.5,
+  },
+  itemModalDescription: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  itemModalRating: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  itemModalRatingText: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+    fontFamily: 'NotoNaskhArabic_700Bold',
+  },
+  itemModalRatingCount: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+  },
+  itemModalPriceContainer: {
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  itemModalPrice: {
+    fontSize: 28,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.5,
   },
 });
