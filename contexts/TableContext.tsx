@@ -17,7 +17,10 @@ export const [TableProvider, useTables] = createContextHook(() => {
   
   const tablesQuery = trpc.tables.getAll.useQuery(undefined, {
     refetchInterval: 5000,
+    enabled: true,
   });
+
+  const updateTableMutation = trpc.tables.updateStatus.useMutation();
 
   useEffect(() => {
     if (tablesQuery.data && tablesQuery.data.length > 0) {
@@ -31,8 +34,6 @@ export const [TableProvider, useTables] = createContextHook(() => {
       setTables(mappedTables);
     }
   }, [tablesQuery.data]);
-  
-  const updateTableMutation = trpc.tables.updateStatus.useMutation();
 
   const updateTableStatus = useCallback(async (tableNumber: number, status: TableStatus) => {
     setTables(prev => prev.map(table =>
