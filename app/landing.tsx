@@ -8,7 +8,9 @@ import {
   ScrollView,
   useWindowDimensions,
   Linking,
+  Platform,
 } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { Globe, Instagram } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -76,24 +78,35 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      {isLargeScreen ? (
-        <LinearGradient
-          colors={['#1a0000', '#3d0101', '#1a0000']}
+      {Platform.OS !== 'web' ? (
+        <Video
+          source={{ uri: 'https://res.cloudinary.com/dfqd5ftwp/video/upload/v1734106789/kurdish-food-background_oqz1bh.mp4' }}
           style={styles.background}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay
+          isLooping
+          isMuted
         />
       ) : (
-        <LinearGradient
-          colors={['#1a0000', '#3d0101', '#1a0000']}
-          style={styles.background}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
+        isLargeScreen ? (
+          <LinearGradient
+            colors={['#1a0000', '#3d0101', '#1a0000']}
+            style={styles.background}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        ) : (
+          <LinearGradient
+            colors={['#1a0000', '#3d0101', '#1a0000']}
+            style={styles.background}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        )
       )}
       <View style={styles.absoluteOverlay}>
         <LinearGradient
-          colors={isLargeScreen ? ['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.4)'] : ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.6)']}
+          colors={isLargeScreen ? ['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.7)'] : ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0.65)', 'rgba(0,0,0,0.8)']}
           style={styles.overlay}
         >
           <ScrollView 
