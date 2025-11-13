@@ -27,11 +27,21 @@ export const trpcClient = trpc.createClient({
       url: `${getBaseUrl()}/trpc`,
       transformer: superjson,
       fetch: (url, options) => {
-        console.log('[tRPC] Fetching:', url);
-        return fetch(url, options).catch((err) => {
-          console.error('[tRPC] Fetch error:', err);
-          throw err;
-        });
+        console.log('[tRPC] Request URL:', url);
+        console.log('[tRPC] Request options:', JSON.stringify(options, null, 2));
+        return fetch(url, options)
+          .then(response => {
+            console.log('[tRPC] Response status:', response.status);
+            if (!response.ok) {
+              console.error('[tRPC] Response not OK:', response.status, response.statusText);
+            }
+            return response;
+          })
+          .catch((err) => {
+            console.error('[tRPC] Network error:', err.message);
+            console.error('[tRPC] Full error:', err);
+            throw new Error(`Failed to connect to backend: ${err.message}`);
+          });
       },
     }),
   ],

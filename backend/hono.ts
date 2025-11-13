@@ -34,7 +34,7 @@ const supabase = createClient(
 );
 
 app.use(
-  "/api/trpc/*",
+  "/trpc/*",
   trpcServer({
     router: appRouter,
     createContext,
@@ -47,7 +47,7 @@ app.get("/", (c) => c.json({
   timestamp: new Date().toISOString()
 }));
 
-app.get("/api/health", (c) =>
+app.get("/health", (c) =>
   c.json({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -55,7 +55,7 @@ app.get("/api/health", (c) =>
   })
 );
 
-app.get("/api/test", async (c) => {
+app.get("/test", async (c) => {
   try {
     const { data, error } = await supabase.from("restaurants").select("*").limit(1);
     if (error) {
