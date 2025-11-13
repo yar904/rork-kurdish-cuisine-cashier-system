@@ -216,21 +216,21 @@ export default function CustomerOrderScreen() {
   };
 
   const getCategoryImage = (category: string) => {
-    const imageIds: Record<string, string> = {
-      appetizers: '1546069901-120a39972937',
-      soups: '1547592166-23ac45744acd',
-      salads: '1512621776951-5a09ec56c8f7',
-      kebabs: '1529692236671-f1f6cf9683ba',
-      'rice-dishes': '1516714435131-44d6b64dc6a2',
-      stews: '1543352632-5a4b7d4c7b5a',
-      seafood: '1559847844-5315695dadae',
-      breads: '1509440159596-0249088772ff',
-      desserts: '1551024506-0bccd828d307',
-      drinks: '1514933651356-89db8e11e23f',
-      shisha: '1534422298391-304a23b3c7e6',
-      'hot-drinks': '1543007630-9710e4a00a1c',
+    const images: Record<string, string> = {
+      appetizers: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop',
+      soups: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop',
+      salads: 'https://images.unsplash.com/photo-1512621776951-5a09ec56c8f7?w=400&h=300&fit=crop',
+      kebabs: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop',
+      'rice-dishes': 'https://images.unsplash.com/photo-1516714435131-44d6b64dc6a2?w=400&h=300&fit=crop',
+      stews: 'https://images.unsplash.com/photo-1543352632-5a4b7d4c7b5a?w=400&h=300&fit=crop',
+      seafood: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=400&h=300&fit=crop',
+      breads: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+      desserts: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop',
+      drinks: 'https://images.unsplash.com/photo-1514933651356-89db8e11e23f?w=400&h=300&fit=crop',
+      shisha: 'https://images.unsplash.com/photo-1534422298391-304a23b3c7e6?w=400&h=300&fit=crop',
+      'hot-drinks': 'https://images.unsplash.com/photo-1543007630-9710e4a00a1c?w=400&h=300&fit=crop',
     };
-    return imageIds[category] || '1546069901-120a39972937';
+    return images[category] || 'https://images.unsplash.com/photo-1546069901-120a39972937?w=400&h=300&fit=crop';
   };
 
   const scrollToCategory = (category: string) => {
@@ -680,85 +680,57 @@ export default function CustomerOrderScreen() {
       />
 
       <Animated.View style={[styles.categoryFilterSection, { transform: [{ translateY: categoryTranslateY }] }]}>
-        <View style={styles.categoryFilterHeader}>
-          <Text style={styles.categoryFilterTitle}>Categories</Text>
-          <TouchableOpacity 
-            onPress={() => setIsGridView(!isGridView)}
-            style={styles.viewToggleButton}
-            activeOpacity={0.7}
-          >
-            {!isGridView ? (
-              <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
-            ) : (
-              <List size={20} color={Colors.gold} strokeWidth={2.5} />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View style={styles.categoryContainer}>
-          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
-          <ScrollView
-            ref={categoryScrollViewRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScrollContent}
-            onTouchStart={() => {
-              setIsUserScrolling(true);
-              if (autoScrollInterval.current) {
-                clearInterval(autoScrollInterval.current);
-                autoScrollInterval.current = null;
-              }
-              if (userScrollTimeout.current) {
-                clearTimeout(userScrollTimeout.current);
-              }
-            }}
-            onMomentumScrollEnd={() => {
-              if (userScrollTimeout.current) {
-                clearTimeout(userScrollTimeout.current);
-              }
-              userScrollTimeout.current = setTimeout(() => {
-                setIsUserScrolling(false);
-              }, 3000);
-            }}
-          >
-            {categories.map((category, index) => {
-              const scaleAnim = categoryScales.get(category) || new Animated.Value(0.75);
-              if (!categoryScales.has(category)) {
-                categoryScales.set(category, scaleAnim);
-              }
-              
-              return (
-                <Animated.View
-                  key={category}
-                  style={{
-                    transform: [{ scale: scaleAnim }],
-                  }}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.categoryChip,
-                      selectedCategory === category && styles.categoryChipActive
-                    ]}
-                    onPress={() => {
-                      setSelectedCategory(category);
-                      if (category !== 'all') {
-                        scrollToCategory(category);
-                      }
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
-                    <Text style={[
-                      styles.categoryChipText,
-                      selectedCategory === category && styles.categoryChipTextActive
-                    ]}>
-                      {CATEGORY_NAMES[category] || category}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              );
-            })}
-          </ScrollView>
-        </View>
+        <ScrollView
+          ref={categoryScrollViewRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScrollContent}
+        >
+          {categories.map((category, index) => {
+            const categoryItems = menuData?.filter(item => item.category === category) || [];
+            const displayImage = categoryItems[0]?.image || getCategoryImage(category);
+            
+            return (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryCard,
+                  selectedCategory === category && styles.categoryCardActive
+                ]}
+                onPress={() => {
+                  setSelectedCategory(category);
+                  if (category !== 'all') {
+                    scrollToCategory(category);
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                {category !== 'all' && (
+                  <Image 
+                    source={{ uri: displayImage }} 
+                    style={styles.categoryCardImage}
+                  />
+                )}
+                {category === 'all' && (
+                  <View style={styles.categoryCardImagePlaceholder}>
+                    <Text style={styles.categoryCardImagePlaceholderIcon}>🍽️</Text>
+                  </View>
+                )}
+                {selectedCategory === category && (
+                  <View style={styles.categoryCardOverlay} />
+                )}
+                <View style={styles.categoryCardLabel}>
+                  <Text style={[
+                    styles.categoryCardText,
+                    selectedCategory === category && styles.categoryCardTextActive
+                  ]}>
+                    {CATEGORY_NAMES[category] || category}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </Animated.View>
 
       <ScrollView 
@@ -820,37 +792,34 @@ export default function CustomerOrderScreen() {
                         {item.image && (
                           <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
                             <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
-                            {avgRating > 0 && (
-                              <View style={styles.ratingBadge}>
-                                <Star size={12} color="#fff" fill="#fff" />
-                                <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
-                                <Text style={styles.ratingCount}>({totalRatings})</Text>
-                              </View>
-                            )}
+                            <View style={styles.itemActions}>
+                              <TouchableOpacity
+                                style={styles.favoriteButton}
+                                onPress={() => Alert.alert('Favorites', 'Add to favorites!')}
+                                activeOpacity={0.7}
+                              >
+                                <Star size={20} color={Colors.gold} strokeWidth={2.5} />
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={styles.addButtonOverlay}
+                                onPress={() => addToCart({
+                                  id: item.id,
+                                  name: item.name,
+                                  price: item.price,
+                                  description: item.description,
+                                  image: item.image,
+                                  category: item.category,
+                                })}
+                                activeOpacity={0.7}
+                              >
+                                <Plus size={20} color="#fff" strokeWidth={2.5} />
+                              </TouchableOpacity>
+                            </View>
                           </View>
                         )}
                         <View style={styles.menuInfo}>
                           <Text style={styles.menuName}>{item.name}</Text>
-                          <Text style={styles.menuDescription} numberOfLines={2}>
-                            {item.description}
-                          </Text>
-                          <View style={styles.priceContainer}>
-                            <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
-                            <TouchableOpacity
-                              style={styles.addButton}
-                              onPress={() => addToCart({
-                                id: item.id,
-                                name: item.name,
-                                price: item.price,
-                                description: item.description,
-                                image: item.image,
-                                category: item.category,
-                              })}
-                              activeOpacity={0.7}
-                            >
-                              <Plus size={20} color="#fff" strokeWidth={2.5} />
-                            </TouchableOpacity>
-                          </View>
+                          <Text style={styles.menuPrice}>{item.price.toLocaleString()} IQD</Text>
                         </View>
                         </Animated.View>
                       );
@@ -860,39 +829,7 @@ export default function CustomerOrderScreen() {
               );
             })}
             
-            {ratingsStatsQuery.data && ratingsStatsQuery.data.length > 0 && (
-              <View style={styles.reviewsSection}>
-                <Text style={styles.reviewsTitle}>⭐ Customer Reviews</Text>
-                <View style={styles.overallRatingCard}>
-                  <View style={styles.overallRatingNumber}>
-                    <Text style={styles.overallRatingValue}>
-                      {(ratingsStatsQuery.data.reduce((sum, s) => sum + s.averageRating, 0) / ratingsStatsQuery.data.length).toFixed(1)}
-                    </Text>
-                    <View style={styles.overallStars}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={20} 
-                          color={Colors.gold}
-                          fill={Colors.gold}
-                        />
-                      ))}
-                    </View>
-                    <Text style={styles.overallRatingCount}>
-                      Based on {ratingsStatsQuery.data.reduce((sum, s) => sum + s.totalRatings, 0)} reviews
-                    </Text>
-                  </View>
-                </View>
-                <TouchableOpacity 
-                  style={styles.leaveReviewButton}
-                  onPress={() => Alert.alert('Leave a Review', 'Review feature will be available after your order is complete!')}
-                  activeOpacity={0.7}
-                >
-                  <Star size={20} color={Colors.gold} strokeWidth={2.5} />
-                  <Text style={styles.leaveReviewText}>Leave a Review</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+
           </>
         )}
       </ScrollView>
@@ -904,7 +841,7 @@ export default function CustomerOrderScreen() {
           activeOpacity={1}
         >
           <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
-            <Star size={20} color={Colors.gold} strokeWidth={2.5} />
+            <Star size={24} color={Colors.gold} strokeWidth={2.5} />
             <Text style={styles.actionButtonText}>Reviews</Text>
           </Animated.View>
         </TouchableOpacity>
@@ -920,8 +857,8 @@ export default function CustomerOrderScreen() {
               <ActivityIndicator size="small" color={Colors.cream} />
             ) : (
               <>
-                <Bell size={20} color={Colors.cream} strokeWidth={2.5} />
-                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call Waiter</Text>
+                <ChefHat size={24} color={Colors.cream} strokeWidth={2.5} />
+                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
               </>
             )}
           </Animated.View>
@@ -933,7 +870,9 @@ export default function CustomerOrderScreen() {
           activeOpacity={1}
         >
           <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
-            <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+            <View style={styles.plateIcon}>
+              <Text style={styles.plateIconText}>🍽</Text>
+            </View>
             <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
           </Animated.View>
         </TouchableOpacity>
@@ -949,8 +888,8 @@ export default function CustomerOrderScreen() {
               <ActivityIndicator size="small" color={Colors.cream} />
             ) : (
               <>
-                <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
-                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request Bill</Text>
+                <Receipt size={24} color={Colors.cream} strokeWidth={2.5} />
+                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
               </>
             )}
           </Animated.View>
@@ -1281,84 +1220,64 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingTop: 16,
     paddingBottom: 16,
-  },
-  categoryContainer: {
-    position: 'relative' as const,
-  },
-  categoryHighlight: {
-    position: 'absolute' as const,
-    top: 4,
-    left: 12,
-    width: 132,
-    height: 48,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: Colors.gold,
-    zIndex: 1,
-    pointerEvents: 'none' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  categoryHighlightHidden: {
-    opacity: 0,
-  },
-  categoryFilterHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  categoryFilterTitle: {
-    fontSize: 18,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    letterSpacing: -0.3,
-  },
-  viewToggleButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: Colors.gold,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.gold,
   },
   categoryScrollContent: {
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
-    borderWidth: 0,
-    marginHorizontal: 6,
+    gap: 12,
   },
-  categoryChipActive: {
-    backgroundColor: Colors.gold,
-    borderWidth: 0,
+  categoryCard: {
+    width: 130,
+    height: 130,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    backgroundColor: Colors.cardBackground,
   },
-  categoryChipIcon: {
-    fontSize: 18,
+  categoryCardActive: {
+    borderWidth: 3,
+    borderColor: Colors.goldLight,
   },
-  categoryChipText: {
+  categoryCardImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  categoryCardImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryCardImagePlaceholderIcon: {
+    fontSize: 48,
+  },
+  categoryCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  categoryCardLabel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(61, 1, 1, 0.85)',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  categoryCardText: {
     fontSize: 14,
-    fontWeight: '700' as const,
+    fontWeight: '800' as const,
     color: Colors.cream,
     letterSpacing: -0.2,
+    textAlign: 'center' as const,
   },
-  categoryChipTextActive: {
-    color: Colors.primary,
+  categoryCardTextActive: {
+    color: Colors.gold,
   },
   categorySection: {
     marginTop: 4,
@@ -1407,8 +1326,8 @@ const styles = StyleSheet.create({
   },
   menuItemGrid: {
     width: '48%',
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 16,
+    backgroundColor: '#2D0909',
+    borderRadius: 20,
     padding: 0,
     marginBottom: 16,
     borderWidth: 2,
@@ -1446,9 +1365,36 @@ const styles = StyleSheet.create({
   },
   menuImageGrid: {
     width: '100%',
-    height: 140,
+    height: 120,
     borderRadius: 0,
     borderWidth: 0,
+  },
+  itemActions: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  favoriteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: Colors.gold,
+  },
+  addButtonOverlay: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: Colors.gold,
   },
   ratingBadge: {
     position: 'absolute',
@@ -1473,54 +1419,29 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   menuInfo: {
-    flex: 1,
-    justifyContent: 'space-between',
     padding: 12,
-    gap: 6,
+    gap: 4,
   },
   menuName: {
     fontSize: 15,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: Colors.gold,
     letterSpacing: -0.3,
     lineHeight: 19,
-    textAlign: 'left' as const,
-  },
-  menuDescription: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    fontWeight: '500' as const,
-    lineHeight: 16,
-    flex: 1,
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 'auto',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.2)',
+    textAlign: 'center' as const,
   },
   menuPrice: {
-    fontSize: 16,
-    fontWeight: '900' as const,
-    color: Colors.primary,
-    letterSpacing: -0.4,
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: -0.3,
+    textAlign: 'center' as const,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
   },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
+
   bottomActionsBar: {
     position: 'absolute',
     bottom: 0,
@@ -1560,11 +1481,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionButtonText: {
-    fontSize: 10,
-    fontWeight: '700' as const,
+    fontSize: 11,
+    fontWeight: '800' as const,
     color: Colors.cream,
     textAlign: 'center' as const,
     letterSpacing: -0.2,
+    lineHeight: 14,
+  },
+  plateIcon: {
+    width: 28,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plateIconText: {
+    fontSize: 24,
   },
   actionButtonTextLight: {
     color: Colors.cream,
