@@ -64,6 +64,8 @@ export default function CustomerOrderScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const categoryRefs = useRef<Map<string, number>>(new Map());
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<CartItem['menuItem'] | null>(null);
+  const [itemModalVisible, setItemModalVisible] = useState(false);
   
   const scrollY = useRef(0);
   const lastScrollY = useRef(0);
@@ -623,7 +625,16 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] Loading menu data...');
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <KurdishCarpetBackground />
+        <View style={styles.loadingContent}>
+          <Image 
+            source={require('@/assets/images/icon.png')} 
+            style={styles.loadingLogo}
+            resizeMode="contain"
+          />
+          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20 }} />
+          <Text style={styles.loadingText}>Loading Menu...</Text>
+        </View>
       </View>
     );
   }
@@ -784,38 +795,37 @@ export default function CustomerOrderScreen() {
                 }
 
                       return (
+                        <TouchableOpacity
+                          key={item.id}
+                          activeOpacity={0.8}
+                          onPress={() => {
+                            setSelectedItem({
+                              id: item.id,
+                              name: item.name,
+                              price: item.price,
+                              description: item.description,
+                              image: item.image,
+                              category: item.category,
+                            });
+                            setItemModalVisible(true);
+                          }}
+                          style={isGridView ? styles.menuItemGrid : styles.menuItem}
+                        >
                         <Animated.View 
-                          key={item.id} 
                           style={[
-                            isGridView ? styles.menuItemGrid : styles.menuItem, 
-                            { transform: [{ scale: scaleAnim }], opacity: menuItemsOpacity }
+                            { width: '100%', opacity: menuItemsOpacity, transform: [{ scale: scaleAnim }] }
                           ]}
                         >
                         {item.image && (
                           <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
                             <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
                             <View style={styles.itemActions}>
-                              <TouchableOpacity
-                                style={styles.favoriteButton}
-                                onPress={() => Alert.alert('Favorites', 'Add to favorites!')}
-                                activeOpacity={0.7}
-                              >
-                                <Star size={20} color={Colors.gold} strokeWidth={2.5} />
-                              </TouchableOpacity>
-                              <TouchableOpacity
-                                style={styles.addButtonOverlay}
-                                onPress={() => addToCart({
-                                  id: item.id,
-                                  name: item.name,
-                                  price: item.price,
-                                  description: item.description,
-                                  image: item.image,
-                                  category: item.category,
-                                })}
-                                activeOpacity={0.7}
-                              >
-                                <Plus size={20} color="#fff" strokeWidth={2.5} />
-                              </TouchableOpacity>
+                              {totalRatings > 0 && (
+                                <View style={styles.ratingBadge}>
+                                  <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                                  <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                                </View>
+                              )}
                             </View>
                           </View>
                         )}
@@ -824,6 +834,7 @@ export default function CustomerOrderScreen() {
                           <Text style={styles.menuPrice}>{item.price.toLocaleString()} IQD</Text>
                         </View>
                         </Animated.View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
@@ -1049,6 +1060,70 @@ export default function CustomerOrderScreen() {
         <Text style={styles.switchButtonText}>Public View</Text>
       </TouchableOpacity>
 
+      <Modal
+        visible={itemModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setItemModalVisible(false)}
+      >
+        <View style={styles.itemModalOverlay}>
+          <View style={styles.itemModalContent}>
+            {selectedItem && (
+              <>
+                <TouchableOpacity
+                  style={styles.itemModalCloseButton}
+                  onPress={() => setItemModalVisible(false)}
+                  activeOpacity={0.7}
+                >
+                  <X size={24} color="#fff" strokeWidth={2.5} />
+                </TouchableOpacity>
+
+                {selectedItem.image && (
+                  <Image
+                    source={{ uri: selectedItem.image }}
+                    style={styles.itemModalImage}
+                    resizeMode="cover"
+                  />
+                )}
+
+                <View style={styles.itemModalInfo}>
+                  <Text style={styles.itemModalName}>{selectedItem.name}</Text>
+                  <Text style={styles.itemModalDescription}>{selectedItem.description}</Text>
+                  
+                  {ratingsStatsQuery.data?.find(stat => stat.menuItemId === selectedItem.id) && (
+                    <View style={styles.itemModalRating}>
+                      <Star size={20} color="#D4AF37" fill="#D4AF37" />
+                      <Text style={styles.itemModalRatingText}>
+                        {ratingsStatsQuery.data.find(stat => stat.menuItemId === selectedItem.id)!.averageRating.toFixed(1)}
+                      </Text>
+                      <Text style={styles.itemModalRatingCount}>
+                        ({ratingsStatsQuery.data.find(stat => stat.menuItemId === selectedItem.id)!.totalRatings} reviews)
+                      </Text>
+                    </View>
+                  )}
+
+                  <View style={styles.itemModalPriceContainer}>
+                    <Text style={styles.itemModalPrice}>{selectedItem.price.toLocaleString()} IQD</Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.addToOrderButton}
+                    onPress={() => {
+                      addToCart(selectedItem);
+                      setItemModalVisible(false);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Plus size={20} color="#fff" strokeWidth={2.5} />
+                    <Text style={styles.addToOrderButtonText}>Add to Order</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
           <View style={styles.cartSummary}>
@@ -1197,7 +1272,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#1a0000',
+  },
+  loadingContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(26, 0, 0, 0.9)',
+    padding: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  loadingLogo: {
+    width: 80,
+    height: 80,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: '#E8C968',
+    marginTop: 16,
   },
   categoryFilterSection: {
     backgroundColor: 'transparent',
@@ -1412,27 +1507,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  favoriteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.6)',
-  },
-  addButtonOverlay: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(212, 175, 55, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E8C968',
-  },
+
+
   ratingBadge: {
     position: 'absolute',
     top: 6,
@@ -2131,5 +2207,162 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: '#fff',
     letterSpacing: 0.2,
+  },
+  itemModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  itemModalContent: {
+    backgroundColor: '#1a0000',
+    borderRadius: 24,
+    overflow: 'hidden' as const,
+    width: '90%' as const,
+    maxWidth: 500,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.6,
+        shadowRadius: 24,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 8px 32px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  itemModalCloseButton: {
+    position: 'absolute' as const,
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      },
+    }),
+  },
+  itemModalImage: {
+    width: '100%' as const,
+    height: 250,
+    backgroundColor: '#F9FAFB',
+    ...Platform.select({
+      web: {
+        height: 300,
+      },
+    }),
+  },
+  itemModalInfo: {
+    padding: 24,
+  },
+  itemModalName: {
+    fontSize: 24,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    marginBottom: 12,
+    lineHeight: 32,
+    letterSpacing: 0.5,
+  },
+  itemModalDescription: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  itemModalRating: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  itemModalRatingText: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
+    fontFamily: 'NotoNaskhArabic_700Bold',
+  },
+  itemModalRatingCount: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+  },
+  itemModalPriceContainer: {
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    marginBottom: 20,
+  },
+  itemModalPrice: {
+    fontSize: 28,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.5,
+  },
+  addToOrderButton: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 10,
+    backgroundColor: '#D4AF37',
+    paddingVertical: 16,
+    borderRadius: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
+  addToOrderButtonText: {
+    fontSize: 17,
+    fontWeight: '800' as const,
+    color: '#1a0000',
+    letterSpacing: 0.3,
   },
 });
