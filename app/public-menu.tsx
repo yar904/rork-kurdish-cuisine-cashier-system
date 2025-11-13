@@ -12,9 +12,9 @@ import {
   Animated,
   useWindowDimensions,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Star, Globe, X } from 'lucide-react-native';
+import { Star, Globe, X, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -23,6 +23,7 @@ import { formatPrice } from '@/constants/currency';
 import { Language } from '@/constants/i18n';
 
 export default function PublicMenuScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const { language, setLanguage } = useLanguage();
@@ -468,6 +469,15 @@ export default function PublicMenuScreen() {
           </>
         )}
       </ScrollView>
+
+      <TouchableOpacity
+        style={styles.switchButton}
+        onPress={() => router.push('/customer-order?table=1')}
+        activeOpacity={0.8}
+      >
+        <ShoppingCart size={20} color="#fff" strokeWidth={2.5} />
+        <Text style={styles.switchButtonText}>Customer View</Text>
+      </TouchableOpacity>
 
       <Modal
         visible={itemModalVisible}
@@ -1065,5 +1075,40 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.5,
+  },
+  switchButton: {
+    position: 'absolute' as const,
+    top: 100,
+    right: 16,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    zIndex: 999,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  switchButtonText: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: 0.2,
   },
 });

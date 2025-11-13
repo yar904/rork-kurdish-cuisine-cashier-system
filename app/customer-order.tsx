@@ -16,8 +16,8 @@ import {
   Platform,
   useWindowDimensions,
 } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List } from 'lucide-react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List, Eye } from 'lucide-react-native';
 import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
@@ -50,6 +50,7 @@ type Review = {
 
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
+  const router = useRouter();
   const { notifyServiceRequest } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
@@ -1038,6 +1039,15 @@ export default function CustomerOrderScreen() {
         </Animated.View>
       )}
 
+      <TouchableOpacity
+        style={styles.switchButton}
+        onPress={() => router.push('/public-menu')}
+        activeOpacity={0.8}
+      >
+        <Eye size={20} color="#fff" strokeWidth={2.5} />
+        <Text style={styles.switchButtonText}>Public View</Text>
+      </TouchableOpacity>
+
       {cart.length > 0 && (
         <View style={styles.cartFooter}>
           <View style={styles.cartSummary}>
@@ -2008,5 +2018,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center' as const,
     lineHeight: 22,
+  },
+  switchButton: {
+    position: 'absolute',
+    top: 100,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 999,
+  },
+  switchButtonText: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: 0.2,
   },
 });
