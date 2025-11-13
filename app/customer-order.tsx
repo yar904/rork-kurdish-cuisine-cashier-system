@@ -385,7 +385,7 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const handleCallWaiter = () => {
+  const handleCallWaiter = async () => {
     animateButton('waiter');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
@@ -394,14 +394,39 @@ export default function CustomerOrderScreen() {
 
     setRequestStatus({ type: 'waiter', message: '', visible: false });
 
-    createServiceRequestMutation.mutate({
-      tableNumber: parseInt(table),
-      requestType: 'waiter',
-      messageText: 'Customer requesting assistance',
-    });
+    try {
+      await createServiceRequestMutation.mutateAsync({
+        tableNumber: parseInt(table),
+        requestType: 'waiter',
+        messageText: 'Customer requesting assistance',
+      });
+    } catch (error) {
+      console.error('[CustomerOrder] Call waiter request failed', error);
+      setRequestStatus({
+        type: null,
+        message: '❌ Could not send request. Please call a waiter manually.',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
+    }
   };
 
-  const handleRequestBill = () => {
+  const handleRequestBill = async () => {
     animateButton('bill');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
@@ -410,11 +435,36 @@ export default function CustomerOrderScreen() {
 
     setRequestStatus({ type: 'bill', message: '', visible: false });
 
-    createServiceRequestMutation.mutate({
-      tableNumber: parseInt(table),
-      requestType: 'bill',
-      messageText: 'Customer requesting bill',
-    });
+    try {
+      await createServiceRequestMutation.mutateAsync({
+        tableNumber: parseInt(table),
+        requestType: 'bill',
+        messageText: 'Customer requesting bill',
+      });
+    } catch (error) {
+      console.error('[CustomerOrder] Request bill failed', error);
+      setRequestStatus({
+        type: null,
+        message: '❌ Could not send request. Please ask your waiter for the bill.',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
+    }
   };
 
   const handleViewOrder = () => {
