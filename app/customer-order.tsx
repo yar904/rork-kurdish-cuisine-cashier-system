@@ -132,7 +132,6 @@ export default function CustomerOrderScreen() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: (data, variables) => {
-      console.log('[CustomerOrder] Service request created successfully:', data);
       const requestType = variables.requestType;
       if (data && table) {
         notifyServiceRequest(parseInt(table), requestType);
@@ -151,7 +150,6 @@ export default function CustomerOrderScreen() {
         ? '✅ Assistance requested! Staff will help you shortly.'
         : '✅ Waiter called! Someone will assist you shortly.';
       
-      console.log('[CustomerOrder] Setting success status:', message);
       setRequestStatus({
         type: requestType as 'waiter' | 'bill',
         message,
@@ -175,7 +173,6 @@ export default function CustomerOrderScreen() {
       });
     },
     onError: (error) => {
-      console.error('[CustomerOrder] Service request error:', error);
       setRequestStatus({
         type: null,
         message: '❌ Failed to send request. Please try again.',
@@ -389,14 +386,12 @@ export default function CustomerOrderScreen() {
   };
 
   const handleCallWaiter = () => {
-    console.log('[CustomerOrder] Call waiter button pressed');
     animateButton('waiter');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
-    console.log('[CustomerOrder] Creating service request for waiter, table:', table);
     setRequestStatus({ type: 'waiter', message: '', visible: false });
 
     createServiceRequestMutation.mutate({
@@ -407,14 +402,12 @@ export default function CustomerOrderScreen() {
   };
 
   const handleRequestBill = () => {
-    console.log('[CustomerOrder] Request bill button pressed');
     animateButton('bill');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
-    console.log('[CustomerOrder] Creating service request for bill, table:', table);
     setRequestStatus({ type: 'bill', message: '', visible: false });
 
     createServiceRequestMutation.mutate({
@@ -618,29 +611,13 @@ export default function CustomerOrderScreen() {
       <View style={styles.loadingContainer}>
         <KurdishCarpetBackground />
         <View style={styles.loadingContent}>
-          {isGlassAvailable ? (
-            <>
-              <View style={styles.loadingGlassContainer}>
-                <GlassView 
-                  style={{ flex: 1 }}
-                  glassEffectStyle="clear"
-                  tintColor="rgba(61, 1, 1, 0.7)"
-                />
-              </View>
-              <View style={styles.loadingGlassCorners} />
-            </>
-          ) : (
-            <>
-              <View style={[styles.loadingGlassContainer, { backgroundColor: 'rgba(26, 0, 0, 0.9)' }]} />
-              <View style={styles.loadingGlassCorners} />
-            </>
-          )}
           <Image 
             source={require('@/assets/images/icon.png')} 
             style={styles.loadingLogo}
             resizeMode="contain"
           />
-          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 30, zIndex: 2 }} />
+          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20 }} />
+          <Text style={styles.loadingText}>Loading Menu...</Text>
         </View>
       </View>
     );
@@ -768,7 +745,6 @@ export default function CustomerOrderScreen() {
                     isActive && styles.categoryCardActive,
                     { transform: [{ scale: scaleAnim }] },
                   ]}>
-                    <View style={[styles.categoryCardCorners, isActive && styles.categoryCardCornersActive]} />
                     {isActive && <View style={styles.activeIndicatorDot} />}
                     {category !== 'all' && (
                       <Image 
@@ -864,14 +840,6 @@ export default function CustomerOrderScreen() {
                           }}
                           style={isGridView ? styles.menuItemGrid : styles.menuItem}
                         >
-                        {isGridView && (
-                          <View style={styles.cornerBordersContainer}>
-                            <View style={[styles.cornerBorder, styles.cornerTopLeft]} />
-                            <View style={[styles.cornerBorder, styles.cornerTopRight]} />
-                            <View style={[styles.cornerBorder, styles.cornerBottomLeft]} />
-                            <View style={[styles.cornerBorder, styles.cornerBottomRight]} />
-                          </View>
-                        )}
                         <Animated.View 
                           style={[
                             { width: '100%', opacity: menuItemsOpacity, transform: [{ scale: scaleAnim }] }
@@ -1388,38 +1356,15 @@ const styles = StyleSheet.create({
   loadingContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 50,
-    borderRadius: 24,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    position: 'relative' as const,
-    overflow: 'visible' as const,
-  },
-  loadingGlassContainer: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 24,
-    overflow: 'hidden' as const,
-  },
-  loadingGlassCorners: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 24,
+    backgroundColor: 'rgba(26, 0, 0, 0.9)',
+    padding: 40,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    zIndex: 1,
-    pointerEvents: 'none' as const,
   },
   loadingLogo: {
-    width: 180,
-    height: 180,
-    zIndex: 2,
+    width: 80,
+    height: 80,
   },
   loadingText: {
     fontSize: 16,
@@ -1478,8 +1423,8 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 14,
     overflow: 'hidden' as const,
-    borderWidth: 0,
-    borderColor: 'transparent',
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
     backgroundColor: '#1a0000',
     position: 'relative' as const,
     ...Platform.select({
@@ -1497,17 +1442,9 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  categoryCardCorners: {
-    position: 'absolute' as const,
-    width: '100%',
-    height: '100%',
-    borderRadius: 14,
-    zIndex: 5,
-    pointerEvents: 'none' as const,
-  },
   categoryCardActive: {
-  },
-  categoryCardCornersActive: {
+    borderWidth: 3,
+    borderColor: '#D4AF37',
   },
   activeIndicatorDot: {
     position: 'absolute' as const,
@@ -1625,8 +1562,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 14,
     overflow: 'visible' as const,
-    borderWidth: 0,
-    borderColor: 'transparent',
+    borderWidth: 2.5,
+    borderColor: '#D4AF37',
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
@@ -1643,55 +1580,9 @@ const styles = StyleSheet.create({
         width: 'calc(50% - 6px)',
         minWidth: 160,
         maxWidth: 250,
-        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.06)',
       },
     }),
-  },
-  cornerBordersContainer: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-    pointerEvents: 'none' as const,
-  },
-  cornerBorder: {
-    position: 'absolute' as const,
-    width: 20,
-    height: 20,
-  },
-  cornerTopLeft: {
-    top: 0,
-    left: 0,
-    borderTopWidth: 2.5,
-    borderLeftWidth: 2.5,
-    borderColor: '#D4AF37',
-    borderTopLeftRadius: 14,
-  },
-  cornerTopRight: {
-    top: 0,
-    right: 0,
-    borderTopWidth: 2.5,
-    borderRightWidth: 2.5,
-    borderColor: '#D4AF37',
-    borderTopRightRadius: 14,
-  },
-  cornerBottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: 2.5,
-    borderLeftWidth: 2.5,
-    borderColor: '#D4AF37',
-    borderBottomLeftRadius: 14,
-  },
-  cornerBottomRight: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: 2.5,
-    borderRightWidth: 2.5,
-    borderColor: '#D4AF37',
-    borderBottomRightRadius: 14,
   },
   menuItemsGrid: {
     flexDirection: 'row',
