@@ -111,11 +111,17 @@ export default function CustomerOrderScreen() {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const plateRotate = useRef(new Animated.Value(0)).current;
 
-  const menuQuery = trpc.menu.getAll.useQuery();
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+  });
   
   const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
   
-  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+  });
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: () => {
