@@ -108,7 +108,7 @@ export default function CustomerOrderScreen() {
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
-  const menuData = menuQuery.data || [];
+  const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
   
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
 
@@ -641,6 +641,7 @@ export default function CustomerOrderScreen() {
 
   return (
     <View style={styles.container}>
+      <KurdishCarpetBackground />
 
       <Stack.Screen
         options={{
@@ -1165,10 +1166,64 @@ export default function CustomerOrderScreen() {
   );
 }
 
+const KurdishCarpetBackground = () => (
+  <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
+    <Defs>
+      <Pattern
+        id="carpet-pattern"
+        patternUnits="userSpaceOnUse"
+        width="120"
+        height="120"
+      >
+        <Rect width="120" height="120" fill="#5C1C1C" />
+        <G opacity="0.3">
+          <Path
+            d="M60,20 L70,40 L60,60 L50,40 Z"
+            fill="#D4AF37"
+            stroke="#8B6914"
+            strokeWidth="1"
+          />
+          <Path
+            d="M20,60 L40,70 L60,60 L40,50 Z"
+            fill="#C41E3A"
+            stroke="#8B0000"
+            strokeWidth="1"
+          />
+          <Path
+            d="M100,60 L80,70 L60,60 L80,50 Z"
+            fill="#C41E3A"
+            stroke="#8B0000"
+            strokeWidth="1"
+          />
+          <Path
+            d="M60,100 L70,80 L60,60 L50,80 Z"
+            fill="#D4AF37"
+            stroke="#8B6914"
+            strokeWidth="1"
+          />
+          <Path
+            d="M30,30 Q35,25 40,30 T50,30"
+            stroke="#FFD700"
+            strokeWidth="1.5"
+            fill="none"
+          />
+          <Path
+            d="M70,90 Q75,85 80,90 T90,90"
+            stroke="#FFD700"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </G>
+      </Pattern>
+    </Defs>
+    <Rect width="100%" height="100%" fill="url(#carpet-pattern)" />
+  </Svg>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#5C1C1C',
   },
 
   customHeader: {
@@ -1328,11 +1383,13 @@ const styles = StyleSheet.create({
   },
   menuList: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   menuListContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 220,
+    backgroundColor: 'transparent',
   },
   menuItem: {
     flexDirection: 'row',
