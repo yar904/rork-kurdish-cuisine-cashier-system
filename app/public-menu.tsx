@@ -150,13 +150,13 @@ export default function PublicMenuScreen() {
     return (
       <View 
         key={item.id} 
-        style={[styles.menuItemCard, isPremium && styles.premiumCard]}
+        style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
       >
         {item.image && (
-          <View style={styles.imageContainer}>
+          <View style={styles.imageContainerHorizontal}>
             <Image 
               source={{ uri: item.image }} 
-              style={styles.menuItemImage}
+              style={styles.menuItemImageHorizontal}
               resizeMode="cover"
             />
             {hasRatings && (
@@ -173,17 +173,13 @@ export default function PublicMenuScreen() {
           </View>
         )}
         
-        <View style={styles.menuItemContent}>
-          <Text style={styles.menuItemName} numberOfLines={2}>
+        <View style={styles.menuItemContentHorizontal}>
+          <Text style={styles.menuItemNameHorizontal} numberOfLines={2}>
             {getItemName(item)}
           </Text>
           
-          <Text style={styles.menuItemDescription} numberOfLines={2}>
-            {getItemDescription(item)}
-          </Text>
-          
           <View style={styles.priceHighlight}>
-            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+            <Text style={styles.menuItemPriceHorizontal}>{formatPrice(item.price)}</Text>
           </View>
         </View>
       </View>
@@ -324,12 +320,6 @@ export default function PublicMenuScreen() {
               </Text>
             </View>
           )}
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            {language === 'en' ? '📱 Scan QR code at your table to order' : language === 'ku' ? '📱 QR کۆد لەسەر مێزەکەت بسکان بۆ داواکردن' : '📱 امسح رمز QR في طاولتك للطلب'}
-          </Text>
         </View>
       </ScrollView>
     </ImageBackground>
@@ -537,7 +527,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between' as const,
     gap: 12,
   },
-  menuItemCard: {
+  menuItemCardHorizontal: {
     width: '48%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 16,
@@ -545,6 +535,7 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: '#D4AF37',
     marginBottom: 0,
+    position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -566,15 +557,38 @@ const styles = StyleSheet.create({
   premiumCard: {
     borderWidth: 2,
     borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.3), 0 0 0 2px rgba(212, 175, 55, 0.2)',
+      },
+    }),
   },
-  imageContainer: {
+  imageContainerHorizontal: {
     width: '100%',
     height: 120,
     backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
+    marginBottom: 0,
     position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        height: 140,
+      },
+    }),
   },
-  menuItemImage: {
+  menuItemImageHorizontal: {
     width: '100%',
     height: '100%',
   },
@@ -605,18 +619,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E8C968',
   },
   premiumBadgeOnImageText: {
     fontSize: 12,
     fontWeight: '700' as const,
     color: '#3d0101',
   },
-  menuItemContent: {
+  menuItemContentHorizontal: {
     padding: 14,
     paddingTop: 12,
     paddingBottom: 14,
   },
-  menuItemName: {
+  menuItemNameHorizontal: {
     fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
@@ -624,19 +640,18 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     letterSpacing: 0.3,
     marginBottom: 8,
+    marginTop: 0,
     textAlign: 'center' as const,
     paddingHorizontal: 4,
-  },
-  menuItemDescription: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: 'rgba(255, 255, 255, 0.6)',
-    lineHeight: 18,
-    fontWeight: '400' as const,
-    marginBottom: 12,
-    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 18,
+        lineHeight: 24,
+      },
+    }),
   },
   priceHighlight: {
+    marginBottom: 0,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
     paddingVertical: 6,
@@ -645,13 +660,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center' as const,
     minWidth: '70%' as const,
   },
-  menuItemPrice: {
+  menuItemPriceHorizontal: {
     fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 17,
+      },
+    }),
   },
   emptyState: {
     flex: 1,
@@ -666,20 +686,5 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 201, 104, 0.9)',
     fontWeight: '700' as const,
     textAlign: 'center' as const,
-  },
-  footer: {
-    padding: 32,
-    paddingBottom: 24,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    marginTop: 24,
-  },
-  footerText: {
-    fontSize: 15,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    fontWeight: '600' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center' as const,
-    lineHeight: 22,
   },
 });
