@@ -6,7 +6,7 @@ import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 import { MENU_ITEMS } from '@/constants/menu';
 import { useTables } from '@/contexts/TableContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { trpcClient } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpc';
 
 const generateDemoOrders = (): Order[] => {
   const now = new Date();
@@ -65,6 +65,41 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const [selectedTable, setSelectedTable] = useState<number>(1);
   const [readyNotification, setReadyNotification] = useState<string | null>(null);
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
+  
+  const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
+    refetchInterval: 3000,
+    onSuccess: (data) => {
+      if (data && data.length > 0) {
+        const mappedOrders = data.map(o => {
+          const items: OrderItem[] = o.items.map(item => {
+            const menuItem = MENU_ITEMS.find(m => m.id === item.menu_item_id);
+            if (!menuItem) {
+              return null;
+            }
+            return {
+              menuItem,
+              quantity: item.quantity,
+              notes: item.notes || undefined,
+            };
+          }).filter((item): item is OrderItem => item !== null);
+          
+          return {
+            id: o.id,
+            tableNumber: o.table_number,
+            items,
+            status: o.status as OrderStatus,
+            createdAt: new Date(o.created_at),
+            updatedAt: new Date(o.updated_at),
+            waiterName: o.waiter_name || undefined,
+            total: o.total,
+          };
+        });
+        setOrders(mappedOrders);
+      }
+    },
+  });
+  
+  const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation();
 
 
 
@@ -256,7 +291,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     }
   }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable, notifyNewOrder]);
 
-  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
     setOrders(prev => prev.map(order => {
       if (order.id === orderId) {
         if (status === 'paid') {
@@ -266,8 +301,18 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       }
       return order;
     }));
-    console.log(`Order ${orderId} status updated to ${status}`);
-  }, [clearTable]);
+    
+    try {
+      await updateOrderStatusMutation.mutateAsync({
+        orderId,
+        status,
+      });
+      console.log(`Order ${orderId} status updated to ${status} in database`);
+      await ordersQuery.refetch();
+    } catch (error) {
+      console.error('Error updating order status:', error);
+    }
+  }, [clearTable, updateOrderStatusMutation, ordersQuery]);
 
   const clearCurrentOrder = useCallback(() => {
     setCurrentOrder([]);
@@ -333,5 +378,8 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     calculateTotal,
     getAIRecommendations,
     optimizeKitchenQueue,
-  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal, getAIRecommendations, optimizeKitchenQueue]);
+    isLoading: ordersQuery.isLoading,
+    isError: ordersQuery.isError,
+    refetch: ordersQuery.refetch,
+  }), [orders, currentOrder, selectedTable, readyNotification, addItemToCurrentOrder, removeItemFromCurrentOrder, updateItemQuantity, submitOrder, updateOrderStatus, clearCurrentOrder, calculateTotal, getAIRecommendations, optimizeKitchenQueue, ordersQuery.isLoading, ordersQuery.isError, ordersQuery.refetch]);
 });
