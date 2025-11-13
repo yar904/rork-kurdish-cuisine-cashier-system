@@ -34,8 +34,6 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const highlightPosition = useRef(new Animated.Value(0)).current;
-  const highlightOpacity = useRef(new Animated.Value(1)).current;
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
@@ -245,37 +243,10 @@ export default function PublicMenuScreen() {
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current) return;
       
-      const prevIndex = currentCategoryIndex.current;
-      const prevScale = categoryScales.get(categories[prevIndex].id);
-      if (prevScale) {
-        Animated.timing(prevScale, {
-          toValue: 0.85,
-          duration: 800,
-          useNativeDriver: true,
-        }).start();
-      }
-      
       const nextIndex = (currentCategoryIndex.current + 1) % categories.length;
       const scrollPosition = nextIndex * 122;
-      const highlightPos = nextIndex * 122;
       
-      Animated.parallel([
-        Animated.timing(highlightPosition, {
-          toValue: highlightPos,
-          duration: 1400,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        currentCategoryIndex.current = nextIndex;
-        const currentScale = categoryScales.get(categories[nextIndex].id);
-        if (currentScale) {
-          Animated.timing(currentScale, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }).start();
-        }
-      });
+      currentCategoryIndex.current = nextIndex;
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
@@ -290,7 +261,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, categoryScales, isUserScrolling, highlightPosition, highlightOpacity]);
+  }, [categories, isUserScrolling]);
 
   return (
     <ImageBackground
@@ -352,14 +323,7 @@ export default function PublicMenuScreen() {
 
       <View style={styles.categoryScrollSection}>
         <View style={styles.categoryContainer}>
-          <Animated.View
-            style={[
-              styles.categoryHighlight,
-              {
-                transform: [{ translateX: highlightPosition }],
-              },
-            ]}
-          />
+          <View style={styles.categoryHighlight} />
           <ScrollView 
             ref={categoryScrollViewRef}
             horizontal
@@ -387,72 +351,49 @@ export default function PublicMenuScreen() {
             }}
           >
           {categories.map((category, index) => {
-            const scaleAnim = categoryScales.get(category.id) || new Animated.Value(1);
-            if (!categoryScales.has(category.id)) {
-              categoryScales.set(category.id, scaleAnim);
-            }
             const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             const isActive = selectedCategory === category.id;
             
             return (
-              <Animated.View
+              <TouchableOpacity
                 key={category.id}
-                style={{
-                  transform: [{ scale: scaleAnim }],
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setSelectedCategory(category.id);
+                  setIsUserScrolling(true);
+                  currentCategoryIndex.current = index;
+                  if (userScrollTimeout.current) {
+                    clearTimeout(userScrollTimeout.current);
+                  }
+                  userScrollTimeout.current = setTimeout(() => {
+                    setIsUserScrolling(false);
+                  }, 4000);
                 }}
               >
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    if (Platform.OS !== 'web') {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    setSelectedCategory(category.id);
-                    setIsUserScrolling(true);
-                    currentCategoryIndex.current = index;
-                    const highlightPos = index * 122;
-                    Animated.parallel([
-                      Animated.timing(highlightPosition, {
-                        toValue: highlightPos,
-                        duration: 400,
-                        useNativeDriver: true,
-                      }),
-                      Animated.timing(highlightOpacity, {
-                        toValue: 1,
-                        duration: 400,
-                        useNativeDriver: true,
-                      }),
-                    ]).start();
-                    if (userScrollTimeout.current) {
-                      clearTimeout(userScrollTimeout.current);
-                    }
-                    userScrollTimeout.current = setTimeout(() => {
-                      setIsUserScrolling(false);
-                    }, 4000);
-                  }}
-                >
-                  <View style={[
-                    styles.categoryCard,
-                    isActive && styles.categoryCardActive,
-                  ]}>
-                    {isActive && <View style={styles.activeIndicatorDot} />}
-                    <Image
-                      source={{ uri: category.image }}
-                      style={styles.categoryImage}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.categoryOverlay} />
-                    <View style={styles.categoryTextContainer}>
-                      <Text style={[
-                        styles.categoryText,
-                        isActive && styles.categoryTextActive,
-                      ]} numberOfLines={2}>
-                        {categoryName}
-                      </Text>
-                    </View>
+                <View style={[
+                  styles.categoryCard,
+                  isActive && styles.categoryCardActive,
+                ]}>
+                  {isActive && <View style={styles.activeIndicatorDot} />}
+                  <Image
+                    source={{ uri: category.image }}
+                    style={styles.categoryImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.categoryOverlay} />
+                  <View style={styles.categoryTextContainer}>
+                    <Text style={[
+                      styles.categoryText,
+                      isActive && styles.categoryTextActive,
+                    ]} numberOfLines={2}>
+                      {categoryName}
+                    </Text>
                   </View>
-                </TouchableOpacity>
-              </Animated.View>
+                </View>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>
