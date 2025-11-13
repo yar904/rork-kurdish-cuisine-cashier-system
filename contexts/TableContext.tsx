@@ -17,19 +17,20 @@ export const [TableProvider, useTables] = createContextHook(() => {
   
   const tablesQuery = trpc.tables.getAll.useQuery(undefined, {
     refetchInterval: 5000,
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        const mappedTables = data.map(t => ({
-          number: t.table_number,
-          status: t.status as TableStatus,
-          capacity: t.capacity,
-          lastCleaned: new Date(t.last_cleaned),
-          currentOrderId: t.current_order_id || undefined,
-        }));
-        setTables(mappedTables);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (tablesQuery.data && tablesQuery.data.length > 0) {
+      const mappedTables = tablesQuery.data.map(t => ({
+        number: t.table_number,
+        status: t.status as TableStatus,
+        capacity: t.capacity,
+        lastCleaned: new Date(t.last_cleaned),
+        currentOrderId: t.current_order_id || undefined,
+      }));
+      setTables(mappedTables);
+    }
+  }, [tablesQuery.data]);
   
   const updateTableMutation = trpc.tables.updateStatus.useMutation();
 
