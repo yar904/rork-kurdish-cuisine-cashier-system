@@ -443,9 +443,9 @@ export default function CustomerOrderScreen() {
   };
 
   useEffect(() => {
-    categories.forEach(cat => {
+    categories.forEach((cat, index) => {
       if (!categoryScales.has(cat)) {
-        categoryScales.set(cat, new Animated.Value(0.75));
+        categoryScales.set(cat, new Animated.Value(index === 0 ? 1 : 0.75));
       }
     });
     

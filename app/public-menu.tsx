@@ -226,9 +226,9 @@ export default function PublicMenuScreen() {
   };
 
   React.useEffect(() => {
-    categories.forEach(cat => {
+    categories.forEach((cat, index) => {
       if (!categoryScales.has(cat.id)) {
-        categoryScales.set(cat.id, new Animated.Value(1));
+        categoryScales.set(cat.id, new Animated.Value(index === 0 ? 1 : 0.75));
       }
     });
   }, [categories, categoryScales]);
