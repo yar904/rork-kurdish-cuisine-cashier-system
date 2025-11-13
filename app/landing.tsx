@@ -106,7 +106,7 @@ export default function LandingPage() {
           useNativeControls={false}
           videoStyle={styles.videoStyle}
           onError={(error) => {
-            console.error('Video playback error:', JSON.stringify(error));
+            console.error('Video playback error:', error);
             setVideoError(true);
           }}
           onLoad={() => {
@@ -115,6 +115,12 @@ export default function LandingPage() {
           }}
           onLoadStart={() => {
             console.log('Video loading started');
+          }}
+          onPlaybackStatusUpdate={(status) => {
+            if ('error' in status && status.error) {
+              console.error('Video playback status error:', status.error);
+              setVideoError(true);
+            }
           }}
         />
       )}
