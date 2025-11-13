@@ -410,6 +410,7 @@ export default function PublicMenuScreen() {
                   isActive && styles.categoryCardActive,
                   { transform: [{ scale: scaleAnim }] },
                 ]}>
+                  <View style={[styles.categoryCardCorners, isActive && styles.categoryCardCornersActive]} />
                   {isActive && <View style={styles.activeIndicatorDot} />}
                   <Image
                     source={{ uri: category.image }}
@@ -583,8 +584,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerLogo: {
-    width: 65,
-    height: 65,
+    width: 110,
+    height: 110,
   },
   viewOnlyBadge: {
     width: 40,
@@ -677,8 +678,8 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 14,
     overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
+    borderWidth: 0,
+    borderColor: 'transparent',
     backgroundColor: '#1a0000',
     position: 'relative' as const,
     ...Platform.select({
@@ -696,7 +697,19 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  categoryCardCorners: {
+    position: 'absolute' as const,
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    zIndex: 5,
+    pointerEvents: 'none' as const,
+  },
   categoryCardActive: {
+  },
+  categoryCardCornersActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
   },

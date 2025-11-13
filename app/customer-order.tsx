@@ -618,13 +618,29 @@ export default function CustomerOrderScreen() {
       <View style={styles.loadingContainer}>
         <KurdishCarpetBackground />
         <View style={styles.loadingContent}>
+          {isGlassAvailable ? (
+            <>
+              <View style={styles.loadingGlassContainer}>
+                <GlassView 
+                  style={{ flex: 1 }}
+                  glassEffectStyle="clear"
+                  tintColor="rgba(61, 1, 1, 0.7)"
+                />
+              </View>
+              <View style={styles.loadingGlassCorners} />
+            </>
+          ) : (
+            <>
+              <View style={[styles.loadingGlassContainer, { backgroundColor: 'rgba(26, 0, 0, 0.9)' }]} />
+              <View style={styles.loadingGlassCorners} />
+            </>
+          )}
           <Image 
             source={require('@/assets/images/icon.png')} 
             style={styles.loadingLogo}
             resizeMode="contain"
           />
-          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20 }} />
-          <Text style={styles.loadingText}>Loading Menu...</Text>
+          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20, zIndex: 2 }} />
         </View>
       </View>
     );
@@ -752,6 +768,7 @@ export default function CustomerOrderScreen() {
                     isActive && styles.categoryCardActive,
                     { transform: [{ scale: scaleAnim }] },
                   ]}>
+                    <View style={[styles.categoryCardCorners, isActive && styles.categoryCardCornersActive]} />
                     {isActive && <View style={styles.activeIndicatorDot} />}
                     {category !== 'all' && (
                       <Image 
@@ -1363,15 +1380,38 @@ const styles = StyleSheet.create({
   loadingContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(26, 0, 0, 0.9)',
-    padding: 40,
-    borderRadius: 20,
+    padding: 50,
+    borderRadius: 24,
+    borderWidth: 0,
+    borderColor: 'transparent',
+    position: 'relative' as const,
+    overflow: 'visible' as const,
+  },
+  loadingGlassContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 24,
+    overflow: 'hidden' as const,
+  },
+  loadingGlassCorners: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 24,
     borderWidth: 2,
     borderColor: '#D4AF37',
+    zIndex: 1,
+    pointerEvents: 'none' as const,
   },
   loadingLogo: {
-    width: 80,
-    height: 80,
+    width: 140,
+    height: 140,
+    zIndex: 2,
   },
   loadingText: {
     fontSize: 16,
@@ -1430,8 +1470,8 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 14,
     overflow: 'hidden' as const,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
+    borderWidth: 0,
+    borderColor: 'transparent',
     backgroundColor: '#1a0000',
     position: 'relative' as const,
     ...Platform.select({
@@ -1449,7 +1489,19 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  categoryCardCorners: {
+    position: 'absolute' as const,
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    zIndex: 5,
+    pointerEvents: 'none' as const,
+  },
   categoryCardActive: {
+  },
+  categoryCardCornersActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
   },

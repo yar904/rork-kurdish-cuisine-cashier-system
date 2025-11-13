@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
 
 export default function HomeScreen() {
-  return <Redirect href="/customer-order?table=1" />;
+  return <Redirect href="/landing" />;
 }
