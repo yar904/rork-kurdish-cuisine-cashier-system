@@ -249,8 +249,8 @@ export default function PublicMenuScreen() {
       const prevScale = categoryScales.get(categories[prevIndex].id);
       if (prevScale) {
         Animated.timing(prevScale, {
-          toValue: 1,
-          duration: 600,
+          toValue: 0.85,
+          duration: 800,
           useNativeDriver: true,
         }).start();
       }
@@ -260,49 +260,29 @@ export default function PublicMenuScreen() {
       const highlightPos = currentCategoryIndex.current * 122;
       
       Animated.parallel([
-        Animated.timing(highlightOpacity, {
-          toValue: 0.3,
-          duration: 800,
-          useNativeDriver: true,
-        }),
         Animated.timing(highlightPosition, {
           toValue: highlightPos,
-          duration: 1200,
+          duration: 1400,
           useNativeDriver: true,
         }),
       ]).start(() => {
-        Animated.timing(highlightOpacity, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }).start();
+        const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
+        if (currentScale) {
+          Animated.timing(currentScale, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }).start();
+        }
       });
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
         animated: true 
       });
-      
-      setTimeout(() => {
-        const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
-        if (currentScale) {
-          Animated.sequence([
-            Animated.timing(currentScale, {
-              toValue: 1.1,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-            Animated.timing(currentScale, {
-              toValue: 1,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }
-      }, 1200);
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 6000);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 5000);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -376,7 +356,6 @@ export default function PublicMenuScreen() {
               styles.categoryHighlight,
               {
                 transform: [{ translateX: highlightPosition }],
-                opacity: highlightOpacity,
               },
             ]}
           />
@@ -682,19 +661,19 @@ const styles = StyleSheet.create({
     borderColor: '#D4AF37',
     zIndex: 1,
     pointerEvents: 'none' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.95,
-        shadowRadius: 24,
+        shadowOpacity: 1,
+        shadowRadius: 32,
       },
       android: {
-        elevation: 14,
+        elevation: 18,
       },
       web: {
-        boxShadow: '0 0 40px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.5), 0 0 120px rgba(212, 175, 55, 0.25), inset 0 0 30px rgba(212, 175, 55, 0.15)',
+        boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6), 0 0 150px rgba(212, 175, 55, 0.3), inset 0 0 40px rgba(212, 175, 55, 0.2)',
       },
     }),
   },
@@ -712,21 +691,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden' as const,
     borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    borderColor: 'rgba(212, 175, 55, 0.5)',
     backgroundColor: '#1a0000',
     position: 'relative' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
       web: {
-        boxShadow: '0 3px 10px rgba(212, 175, 55, 0.25)',
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.2)',
       },
     }),
   },
