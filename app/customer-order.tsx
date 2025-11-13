@@ -637,10 +637,17 @@ export default function CustomerOrderScreen() {
     );
   }
 
-  console.log('[CustomerOrder] ====== CUSTOMER ORDER PAGE (REAL VERSION) ======');
-  console.log('[CustomerOrder] Rendering customer order screen for table:', table);
-  console.log('[CustomerOrder] This is the REAL customer order page with dark theme and gold accents');
-  console.log('[CustomerOrder] Menu items loaded:', menuData?.length || 0);
+  console.log('\n\n');
+  console.log('██████████████████████████████████████████████████████████');
+  console.log('█                                                        █');
+  console.log('█  CUSTOMER ORDER PAGE - REAL VERSION 2025-01-13        █');
+  console.log('█  Dark theme with gold accents                          █');
+  console.log('█  NOT the old mockup with white backgrounds             █');
+  console.log('█  Table:', table.padEnd(44), '█');
+  console.log('█  Menu items:', String(menuData?.length || 0).padEnd(39), '█');
+  console.log('█                                                        █');
+  console.log('██████████████████████████████████████████████████████████');
+  console.log('\n\n');
 
   return (
     <View style={styles.container}>
@@ -666,7 +673,7 @@ export default function CustomerOrderScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.debugBadge}>CUSTOMER ORDER</Text>
+          <Text style={styles.debugBadge}>🔥 REAL VERSION 2025-01-13 🔥</Text>
         </View>
 
         <View style={styles.headerCornerButton}>
