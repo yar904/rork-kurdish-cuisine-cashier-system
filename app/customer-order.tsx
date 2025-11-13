@@ -957,36 +957,11 @@ export default function CustomerOrderScreen() {
             {cart.length === 0 ? (
               <View style={styles.emptyOrderState}>
                 <Animated.View style={[styles.chefAnimationContainer, { transform: [{ translateY: chefFloatY }] }]}>
-                  <Animated.View style={[styles.glowPulse, { transform: [{ scale: pulseScale }] }]} />
-                  
-                  <View style={styles.chefCharacterNew}>
-                    <Animated.View style={[styles.chefHatWrapper, { transform: [{ translateY: chefHatFloat }] }]}>
-                      <Text style={styles.chefHatEmoji}>👨‍🍳</Text>
-                    </Animated.View>
-                    
-                    <View style={styles.chefBodyWrapper}>
-                      <View style={styles.chefBodyCircle}>
-                        <View style={styles.chefFaceNew}>
-                          <View style={styles.chefEyesNew}>
-                            <View style={styles.chefEyeNew} />
-                            <View style={styles.chefEyeNew} />
-                          </View>
-                          <View style={styles.chefMouthNew} />
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </Animated.View>
-
-                <Animated.View style={[styles.floatingPlateNew, { 
-                  transform: [{ 
-                    rotate: plateRotate.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0deg', '360deg'],
-                    })
-                  }] 
-                }]}>
-                  <Text style={styles.plateEmojiNew}>🍽️</Text>
+                  <Image 
+                    source={require('@/assets/images/icon.png')} 
+                    style={styles.emptyStateLogo}
+                    resizeMode="contain"
+                  />
                 </Animated.View>
 
                 <View style={styles.emptyOrderTextContainer}>
@@ -994,18 +969,6 @@ export default function CustomerOrderScreen() {
                   <Text style={styles.emptyOrderSubtitleNew}>
                     Our chef is ready to cook something amazing!
                   </Text>
-                </View>
-
-                <View style={styles.sparklesContainerNew}>
-                  <Animated.View style={{ transform: [{ scale: sparkleScale1 }] }}>
-                    <Text style={styles.sparkleNew}>✨</Text>
-                  </Animated.View>
-                  <Animated.View style={{ transform: [{ scale: sparkleScale2 }] }}>
-                    <Text style={styles.sparkleNew}>⭐</Text>
-                  </Animated.View>
-                  <Animated.View style={{ transform: [{ scale: sparkleScale3 }] }}>
-                    <Text style={styles.sparkleNew}>✨</Text>
-                  </Animated.View>
                 </View>
               </View>
             ) : (
@@ -2212,6 +2175,10 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(212, 175, 55, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6,
+  },
+  emptyStateLogo: {
+    width: 150,
+    height: 150,
   },
   emptyOrderSubtitleNew: {
     fontSize: 15,
