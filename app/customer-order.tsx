@@ -132,6 +132,7 @@ export default function CustomerOrderScreen() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: (data, variables) => {
+      console.log('[CustomerOrder] Service request created successfully:', data);
       const requestType = variables.requestType;
       if (data && table) {
         notifyServiceRequest(parseInt(table), requestType);
@@ -150,6 +151,7 @@ export default function CustomerOrderScreen() {
         ? '✅ Assistance requested! Staff will help you shortly.'
         : '✅ Waiter called! Someone will assist you shortly.';
       
+      console.log('[CustomerOrder] Setting success status:', message);
       setRequestStatus({
         type: requestType as 'waiter' | 'bill',
         message,
@@ -173,6 +175,7 @@ export default function CustomerOrderScreen() {
       });
     },
     onError: (error) => {
+      console.error('[CustomerOrder] Service request error:', error);
       setRequestStatus({
         type: null,
         message: '❌ Failed to send request. Please try again.',
@@ -386,12 +389,14 @@ export default function CustomerOrderScreen() {
   };
 
   const handleCallWaiter = () => {
+    console.log('[CustomerOrder] Call waiter button pressed');
     animateButton('waiter');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
+    console.log('[CustomerOrder] Creating service request for waiter, table:', table);
     setRequestStatus({ type: 'waiter', message: '', visible: false });
 
     createServiceRequestMutation.mutate({
@@ -402,12 +407,14 @@ export default function CustomerOrderScreen() {
   };
 
   const handleRequestBill = () => {
+    console.log('[CustomerOrder] Request bill button pressed');
     animateButton('bill');
     if (!table) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
+    console.log('[CustomerOrder] Creating service request for bill, table:', table);
     setRequestStatus({ type: 'bill', message: '', visible: false });
 
     createServiceRequestMutation.mutate({
