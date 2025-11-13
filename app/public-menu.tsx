@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
   ImageBackground,
   Platform,
@@ -155,6 +154,22 @@ export default function PublicMenuScreen() {
       return matchesCategory && item.available;
     });
   }, [selectedCategory]);
+
+  const groupedItems = useMemo(() => {
+    if (selectedCategory !== 'all') {
+      return [{ category: selectedCategory, items: filteredItems }];
+    }
+    
+    const grouped = new Map<string, typeof MENU_ITEMS>();
+    filteredItems.forEach(item => {
+      if (!grouped.has(item.category)) {
+        grouped.set(item.category, []);
+      }
+      grouped.get(item.category)!.push(item);
+    });
+    
+    return Array.from(grouped.entries()).map(([category, items]) => ({ category, items }));
+  }, [filteredItems, selectedCategory]);
 
   const handleItemPress = (item: typeof MENU_ITEMS[0]) => {
     if (Platform.OS !== 'web') {
@@ -358,7 +373,7 @@ export default function PublicMenuScreen() {
         )}
       </View>
 
-      <View style={styles.categorySection}>
+      <View style={styles.categoryScrollSection}>
         <View style={styles.categoryContainer}>
           <Animated.View
             style={[
@@ -480,9 +495,28 @@ export default function PublicMenuScreen() {
             </Text>
           </View>
         ) : (
-          <View style={styles.menuGrid}>
-            {filteredItems.map(renderMenuItem)}
-          </View>
+          <>
+            {groupedItems.map(({ category, items }) => {
+              const categoryInfo = categories.find(c => c.id === category);
+              const categoryName = categoryInfo 
+                ? (language === 'ku' ? categoryInfo.nameKu : language === 'ar' ? categoryInfo.nameAr : categoryInfo.nameEn)
+                : category;
+              
+              return (
+                <View key={category} style={styles.categorySection}>
+                  <View style={styles.sectionHeaderContainer}>
+                    <View style={styles.sectionHeaderLine} />
+                    <Text style={styles.sectionHeaderText}>{categoryName}</Text>
+                    <View style={styles.sectionHeaderLine} />
+                  </View>
+                  
+                  <View style={styles.menuGrid}>
+                    {items.map(renderMenuItem)}
+                  </View>
+                </View>
+              );
+            })}
+          </>
         )}
       </ScrollView>
 
@@ -632,7 +666,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#E8C968',
   },
-  categorySection: {
+  categoryScrollSection: {
     backgroundColor: 'transparent',
     paddingVertical: 16,
     borderBottomWidth: 2,
@@ -933,7 +967,35 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     textAlign: 'center' as const,
   },
-
+  categorySection: {
+    marginBottom: 32,
+  },
+  sectionHeaderContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#D4AF37',
+    opacity: 0.6,
+  },
+  sectionHeaderText: {
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '800' as const,
+    color: '#E8C968',
+    marginHorizontal: 16,
+    letterSpacing: 0.5,
+    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 22,
+      },
+    }),
+  },
 
   itemModalOverlay: {
     flex: 1,
