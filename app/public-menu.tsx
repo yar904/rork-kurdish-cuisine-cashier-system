@@ -353,6 +353,8 @@ export default function PublicMenuScreen() {
           {categories.map((category, index) => {
             const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             const isActive = selectedCategory === category.id;
+            const isNearGlow = Math.abs(index - currentCategoryIndex.current) <= 1;
+            const cardScale = isNearGlow ? 1 : 0.8;
             
             return (
               <TouchableOpacity
@@ -376,6 +378,7 @@ export default function PublicMenuScreen() {
                 <View style={[
                   styles.categoryCard,
                   isActive && styles.categoryCardActive,
+                  { transform: [{ scale: cardScale }] },
                 ]}>
                   {isActive && <View style={styles.activeIndicatorDot} />}
                   <Image
@@ -654,7 +657,6 @@ const styles = StyleSheet.create({
   categoryCardActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
-    transform: [{ scale: 1.05 }],
   },
   activeIndicatorDot: {
     position: 'absolute' as const,
