@@ -9,8 +9,6 @@ import {
   useWindowDimensions,
   Linking,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
-
 import { useRouter } from 'expo-router';
 import { Globe, Instagram } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,7 +29,6 @@ export default function LandingPage() {
   const [selectedLang, setSelectedLang] = useState<Language>(language);
   const [showLanguages, setShowLanguages] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [videoError, setVideoError] = useState(false);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
@@ -86,42 +83,12 @@ export default function LandingPage() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
-      ) : videoError ? (
+      ) : (
         <LinearGradient
           colors={['#1a0000', '#3d0101', '#1a0000']}
           style={styles.background}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-        />
-      ) : (
-        <Video
-          source={{ 
-            uri: 'https://opsqnzswjxzvywqjqvjy.supabase.co/storage/v1/object/public/landing%20video/IMG_1291.MOV',
-          }}
-          style={styles.videoBackground}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-          useNativeControls={false}
-          videoStyle={styles.videoStyle}
-          onError={(error) => {
-            console.error('Video playback error:', error);
-            setVideoError(true);
-          }}
-          onLoad={() => {
-            console.log('Video loaded successfully');
-            setVideoError(false);
-          }}
-          onLoadStart={() => {
-            console.log('Video loading started');
-          }}
-          onPlaybackStatusUpdate={(status) => {
-            if ('error' in status && status.error) {
-              console.error('Video playback status error:', status.error);
-              setVideoError(true);
-            }
-          }}
         />
       )}
       <View style={styles.absoluteOverlay}>
@@ -216,35 +183,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  videoBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-    width: '100%',
-    height: '100%',
-  },
-  videoStyle: {
-    width: '100%',
-    height: '100%',
-  },
-  videoPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-  },
-  videoPlaceholderText: {
-    fontSize: 80,
-    marginBottom: 16,
-  },
-  videoPlaceholderSubtext: {
-    fontFamily: fonts.extraBold,
-    fontSize: 18,
-    color: Colors.gold,
-    letterSpacing: 2,
-  },
+
   absoluteOverlay: {
     ...StyleSheet.absoluteFillObject,
   },
