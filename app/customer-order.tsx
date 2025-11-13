@@ -864,6 +864,14 @@ export default function CustomerOrderScreen() {
                           }}
                           style={isGridView ? styles.menuItemGrid : styles.menuItem}
                         >
+                        {isGridView && (
+                          <View style={styles.cornerBordersContainer}>
+                            <View style={[styles.cornerBorder, styles.cornerTopLeft]} />
+                            <View style={[styles.cornerBorder, styles.cornerTopRight]} />
+                            <View style={[styles.cornerBorder, styles.cornerBottomLeft]} />
+                            <View style={[styles.cornerBorder, styles.cornerBottomRight]} />
+                          </View>
+                        )}
                         <Animated.View 
                           style={[
                             { width: '100%', opacity: menuItemsOpacity, transform: [{ scale: scaleAnim }] }
@@ -1617,8 +1625,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 14,
     overflow: 'visible' as const,
-    borderWidth: 2.5,
-    borderColor: '#D4AF37',
+    borderWidth: 0,
+    borderColor: 'transparent',
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
@@ -1635,9 +1643,55 @@ const styles = StyleSheet.create({
         width: 'calc(50% - 6px)',
         minWidth: 160,
         maxWidth: 250,
-        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.06)',
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
       },
     }),
+  },
+  cornerBordersContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    pointerEvents: 'none' as const,
+  },
+  cornerBorder: {
+    position: 'absolute' as const,
+    width: 20,
+    height: 20,
+  },
+  cornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 2.5,
+    borderLeftWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderTopLeftRadius: 14,
+  },
+  cornerTopRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderTopRightRadius: 14,
+  },
+  cornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 2.5,
+    borderLeftWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderBottomLeftRadius: 14,
+  },
+  cornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderBottomRightRadius: 14,
   },
   menuItemsGrid: {
     flexDirection: 'row',

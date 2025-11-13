@@ -15,6 +15,7 @@ import {
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, Globe, X, ShoppingCart } from 'lucide-react-native';
+import Svg, { Defs, Pattern, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -202,6 +203,12 @@ export default function PublicMenuScreen() {
         onPress={() => handleItemPress(item)}
         style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
       >
+        <View style={styles.cornerBordersContainer}>
+          <View style={[styles.cornerBorder, styles.cornerTopLeft]} />
+          <View style={[styles.cornerBorder, styles.cornerTopRight]} />
+          <View style={[styles.cornerBorder, styles.cornerBottomLeft]} />
+          <View style={[styles.cornerBorder, styles.cornerBottomRight]} />
+        </View>
         {item.image && (
           <View style={styles.imageContainerHorizontal}>
             <Image 
@@ -789,8 +796,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
     borderRadius: 14,
     overflow: 'visible' as const,
-    borderWidth: 2.5,
-    borderColor: '#D4AF37',
+    borderWidth: 0,
+    borderColor: 'transparent',
     marginBottom: 0,
     position: 'relative' as const,
     ...Platform.select({
@@ -807,13 +814,57 @@ const styles = StyleSheet.create({
         width: 'calc(50% - 6px)',
         minWidth: 160,
         maxWidth: 250,
-        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.06)',
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
-  premiumCard: {
-    borderWidth: 2,
+  cornerBordersContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    pointerEvents: 'none' as const,
+  },
+  cornerBorder: {
+    position: 'absolute' as const,
+    width: 20,
+    height: 20,
+  },
+  cornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 2.5,
+    borderLeftWidth: 2.5,
     borderColor: '#D4AF37',
+    borderTopLeftRadius: 14,
+  },
+  cornerTopRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderTopRightRadius: 14,
+  },
+  cornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 2.5,
+    borderLeftWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderBottomLeftRadius: 14,
+  },
+  cornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#D4AF37',
+    borderBottomRightRadius: 14,
+  },
+  premiumCard: {
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -825,7 +876,7 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       web: {
-        boxShadow: '0 0 28px rgba(212, 175, 55, 0.35), inset 0 0 20px rgba(212, 175, 55, 0.08)',
+        boxShadow: '0 0 28px rgba(212, 175, 55, 0.35)',
       },
     }),
   },
