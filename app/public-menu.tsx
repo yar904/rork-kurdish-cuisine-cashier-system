@@ -49,7 +49,7 @@ export default function PublicMenuScreen() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
   
-  const menuData = menuQuery.data && menuQuery.data.length > 0 ? menuQuery.data : MENU_ITEMS;
+  const menuData = menuQuery.data || [];
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);

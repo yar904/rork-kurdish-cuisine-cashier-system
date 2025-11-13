@@ -102,7 +102,7 @@ export default function CustomerOrderScreen() {
 
   const menuQuery = trpc.menu.getAll.useQuery();
   
-  const menuData = menuQuery.data && menuQuery.data.length > 0 ? menuQuery.data : MENU_ITEMS;
+  const menuData = menuQuery.data || [];
   
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
 

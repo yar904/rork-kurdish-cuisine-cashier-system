@@ -9,52 +9,7 @@ import { useNotifications } from '@/contexts/NotificationContext';
 import { trpc, trpcClient } from '@/lib/trpc';
 
 const generateDemoOrders = (): Order[] => {
-  const now = new Date();
-  return [
-    {
-      id: 'ORD-001',
-      tableNumber: 3,
-      items: [
-        { menuItem: MENU_ITEMS[6], quantity: 2, notes: undefined },
-        { menuItem: MENU_ITEMS[10], quantity: 1, notes: undefined },
-        { menuItem: MENU_ITEMS[22], quantity: 2, notes: undefined },
-      ],
-      status: 'new',
-      createdAt: new Date(now.getTime() - 2 * 60000),
-      updatedAt: new Date(now.getTime() - 2 * 60000),
-      waiterName: 'Sarah',
-      total: 2 * 25000 + 34000 + 2 * 4000,
-    },
-    {
-      id: 'ORD-002',
-      tableNumber: 5,
-      items: [
-        { menuItem: MENU_ITEMS[7], quantity: 1, notes: undefined },
-        { menuItem: MENU_ITEMS[11], quantity: 1, notes: undefined },
-        { menuItem: MENU_ITEMS[23], quantity: 1, notes: undefined },
-      ],
-      status: 'preparing',
-      createdAt: new Date(now.getTime() - 8 * 60000),
-      updatedAt: new Date(now.getTime() - 5 * 60000),
-      waiterName: 'Ahmed',
-      total: 23000 + 22000 + 5000,
-    },
-    {
-      id: 'ORD-003',
-      tableNumber: 2,
-      items: [
-        { menuItem: MENU_ITEMS[0], quantity: 1, notes: undefined },
-        { menuItem: MENU_ITEMS[4], quantity: 2, notes: undefined },
-        { menuItem: MENU_ITEMS[8], quantity: 2, notes: undefined },
-        { menuItem: MENU_ITEMS[19], quantity: 2, notes: undefined },
-      ],
-      status: 'ready',
-      createdAt: new Date(now.getTime() - 15 * 60000),
-      updatedAt: new Date(now.getTime() - 3 * 60000),
-      waiterName: 'Sarah',
-      total: 13000 + 2 * 9000 + 2 * 22000 + 2 * 9000,
-    },
-  ];
+  return [];
 };
 
 export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
@@ -72,7 +27,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       if (data && data.length > 0) {
         const mappedOrders = data.map(o => {
           const items: OrderItem[] = o.items.map(item => {
-            const menuItem = MENU_ITEMS.find(m => m.id === item.menu_item_id);
+            const menuItem = menuData.find(m => m.id === item.menu_item_id);
             if (!menuItem) {
               return null;
             }
@@ -181,8 +136,11 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     });
   }, [orders, playSound, notifyOrderReady]);
 
+  const menuQuery = trpc.menu.getAll.useQuery();
+  const menuData = menuQuery.data || [];
+
   const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
-    const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+    const menuItem = menuData.find(item => item.id === itemId);
     if (!menuItem) return;
 
     setCurrentOrder(prev => {
@@ -201,7 +159,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
 
       return [...prev, { menuItem, quantity, notes }];
     });
-  }, []);
+  }, [menuData]);
 
   const removeItemFromCurrentOrder = useCallback((index: number) => {
     setCurrentOrder(prev => prev.filter((_, i) => i !== index));
