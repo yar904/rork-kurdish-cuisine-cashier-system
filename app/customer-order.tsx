@@ -76,6 +76,12 @@ export default function CustomerOrderScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const itemScrollViewRef = useRef<ScrollView>(null);
+  const [itemScales] = useState(new Map<string, Animated.Value>());
+  const currentItemIndex = useRef(0);
+  const itemAutoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const [isUserScrollingItems, setIsUserScrollingItems] = useState(false);
+  const itemUserScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -439,10 +445,16 @@ export default function CustomerOrderScreen() {
   useEffect(() => {
     categories.forEach(cat => {
       if (!categoryScales.has(cat)) {
-        categoryScales.set(cat, new Animated.Value(1));
+        categoryScales.set(cat, new Animated.Value(0.75));
       }
     });
-  }, [categories, categoryScales]);
+    
+    filteredMenu.forEach(item => {
+      if (!itemScales.has(item.id)) {
+        itemScales.set(item.id, new Animated.Value(1));
+      }
+    });
+  }, [categories, categoryScales, filteredMenu, itemScales]);
 
   useEffect(() => {
     if (isUserScrolling) {
@@ -460,8 +472,8 @@ export default function CustomerOrderScreen() {
       const prevScale = categoryScales.get(categories[prevIndex]);
       if (prevScale) {
         Animated.timing(prevScale, {
-          toValue: 1,
-          duration: 300,
+          toValue: 0.75,
+          duration: 400,
           useNativeDriver: true,
         }).start();
       }
@@ -476,18 +488,12 @@ export default function CustomerOrderScreen() {
       
       const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
       if (currentScale) {
-        Animated.sequence([
-          Animated.timing(currentScale, {
-            toValue: 1.15,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(currentScale, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        Animated.spring(currentScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }).start();
       }
     };
 
@@ -687,68 +693,71 @@ export default function CustomerOrderScreen() {
             )}
           </TouchableOpacity>
         </View>
-        <ScrollView
-          ref={categoryScrollViewRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScrollContent}
-          onTouchStart={() => {
-            setIsUserScrolling(true);
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-              autoScrollInterval.current = null;
-            }
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-          }}
-          onMomentumScrollEnd={() => {
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-            userScrollTimeout.current = setTimeout(() => {
-              setIsUserScrolling(false);
-            }, 3000);
-          }}
-        >
-          {categories.map((category) => {
-            const scaleAnim = categoryScales.get(category) || new Animated.Value(1);
-            if (!categoryScales.has(category)) {
-              categoryScales.set(category, scaleAnim);
-            }
-            
-            return (
-              <Animated.View
-                key={category}
-                style={{
-                  transform: [{ scale: scaleAnim }],
-                }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.categoryChip,
-                    selectedCategory === category && styles.categoryChipActive
-                  ]}
-                  onPress={() => {
-                    setSelectedCategory(category);
-                    if (category !== 'all') {
-                      scrollToCategory(category);
-                    }
+        <View style={styles.categoryContainer}>
+          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
+          <ScrollView
+            ref={categoryScrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScrollContent}
+            onTouchStart={() => {
+              setIsUserScrolling(true);
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+            }}
+            onMomentumScrollEnd={() => {
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+              userScrollTimeout.current = setTimeout(() => {
+                setIsUserScrolling(false);
+              }, 3000);
+            }}
+          >
+            {categories.map((category, index) => {
+              const scaleAnim = categoryScales.get(category) || new Animated.Value(0.75);
+              if (!categoryScales.has(category)) {
+                categoryScales.set(category, scaleAnim);
+              }
+              
+              return (
+                <Animated.View
+                  key={category}
+                  style={{
+                    transform: [{ scale: scaleAnim }],
                   }}
-                  activeOpacity={0.7}
                 >
-                  <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
-                  <Text style={[
-                    styles.categoryChipText,
-                    selectedCategory === category && styles.categoryChipTextActive
-                  ]}>
-                    {CATEGORY_NAMES[category] || category}
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
-        </ScrollView>
+                  <TouchableOpacity
+                    style={[
+                      styles.categoryChip,
+                      selectedCategory === category && styles.categoryChipActive
+                    ]}
+                    onPress={() => {
+                      setSelectedCategory(category);
+                      if (category !== 'all') {
+                        scrollToCategory(category);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
+                    <Text style={[
+                      styles.categoryChipText,
+                      selectedCategory === category && styles.categoryChipTextActive
+                    ]}>
+                      {CATEGORY_NAMES[category] || category}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </ScrollView>
+        </View>
       </Animated.View>
 
       <ScrollView 
@@ -1217,6 +1226,30 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingTop: 16,
     paddingBottom: 16,
+  },
+  categoryContainer: {
+    position: 'relative' as const,
+  },
+  categoryHighlight: {
+    position: 'absolute' as const,
+    top: 4,
+    left: 12,
+    width: 132,
+    height: 48,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    zIndex: 1,
+    pointerEvents: 'none' as const,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  categoryHighlightHidden: {
+    opacity: 0,
   },
   categoryFilterHeader: {
     flexDirection: 'row',
