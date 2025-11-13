@@ -793,7 +793,6 @@ const styles = StyleSheet.create({
           8px 8px 24px rgba(212, 175, 55, 0.15),
           inset 0 0 20px rgba(212, 175, 55, 0.08)
         `,
-        animation: 'cornerGlow 4s ease-in-out infinite',
       },
     }),
   },
@@ -817,7 +816,6 @@ const styles = StyleSheet.create({
           10px 10px 30px rgba(212, 175, 55, 0.2),
           inset 0 0 25px rgba(212, 175, 55, 0.12)
         `,
-        animation: 'cornerGlowPremium 4s ease-in-out infinite',
       },
     }),
   },
