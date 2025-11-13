@@ -249,17 +249,24 @@ export default function PublicMenuScreen() {
       const scrollPosition = currentCategoryIndex.current * 122;
       const highlightPos = currentCategoryIndex.current * 122;
       
-      Animated.parallel([
-        Animated.timing(highlightPosition, {
-          toValue: highlightPos,
+      Animated.sequence([
+        Animated.timing(highlightOpacity, {
+          toValue: 0,
           duration: 600,
           useNativeDriver: true,
         }),
-        Animated.timing(highlightOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.parallel([
+          Animated.timing(highlightPosition, {
+            toValue: highlightPos,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+          Animated.timing(highlightOpacity, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+        ]),
       ]).start();
       
       categoryScrollViewRef.current.scrollTo({ 
@@ -284,7 +291,7 @@ export default function PublicMenuScreen() {
       }
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 4000);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -649,14 +656,14 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 12,
+        shadowOpacity: 0.9,
+        shadowRadius: 20,
       },
       android: {
-        elevation: 8,
+        elevation: 12,
       },
       web: {
-        boxShadow: '0 0 20px rgba(212, 175, 55, 0.8), 0 0 40px rgba(212, 175, 55, 0.5)',
+        boxShadow: '0 0 30px rgba(212, 175, 55, 0.6), 0 0 60px rgba(212, 175, 55, 0.4), 0 0 90px rgba(212, 175, 55, 0.2)',
       },
     }),
   },
