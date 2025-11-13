@@ -408,7 +408,12 @@ export default function CustomerOrderScreen() {
         messageText: 'Customer requesting assistance',
       });
     } catch (error: any) {
-      console.log('[CustomerOrder] Call waiter could not be sent - showing user message');
+      console.error('[CustomerOrder] Call waiter request failed', error);
+      console.error('[CustomerOrder] Error details:', {
+        message: error?.message,
+        cause: error?.cause,
+        stack: error?.stack,
+      });
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please call a waiter manually.',
@@ -469,7 +474,12 @@ export default function CustomerOrderScreen() {
         messageText: 'Customer requesting bill',
       });
     } catch (error: any) {
-      console.log('[CustomerOrder] Request bill could not be sent - showing user message');
+      console.error('[CustomerOrder] Request bill failed', error);
+      console.error('[CustomerOrder] Error details:', {
+        message: error?.message,
+        cause: error?.cause,
+        stack: error?.stack,
+      });
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please ask your waiter for the bill.',
