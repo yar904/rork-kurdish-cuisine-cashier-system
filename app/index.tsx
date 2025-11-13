@@ -11,6 +11,7 @@ export default function DebugEntryScreen() {
   const insets = useSafeAreaInsets();
 
   const navigateToCustomerOrder = () => {
+    console.log('[DebugEntry] Navigating to customer-order with table=1');
     router.push('/customer-order?table=1');
   };
 
@@ -39,6 +40,7 @@ export default function DebugEntryScreen() {
             />
             <Text style={styles.title}>Kurdish Cuisine Cashier</Text>
             <Text style={styles.subtitle}>Development Preview Mode</Text>
+            <Text style={styles.instructionText}>👇 Tap below to see your ordering page</Text>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -271,5 +273,13 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center' as const,
     opacity: 0.7,
+  },
+  instructionText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: Colors.gold,
+    textAlign: 'center' as const,
+    marginTop: 16,
+    opacity: 0.9,
   },
 });
