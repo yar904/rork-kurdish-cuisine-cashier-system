@@ -9,7 +9,7 @@ const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
     const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
     console.log('[tRPC] Using configured API base URL:', baseUrl);
-    return baseUrl;
+    return baseUrl + '/.netlify/functions/api';
   }
 
   if (typeof window !== 'undefined') {
