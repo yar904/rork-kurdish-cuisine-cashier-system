@@ -274,9 +274,9 @@ export default function PublicMenuScreen() {
             activeOpacity={0.7}
           >
             {isGridView ? (
-              <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
-            ) : (
               <List size={20} color={Colors.gold} strokeWidth={2.5} />
+            ) : (
+              <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
             )}
           </TouchableOpacity>
         </View>
@@ -635,9 +635,11 @@ const styles = StyleSheet.create({
   },
   menuItemGrid: {
     width: '48%',
+    minWidth: 150,
+    maxWidth: 220,
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
-    padding: 14,
+    padding: 12,
     marginBottom: 16,
     borderWidth: 2.5,
     borderColor: Colors.gold,
@@ -652,6 +654,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 12,
+    width: '100%',
   },
   menuItemsList: {
     flexDirection: 'column',
@@ -680,10 +683,10 @@ const styles = StyleSheet.create({
   },
   nameRatingRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 8,
-    marginBottom: 4,
+    marginBottom: 6,
     width: '100%',
   },
   ratingBadgeInline: {
@@ -696,6 +699,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.gold,
+    flexShrink: 0,
   },
   ratingTextInline: {
     fontSize: 13,
@@ -705,10 +709,10 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     alignItems: 'stretch',
-    paddingVertical: 8,
-    gap: 8,
+    paddingVertical: 4,
+    minHeight: 100,
   },
   menuName: {
     fontSize: 16,
@@ -716,32 +720,36 @@ const styles = StyleSheet.create({
     color: Colors.text,
     letterSpacing: -0.3,
     textAlign: 'left' as const,
-    lineHeight: 20,
-    flex: 1,
+    lineHeight: 21,
+    flexShrink: 1,
+    marginBottom: 6,
   },
   menuDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '500' as const,
-    lineHeight: 17,
+    lineHeight: 18,
     textAlign: 'left' as const,
-    flex: 1,
+    marginBottom: 8,
+    flexGrow: 1,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 10,
+    paddingTop: 8,
     marginTop: 'auto',
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(212, 175, 55, 0.25)',
     width: '100%',
+    flexShrink: 0,
   },
   menuPrice: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '900' as const,
     color: Colors.gold,
     letterSpacing: -0.5,
+    lineHeight: 24,
   },
   emptyState: {
     flex: 1,
