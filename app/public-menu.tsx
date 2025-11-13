@@ -255,7 +255,7 @@ export default function PublicMenuScreen() {
       if (prevScale) {
         Animated.timing(prevScale, {
           toValue: 1,
-          duration: 300,
+          duration: 400,
           useNativeDriver: true,
         }).start();
       }
@@ -267,9 +267,10 @@ export default function PublicMenuScreen() {
       Animated.sequence([
         Animated.timing(highlightOpacity, {
           toValue: 0,
-          duration: 600,
+          duration: 500,
           useNativeDriver: true,
         }),
+        Animated.delay(200),
         Animated.parallel([
           Animated.timing(highlightPosition, {
             toValue: highlightPos,
@@ -278,7 +279,7 @@ export default function PublicMenuScreen() {
           }),
           Animated.timing(highlightOpacity, {
             toValue: 1,
-            duration: 1200,
+            duration: 800,
             useNativeDriver: true,
           }),
         ]),
@@ -289,24 +290,26 @@ export default function PublicMenuScreen() {
         animated: true 
       });
       
-      const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
-      if (currentScale) {
-        Animated.sequence([
-          Animated.timing(currentScale, {
-            toValue: 1.15,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(currentScale, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
+      setTimeout(() => {
+        const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
+        if (currentScale) {
+          Animated.sequence([
+            Animated.timing(currentScale, {
+              toValue: 1.15,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(currentScale, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      }, 700);
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 4000);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 5000);
 
     return () => {
       if (autoScrollInterval.current) {
