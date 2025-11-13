@@ -13,8 +13,6 @@ const generateDemoOrders = (): Order[] => {
 };
 
 export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
-  const { assignOrderToTable, clearTable } = useTables();
-  const { notifyNewOrder, notifyOrderReady } = useNotifications();
   const [orders, setOrders] = useState<Order[]>(generateDemoOrders());
   const [currentOrder, setCurrentOrder] = useState<OrderItem[]>([]);
   const [selectedTable, setSelectedTable] = useState<number>(1);
@@ -22,13 +20,20 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
   
   const menuQuery = trpc.menu.getAll.useQuery();
-  const menuData = useMemo(() => menuQuery.data || [], [menuQuery.data]);
-  
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
     refetchInterval: 3000,
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        const mappedOrders = data.map(o => {
+  });
+  const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation();
+  
+  const { assignOrderToTable, clearTable } = useTables();
+  const { notifyNewOrder, notifyOrderReady } = useNotifications();
+  
+  const menuData = useMemo(() => menuQuery.data || [], [menuQuery.data]);
+  
+  useEffect(() => {
+    const data = ordersQuery.data;
+    if (data && data.length > 0) {
+      const mappedOrders = data.map(o => {
           const items: OrderItem[] = o.items.map(item => {
             const menuItem = menuData.find(m => m.id === item.menu_item_id);
             if (!menuItem) {
@@ -51,13 +56,10 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
             waiterName: o.waiter_name || undefined,
             total: o.total,
           };
-        });
-        setOrders(mappedOrders);
-      }
-    },
-  });
-  
-  const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation();
+      });
+      setOrders(mappedOrders);
+    }
+  }, [ordersQuery.data, menuData]);
 
 
 

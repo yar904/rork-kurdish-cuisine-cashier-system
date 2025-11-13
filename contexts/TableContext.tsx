@@ -19,7 +19,6 @@ export const [TableProvider, useTables] = createContextHook(() => {
     refetchInterval: 5000,
     enabled: true,
   });
-
   const updateTableMutation = trpc.tables.updateStatus.useMutation();
 
   useEffect(() => {
