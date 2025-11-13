@@ -38,10 +38,10 @@ export default function PublicMenuScreen() {
   const highlightPosition = useRef(new Animated.Value(0)).current;
   const highlightOpacity = useRef(new Animated.Value(1)).current;
 
-  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
   const ratingsStats = ratingsStatsQuery.data || {};
-
-
 
   const getItemName = (item: typeof MENU_ITEMS[0]) => {
     if (language === 'ar') return item.nameArabic;
@@ -292,14 +292,6 @@ export default function PublicMenuScreen() {
       }
     };
   }, [categories, categoryScales, isUserScrolling, highlightPosition, highlightOpacity]);
-
-  if (ratingsStatsQuery.isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#D4AF37" />
-      </View>
-    );
-  }
 
   return (
     <ImageBackground
