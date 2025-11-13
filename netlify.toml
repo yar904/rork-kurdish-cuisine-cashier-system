@@ -8,6 +8,13 @@
   EXPO_NO_DOTENV = "1"
   CI = "true"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  
+[[functions.api]]
+  included_files = ["backend/**/*.ts", "backend/**/*.js"]
+
 [[redirects]]
   from = "/.netlify/functions/*"
   to = "/.netlify/functions/:splat"

@@ -50,8 +50,23 @@ app.get("/health", (c) =>
 );
 
 export default async (req, context) => {
-  return await app.fetch(req, {
-    ...context,
-    waitUntil: context.waitUntil?.bind(context),
-  });
+  try {
+    console.log('[Netlify Function] Incoming request:', req.method, req.url);
+    const response = await app.fetch(req, {
+      ...context,
+      waitUntil: context.waitUntil?.bind(context),
+    });
+    console.log('[Netlify Function] Response status:', response.status);
+    return response;
+  } catch (error) {
+    console.error('[Netlify Function] Error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error', 
+      message: error.message,
+      stack: error.stack 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 };
