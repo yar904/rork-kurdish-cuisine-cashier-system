@@ -337,39 +337,19 @@ export default function CustomerOrderScreen() {
     
     if (scrollDelta > 0 && currentScrollY > 100) {
       Animated.parallel([
-        Animated.timing(headerTranslateY, {
-          toValue: -150,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(categoryTranslateY, {
-          toValue: -150,
-          duration: 300,
-          useNativeDriver: true,
-        }),
         Animated.timing(bottomBarTranslateY, {
           toValue: 100,
           duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(menuItemsOpacity, {
-          toValue: 0.4,
+          toValue: 0.7,
           duration: 300,
           useNativeDriver: true,
         }),
       ]).start();
     } else if (scrollDelta < 0) {
       Animated.parallel([
-        Animated.timing(headerTranslateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(categoryTranslateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
         Animated.timing(bottomBarTranslateY, {
           toValue: 0,
           duration: 300,
@@ -385,7 +365,7 @@ export default function CustomerOrderScreen() {
     
     lastScrollY.current = currentScrollY;
     scrollY.current = currentScrollY;
-  }, [headerTranslateY, categoryTranslateY, bottomBarTranslateY, menuItemsOpacity]);
+  }, [bottomBarTranslateY, menuItemsOpacity]);
 
   const animateButton = (button: keyof typeof buttonScales) => {
     Animated.sequence([
@@ -661,13 +641,13 @@ export default function CustomerOrderScreen() {
         }}
       />
 
-      <Animated.View style={[styles.customHeader, { transform: [{ translateY: headerTranslateY }] }]}>
+      <View style={styles.customHeader}>
         <TouchableOpacity 
           style={styles.headerCornerButton}
           onPress={() => setLanguageModalVisible(true)}
           activeOpacity={0.7}
         >
-          <Globe size={24} color={Colors.primary} strokeWidth={2} />
+          <Globe size={24} color="#D4AF37" strokeWidth={2} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
@@ -680,70 +660,108 @@ export default function CustomerOrderScreen() {
 
         <View style={styles.headerCornerButton}>
           <View style={styles.tableIndicator}>
-            <Utensils size={16} color={Colors.primary} strokeWidth={2} />
+            <Utensils size={16} color="#D4AF37" strokeWidth={2} />
             <Text style={styles.tableNumber}>{table}</Text>
           </View>
         </View>
-      </Animated.View>
+      </View>
 
       <LanguageSwitcher
         visible={languageModalVisible}
         onClose={() => setLanguageModalVisible(false)}
       />
 
-      <Animated.View style={[styles.categoryFilterSection, { transform: [{ translateY: categoryTranslateY }] }]}>
-        <ScrollView
-          ref={categoryScrollViewRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScrollContent}
-        >
-          {categories.map((category, index) => {
-            const categoryItems = menuData?.filter(item => item.category === category) || [];
-            const displayImage = categoryItems[0]?.image || getCategoryImage(category);
-            
-            return (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryCard,
-                  selectedCategory === category && styles.categoryCardActive
-                ]}
-                onPress={() => {
-                  setSelectedCategory(category);
-                  if (category !== 'all') {
-                    scrollToCategory(category);
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                {category !== 'all' && (
-                  <Image 
-                    source={{ uri: displayImage }} 
-                    style={styles.categoryCardImage}
-                  />
-                )}
-                {category === 'all' && (
-                  <View style={styles.categoryCardImagePlaceholder}>
-                    <Text style={styles.categoryCardImagePlaceholderIcon}>🍽️</Text>
-                  </View>
-                )}
-                {selectedCategory === category && (
-                  <View style={styles.categoryCardOverlay} />
-                )}
-                <View style={styles.categoryCardLabel}>
-                  <Text style={[
-                    styles.categoryCardText,
-                    selectedCategory === category && styles.categoryCardTextActive
+      <View style={styles.categoryFilterSection}>
+        <View style={styles.categoryContainer}>
+          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
+          <ScrollView
+            ref={categoryScrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScrollContent}
+            decelerationRate="fast"
+            onTouchStart={() => {
+              setIsUserScrolling(true);
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+            }}
+            onMomentumScrollEnd={() => {
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+              userScrollTimeout.current = setTimeout(() => {
+                setIsUserScrolling(false);
+              }, 3000);
+            }}
+          >
+            {categories.map((category, index) => {
+              const categoryItems = menuData?.filter(item => item.category === category) || [];
+              const displayImage = categoryItems[0]?.image || getCategoryImage(category);
+              const isActive = selectedCategory === category;
+              const isInGlow = !isUserScrolling && index === currentCategoryIndex.current;
+              
+              if (!categoryScales.has(category)) {
+                categoryScales.set(category, new Animated.Value(0.75));
+              }
+              const scaleAnim = categoryScales.get(category)!;
+              
+              return (
+                <TouchableOpacity
+                  key={category}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setSelectedCategory(category);
+                    if (category !== 'all') {
+                      scrollToCategory(category);
+                    }
+                    setIsUserScrolling(true);
+                    currentCategoryIndex.current = index;
+                    if (userScrollTimeout.current) {
+                      clearTimeout(userScrollTimeout.current);
+                    }
+                    userScrollTimeout.current = setTimeout(() => {
+                      setIsUserScrolling(false);
+                    }, 4000);
+                  }}
+                >
+                  <Animated.View style={[
+                    styles.categoryCard,
+                    isActive && styles.categoryCardActive,
+                    { transform: [{ scale: scaleAnim }] },
                   ]}>
-                    {CATEGORY_NAMES[category] || category}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </Animated.View>
+                    {isActive && <View style={styles.activeIndicatorDot} />}
+                    {category !== 'all' && (
+                      <Image 
+                        source={{ uri: displayImage }} 
+                        style={styles.categoryCardImage}
+                      />
+                    )}
+                    {category === 'all' && (
+                      <View style={styles.categoryCardImagePlaceholder}>
+                        <Text style={styles.categoryCardImagePlaceholderIcon}>🍽️</Text>
+                      </View>
+                    )}
+                    <View style={styles.categoryCardOverlay} />
+                    <View style={styles.categoryCardLabel}>
+                      <Text style={[
+                        styles.categoryCardText,
+                        isActive && styles.categoryCardTextActive
+                      ]}>
+                        {CATEGORY_NAMES[category] || category}
+                      </Text>
+                    </View>
+                  </Animated.View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </View>
 
       <ScrollView 
         ref={scrollViewRef} 
@@ -1301,6 +1319,39 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.4)',
   },
+  categoryContainer: {
+    position: 'relative' as const,
+  },
+  categoryHighlight: {
+    position: 'absolute' as const,
+    top: 4,
+    left: 16,
+    width: 110,
+    height: 130,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    zIndex: 1,
+    pointerEvents: 'none' as const,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 32,
+      },
+      android: {
+        elevation: 18,
+      },
+      web: {
+        boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6), 0 0 150px rgba(212, 175, 55, 0.3), inset 0 0 40px rgba(212, 175, 55, 0.2)',
+      },
+    }),
+  },
+  categoryHighlightHidden: {
+    opacity: 0,
+  },
   categoryScrollContent: {
     paddingLeft: 16,
     gap: 12,
@@ -1333,6 +1384,18 @@ const styles = StyleSheet.create({
   categoryCardActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
+  },
+  activeIndicatorDot: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D4AF37',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   categoryCardImage: {
     width: '100%',
