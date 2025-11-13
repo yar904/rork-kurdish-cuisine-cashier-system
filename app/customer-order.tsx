@@ -680,7 +680,7 @@ export default function CustomerOrderScreen() {
             style={styles.viewToggleButton}
             activeOpacity={0.7}
           >
-            {isGridView ? (
+            {!isGridView ? (
               <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
             ) : (
               <List size={20} color={Colors.gold} strokeWidth={2.5} />
@@ -1319,7 +1319,7 @@ const styles = StyleSheet.create({
     width: '48%',
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
-    padding: 12,
+    padding: 0,
     marginBottom: 16,
     borderWidth: 2,
     borderColor: Colors.gold,
@@ -1328,6 +1328,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.7,
     shadowRadius: 16,
     elevation: 12,
+    overflow: 'hidden' as const,
   },
   menuItemsGrid: {
     flexDirection: 'row',
@@ -1344,7 +1345,7 @@ const styles = StyleSheet.create({
   },
   imageContainerGrid: {
     position: 'relative',
-    marginBottom: 8,
+    width: '100%',
   },
   menuImage: {
     width: 90,
@@ -1355,10 +1356,9 @@ const styles = StyleSheet.create({
   },
   menuImageGrid: {
     width: '100%',
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
+    height: 140,
+    borderRadius: 0,
+    borderWidth: 0,
   },
   ratingBadge: {
     position: 'absolute',
@@ -1384,7 +1384,8 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
+    padding: 12,
     gap: 6,
   },
   menuName: {
@@ -1393,7 +1394,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     letterSpacing: -0.3,
     lineHeight: 19,
-    marginBottom: 2,
+    textAlign: 'left' as const,
   },
   menuDescription: {
     fontSize: 12,
@@ -1407,7 +1408,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 'auto',
-    paddingTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(212, 175, 55, 0.2)',
   },

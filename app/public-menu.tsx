@@ -274,9 +274,9 @@ export default function PublicMenuScreen() {
             activeOpacity={0.7}
           >
             {isGridView ? (
-              <List size={20} color={Colors.gold} strokeWidth={2.5} />
-            ) : (
               <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
+            ) : (
+              <List size={20} color={Colors.gold} strokeWidth={2.5} />
             )}
           </TouchableOpacity>
         </View>
@@ -635,8 +635,6 @@ const styles = StyleSheet.create({
   },
   menuItemGrid: {
     width: '48%',
-    minWidth: 150,
-    maxWidth: 220,
     backgroundColor: Colors.cardBackground,
     borderRadius: 16,
     padding: 0,
@@ -709,20 +707,19 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     alignItems: 'stretch',
     padding: 14,
-    minHeight: 100,
+    gap: 8,
   },
   menuName: {
     fontSize: 17,
     fontWeight: '800' as const,
     color: Colors.text,
     letterSpacing: -0.3,
-    textAlign: 'center' as const,
+    textAlign: 'left' as const,
     lineHeight: 22,
-    flexShrink: 1,
-    marginBottom: 8,
+    flex: 0,
   },
   menuDescription: {
     fontSize: 13,
@@ -730,27 +727,24 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     lineHeight: 18,
     textAlign: 'left' as const,
-    marginBottom: 8,
-    flexGrow: 1,
+    flex: 1,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 12,
-    paddingBottom: 2,
-    marginTop: 8,
+    paddingTop: 10,
+    marginTop: 'auto',
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(212, 175, 55, 0.3)',
     width: '100%',
-    flexShrink: 0,
   },
   menuPrice: {
     fontSize: 20,
     fontWeight: '900' as const,
     color: Colors.gold,
     letterSpacing: -0.5,
-    lineHeight: 26,
+    textAlign: 'center' as const,
   },
   emptyState: {
     flex: 1,
