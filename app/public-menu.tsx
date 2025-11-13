@@ -239,11 +239,6 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
         autoScrollInterval.current = null;
       }
-      Animated.timing(highlightOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
       return;
     }
 
@@ -255,7 +250,7 @@ export default function PublicMenuScreen() {
       if (prevScale) {
         Animated.timing(prevScale, {
           toValue: 1,
-          duration: 400,
+          duration: 600,
           useNativeDriver: true,
         }).start();
       }
@@ -264,26 +259,24 @@ export default function PublicMenuScreen() {
       const scrollPosition = currentCategoryIndex.current * 122;
       const highlightPos = currentCategoryIndex.current * 122;
       
-      Animated.sequence([
+      Animated.parallel([
         Animated.timing(highlightOpacity, {
-          toValue: 0,
-          duration: 500,
+          toValue: 0.3,
+          duration: 800,
           useNativeDriver: true,
         }),
-        Animated.delay(200),
-        Animated.parallel([
-          Animated.timing(highlightPosition, {
-            toValue: highlightPos,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-          Animated.timing(highlightOpacity, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
-      ]).start();
+        Animated.timing(highlightPosition, {
+          toValue: highlightPos,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        Animated.timing(highlightOpacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }).start();
+      });
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
@@ -295,21 +288,21 @@ export default function PublicMenuScreen() {
         if (currentScale) {
           Animated.sequence([
             Animated.timing(currentScale, {
-              toValue: 1.15,
-              duration: 300,
+              toValue: 1.1,
+              duration: 500,
               useNativeDriver: true,
             }),
             Animated.timing(currentScale, {
               toValue: 1,
-              duration: 300,
+              duration: 500,
               useNativeDriver: true,
             }),
           ]).start();
         }
-      }, 700);
+      }, 1200);
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 5000);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 6000);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -441,12 +434,12 @@ export default function PublicMenuScreen() {
                     Animated.parallel([
                       Animated.timing(highlightPosition, {
                         toValue: highlightPos,
-                        duration: 300,
+                        duration: 400,
                         useNativeDriver: true,
                       }),
                       Animated.timing(highlightOpacity, {
-                        toValue: 0,
-                        duration: 300,
+                        toValue: 1,
+                        duration: 400,
                         useNativeDriver: true,
                       }),
                     ]).start();
@@ -455,7 +448,7 @@ export default function PublicMenuScreen() {
                     }
                     userScrollTimeout.current = setTimeout(() => {
                       setIsUserScrolling(false);
-                    }, 3000);
+                    }, 4000);
                   }}
                 >
                   <View style={[
@@ -685,22 +678,23 @@ const styles = StyleSheet.create({
     width: 110,
     height: 130,
     borderRadius: 14,
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: '#D4AF37',
     zIndex: 1,
     pointerEvents: 'none' as const,
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.9,
-        shadowRadius: 20,
+        shadowOpacity: 0.95,
+        shadowRadius: 24,
       },
       android: {
-        elevation: 12,
+        elevation: 14,
       },
       web: {
-        boxShadow: '0 0 30px rgba(212, 175, 55, 0.6), 0 0 60px rgba(212, 175, 55, 0.4), 0 0 90px rgba(212, 175, 55, 0.2)',
+        boxShadow: '0 0 40px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.5), 0 0 120px rgba(212, 175, 55, 0.25), inset 0 0 30px rgba(212, 175, 55, 0.15)',
       },
     }),
   },
