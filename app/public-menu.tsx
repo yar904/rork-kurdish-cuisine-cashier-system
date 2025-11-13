@@ -44,6 +44,7 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const categoryWidths = useRef<number[]>([]);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const menuQuery = trpc.menu.getAll.useQuery();
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
@@ -155,7 +156,13 @@ export default function PublicMenuScreen() {
   }, [categories, categoryScales]);
 
   useEffect(() => {
-    if (isUserScrolling) return;
+    if (isUserScrolling) {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+        autoScrollInterval.current = null;
+      }
+      return;
+    }
 
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current || categories.length === 0) return;
@@ -284,11 +291,17 @@ export default function PublicMenuScreen() {
               clearInterval(autoScrollInterval.current);
               autoScrollInterval.current = null;
             }
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
+            }
           }}
           onMomentumScrollEnd={() => {
-            setTimeout(() => {
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
+            }
+            userScrollTimeout.current = setTimeout(() => {
               setIsUserScrolling(false);
-            }, 1000);
+            }, 3000);
           }}
         >
           {categories.map((category) => {
@@ -690,21 +703,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
+    gap: 8,
   },
   menuName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700' as const,
     color: Colors.text,
-    marginBottom: 16,
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
     textAlign: 'center' as const,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   menuDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
-    marginBottom: 16,
     fontWeight: '400' as const,
     lineHeight: 18,
     textAlign: 'center' as const,
@@ -713,16 +725,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 16,
+    paddingTop: 12,
+    marginTop: 'auto',
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(212, 175, 55, 0.25)',
     width: '100%',
   },
   menuPrice: {
-    fontSize: 22,
-    fontWeight: '700' as const,
+    fontSize: 20,
+    fontWeight: '800' as const,
     color: Colors.gold,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   emptyState: {
     flex: 1,

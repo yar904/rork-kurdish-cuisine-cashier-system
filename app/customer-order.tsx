@@ -74,6 +74,8 @@ export default function CustomerOrderScreen() {
   const menuItemsOpacity = useRef(new Animated.Value(1)).current;
   const [categoryScales] = useState(new Map<string, Animated.Value>());
   const currentCategoryIndex = useRef(0);
+  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -443,6 +445,14 @@ export default function CustomerOrderScreen() {
   }, [categories, categoryScales]);
 
   useEffect(() => {
+    if (isUserScrolling) {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+        autoScrollInterval.current = null;
+      }
+      return;
+    }
+
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current) return;
       
@@ -488,7 +498,7 @@ export default function CustomerOrderScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, categoryScales]);
+  }, [categories, categoryScales, isUserScrolling]);
 
   useEffect(() => {
     if (orderModalVisible && cart.length === 0) {
@@ -683,49 +693,22 @@ export default function CustomerOrderScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScrollContent}
           onTouchStart={() => {
+            setIsUserScrolling(true);
             if (autoScrollInterval.current) {
               clearInterval(autoScrollInterval.current);
+              autoScrollInterval.current = null;
+            }
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
             }
           }}
           onMomentumScrollEnd={() => {
-            let currentIndex = 0;
-            const scrollToNextCategory = () => {
-              if (!categoryScrollViewRef.current) return;
-              
-              const prevIndex = currentCategoryIndex.current;
-              const prevScale = categoryScales.get(categories[prevIndex]);
-              if (prevScale) {
-                Animated.timing(prevScale, {
-                  toValue: 1,
-                  duration: 300,
-                  useNativeDriver: true,
-                }).start();
-              }
-              
-              currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-              const scrollPosition = currentCategoryIndex.current * 140;
-              categoryScrollViewRef.current.scrollTo({ 
-                x: scrollPosition, 
-                animated: true 
-              });
-              
-              const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
-              if (currentScale) {
-                Animated.sequence([
-                  Animated.timing(currentScale, {
-                    toValue: 1.15,
-                    duration: 200,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(currentScale, {
-                    toValue: 1,
-                    duration: 200,
-                    useNativeDriver: true,
-                  }),
-                ]).start();
-              }
-            };
-            autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
+            if (userScrollTimeout.current) {
+              clearTimeout(userScrollTimeout.current);
+            }
+            userScrollTimeout.current = setTimeout(() => {
+              setIsUserScrolling(false);
+            }, 3000);
           }}
         >
           {categories.map((category) => {
@@ -1402,18 +1385,18 @@ const styles = StyleSheet.create({
   menuInfo: {
     flex: 1,
     justifyContent: 'space-between',
+    gap: 6,
   },
   menuName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800' as const,
     color: Colors.text,
-    marginBottom: 6,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
+    lineHeight: 20,
   },
   menuDescription: {
     fontSize: 12,
     color: Colors.textSecondary,
-    marginBottom: 10,
     fontWeight: '500' as const,
     lineHeight: 16,
   },
@@ -1422,12 +1405,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 'auto',
+    paddingTop: 8,
   },
   menuPrice: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900' as const,
     color: Colors.primary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   addButton: {
     width: 36,
