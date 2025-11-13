@@ -34,7 +34,6 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const isMobile = Platform.OS !== 'web';
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
@@ -233,8 +232,6 @@ export default function PublicMenuScreen() {
   }, [categories, categoryScales]);
 
   React.useEffect(() => {
-    if (!isMobile) return;
-    
     if (isUserScrolling) {
       if (autoScrollInterval.current) {
         clearInterval(autoScrollInterval.current);
@@ -264,7 +261,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, isUserScrolling, isMobile]);
+  }, [categories, isUserScrolling]);
 
   return (
     <ImageBackground
@@ -326,7 +323,7 @@ export default function PublicMenuScreen() {
 
       <View style={styles.categoryScrollSection}>
         <View style={styles.categoryContainer}>
-          {isMobile && <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />}
+          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
           <ScrollView 
             ref={categoryScrollViewRef}
             horizontal
@@ -335,33 +332,29 @@ export default function PublicMenuScreen() {
             contentContainerStyle={styles.categoryScrollContent}
             decelerationRate="fast"
             onTouchStart={() => {
-              if (isMobile) {
-                setIsUserScrolling(true);
-                if (autoScrollInterval.current) {
-                  clearInterval(autoScrollInterval.current);
-                  autoScrollInterval.current = null;
-                }
-                if (userScrollTimeout.current) {
-                  clearTimeout(userScrollTimeout.current);
-                }
+              setIsUserScrolling(true);
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
               }
             }}
             onMomentumScrollEnd={() => {
-              if (isMobile) {
-                if (userScrollTimeout.current) {
-                  clearTimeout(userScrollTimeout.current);
-                }
-                userScrollTimeout.current = setTimeout(() => {
-                  setIsUserScrolling(false);
-                }, 3000);
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
               }
+              userScrollTimeout.current = setTimeout(() => {
+                setIsUserScrolling(false);
+              }, 3000);
             }}
           >
           {categories.map((category, index) => {
             const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             const isActive = selectedCategory === category.id;
-            const isInGlow = isMobile && !isUserScrolling && index === currentCategoryIndex.current;
-            const cardScale = isMobile ? (isInGlow ? 1 : 0.75) : (isActive ? 1.05 : 1);
+            const isInGlow = !isUserScrolling && index === currentCategoryIndex.current;
+            const cardScale = isInGlow ? 1 : 0.75;
             
             return (
               <TouchableOpacity
@@ -372,25 +365,20 @@ export default function PublicMenuScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }
                   setSelectedCategory(category.id);
-                  if (isMobile) {
-                    setIsUserScrolling(true);
-                    currentCategoryIndex.current = index;
-                    if (userScrollTimeout.current) {
-                      clearTimeout(userScrollTimeout.current);
-                    }
-                    userScrollTimeout.current = setTimeout(() => {
-                      setIsUserScrolling(false);
-                    }, 4000);
+                  setIsUserScrolling(true);
+                  currentCategoryIndex.current = index;
+                  if (userScrollTimeout.current) {
+                    clearTimeout(userScrollTimeout.current);
                   }
+                  userScrollTimeout.current = setTimeout(() => {
+                    setIsUserScrolling(false);
+                  }, 4000);
                 }}
               >
-                <Animated.View style={[
+                <View style={[
                   styles.categoryCard,
                   isActive && styles.categoryCardActive,
-                  isMobile && {
-                    transform: [{ scale: cardScale }],
-                  },
-                  !isMobile && isActive && styles.categoryCardWeb,
+                  { transform: [{ scale: cardScale }] },
                 ]}>
                   {isActive && <View style={styles.activeIndicatorDot} />}
                   <Image
@@ -407,7 +395,7 @@ export default function PublicMenuScreen() {
                       {categoryName}
                     </Text>
                   </View>
-                </Animated.View>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -672,14 +660,6 @@ const styles = StyleSheet.create({
   categoryCardActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
-  },
-  categoryCardWeb: {
-    ...Platform.select({
-      web: {
-        transform: 'scale(1.05)',
-        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.4)',
-      },
-    }),
   },
   activeIndicatorDot: {
     position: 'absolute' as const,
