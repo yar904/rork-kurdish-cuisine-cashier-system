@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 
 import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
-import { MENU_ITEMS } from '@/constants/menu';
+
 import { useTables } from '@/contexts/TableContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { trpc, trpcClient } from '@/lib/trpc';
@@ -20,6 +20,9 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const [selectedTable, setSelectedTable] = useState<number>(1);
   const [readyNotification, setReadyNotification] = useState<string | null>(null);
   const previousOrderStatuses = useRef<Record<string, OrderStatus>>({});
+  
+  const menuQuery = trpc.menu.getAll.useQuery();
+  const menuData = useMemo(() => menuQuery.data || [], [menuQuery.data]);
   
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
     refetchInterval: 3000,
@@ -135,9 +138,6 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       previousOrderStatuses.current[order.id] = order.status;
     });
   }, [orders, playSound, notifyOrderReady]);
-
-  const menuQuery = trpc.menu.getAll.useQuery();
-  const menuData = menuQuery.data || [];
 
   const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
     const menuItem = menuData.find(item => item.id === itemId);
