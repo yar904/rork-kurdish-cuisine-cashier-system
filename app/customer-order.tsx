@@ -677,7 +677,7 @@ export default function CustomerOrderScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.debugBadge}>🔥 REAL VERSION 2025-01-13 🔥</Text>
+
         </View>
 
         <View style={styles.headerCornerButton}>
@@ -2076,12 +2076,5 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     lineHeight: 22,
   },
-  debugBadge: {
-    fontSize: 10,
-    fontWeight: '700' as const,
-    color: Colors.gold,
-    textAlign: 'center' as const,
-    marginTop: 2,
-    opacity: 0.8,
-  },
+
 });
