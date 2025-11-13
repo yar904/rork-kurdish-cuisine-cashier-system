@@ -640,7 +640,7 @@ export default function CustomerOrderScreen() {
             style={styles.loadingLogo}
             resizeMode="contain"
           />
-          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20, zIndex: 2 }} />
+          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 30, zIndex: 2 }} />
         </View>
       </View>
     );
@@ -1409,8 +1409,8 @@ const styles = StyleSheet.create({
     pointerEvents: 'none' as const,
   },
   loadingLogo: {
-    width: 140,
-    height: 140,
+    width: 180,
+    height: 180,
     zIndex: 2,
   },
   loadingText: {
@@ -1494,16 +1494,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
     zIndex: 5,
     pointerEvents: 'none' as const,
   },
   categoryCardActive: {
   },
   categoryCardCornersActive: {
-    borderWidth: 3,
-    borderColor: '#D4AF37',
   },
   activeIndicatorDot: {
     position: 'absolute' as const,

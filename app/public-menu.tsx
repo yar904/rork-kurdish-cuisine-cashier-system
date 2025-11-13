@@ -12,7 +12,7 @@ import {
   Animated,
   useWindowDimensions,
 } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, Globe, X, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -21,6 +21,8 @@ import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
 import { Language } from '@/constants/i18n';
+import LandingPage from './landing';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 
 export default function PublicMenuScreen() {
   const router = useRouter();
@@ -37,6 +39,14 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
+  const params = useLocalSearchParams<{ skipLanding?: string }>();
+
+  React.useEffect(() => {
+    if (params.skipLanding === 'true') {
+      setShowLanding(false);
+    }
+  }, [params.skipLanding]);
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
@@ -233,6 +243,12 @@ export default function PublicMenuScreen() {
       }
     });
   }, [categories, categoryScales]);
+
+  if (showLanding) {
+    return (
+      <LandingWrapper onContinue={() => setShowLanding(false)} />
+    );
+  }
 
   React.useEffect(() => {
     if (isUserScrolling) {
@@ -702,16 +718,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
     zIndex: 5,
     pointerEvents: 'none' as const,
   },
   categoryCardActive: {
   },
   categoryCardCornersActive: {
-    borderWidth: 3,
-    borderColor: '#D4AF37',
   },
   activeIndicatorDot: {
     position: 'absolute' as const,
@@ -1123,5 +1135,165 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: '#fff',
     letterSpacing: 0.2,
+  },
+});
+
+function LandingWrapper({ onContinue }: { onContinue: () => void }) {
+  const { language } = useLanguage();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
+  const isGlassAvailable = Platform.OS === 'ios' ? isLiquidGlassAvailable() : false;
+  
+  return (
+    <ImageBackground
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/pfi2xp2ednotg7b5lw52y' }}
+      style={StyleSheet.absoluteFillObject}
+      resizeMode="cover"
+    >
+      <View style={landingStyles.overlay}>
+        <View style={[landingStyles.content, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 }]}>
+          <View style={landingStyles.centerLogo}>
+            {isGlassAvailable ? (
+              <>
+                <View style={landingStyles.logoGlassContainer}>
+                  <GlassView 
+                    style={{ flex: 1 }}
+                    glassEffectStyle="clear"
+                    tintColor="rgba(61, 1, 1, 0.4)"
+                  />
+                </View>
+                <View style={landingStyles.logoGlassCorners} />
+                <Image 
+                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+                  style={landingStyles.logoImage}
+                  resizeMode="contain"
+                />
+              </>
+            ) : (
+              <>
+                <View style={[landingStyles.logoGlassContainer, { backgroundColor: 'rgba(26, 0, 0, 0.75)' }]} />
+                <View style={landingStyles.logoGlassCorners} />
+                <Image 
+                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+                  style={landingStyles.logoImage}
+                  resizeMode="contain"
+                />
+              </>
+            )}
+          </View>
+          
+          <View style={landingStyles.bottomSection}>
+            <TouchableOpacity
+              style={landingStyles.menuButton}
+              onPress={onContinue}
+              activeOpacity={0.8}
+            >
+              <Text style={landingStyles.menuButtonText}>
+                {language === 'en' ? 'View Menu' : language === 'ku' ? 'مێنیو' : 'القائمة'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </ImageBackground>
+  );
+}
+
+const landingStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center' as const,
+    paddingHorizontal: 20,
+  },
+  centerLogo: {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    width: 300,
+    height: 300,
+    position: 'relative' as const,
+  },
+  logoGlassContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 32,
+    overflow: 'hidden' as const,
+  },
+  logoGlassCorners: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 32,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    zIndex: 1,
+    pointerEvents: 'none' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 32,
+      },
+      android: {
+        elevation: 18,
+      },
+      web: {
+        boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  logoImage: {
+    width: 240,
+    height: 240,
+    zIndex: 2,
+  },
+  bottomSection: {
+    width: '100%',
+    alignItems: 'center' as const,
+    gap: 16,
+  },
+  menuButton: {
+    width: '100%',
+    maxWidth: 400,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    backgroundColor: '#D4AF37',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E8C968',
+    alignItems: 'center' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.5,
+        shadowRadius: 14,
+      },
+      android: {
+        elevation: 10,
+      },
+      web: {
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
+  menuButtonText: {
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: '#1a0000',
+    letterSpacing: 0.8,
   },
 });
