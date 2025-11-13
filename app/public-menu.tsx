@@ -243,9 +243,29 @@ export default function PublicMenuScreen() {
     const scrollToNextCategory = () => {
       if (!categoryScrollViewRef.current) return;
       
-      const nextIndex = (currentCategoryIndex.current + 1) % categories.length;
-      const scrollPosition = nextIndex * 122;
+      const currentIndex = currentCategoryIndex.current;
+      const nextIndex = (currentIndex + 1) % categories.length;
       
+      const currentScale = categoryScales.get(categories[currentIndex].id);
+      if (currentScale) {
+        Animated.timing(currentScale, {
+          toValue: 0.75,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
+      }
+      
+      const nextScale = categoryScales.get(categories[nextIndex].id);
+      if (nextScale) {
+        Animated.spring(nextScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }).start();
+      }
+      
+      const scrollPosition = nextIndex * 122;
       currentCategoryIndex.current = nextIndex;
       
       categoryScrollViewRef.current.scrollTo({ 
@@ -261,7 +281,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, isUserScrolling]);
+  }, [categories, isUserScrolling, categoryScales]);
 
   return (
     <ImageBackground
@@ -354,7 +374,11 @@ export default function PublicMenuScreen() {
             const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             const isActive = selectedCategory === category.id;
             const isInGlow = !isUserScrolling && index === currentCategoryIndex.current;
-            const cardScale = isInGlow ? 1 : 0.75;
+            
+            if (!categoryScales.has(category.id)) {
+              categoryScales.set(category.id, new Animated.Value(0.75));
+            }
+            const scaleAnim = categoryScales.get(category.id)!;
             
             return (
               <TouchableOpacity
@@ -375,10 +399,10 @@ export default function PublicMenuScreen() {
                   }, 4000);
                 }}
               >
-                <View style={[
+                <Animated.View style={[
                   styles.categoryCard,
                   isActive && styles.categoryCardActive,
-                  { transform: [{ scale: cardScale }] },
+                  { transform: [{ scale: scaleAnim }] },
                 ]}>
                   {isActive && <View style={styles.activeIndicatorDot} />}
                   <Image
@@ -395,7 +419,7 @@ export default function PublicMenuScreen() {
                       {categoryName}
                     </Text>
                   </View>
-                </View>
+                </Animated.View>
               </TouchableOpacity>
             );
           })}
