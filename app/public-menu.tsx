@@ -776,9 +776,9 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 16,
       },
       android: {
         elevation: 6,
@@ -787,7 +787,13 @@ const styles = StyleSheet.create({
         width: 'calc(50% - 6px)',
         minWidth: 160,
         maxWidth: 250,
-        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+        boxShadow: `
+          0 0 30px rgba(212, 175, 55, 0.2),
+          -8px -8px 24px rgba(212, 175, 55, 0.15),
+          8px 8px 24px rgba(212, 175, 55, 0.15),
+          inset 0 0 20px rgba(212, 175, 55, 0.08)
+        `,
+        animation: 'cornerGlow 4s ease-in-out infinite',
       },
     }),
   },
@@ -797,15 +803,21 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.25,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
         shadowRadius: 20,
       },
       android: {
         elevation: 8,
       },
       web: {
-        boxShadow: '0 6px 24px rgba(212, 175, 55, 0.3), 0 0 0 2px rgba(212, 175, 55, 0.2)',
+        boxShadow: `
+          0 0 40px rgba(212, 175, 55, 0.25),
+          -10px -10px 30px rgba(212, 175, 55, 0.2),
+          10px 10px 30px rgba(212, 175, 55, 0.2),
+          inset 0 0 25px rgba(212, 175, 55, 0.12)
+        `,
+        animation: 'cornerGlowPremium 4s ease-in-out infinite',
       },
     }),
   },

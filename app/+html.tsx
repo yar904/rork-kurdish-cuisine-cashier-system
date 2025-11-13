@@ -30,6 +30,41 @@ export default function Root({ children }: PropsWithChildren) {
         <meta property="og:site_name" content="Tapse" />
         
         <ScrollViewStyleReset />
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes cornerGlow {
+            0%, 100% {
+              box-shadow:
+                0 0 30px rgba(212, 175, 55, 0.15),
+                -8px -8px 24px rgba(212, 175, 55, 0.1),
+                8px 8px 24px rgba(212, 175, 55, 0.1),
+                inset 0 0 20px rgba(212, 175, 55, 0.05);
+            }
+            50% {
+              box-shadow:
+                0 0 35px rgba(212, 175, 55, 0.3),
+                -10px -10px 28px rgba(212, 175, 55, 0.25),
+                10px 10px 28px rgba(212, 175, 55, 0.25),
+                inset 0 0 25px rgba(212, 175, 55, 0.12);
+            }
+          }
+          
+          @keyframes cornerGlowPremium {
+            0%, 100% {
+              box-shadow:
+                0 0 40px rgba(212, 175, 55, 0.2),
+                -10px -10px 30px rgba(212, 175, 55, 0.15),
+                10px 10px 30px rgba(212, 175, 55, 0.15),
+                inset 0 0 25px rgba(212, 175, 55, 0.08);
+            }
+            50% {
+              box-shadow:
+                0 0 50px rgba(212, 175, 55, 0.35),
+                -12px -12px 36px rgba(212, 175, 55, 0.3),
+                12px 12px 36px rgba(212, 175, 55, 0.3),
+                inset 0 0 30px rgba(212, 175, 55, 0.18);
+            }
+          }
+        ` }} />
       </head>
       <body>{children}</body>
     </html>
