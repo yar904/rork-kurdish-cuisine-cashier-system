@@ -682,26 +682,28 @@ export default function CustomerOrderScreen() {
       />
 
       <View style={styles.customHeader}>
-        <TouchableOpacity 
-          style={styles.headerCornerButton}
-          onPress={() => setLanguageModalVisible(true)}
-          activeOpacity={0.7}
-        >
-          <Globe size={24} color="#D4AF37" strokeWidth={2} />
-        </TouchableOpacity>
+        <View style={styles.headerTop}>
+          <TouchableOpacity 
+            style={styles.headerCornerButton}
+            onPress={() => setLanguageModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Globe size={24} color="#D4AF37" strokeWidth={2} />
+          </TouchableOpacity>
 
-        <View style={styles.headerCenter}>
-          <Image 
-            source={require('@/assets/images/icon.png')} 
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-        </View>
+          <View style={styles.headerCenter}>
+            <Image 
+              source={require('@/assets/images/icon.png')} 
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+          </View>
 
-        <View style={styles.headerCornerButton}>
-          <View style={styles.tableIndicator}>
-            <Utensils size={16} color="#D4AF37" strokeWidth={2} />
-            <Text style={styles.tableNumber}>{table}</Text>
+          <View style={styles.headerCornerButton}>
+            <View style={styles.tableIndicator}>
+              <Utensils size={16} color="#D4AF37" strokeWidth={2} />
+              <Text style={styles.tableNumber}>{table}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -1283,14 +1285,7 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: 'rgba(26, 0, 0, 0.85)',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 0,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1305,6 +1300,14 @@ const styles = StyleSheet.create({
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
       },
     }),
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 12,
   },
   headerCornerButton: {
     width: 40,
