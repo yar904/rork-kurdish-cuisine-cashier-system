@@ -682,8 +682,13 @@ export default function CustomerOrderScreen() {
             ref={categoryScrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScrollContent}
+            contentContainerStyle={[
+              styles.categoryScrollContent,
+              { paddingRight: width - 138 }
+            ]}
             decelerationRate="fast"
+            snapToInterval={122}
+            snapToAlignment="start"
             onTouchStart={() => {
               setIsUserScrolling(true);
               if (autoScrollInterval.current) {
