@@ -16,7 +16,7 @@ export default publicProcedure.query(async () => {
     .order('created_at', { ascending: false });
 
   if (ordersError) {
-    console.error('Error fetching orders:', ordersError);
+    console.error('[Orders GetAll] Error fetching orders:', ordersError);
     throw new Error('Failed to fetch orders');
   }
 
@@ -25,38 +25,27 @@ export default publicProcedure.query(async () => {
     .select('*');
 
   if (menuError) {
-    console.error('Error fetching menu items:', menuError);
+    console.error('[Orders GetAll] Error fetching menu items:', menuError);
     throw new Error('Failed to fetch menu items');
   }
 
   return orders.map(order => ({
     id: order.id,
-    tableNumber: order.table_number,
+    table_number: order.table_number,
     status: order.status,
-    waiterName: order.waiter_name,
+    waiter_name: order.waiter_name,
     total: order.total,
-    splitInfo: order.split_info,
-    createdAt: new Date(order.created_at),
-    updatedAt: new Date(order.updated_at),
+    split_info: order.split_info,
+    created_at: order.created_at,
+    updated_at: order.updated_at,
     items: (order.order_items as any[]).map(item => {
       const menuItem = menuItems.find(mi => mi.id === item.menu_item_id);
       return {
-        menuItem: menuItem ? {
-          id: menuItem.id,
-          name: menuItem.name,
-          nameKurdish: menuItem.name_kurdish,
-          nameArabic: menuItem.name_arabic,
-          category: menuItem.category,
-          price: menuItem.price,
-          description: menuItem.description,
-          descriptionKurdish: menuItem.description_kurdish,
-          descriptionArabic: menuItem.description_arabic,
-          image: menuItem.image,
-          available: menuItem.available,
-        } : null,
+        menu_item_id: item.menu_item_id,
         quantity: item.quantity,
         notes: item.notes,
+        menuItem: menuItem || null,
       };
-    }).filter(item => item.menuItem !== null),
+    }),
   }));
 });

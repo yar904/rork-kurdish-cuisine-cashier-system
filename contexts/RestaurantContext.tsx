@@ -6,6 +6,7 @@ import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 
 import { useTables } from '@/contexts/TableContext';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useRealtime } from '@/contexts/RealtimeContext';
 import { trpc, trpcClient } from '@/lib/trpc';
 
 const generateDemoOrders = (): Order[] => {
@@ -21,12 +22,13 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   
   const menuQuery = trpc.menu.getAll.useQuery();
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
   const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation();
   
   const { assignOrderToTable, clearTable } = useTables();
   const { notifyNewOrder, notifyOrderReady } = useNotifications();
+  const { subscribeToOrders } = useRealtime();
   
   const menuData = useMemo(() => menuQuery.data || [], [menuQuery.data]);
   
@@ -60,6 +62,17 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       setOrders(mappedOrders);
     }
   }, [ordersQuery.data, menuData]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToOrders((payload) => {
+      console.log('[RestaurantContext] Real-time order update:', payload);
+      ordersQuery.refetch();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribeToOrders, ordersQuery]);
 
 
 

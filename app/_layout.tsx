@@ -9,6 +9,7 @@ import { TableProvider } from "@/contexts/TableContext";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { useEffect } from "react";
 import { LogBox } from "react-native";
 import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
@@ -92,19 +93,21 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }} {...({} as any)}>
       <QueryClientProvider client={queryClient}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <OfflineProvider>
-            <NotificationProvider>
-              <AuthProvider>
-                <LanguageProvider>
-                  <TableProvider>
-                    <RestaurantProvider>
-                      <RootLayoutNav />
-                    </RestaurantProvider>
-                  </TableProvider>
-                </LanguageProvider>
-              </AuthProvider>
-            </NotificationProvider>
-          </OfflineProvider>
+          <RealtimeProvider>
+            <OfflineProvider>
+              <NotificationProvider>
+                <AuthProvider>
+                  <LanguageProvider>
+                    <TableProvider>
+                      <RestaurantProvider>
+                        <RootLayoutNav />
+                      </RestaurantProvider>
+                    </TableProvider>
+                  </LanguageProvider>
+                </AuthProvider>
+              </NotificationProvider>
+            </OfflineProvider>
+          </RealtimeProvider>
         </trpc.Provider>
       </QueryClientProvider>
     </GestureHandlerRootView>
