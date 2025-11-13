@@ -40,6 +40,8 @@ export default function PublicMenuScreen() {
   const menuItemsOpacity = useRef(new Animated.Value(1)).current;
   const [categoryScales] = useState(new Map<string, Animated.Value>());
   const currentCategoryIndex = useRef(0);
+  const categoryWidths = useRef<number[]>([]);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   const menuQuery = trpc.menu.getAll.useQuery();
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
@@ -151,8 +153,10 @@ export default function PublicMenuScreen() {
   }, [categories, categoryScales]);
 
   useEffect(() => {
+    if (isUserScrolling) return;
+
     const scrollToNextCategory = () => {
-      if (!categoryScrollViewRef.current) return;
+      if (!categoryScrollViewRef.current || categories.length === 0) return;
       
       const prevIndex = currentCategoryIndex.current;
       const prevScale = categoryScales.get(categories[prevIndex]);
@@ -165,7 +169,15 @@ export default function PublicMenuScreen() {
       }
       
       currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-      const scrollPosition = currentCategoryIndex.current * 140;
+      
+      let scrollPosition = 0;
+      if (categoryWidths.current.length > 0) {
+        for (let i = 0; i < currentCategoryIndex.current && i < categoryWidths.current.length; i++) {
+          scrollPosition += categoryWidths.current[i] + 12;
+        }
+      } else {
+        scrollPosition = currentCategoryIndex.current * 130;
+      }
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
@@ -181,7 +193,7 @@ export default function PublicMenuScreen() {
             useNativeDriver: true,
           }),
           Animated.timing(currentScale, {
-            toValue: 1,
+            toValue: 1.05,
             duration: 200,
             useNativeDriver: true,
           }),
@@ -189,14 +201,15 @@ export default function PublicMenuScreen() {
       }
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+    const interval = setInterval(scrollToNextCategory, 2500);
+    autoScrollInterval.current = interval;
 
     return () => {
       if (autoScrollInterval.current) {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, categoryScales]);
+  }, [categories, categoryScales, isUserScrolling]);
 
   if (menuQuery.isLoading) {
     console.log('[PublicMenu] Loading menu data...');
@@ -264,48 +277,16 @@ export default function PublicMenuScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScrollContent}
           onTouchStart={() => {
+            setIsUserScrolling(true);
             if (autoScrollInterval.current) {
               clearInterval(autoScrollInterval.current);
+              autoScrollInterval.current = null;
             }
           }}
           onMomentumScrollEnd={() => {
-            const scrollToNextCategory = () => {
-              if (!categoryScrollViewRef.current) return;
-              
-              const prevIndex = currentCategoryIndex.current;
-              const prevScale = categoryScales.get(categories[prevIndex]);
-              if (prevScale) {
-                Animated.timing(prevScale, {
-                  toValue: 1,
-                  duration: 300,
-                  useNativeDriver: true,
-                }).start();
-              }
-              
-              currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-              const scrollPosition = currentCategoryIndex.current * 140;
-              categoryScrollViewRef.current.scrollTo({ 
-                x: scrollPosition, 
-                animated: true 
-              });
-              
-              const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
-              if (currentScale) {
-                Animated.sequence([
-                  Animated.timing(currentScale, {
-                    toValue: 1.15,
-                    duration: 200,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(currentScale, {
-                    toValue: 1,
-                    duration: 200,
-                    useNativeDriver: true,
-                  }),
-                ]).start();
-              }
-            };
-            autoScrollInterval.current = setInterval(scrollToNextCategory, 3000);
+            setTimeout(() => {
+              setIsUserScrolling(false);
+            }, 1000);
           }}
         >
           {categories.map((category) => {
@@ -319,6 +300,13 @@ export default function PublicMenuScreen() {
                 key={category}
                 style={{
                   transform: [{ scale: scaleAnim }],
+                }}
+                onLayout={(event) => {
+                  const { width } = event.nativeEvent.layout;
+                  const index = categories.indexOf(category);
+                  if (index !== -1) {
+                    categoryWidths.current[index] = width;
+                  }
                 }}
               >
                 <TouchableOpacity
