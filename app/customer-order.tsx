@@ -20,6 +20,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List, Eye } from 'lucide-react-native';
 import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
@@ -85,6 +86,7 @@ export default function CustomerOrderScreen() {
   const itemAutoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrollingItems, setIsUserScrollingItems] = useState(false);
   const itemUserScrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isGlassAvailable = Platform.OS === 'ios' ? isLiquidGlassAvailable() : false;
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -874,66 +876,152 @@ export default function CustomerOrderScreen() {
         )}
       </ScrollView>
 
-      <Animated.View style={[styles.bottomActionsBar, { transform: [{ translateY: bottomBarTranslateY }] }]}>
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={handleReviews}
-          activeOpacity={1}
-        >
-          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
-            <Star size={24} color={Colors.gold} strokeWidth={2.5} />
-            <Text style={styles.actionButtonText}>Reviews</Text>
-          </Animated.View>
-        </TouchableOpacity>
+      <Animated.View style={[styles.bottomActionsBarContainer, { transform: [{ translateY: bottomBarTranslateY }] }]}>
+        {isGlassAvailable ? (
+          <GlassView 
+            style={styles.bottomActionsBarGlass}
+            glassEffectStyle="clear"
+            tintColor="rgba(61, 1, 1, 0.7)"
+          >
+            <View style={styles.bottomActionsBarContent}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleReviews}
+                activeOpacity={0.7}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
+                  </View>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>Reviews</Text>
+                </Animated.View>
+              </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={handleCallWaiter}
-          activeOpacity={1}
-          disabled={createServiceRequestMutation.isPending}
-        >
-          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-            {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
-              <ActivityIndicator size="small" color={Colors.cream} />
-            ) : (
-              <>
-                <ChefHat size={24} color={Colors.cream} strokeWidth={2.5} />
-                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
-              </>
-            )}
-          </Animated.View>
-        </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleCallWaiter}
+                activeOpacity={0.7}
+                disabled={createServiceRequestMutation.isPending}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
+                  {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
+                    <ActivityIndicator size="small" color={Colors.cream} />
+                  ) : (
+                    <>
+                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                        <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
+                      </View>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
+                    </>
+                  )}
+                </Animated.View>
+              </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.actionButtonHighlight]}
-          onPress={handleViewOrder}
-          activeOpacity={1}
-        >
-          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
-            <View style={styles.plateIcon}>
-              <Text style={styles.plateIconText}>🍽</Text>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.actionButtonPrimary]}
+                onPress={handleViewOrder}
+                activeOpacity={0.7}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
+                    <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+                  </View>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
+                </Animated.View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleRequestBill}
+                activeOpacity={0.7}
+                disabled={createServiceRequestMutation.isPending}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
+                  {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
+                    <ActivityIndicator size="small" color={Colors.cream} />
+                  ) : (
+                    <>
+                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                        <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+                      </View>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
+                    </>
+                  )}
+                </Animated.View>
+              </TouchableOpacity>
             </View>
-            <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
-          </Animated.View>
-        </TouchableOpacity>
+          </GlassView>
+        ) : (
+          <View style={styles.bottomActionsBarFallback}>
+            <View style={styles.bottomActionsBarContent}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleReviews}
+                activeOpacity={0.7}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
+                  </View>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>Reviews</Text>
+                </Animated.View>
+              </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={handleRequestBill}
-          activeOpacity={1}
-          disabled={createServiceRequestMutation.isPending}
-        >
-          <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-            {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
-              <ActivityIndicator size="small" color={Colors.cream} />
-            ) : (
-              <>
-                <Receipt size={24} color={Colors.cream} strokeWidth={2.5} />
-                <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
-              </>
-            )}
-          </Animated.View>
-        </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleCallWaiter}
+                activeOpacity={0.7}
+                disabled={createServiceRequestMutation.isPending}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
+                  {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
+                    <ActivityIndicator size="small" color={Colors.cream} />
+                  ) : (
+                    <>
+                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                        <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
+                      </View>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
+                    </>
+                  )}
+                </Animated.View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.actionButtonPrimary]}
+                onPress={handleViewOrder}
+                activeOpacity={0.7}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
+                    <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+                  </View>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
+                </Animated.View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={handleRequestBill}
+                activeOpacity={0.7}
+                disabled={createServiceRequestMutation.isPending}
+              >
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
+                  {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
+                    <ActivityIndicator size="small" color={Colors.cream} />
+                  ) : (
+                    <>
+                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                        <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+                      </View>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
+                    </>
+                  )}
+                </Animated.View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </Animated.View>
 
       <Modal
@@ -1610,63 +1698,128 @@ const styles = StyleSheet.create({
     }),
   },
 
-  bottomActionsBar: {
-    position: 'absolute',
+  bottomActionsBarContainer: {
+    position: 'absolute' as const,
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 7,
-    paddingBottom: 10,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 16,
-    gap: 5,
+  },
+  bottomActionsBarGlass: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: Platform.select({ ios: 24, default: 16 }),
+    overflow: 'hidden' as const,
+    borderTopWidth: 2,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 -6px 24px rgba(212, 175, 55, 0.25)',
+      },
+    }),
+  },
+  bottomActionsBarFallback: {
+    backgroundColor: 'rgba(61, 1, 1, 0.96)',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: Platform.select({ ios: 24, default: 16 }),
+    overflow: 'hidden' as const,
+    borderTopWidth: 2,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 -6px 24px rgba(212, 175, 55, 0.25)',
+      },
+    }),
+  },
+  bottomActionsBarContent: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    gap: 8,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 14,
-    paddingVertical: 8,
-    paddingHorizontal: 3,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
-  actionButtonHighlight: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.goldDark,
+  actionButtonPrimary: {
+    transform: [{ scale: 1.05 }],
   },
   actionButtonInner: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 6,
+  },
+  actionIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      },
+    }),
+  },
+  actionIconPrimary: {
+    backgroundColor: Colors.gold,
+    borderWidth: 2,
+    borderColor: Colors.goldLight,
+  },
+  actionIconSecondary: {
+    backgroundColor: 'rgba(61, 1, 1, 0.8)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   actionButtonText: {
-    fontSize: 11,
-    fontWeight: '800' as const,
-    color: Colors.cream,
+    fontSize: 10,
+    fontWeight: '700' as const,
     textAlign: 'center' as const,
-    letterSpacing: -0.2,
-    lineHeight: 14,
-  },
-  plateIcon: {
-    width: 28,
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plateIconText: {
-    fontSize: 24,
+    letterSpacing: 0.2,
+    lineHeight: 12,
+    marginTop: 2,
   },
   actionButtonTextLight: {
-    color: Colors.cream,
+    color: 'rgba(255, 255, 255, 0.95)',
+  },
+  actionButtonTextGold: {
+    color: Colors.gold,
   },
   actionButtonTextDark: {
     color: Colors.primary,
