@@ -637,7 +637,10 @@ export default function CustomerOrderScreen() {
     );
   }
 
+  console.log('[CustomerOrder] ====== CUSTOMER ORDER PAGE (REAL VERSION) ======');
   console.log('[CustomerOrder] Rendering customer order screen for table:', table);
+  console.log('[CustomerOrder] This is the REAL customer order page with dark theme and gold accents');
+  console.log('[CustomerOrder] Menu items loaded:', menuData?.length || 0);
 
   return (
     <View style={styles.container}>
@@ -663,6 +666,7 @@ export default function CustomerOrderScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
+          <Text style={styles.debugBadge}>CUSTOMER ORDER</Text>
         </View>
 
         <View style={styles.headerCornerButton}>
@@ -2060,5 +2064,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center' as const,
     lineHeight: 22,
+  },
+  debugBadge: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: Colors.gold,
+    textAlign: 'center' as const,
+    marginTop: 2,
+    opacity: 0.8,
   },
 });
