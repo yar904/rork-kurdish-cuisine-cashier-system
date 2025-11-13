@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +24,7 @@ import { Language } from '@/constants/i18n';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const { language, setLanguage } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -349,7 +351,10 @@ export default function PublicMenuScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.categoryScroll}
-            contentContainerStyle={styles.categoryScrollContent}
+            contentContainerStyle={[
+              styles.categoryScrollContent,
+              { paddingRight: screenWidth - 126 }
+            ]}
             decelerationRate="fast"
             onTouchStart={() => {
               setIsUserScrolling(true);
@@ -653,7 +658,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   categoryScrollContent: {
-    paddingHorizontal: 16,
+    paddingLeft: 16,
     gap: 12,
     paddingVertical: 4,
   },
