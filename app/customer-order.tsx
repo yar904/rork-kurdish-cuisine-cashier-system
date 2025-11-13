@@ -764,10 +764,11 @@ export default function CustomerOrderScreen() {
                 >
                   <View style={styles.categorySection}>
                     <View style={styles.categorySectionHeader}>
-                      <Text style={styles.categorySectionIcon}>{getCategoryIcon(category)}</Text>
+                      <View style={styles.sectionHeaderLine} />
                       <Text style={styles.categorySectionTitle}>
                         {CATEGORY_NAMES[category] || category}
                       </Text>
+                      <View style={styles.sectionHeaderLine} />
                     </View>
                   </View>
                   
@@ -1117,7 +1118,7 @@ export default function CustomerOrderScreen() {
 
 const KurdishCarpetBackground = () => (
   <Image 
-    source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/nsj2ws6pk7ddtlmud3zsq' }}
+    source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/pfi2xp2ednotg7b5lw52y' }}
     style={styles.backgroundImage}
     resizeMode="cover"
   />
@@ -1126,7 +1127,7 @@ const KurdishCarpetBackground = () => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5C1C1C',
+    backgroundColor: '#1a0000',
   },
   backgroundImage: {
     position: 'absolute',
@@ -1139,27 +1140,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.background,
-    paddingHorizontal: 16,
+    backgroundColor: 'rgba(26, 0, 0, 0.85)',
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderBottomWidth: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      },
+    }),
   },
   headerCornerButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.backgroundGray,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
   headerCenter: {
     flex: 1,
@@ -1167,18 +1174,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 50,
-    height: 50,
+    width: 65,
+    height: 65,
   },
   tableIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#D4AF37',
   },
   tableNumber: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#D4AF37',
   },
   loadingContainer: {
     flex: 1,
@@ -1187,28 +1200,44 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundGray,
   },
   categoryFilterSection: {
-    backgroundColor: Colors.primary,
+    backgroundColor: 'transparent',
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 2,
-    borderBottomColor: Colors.gold,
+    borderBottomColor: 'rgba(212, 175, 55, 0.4)',
   },
   categoryScrollContent: {
-    paddingHorizontal: 16,
+    paddingLeft: 16,
     gap: 12,
+    paddingVertical: 4,
   },
   categoryCard: {
-    width: 130,
+    width: 110,
     height: 130,
-    borderRadius: 16,
-    overflow: 'hidden',
+    borderRadius: 14,
+    overflow: 'hidden' as const,
     borderWidth: 2,
-    borderColor: Colors.gold,
-    backgroundColor: Colors.cardBackground,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    backgroundColor: '#1a0000',
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.2)',
+      },
+    }),
   },
   categoryCardActive: {
     borderWidth: 3,
-    borderColor: Colors.goldLight,
+    borderColor: '#D4AF37',
   },
   categoryCardImage: {
     width: '100%',
@@ -1227,48 +1256,63 @@ const styles = StyleSheet.create({
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   categoryCardLabel: {
-    position: 'absolute',
+    position: 'absolute' as const,
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(61, 1, 1, 0.85)',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    alignItems: 'center',
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderTopWidth: 2,
+    borderTopColor: '#D4AF37',
   },
   categoryCardText: {
-    fontSize: 14,
-    fontWeight: '800' as const,
-    color: Colors.cream,
-    letterSpacing: -0.2,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#E8C968',
     textAlign: 'center' as const,
+    letterSpacing: 0.2,
+    lineHeight: 16,
   },
   categoryCardTextActive: {
-    color: Colors.gold,
+    color: '#FFFFFF',
   },
   categorySection: {
     marginTop: 4,
     marginBottom: 0,
   },
   categorySectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingBottom: 12,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: 20,
     paddingHorizontal: 4,
-    backgroundColor: 'transparent',
+  },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#D4AF37',
+    opacity: 0.6,
   },
   categorySectionIcon: {
     fontSize: 28,
   },
   categorySectionTitle: {
-    fontSize: 24,
+    fontSize: 20,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: Colors.text,
-    letterSpacing: -0.5,
+    color: '#E8C968',
+    marginHorizontal: 16,
+    letterSpacing: 0.5,
+    textAlign: 'center' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 22,
+      },
+    }),
   },
   menuList: {
     flex: 1,
@@ -1295,19 +1339,31 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   menuItemGrid: {
-    width: '48%',
-    backgroundColor: '#2D0909',
-    borderRadius: 20,
-    padding: 0,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: Colors.gold,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: 'hidden' as const,
+    width: '48%' as const,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    borderRadius: 14,
+    overflow: 'visible' as const,
+    borderWidth: 2.5,
+    borderColor: '#D4AF37',
+    marginBottom: 0,
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.45,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        width: 'calc(50% - 6px)',
+        minWidth: 160,
+        maxWidth: 250,
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.06)',
+      },
+    }),
   },
   menuItemsGrid: {
     flexDirection: 'row',
@@ -1323,8 +1379,20 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   imageContainerGrid: {
-    position: 'relative',
     width: '100%',
+    height: 100,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    overflow: 'hidden' as const,
+    marginBottom: 0,
+    position: 'relative' as const,
+    ...Platform.select({
+      web: {
+        height: 110,
+      },
+    }),
   },
   menuImage: {
     width: 90,
@@ -1335,36 +1403,35 @@ const styles = StyleSheet.create({
   },
   menuImageGrid: {
     width: '100%',
-    height: 120,
-    borderRadius: 0,
-    borderWidth: 0,
+    height: '100%',
   },
   itemActions: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
+    position: 'absolute' as const,
+    bottom: 6,
+    right: 6,
     flexDirection: 'row',
     gap: 8,
   },
   favoriteButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(61, 1, 1, 0.9)',
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: Colors.gold,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
   },
   addButtonOverlay: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    backgroundColor: 'rgba(212, 175, 55, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: Colors.gold,
+    borderColor: '#E8C968',
   },
   ratingBadge: {
     position: 'absolute',
@@ -1389,27 +1456,46 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   menuInfo: {
-    padding: 12,
-    gap: 4,
+    padding: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   menuName: {
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: Colors.gold,
-    letterSpacing: -0.3,
-    lineHeight: 19,
+    color: '#E8C968',
+    lineHeight: 18,
+    letterSpacing: 0.2,
+    marginBottom: 6,
+    marginTop: 0,
     textAlign: 'center' as const,
+    paddingHorizontal: 2,
+    ...Platform.select({
+      web: {
+        fontSize: 15,
+        lineHeight: 20,
+      },
+    }),
   },
   menuPrice: {
     fontSize: 14,
-    fontWeight: '800' as const,
-    color: '#fff',
-    letterSpacing: -0.3,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.2,
     textAlign: 'center' as const,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
+    alignSelf: 'center' as const,
+    minWidth: '65%' as const,
+    ...Platform.select({
+      web: {
+        fontSize: 15,
+      },
+    }),
   },
 
   bottomActionsBar: {
@@ -1569,20 +1655,21 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     flex: 1,
-    justifyContent: 'center',
+    width: '100%',
+    padding: 60,
     alignItems: 'center',
-    paddingVertical: 100,
+    justifyContent: 'center',
   },
   emptyIcon: {
     fontSize: 80,
     marginBottom: 24,
   },
   emptyTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
   },
   emptySubtitle: {
     fontSize: 16,
