@@ -186,7 +186,12 @@ export default function LandingPage() {
               <View style={styles.separator} />
               
               <RNText style={styles.poweredBy}>Powered by</RNText>
-              <RNText style={styles.brandName}>Yar</RNText>
+              <TouchableOpacity 
+                onPress={() => Linking.openURL('https://www.instagram.com/yar.khader12/')}
+                activeOpacity={0.7}
+              >
+                <RNText style={styles.brandName}>Yar</RNText>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         </LinearGradient>
