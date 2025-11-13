@@ -446,9 +446,9 @@ export default function PublicMenuScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <Animated.View style={[styles.footer, { transform: [{ translateY: headerTranslateY }] }]}>
         <Text style={styles.footerText}>📱 Scan QR code at your table to order</Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }

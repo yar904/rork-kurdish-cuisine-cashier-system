@@ -68,6 +68,7 @@ export default function CustomerOrderScreen() {
   const lastScrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const categoryTranslateY = useRef(new Animated.Value(0)).current;
+  const bottomBarTranslateY = useRef(new Animated.Value(0)).current;
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const menuItemsOpacity = useRef(new Animated.Value(1)).current;
@@ -335,6 +336,11 @@ export default function CustomerOrderScreen() {
           duration: 300,
           useNativeDriver: true,
         }),
+        Animated.timing(bottomBarTranslateY, {
+          toValue: 100,
+          duration: 300,
+          useNativeDriver: true,
+        }),
         Animated.timing(menuItemsOpacity, {
           toValue: 0.4,
           duration: 300,
@@ -353,6 +359,11 @@ export default function CustomerOrderScreen() {
           duration: 300,
           useNativeDriver: true,
         }),
+        Animated.timing(bottomBarTranslateY, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
         Animated.timing(menuItemsOpacity, {
           toValue: 1,
           duration: 300,
@@ -363,7 +374,7 @@ export default function CustomerOrderScreen() {
     
     lastScrollY.current = currentScrollY;
     scrollY.current = currentScrollY;
-  }, [headerTranslateY, categoryTranslateY, menuItemsOpacity]);
+  }, [headerTranslateY, categoryTranslateY, bottomBarTranslateY, menuItemsOpacity]);
 
   const animateButton = (button: keyof typeof buttonScales) => {
     Animated.sequence([
@@ -893,7 +904,7 @@ export default function CustomerOrderScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomActionsBar}>
+      <Animated.View style={[styles.bottomActionsBar, { transform: [{ translateY: bottomBarTranslateY }] }]}>
         <TouchableOpacity 
           style={styles.actionButton}
           onPress={handleReviews}
@@ -951,7 +962,7 @@ export default function CustomerOrderScreen() {
             )}
           </Animated.View>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <Modal
         visible={orderModalVisible}
@@ -1438,24 +1449,24 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    paddingBottom: 14,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    paddingHorizontal: 6,
+    paddingVertical: 7,
+    paddingBottom: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 16,
-    gap: 6,
+    gap: 5,
   },
   actionButton: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 3,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -1470,7 +1481,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionButtonText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700' as const,
     color: Colors.cream,
     textAlign: 'center' as const,
