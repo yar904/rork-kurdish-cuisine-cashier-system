@@ -35,6 +35,8 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const highlightPosition = useRef(new Animated.Value(0)).current;
+  const highlightOpacity = useRef(new Animated.Value(1)).current;
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
   const ratingsStats = ratingsStatsQuery.data || {};
@@ -222,6 +224,11 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
         autoScrollInterval.current = null;
       }
+      Animated.timing(highlightOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
       return;
     }
 
@@ -239,7 +246,21 @@ export default function PublicMenuScreen() {
       }
       
       currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-      const scrollPosition = currentCategoryIndex.current * 140;
+      const scrollPosition = currentCategoryIndex.current * 122;
+      const highlightPos = currentCategoryIndex.current * 122;
+      
+      Animated.parallel([
+        Animated.timing(highlightPosition, {
+          toValue: highlightPos,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(highlightOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
       
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
@@ -270,7 +291,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, categoryScales, isUserScrolling]);
+  }, [categories, categoryScales, isUserScrolling, highlightPosition, highlightOpacity]);
 
   if (ratingsStatsQuery.isLoading) {
     return (
@@ -339,32 +360,42 @@ export default function PublicMenuScreen() {
       </View>
 
       <View style={styles.categorySection}>
-        <ScrollView 
-          ref={categoryScrollViewRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryScrollContent}
-          decelerationRate="fast"
-          onTouchStart={() => {
-            setIsUserScrolling(true);
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-              autoScrollInterval.current = null;
-            }
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-          }}
-          onMomentumScrollEnd={() => {
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-            userScrollTimeout.current = setTimeout(() => {
-              setIsUserScrolling(false);
-            }, 3000);
-          }}
-        >
+        <View style={styles.categoryContainer}>
+          <Animated.View
+            style={[
+              styles.categoryHighlight,
+              {
+                transform: [{ translateX: highlightPosition }],
+                opacity: highlightOpacity,
+              },
+            ]}
+          />
+          <ScrollView 
+            ref={categoryScrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoryScroll}
+            contentContainerStyle={styles.categoryScrollContent}
+            decelerationRate="fast"
+            onTouchStart={() => {
+              setIsUserScrolling(true);
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+            }}
+            onMomentumScrollEnd={() => {
+              if (userScrollTimeout.current) {
+                clearTimeout(userScrollTimeout.current);
+              }
+              userScrollTimeout.current = setTimeout(() => {
+                setIsUserScrolling(false);
+              }, 3000);
+            }}
+          >
           {categories.map((category, index) => {
             const scaleAnim = categoryScales.get(category.id) || new Animated.Value(1);
             if (!categoryScales.has(category.id)) {
@@ -387,6 +418,27 @@ export default function PublicMenuScreen() {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }
                     setSelectedCategory(category.id);
+                    setIsUserScrolling(true);
+                    currentCategoryIndex.current = index;
+                    const highlightPos = index * 122;
+                    Animated.parallel([
+                      Animated.timing(highlightPosition, {
+                        toValue: highlightPos,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(highlightOpacity, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                    ]).start();
+                    if (userScrollTimeout.current) {
+                      clearTimeout(userScrollTimeout.current);
+                    }
+                    userScrollTimeout.current = setTimeout(() => {
+                      setIsUserScrolling(false);
+                    }, 3000);
                   }}
                 >
                   <View style={[
@@ -414,6 +466,7 @@ export default function PublicMenuScreen() {
             );
           })}
         </ScrollView>
+        </View>
       </View>
 
       <ScrollView 
@@ -586,6 +639,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.4)',
   },
+  categoryContainer: {
+    position: 'relative' as const,
+  },
+  categoryHighlight: {
+    position: 'absolute' as const,
+    top: 4,
+    left: 16,
+    width: 110,
+    height: 130,
+    borderRadius: 14,
+    borderWidth: 4,
+    borderColor: '#D4AF37',
+    zIndex: 1,
+    pointerEvents: 'none' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.8), 0 0 40px rgba(212, 175, 55, 0.5)',
+      },
+    }),
+  },
   categoryScroll: {
     backgroundColor: 'transparent',
   },
@@ -685,7 +767,7 @@ const styles = StyleSheet.create({
   menuItemCardHorizontal: {
     width: '48%' as const,
     backgroundColor: 'rgba(26, 0, 0, 0.95)',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'visible' as const,
     borderWidth: 2.5,
     borderColor: '#D4AF37',
@@ -703,8 +785,8 @@ const styles = StyleSheet.create({
       },
       web: {
         width: 'calc(50% - 6px)',
-        minWidth: 180,
-        maxWidth: 300,
+        minWidth: 160,
+        maxWidth: 250,
         boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
       },
     }),
@@ -729,9 +811,9 @@ const styles = StyleSheet.create({
   },
   imageContainerHorizontal: {
     width: '100%',
-    height: 120,
+    height: 100,
     backgroundColor: '#F9FAFB',
-    borderRadius: 16,
+    borderRadius: 14,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     overflow: 'hidden' as const,
@@ -739,7 +821,7 @@ const styles = StyleSheet.create({
     position: 'relative' as const,
     ...Platform.select({
       web: {
-        height: 140,
+        height: 110,
       },
     }),
   },
@@ -783,25 +865,25 @@ const styles = StyleSheet.create({
     color: '#3d0101',
   },
   menuItemContentHorizontal: {
-    padding: 14,
-    paddingTop: 12,
-    paddingBottom: 14,
+    padding: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   menuItemNameHorizontal: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
     color: '#E8C968',
-    lineHeight: 22,
-    letterSpacing: 0.3,
-    marginBottom: 8,
+    lineHeight: 18,
+    letterSpacing: 0.2,
+    marginBottom: 6,
     marginTop: 0,
     textAlign: 'center' as const,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
     ...Platform.select({
       web: {
-        fontSize: 18,
-        lineHeight: 24,
+        fontSize: 15,
+        lineHeight: 20,
       },
     }),
   },
@@ -809,22 +891,22 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
     alignSelf: 'center' as const,
-    minWidth: '70%' as const,
+    minWidth: '65%' as const,
   },
   menuItemPriceHorizontal: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 17,
+        fontSize: 15,
       },
     }),
   },
