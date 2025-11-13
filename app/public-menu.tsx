@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, Globe, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
-import { MENU_ITEMS, CATEGORY_NAMES } from '@/constants/menu';
+import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
 import { Language } from '@/constants/i18n';
@@ -53,10 +53,99 @@ export default function PublicMenuScreen() {
     return item.description;
   };
 
-  const categoriesList = useMemo(() => {
-    const cats = new Set(MENU_ITEMS.map(item => item.category));
-    return ['all', ...Array.from(cats)];
-  }, []);
+  const categories = useMemo(() => [
+    { 
+      id: 'all', 
+      nameKu: 'هەموو', 
+      nameEn: 'All', 
+      nameAr: 'الكل',
+      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'appetizers', 
+      nameKu: 'دەستپێکەکان', 
+      nameEn: 'Appetizers', 
+      nameAr: 'مقبلات',
+      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'soups', 
+      nameKu: 'سوپەکان', 
+      nameEn: 'Soups', 
+      nameAr: 'شوربات',
+      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'salads', 
+      nameKu: 'زەڵاتە', 
+      nameEn: 'Salads', 
+      nameAr: 'سلطات',
+      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'kebabs', 
+      nameKu: 'کەبابەکان', 
+      nameEn: 'Kebabs', 
+      nameAr: 'كباب',
+      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'rice-dishes', 
+      nameKu: 'خواردنی برنج', 
+      nameEn: 'Rice Dishes', 
+      nameAr: 'أطباق أرز',
+      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'stews', 
+      nameKu: 'خۆراک', 
+      nameEn: 'Stews', 
+      nameAr: 'يخنات',
+      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'seafood', 
+      nameKu: 'ماسی', 
+      nameEn: 'Seafood', 
+      nameAr: 'مأكولات بحرية',
+      image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'breads', 
+      nameKu: 'نان', 
+      nameEn: 'Breads', 
+      nameAr: 'خبز',
+      image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'desserts', 
+      nameKu: 'خواردنی شیرین', 
+      nameEn: 'Desserts', 
+      nameAr: 'حلويات',
+      image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'hot-drinks', 
+      nameKu: 'چا و قاوە', 
+      nameEn: 'Tea & Coffee', 
+      nameAr: 'شاي وقهوة',
+      image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'drinks', 
+      nameKu: 'خواردنی سارد', 
+      nameEn: 'Cold Drinks', 
+      nameAr: 'مشروبات باردة',
+      image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'shisha', 
+      nameKu: 'شیەشە', 
+      nameEn: 'Shisha', 
+      nameAr: 'شيشة',
+      image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
+    },
+  ], []);
 
   const filteredItems = useMemo(() => {
     return MENU_ITEMS.filter((item) => {
@@ -64,24 +153,6 @@ export default function PublicMenuScreen() {
       return matchesCategory && item.available;
     });
   }, [selectedCategory]);
-
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      appetizers: '🥗',
-      soups: '🍲',
-      salads: '🥙',
-      kebabs: '🍖',
-      'rice-dishes': '🍚',
-      stews: '🍛',
-      seafood: '🦞',
-      breads: '🍞',
-      desserts: '🍰',
-      drinks: '🥤',
-      shisha: '💨',
-      'hot-drinks': '☕',
-    };
-    return icons[category] || '🍽️';
-  };
 
   const handleItemPress = (item: typeof MENU_ITEMS[0]) => {
     if (Platform.OS !== 'web') {
@@ -138,12 +209,12 @@ export default function PublicMenuScreen() {
   };
 
   React.useEffect(() => {
-    categoriesList.forEach(cat => {
-      if (!categoryScales.has(cat)) {
-        categoryScales.set(cat, new Animated.Value(1));
+    categories.forEach(cat => {
+      if (!categoryScales.has(cat.id)) {
+        categoryScales.set(cat.id, new Animated.Value(1));
       }
     });
-  }, [categoriesList, categoryScales]);
+  }, [categories, categoryScales]);
 
   React.useEffect(() => {
     if (isUserScrolling) {
@@ -158,7 +229,7 @@ export default function PublicMenuScreen() {
       if (!categoryScrollViewRef.current) return;
       
       const prevIndex = currentCategoryIndex.current;
-      const prevScale = categoryScales.get(categoriesList[prevIndex]);
+      const prevScale = categoryScales.get(categories[prevIndex].id);
       if (prevScale) {
         Animated.timing(prevScale, {
           toValue: 1,
@@ -167,7 +238,7 @@ export default function PublicMenuScreen() {
         }).start();
       }
       
-      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categoriesList.length;
+      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
       const scrollPosition = currentCategoryIndex.current * 140;
       
       categoryScrollViewRef.current.scrollTo({ 
@@ -175,7 +246,7 @@ export default function PublicMenuScreen() {
         animated: true 
       });
       
-      const currentScale = categoryScales.get(categoriesList[currentCategoryIndex.current]);
+      const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
       if (currentScale) {
         Animated.sequence([
           Animated.timing(currentScale, {
@@ -199,7 +270,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categoriesList, categoryScales, isUserScrolling]);
+  }, [categories, categoryScales, isUserScrolling]);
 
   if (ratingsStatsQuery.isLoading) {
     return (
@@ -294,17 +365,17 @@ export default function PublicMenuScreen() {
             }, 3000);
           }}
         >
-          {categoriesList.map((category) => {
-            const scaleAnim = categoryScales.get(category) || new Animated.Value(1);
-            if (!categoryScales.has(category)) {
-              categoryScales.set(category, scaleAnim);
+          {categories.map((category, index) => {
+            const scaleAnim = categoryScales.get(category.id) || new Animated.Value(1);
+            if (!categoryScales.has(category.id)) {
+              categoryScales.set(category.id, scaleAnim);
             }
-            const categoryName = CATEGORY_NAMES[category] || category;
-            const isActive = selectedCategory === category;
+            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+            const isActive = selectedCategory === category.id;
             
             return (
               <Animated.View
-                key={category}
+                key={category.id}
                 style={{
                   transform: [{ scale: scaleAnim }],
                 }}
@@ -315,7 +386,7 @@ export default function PublicMenuScreen() {
                     if (Platform.OS !== 'web') {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }
-                    setSelectedCategory(category);
+                    setSelectedCategory(category.id);
                   }}
                 >
                   <View style={[
@@ -323,9 +394,12 @@ export default function PublicMenuScreen() {
                     isActive && styles.categoryCardActive,
                   ]}>
                     {isActive && <View style={styles.activeIndicatorDot} />}
-                    <View style={styles.categoryIconContainer}>
-                      <Text style={styles.categoryIconText}>{getCategoryIcon(category)}</Text>
-                    </View>
+                    <Image
+                      source={{ uri: category.image }}
+                      style={styles.categoryImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.categoryOverlay} />
                     <View style={styles.categoryTextContainer}>
                       <Text style={[
                         styles.categoryText,
@@ -768,15 +842,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     textAlign: 'center' as const,
   },
-  categoryIconContainer: {
-    flex: 1,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    paddingTop: 20,
-  },
-  categoryIconText: {
-    fontSize: 48,
-  },
+
 
   itemModalOverlay: {
     flex: 1,
