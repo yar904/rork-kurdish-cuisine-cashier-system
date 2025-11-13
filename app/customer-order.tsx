@@ -655,23 +655,7 @@ export default function CustomerOrderScreen() {
     }
   }, [orderModalVisible, cart.length, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
 
-  if (menuQuery.isLoading) {
-    console.log('[CustomerOrder] Loading menu data...');
-    return (
-      <View style={styles.loadingContainer}>
-        <KurdishCarpetBackground />
-        <View style={styles.loadingContent}>
-          <Image 
-            source={require('@/assets/images/icon.png')} 
-            style={styles.loadingLogo}
-            resizeMode="contain"
-          />
-          <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 20 }} />
-          <Text style={styles.loadingText}>Loading Menu...</Text>
-        </View>
-      </View>
-    );
-  }
+
 
   if (!table) {
     console.log('[CustomerOrder] No table number provided');
