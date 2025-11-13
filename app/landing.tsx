@@ -43,7 +43,7 @@ export default function LandingPage() {
   };
 
   const handleContinue = () => {
-    router.replace('/menu');
+    router.replace('/public-menu');
   };
 
 
