@@ -254,7 +254,7 @@ export default function PublicMenuScreen() {
       });
     };
 
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 5000);
+    autoScrollInterval.current = setInterval(scrollToNextCategory, 3500);
 
     return () => {
       if (autoScrollInterval.current) {
@@ -323,7 +323,7 @@ export default function PublicMenuScreen() {
 
       <View style={styles.categoryScrollSection}>
         <View style={styles.categoryContainer}>
-          <View style={styles.categoryHighlight} />
+          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
           <ScrollView 
             ref={categoryScrollViewRef}
             horizontal
@@ -353,8 +353,8 @@ export default function PublicMenuScreen() {
           {categories.map((category, index) => {
             const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
             const isActive = selectedCategory === category.id;
-            const isNearGlow = Math.abs(index - currentCategoryIndex.current) <= 1;
-            const cardScale = isNearGlow ? 1 : 0.8;
+            const isInGlow = !isUserScrolling && index === currentCategoryIndex.current;
+            const cardScale = isInGlow ? 1 : 0.75;
             
             return (
               <TouchableOpacity
@@ -621,6 +621,9 @@ const styles = StyleSheet.create({
         boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6), 0 0 150px rgba(212, 175, 55, 0.3), inset 0 0 40px rgba(212, 175, 55, 0.2)',
       },
     }),
+  },
+  categoryHighlightHidden: {
+    opacity: 0,
   },
   categoryScroll: {
     backgroundColor: 'transparent',
