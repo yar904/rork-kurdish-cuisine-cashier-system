@@ -405,20 +405,21 @@ export default function PublicMenuScreen() {
                           {item.image && (
                             <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
                               <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
-                              {avgRating > 0 && (
-                                <View style={styles.ratingBadge}>
-                                  <Star size={12} color="#fff" fill="#fff" />
-                                  <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
-                                  <Text style={styles.ratingCount}>({totalRatings})</Text>
-                                </View>
-                              )}
                             </View>
                           )}
                           <View style={styles.menuInfo}>
-                            <Text style={[
-                              styles.menuName,
-                              language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
-                            ]}>{item.name}</Text>
+                            <View style={styles.nameRatingRow}>
+                              <Text style={[
+                                styles.menuName,
+                                language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
+                              ]}>{item.name}</Text>
+                              {avgRating > 0 && (
+                                <View style={styles.ratingBadgeInline}>
+                                  <Star size={14} color={Colors.gold} fill={Colors.gold} />
+                                  <Text style={styles.ratingTextInline}>{avgRating.toFixed(1)}</Text>
+                                </View>
+                              )}
+                            </View>
                             <Text style={[
                               styles.menuDescription,
                               language === 'en' && { fontFamily: 'CormorantGaramond_400Regular' }
@@ -677,27 +678,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
   },
-  ratingBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
+  nameRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 4,
+    width: '100%',
   },
-  ratingText: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#fff',
+  ratingBadgeInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.gold,
   },
-  ratingCount: {
-    fontSize: 9,
-    fontWeight: '600' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
+  ratingTextInline: {
+    fontSize: 13,
+    fontWeight: '800' as const,
+    color: Colors.gold,
+    letterSpacing: -0.2,
   },
   menuInfo: {
     flex: 1,
@@ -713,7 +717,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
     textAlign: 'left' as const,
     lineHeight: 20,
-    marginBottom: 4,
+    flex: 1,
   },
   menuDescription: {
     fontSize: 13,
