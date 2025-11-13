@@ -138,6 +138,7 @@ export default function CustomerOrderScreen() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: (data, variables) => {
+      console.log('[CustomerOrder] Service request sent successfully');
       const requestType = variables.requestType;
       if (data && table) {
         notifyServiceRequest(parseInt(table), requestType);
@@ -179,27 +180,7 @@ export default function CustomerOrderScreen() {
       });
     },
     onError: (error) => {
-      setRequestStatus({
-        type: null,
-        message: '❌ Failed to send request. Please try again.',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      console.log('[CustomerOrder] Service request mutation error handled');
     },
   });
 
@@ -394,7 +375,27 @@ export default function CustomerOrderScreen() {
   const handleCallWaiter = async () => {
     animateButton('waiter');
     if (!table) {
-      Alert.alert('Error', 'Table number not found');
+      setRequestStatus({
+        type: null,
+        message: '❌ Table number not found',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
       return;
     }
 
@@ -406,8 +407,8 @@ export default function CustomerOrderScreen() {
         requestType: 'waiter',
         messageText: 'Customer requesting assistance',
       });
-    } catch (error) {
-      console.error('[CustomerOrder] Call waiter request failed', error);
+    } catch (error: any) {
+      console.log('[CustomerOrder] Call waiter could not be sent - showing user message');
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please call a waiter manually.',
@@ -435,7 +436,27 @@ export default function CustomerOrderScreen() {
   const handleRequestBill = async () => {
     animateButton('bill');
     if (!table) {
-      Alert.alert('Error', 'Table number not found');
+      setRequestStatus({
+        type: null,
+        message: '❌ Table number not found',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
+      });
       return;
     }
 
@@ -447,8 +468,8 @@ export default function CustomerOrderScreen() {
         requestType: 'bill',
         messageText: 'Customer requesting bill',
       });
-    } catch (error) {
-      console.error('[CustomerOrder] Request bill failed', error);
+    } catch (error: any) {
+      console.log('[CustomerOrder] Request bill could not be sent - showing user message');
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please ask your waiter for the bill.',
