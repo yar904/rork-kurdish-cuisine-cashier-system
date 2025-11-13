@@ -13,8 +13,8 @@ const getBaseUrl = () => {
   }
 
   if (typeof window !== 'undefined') {
-    console.log('[tRPC] Using localhost URL for web');
-    return 'http://localhost:3000/api';
+    console.log('[tRPC] Using window origin for web:', window.location.origin);
+    return window.location.origin + '/.netlify/functions/api';
   }
 
   console.log('[tRPC] Using localhost URL');
@@ -30,10 +30,14 @@ export const trpcClient = trpc.createClient({
         console.log('[tRPC] Request URL:', url);
         console.log('[tRPC] Request options:', JSON.stringify(options, null, 2));
         return fetch(url, options)
-          .then(response => {
+          .then(async response => {
             console.log('[tRPC] Response status:', response.status);
+            console.log('[tRPC] Response headers:', JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+            
             if (!response.ok) {
+              const text = await response.clone().text();
               console.error('[tRPC] Response not OK:', response.status, response.statusText);
+              console.error('[tRPC] Response body (first 500 chars):', text.substring(0, 500));
             }
             return response;
           })
