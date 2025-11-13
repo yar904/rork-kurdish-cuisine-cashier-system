@@ -255,9 +255,9 @@ export default function PublicMenuScreen() {
         }).start();
       }
       
-      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-      const scrollPosition = currentCategoryIndex.current * 122;
-      const highlightPos = currentCategoryIndex.current * 122;
+      const nextIndex = (currentCategoryIndex.current + 1) % categories.length;
+      const scrollPosition = nextIndex * 122;
+      const highlightPos = nextIndex * 122;
       
       Animated.parallel([
         Animated.timing(highlightPosition, {
@@ -266,7 +266,8 @@ export default function PublicMenuScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        const currentScale = categoryScales.get(categories[currentCategoryIndex.current].id);
+        currentCategoryIndex.current = nextIndex;
+        const currentScale = categoryScales.get(categories[nextIndex].id);
         if (currentScale) {
           Animated.timing(currentScale, {
             toValue: 1,
