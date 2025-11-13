@@ -1106,63 +1106,23 @@ export default function CustomerOrderScreen() {
 }
 
 const KurdishCarpetBackground = () => (
-  <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
-    <Defs>
-      <Pattern
-        id="carpet-pattern"
-        patternUnits="userSpaceOnUse"
-        width="120"
-        height="120"
-      >
-        <Rect width="120" height="120" fill="#5C1C1C" />
-        <G opacity="0.3">
-          <Path
-            d="M60,20 L70,40 L60,60 L50,40 Z"
-            fill="#D4AF37"
-            stroke="#8B6914"
-            strokeWidth="1"
-          />
-          <Path
-            d="M20,60 L40,70 L60,60 L40,50 Z"
-            fill="#C41E3A"
-            stroke="#8B0000"
-            strokeWidth="1"
-          />
-          <Path
-            d="M100,60 L80,70 L60,60 L80,50 Z"
-            fill="#C41E3A"
-            stroke="#8B0000"
-            strokeWidth="1"
-          />
-          <Path
-            d="M60,100 L70,80 L60,60 L50,80 Z"
-            fill="#D4AF37"
-            stroke="#8B6914"
-            strokeWidth="1"
-          />
-          <Path
-            d="M30,30 Q35,25 40,30 T50,30"
-            stroke="#FFD700"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <Path
-            d="M70,90 Q75,85 80,90 T90,90"
-            stroke="#FFD700"
-            strokeWidth="1.5"
-            fill="none"
-          />
-        </G>
-      </Pattern>
-    </Defs>
-    <Rect width="100%" height="100%" fill="url(#carpet-pattern)" />
-  </Svg>
+  <Image 
+    source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/nsj2ws6pk7ddtlmud3zsq' }}
+    style={styles.backgroundImage}
+    resizeMode="cover"
+  />
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#5C1C1C',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 1,
   },
 
   customHeader: {
