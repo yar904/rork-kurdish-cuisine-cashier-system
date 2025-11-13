@@ -354,27 +354,9 @@ export default function PublicMenuScreen() {
             </Text>
           </View>
         ) : (
-          <>
-            {categoriesList.filter(cat => cat !== 'all').map((category) => {
-              const categoryItems = filteredItems.filter(item => item.category === category);
-              if (categoryItems.length === 0) return null;
-              
-              return (
-                <View key={category}>
-                  <View style={styles.categorySectionHeader}>
-                    <Text style={styles.categorySectionIcon}>{getCategoryIcon(category)}</Text>
-                    <Text style={styles.categorySectionTitle}>
-                      {CATEGORY_NAMES[category] || category}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.menuGrid}>
-                    {categoryItems.map(renderMenuItem)}
-                  </View>
-                </View>
-              );
-            })}
-          </>
+          <View style={styles.menuGrid}>
+            {filteredItems.map(renderMenuItem)}
+          </View>
         )}
       </ScrollView>
 
@@ -795,25 +777,7 @@ const styles = StyleSheet.create({
   categoryIconText: {
     fontSize: 48,
   },
-  categorySectionHeader: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 8,
-    paddingBottom: 12,
-    paddingHorizontal: 4,
-    paddingTop: 12,
-    backgroundColor: 'transparent',
-  },
-  categorySectionIcon: {
-    fontSize: 28,
-  },
-  categorySectionTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: '#E8C968',
-    letterSpacing: -0.5,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-  },
+
   itemModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
