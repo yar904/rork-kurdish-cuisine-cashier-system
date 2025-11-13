@@ -18,11 +18,13 @@ import { Star, Globe, Grid3x3, List } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
+import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function PublicMenuScreen() {
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
+  const { language } = useLanguage();
   
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isGridView, setIsGridView] = useState<boolean>(true);
@@ -400,12 +402,21 @@ export default function PublicMenuScreen() {
                             </View>
                           )}
                           <View style={styles.menuInfo}>
-                            <Text style={styles.menuName}>{item.name}</Text>
-                            <Text style={styles.menuDescription} numberOfLines={2}>
+                            <Text style={[
+                              styles.menuName,
+                              language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
+                            ]}>{item.name}</Text>
+                            <Text style={[
+                              styles.menuDescription,
+                              language === 'en' && { fontFamily: 'CormorantGaramond_400Regular' }
+                            ]} numberOfLines={2}>
                               {item.description}
                             </Text>
                             <View style={styles.priceContainer}>
-                              <Text style={styles.menuPrice}>${item.price.toFixed(2)}</Text>
+                              <Text style={[
+                                styles.menuPrice,
+                                language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
+                              ]}>${item.price.toFixed(2)}</Text>
                             </View>
                           </View>
                         </Animated.View>
@@ -677,22 +688,24 @@ const styles = StyleSheet.create({
   },
   menuInfo: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 4,
   },
   menuName: {
-    fontSize: 20,
-    fontWeight: '800' as const,
+    fontSize: 18,
+    fontWeight: '700' as const,
     color: Colors.text,
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    marginBottom: 16,
+    letterSpacing: -0.3,
     textAlign: 'center' as const,
+    lineHeight: 24,
   },
   menuDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
-    marginBottom: 12,
-    fontWeight: '500' as const,
+    marginBottom: 16,
+    fontWeight: '400' as const,
     lineHeight: 18,
     textAlign: 'center' as const,
   },
@@ -700,16 +713,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(212, 175, 55, 0.2)',
+    paddingTop: 16,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(212, 175, 55, 0.25)',
+    width: '100%',
   },
   menuPrice: {
-    fontSize: 24,
-    fontWeight: '900' as const,
+    fontSize: 22,
+    fontWeight: '700' as const,
     color: Colors.gold,
-    letterSpacing: -0.8,
+    letterSpacing: -0.5,
   },
   emptyState: {
     flex: 1,

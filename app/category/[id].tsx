@@ -86,11 +86,17 @@ export default function CategoryDetailScreen() {
             </View>
           )}
           <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemName} numberOfLines={2}>
+            <Text style={[
+              styles.menuItemName,
+              language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
+            ]} numberOfLines={2}>
               {getItemName(item)}
             </Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+              <Text style={[
+                styles.menuItemPrice,
+                language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
+              ]}>{formatPrice(item.price)}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -501,20 +507,22 @@ const styles = StyleSheet.create({
   menuItemContent: {
     padding: 12,
     position: 'relative' as const,
+    justifyContent: 'space-between',
+    minHeight: 90,
   },
   menuItemName: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
-    fontWeight: '800' as const,
+    fontWeight: '700' as const,
     color: '#E8C968',
-    lineHeight: 20,
-    letterSpacing: 0.3,
-    marginBottom: 8,
+    lineHeight: 22,
+    letterSpacing: 0.2,
+    marginBottom: 12,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 17,
-        lineHeight: 22,
+        fontSize: 18,
+        lineHeight: 24,
       },
     }),
   },
@@ -534,17 +542,20 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     alignItems: 'center' as const,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.25)',
   },
   menuItemPrice: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
     color: 'rgba(255, 255, 255, 0.95)',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
     textAlign: 'center' as const,
     ...Platform.select({
       web: {
-        fontSize: 16,
+        fontSize: 18,
       },
     }),
   },
