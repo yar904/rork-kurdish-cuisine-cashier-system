@@ -810,22 +810,17 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: 16,
+        shadowOpacity: 0.45,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 6,
+        elevation: 5,
       },
       web: {
         width: 'calc(50% - 6px)',
         minWidth: 160,
         maxWidth: 250,
-        boxShadow: `
-          0 0 30px rgba(212, 175, 55, 0.2),
-          -8px -8px 24px rgba(212, 175, 55, 0.15),
-          8px 8px 24px rgba(212, 175, 55, 0.15),
-          inset 0 0 20px rgba(212, 175, 55, 0.08)
-        `,
+        boxShadow: '0 0 20px rgba(212, 175, 55, 0.3), inset 0 0 15px rgba(212, 175, 55, 0.06)',
       },
     }),
   },
@@ -836,19 +831,14 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.7,
-        shadowRadius: 20,
+        shadowOpacity: 0.6,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       web: {
-        boxShadow: `
-          0 0 40px rgba(212, 175, 55, 0.25),
-          -10px -10px 30px rgba(212, 175, 55, 0.2),
-          10px 10px 30px rgba(212, 175, 55, 0.2),
-          inset 0 0 25px rgba(212, 175, 55, 0.12)
-        `,
+        boxShadow: '0 0 28px rgba(212, 175, 55, 0.35), inset 0 0 20px rgba(212, 175, 55, 0.08)',
       },
     }),
   },
