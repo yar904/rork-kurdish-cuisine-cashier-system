@@ -12,6 +12,7 @@ export default function DebugEntryScreen() {
 
   const navigateToCustomerOrder = () => {
     console.log('[DebugEntry] Navigating to customer-order with table=1');
+    console.log('🔥 LOADING REAL CUSTOMER ORDER PAGE 🔥');
     router.push('/customer-order?table=1');
   };
 

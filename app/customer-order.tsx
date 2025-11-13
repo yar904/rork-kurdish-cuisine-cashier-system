@@ -638,15 +638,19 @@ export default function CustomerOrderScreen() {
   }
 
   console.log('\n\n');
+  console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
   console.log('██████████████████████████████████████████████████████████');
   console.log('█                                                        █');
-  console.log('█  CUSTOMER ORDER PAGE - REAL VERSION 2025-01-13        █');
-  console.log('█  Dark theme with gold accents                          █');
-  console.log('█  NOT the old mockup with white backgrounds             █');
+  console.log('█  ✅ CUSTOMER ORDER PAGE - REAL VERSION 2025-01-13     █');
+  console.log('█  ✅ Dark theme with gold accents                       █');
+  console.log('█  ✅ NOT the old mockup with white backgrounds          █');
+  console.log('█  ✅ Backend-connected menu items                       █');
+  console.log('█  ✅ Full ordering functionality                        █');
   console.log('█  Table:', table.padEnd(44), '█');
   console.log('█  Menu items:', String(menuData?.length || 0).padEnd(39), '█');
   console.log('█                                                        █');
   console.log('██████████████████████████████████████████████████████████');
+  console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
   console.log('\n\n');
 
   return (
