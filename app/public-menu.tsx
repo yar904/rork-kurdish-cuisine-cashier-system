@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,836 +7,679 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
+  ImageBackground,
   Platform,
-  useWindowDimensions,
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { Star, Globe, Grid3x3, List } from 'lucide-react-native';
-import { Colors } from '@/constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Star, Globe } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
-import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
+import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { formatPrice } from '@/constants/currency';
+import { Language } from '@/constants/i18n';
 
 export default function PublicMenuScreen() {
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width > 768;
-  const { language } = useLanguage();
-  
+  const insets = useSafeAreaInsets();
+  const { language, setLanguage } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isGridView, setIsGridView] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const scrollViewRef = useRef<ScrollView>(null);
-  const categoryRefs = useRef<Map<string, number>>(new Map());
-  const [languageModalVisible, setLanguageModalVisible] = useState(false);
-  
-  const scrollY = useRef(0);
-  const lastScrollY = useRef(0);
-  const headerTranslateY = useRef(new Animated.Value(0)).current;
-  const categoryTranslateY = useRef(new Animated.Value(0)).current;
-  const categoryScrollViewRef = useRef<ScrollView>(null);
-  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
-  const menuItemsOpacity = useRef(new Animated.Value(1)).current;
-  const [categoryScales] = useState(new Map<string, Animated.Value>());
-  const currentCategoryIndex = useRef(0);
-  const categoryWidths = useRef<number[]>([]);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
-  const menuQuery = trpc.menu.getAll.useQuery();
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
-  
-  const menuData = menuQuery.data || [];
+  const ratingsStats = ratingsStatsQuery.data || {};
 
-  const categories = useMemo(() => {
-    const cats = new Set(menuData?.map(item => item.category) || []);
-    return ['all', ...Array.from(cats)];
-  }, [menuData]);
+  const categories = [
+    { 
+      id: 'all', 
+      nameKu: 'هەموو', 
+      nameEn: 'All', 
+      nameAr: 'الكل',
+      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'appetizers', 
+      nameKu: 'دەستپێکەکان', 
+      nameEn: 'Appetizers', 
+      nameAr: 'مقبلات',
+      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'soups', 
+      nameKu: 'سوپەکان', 
+      nameEn: 'Soups', 
+      nameAr: 'شوربات',
+      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'salads', 
+      nameKu: 'زەڵاتە', 
+      nameEn: 'Salads', 
+      nameAr: 'سلطات',
+      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'kebabs', 
+      nameKu: 'کەبابەکان', 
+      nameEn: 'Kebabs', 
+      nameAr: 'كباب',
+      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'rice-dishes', 
+      nameKu: 'خواردنی برنج', 
+      nameEn: 'Rice Dishes', 
+      nameAr: 'أطباق أرز',
+      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'stews', 
+      nameKu: 'خۆراک', 
+      nameEn: 'Stews', 
+      nameAr: 'يخنات',
+      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'seafood', 
+      nameKu: 'ماسی', 
+      nameEn: 'Seafood', 
+      nameAr: 'مأكولات بحرية',
+      image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'breads', 
+      nameKu: 'نان', 
+      nameEn: 'Breads', 
+      nameAr: 'خبز',
+      image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'desserts', 
+      nameKu: 'خواردنی شیرین', 
+      nameEn: 'Desserts', 
+      nameAr: 'حلويات',
+      image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'hot-drinks', 
+      nameKu: 'چا و قاوە', 
+      nameEn: 'Tea & Coffee', 
+      nameAr: 'شاي وقهوة',
+      image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'drinks', 
+      nameKu: 'خواردنی سارد', 
+      nameEn: 'Cold Drinks', 
+      nameAr: 'مشروبات باردة',
+      image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
+    },
+    { 
+      id: 'shisha', 
+      nameKu: 'شیەشە', 
+      nameEn: 'Shisha', 
+      nameAr: 'شيشة',
+      image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
+    },
+  ];
 
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      appetizers: '🥗',
-      soups: '🍲',
-      salads: '🥙',
-      kebabs: '🍖',
-      'rice-dishes': '🍚',
-      stews: '🍛',
-      seafood: '🦞',
-      breads: '🍞',
-      desserts: '🍰',
-      drinks: '🥤',
-      shisha: '💨',
-      'hot-drinks': '☕',
-    };
-    return icons[category] || '🍽️';
+  const getItemName = (item: typeof MENU_ITEMS[0]) => {
+    if (language === 'ar') return item.nameArabic;
+    if (language === 'ku') return item.nameKurdish;
+    return item.name;
   };
 
-  const scrollToCategory = (category: string) => {
-    const yOffset = categoryRefs.current.get(category);
-    if (yOffset !== undefined && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: yOffset - 20, animated: true });
-    }
+  const getItemDescription = (item: typeof MENU_ITEMS[0]) => {
+    if (language === 'ar') return item.descriptionArabic;
+    if (language === 'ku') return item.descriptionKurdish;
+    return item.description;
   };
 
-  const filteredMenu = useMemo(() => {
-    if (!menuData) return [];
-    let items = menuData.filter(item => item.available);
-    
-    if (selectedCategory !== 'all') {
-      items = items.filter(item => item.category === selectedCategory);
-    }
-    
-    if (searchQuery.trim()) {
-      items = items.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    return items;
-  }, [menuData, selectedCategory, searchQuery]);
-
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDelta = currentScrollY - lastScrollY.current;
-    
-    if (Math.abs(scrollDelta) < 5) return;
-    
-    if (scrollDelta > 0 && currentScrollY > 100) {
-      Animated.parallel([
-        Animated.timing(headerTranslateY, {
-          toValue: -150,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(categoryTranslateY, {
-          toValue: -150,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(menuItemsOpacity, {
-          toValue: 0.4,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else if (scrollDelta < 0) {
-      Animated.parallel([
-        Animated.timing(headerTranslateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(categoryTranslateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(menuItemsOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-    
-    lastScrollY.current = currentScrollY;
-    scrollY.current = currentScrollY;
-  }, [headerTranslateY, categoryTranslateY, menuItemsOpacity]);
-
-  useEffect(() => {
-    categories.forEach(cat => {
-      if (!categoryScales.has(cat)) {
-        categoryScales.set(cat, new Animated.Value(1));
-      }
+  const filteredItems = useMemo(() => {
+    return MENU_ITEMS.filter((item) => {
+      const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+      return matchesCategory && item.available;
     });
-  }, [categories, categoryScales]);
+  }, [selectedCategory]);
 
-  useEffect(() => {
-    if (isUserScrolling) {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-        autoScrollInterval.current = null;
-      }
-      return;
-    }
+  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+    const isPremium = item.price > 25000;
+    const itemStats = ratingsStats[item.id];
+    const hasRatings = itemStats && itemStats.totalRatings > 0;
+    
+    return (
+      <View 
+        key={item.id} 
+        style={[styles.menuItemCard, isPremium && styles.premiumCard]}
+      >
+        {item.image && (
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.menuItemImage}
+              resizeMode="cover"
+            />
+            {hasRatings && (
+              <View style={styles.ratingBadgeOnImage}>
+                <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                <Text style={styles.ratingTextOnImage}>{itemStats.averageRating.toFixed(1)}</Text>
+              </View>
+            )}
+            {isPremium && (
+              <View style={styles.premiumBadgeOnImage}>
+                <Text style={styles.premiumBadgeOnImageText}>★</Text>
+              </View>
+            )}
+          </View>
+        )}
+        
+        <View style={styles.menuItemContent}>
+          <Text style={styles.menuItemName} numberOfLines={2}>
+            {getItemName(item)}
+          </Text>
+          
+          <Text style={styles.menuItemDescription} numberOfLines={2}>
+            {getItemDescription(item)}
+          </Text>
+          
+          <View style={styles.priceHighlight}>
+            <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
-    const scrollToNextCategory = () => {
-      if (!categoryScrollViewRef.current || categories.length === 0) return;
-      
-      const prevIndex = currentCategoryIndex.current;
-      const prevScale = categoryScales.get(categories[prevIndex]);
-      if (prevScale) {
-        Animated.timing(prevScale, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
-      
-      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
-      
-      let scrollPosition = 0;
-      if (categoryWidths.current.length > 0) {
-        for (let i = 0; i < currentCategoryIndex.current && i < categoryWidths.current.length; i++) {
-          scrollPosition += categoryWidths.current[i] + 12;
-        }
-      } else {
-        scrollPosition = currentCategoryIndex.current * 130;
-      }
-      
-      categoryScrollViewRef.current.scrollTo({ 
-        x: scrollPosition, 
-        animated: true 
-      });
-      
-      const currentScale = categoryScales.get(categories[currentCategoryIndex.current]);
-      if (currentScale) {
-        Animated.sequence([
-          Animated.timing(currentScale, {
-            toValue: 1.15,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(currentScale, {
-            toValue: 1.05,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-    };
-
-    const interval = setInterval(scrollToNextCategory, 2500);
-    autoScrollInterval.current = interval;
-
-    return () => {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-      }
-    };
-  }, [categories, categoryScales, isUserScrolling]);
-
-  if (menuQuery.isLoading) {
-    console.log('[PublicMenu] Loading menu data...');
+  if (ratingsStatsQuery.isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color="#D4AF37" />
       </View>
     );
   }
 
-  console.log('[PublicMenu] Rendering public menu screen');
-
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+    <ImageBackground
+      source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/pfi2xp2ednotg7b5lw52y' }}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <Stack.Screen options={{ headerShown: false }} />
 
-      <Animated.View style={[styles.customHeader, { transform: [{ translateY: headerTranslateY }] }]}>
-        <TouchableOpacity 
-          style={styles.headerCornerButton}
-          onPress={() => setLanguageModalVisible(true)}
-          activeOpacity={0.7}
-        >
-          <Globe size={24} color={Colors.primary} strokeWidth={2} />
-        </TouchableOpacity>
-
-        <View style={styles.headerCenter}>
-          <Image 
-            source={require('@/assets/images/icon.png')} 
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.headerTitle}>Kurdish Cuisine</Text>
-        </View>
-
-        <View style={styles.headerCornerButton} />
-      </Animated.View>
-
-      <LanguageSwitcher
-        visible={languageModalVisible}
-        onClose={() => setLanguageModalVisible(false)}
-      />
-
-      <Animated.View style={[styles.categoryFilterSection, { transform: [{ translateY: categoryTranslateY }] }]}>
-        <View style={styles.categoryFilterHeader}>
-          <Text style={styles.categoryFilterTitle}>Categories</Text>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerTop}>
           <TouchableOpacity 
-            onPress={() => setIsGridView(!isGridView)}
-            style={styles.viewToggleButton}
+            style={styles.headerIconButton}
+            onPress={() => setShowLanguageMenu(!showLanguageMenu)}
             activeOpacity={0.7}
           >
-            {isGridView ? (
-              <Grid3x3 size={20} color={Colors.gold} strokeWidth={2.5} />
-            ) : (
-              <List size={20} color={Colors.gold} strokeWidth={2.5} />
-            )}
+            <Globe size={24} color="#D4AF37" strokeWidth={2} />
           </TouchableOpacity>
+          
+          <View style={styles.headerLogoContainer}>
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zz04l0d1dzw9z6075ukb4' }}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+          </View>
+          
+          <View style={styles.viewOnlyBadge}>
+            <Text style={styles.viewOnlyBadgeText}>
+              {language === 'en' ? 'Menu' : language === 'ku' ? 'لیست' : 'قائمة'}
+            </Text>
+          </View>
         </View>
-        <ScrollView
-          ref={categoryScrollViewRef}
+
+        {showLanguageMenu && (
+          <View style={styles.languageMenu}>
+            {(['en', 'ku', 'ar'] as Language[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                style={[
+                  styles.languageOption,
+                  language === lang && styles.languageOptionActive,
+                ]}
+                onPress={() => {
+                  setLanguage(lang);
+                  setShowLanguageMenu(false);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.languageOptionText,
+                    language === lang && styles.languageOptionTextActive,
+                  ]}
+                >
+                  {lang === 'en' ? 'English' : lang === 'ku' ? 'کوردی' : 'العربية'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
+      <View style={styles.categorySection}>
+        <ScrollView 
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.categoryScroll}
           contentContainerStyle={styles.categoryScrollContent}
-          onTouchStart={() => {
-            setIsUserScrolling(true);
-            if (autoScrollInterval.current) {
-              clearInterval(autoScrollInterval.current);
-              autoScrollInterval.current = null;
-            }
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-          }}
-          onMomentumScrollEnd={() => {
-            if (userScrollTimeout.current) {
-              clearTimeout(userScrollTimeout.current);
-            }
-            userScrollTimeout.current = setTimeout(() => {
-              setIsUserScrolling(false);
-            }, 3000);
-          }}
+          decelerationRate="fast"
         >
           {categories.map((category) => {
-            const scaleAnim = categoryScales.get(category) || new Animated.Value(1);
-            if (!categoryScales.has(category)) {
-              categoryScales.set(category, scaleAnim);
-            }
+            const categoryName = language === 'ku' ? category.nameKu : language === 'ar' ? category.nameAr : category.nameEn;
+            const isActive = selectedCategory === category.id;
             
             return (
-              <Animated.View
-                key={category}
-                style={{
-                  transform: [{ scale: scaleAnim }],
-                }}
-                onLayout={(event) => {
-                  const { width } = event.nativeEvent.layout;
-                  const index = categories.indexOf(category);
-                  if (index !== -1) {
-                    categoryWidths.current[index] = width;
+              <TouchableOpacity
+                key={category.id}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }
+                  setSelectedCategory(category.id);
                 }}
               >
-                <TouchableOpacity
-                  style={[
-                    styles.categoryChip,
-                    selectedCategory === category && styles.categoryChipActive
-                  ]}
-                  onPress={() => {
-                    setSelectedCategory(category);
-                    if (category !== 'all') {
-                      scrollToCategory(category);
-                    }
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.categoryChipIcon}>{getCategoryIcon(category)}</Text>
-                  <Text style={[
-                    styles.categoryChipText,
-                    selectedCategory === category && styles.categoryChipTextActive
-                  ]}>
-                    {CATEGORY_NAMES[category] || category}
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
+                <View style={[
+                  styles.categoryCard,
+                  isActive && styles.categoryCardActive,
+                ]}>
+                  {isActive && <View style={styles.activeIndicatorDot} />}
+                  <Image
+                    source={{ uri: category.image }}
+                    style={styles.categoryImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.categoryOverlay} />
+                  <View style={styles.categoryTextContainer}>
+                    <Text style={[
+                      styles.categoryText,
+                      isActive && styles.categoryTextActive,
+                    ]} numberOfLines={2}>
+                      {categoryName}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>
-      </Animated.View>
+      </View>
 
       <ScrollView 
-        ref={scrollViewRef} 
-        style={styles.menuList} 
-        contentContainerStyle={styles.menuListContent}
+        style={styles.content} 
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        contentContainerStyle={styles.contentContainer}
       >
-        {filteredMenu.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🍽️</Text>
-            <Text style={styles.emptyTitle}>No items available</Text>
-            <Text style={styles.emptySubtitle}>Try selecting a different category</Text>
-          </View>
-        ) : (
-          <>
-            {categories.filter(cat => cat !== 'all').map((category) => {
-              const categoryItems = filteredMenu.filter(item => item.category === category);
-              if (categoryItems.length === 0) return null;
-              
-              return (
-                <View 
-                  key={category}
-                  onLayout={(event) => {
-                    const { y } = event.nativeEvent.layout;
-                    categoryRefs.current.set(category, y);
-                  }}
-                >
-                  <View style={styles.categorySection}>
-                    <View style={styles.categorySectionHeader}>
-                      <Text style={styles.categorySectionIcon}>{getCategoryIcon(category)}</Text>
-                      <Text style={styles.categorySectionTitle}>
-                        {CATEGORY_NAMES[category] || category}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  <View style={isGridView ? styles.menuItemsGrid : styles.menuItemsList}>
-                    {categoryItems.map((item) => {
-                      const itemStats = ratingsStatsQuery.data?.find(stat => stat.menuItemId === item.id);
-                      const avgRating = itemStats?.averageRating || 0;
-                      const totalRatings = itemStats?.totalRatings || 0;
+        <View style={styles.menuGrid}>
+          {filteredItems.length > 0 ? (
+            filteredItems.map(renderMenuItem)
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {language === 'en' ? 'No items found' : language === 'ku' ? 'هیچ بڕگەیەک نەدۆزرایەوە' : 'لم يتم العثور على عناصر'}
+              </Text>
+            </View>
+          )}
+        </View>
 
-                      return (
-                        <Animated.View 
-                          key={item.id} 
-                          style={[
-                            isGridView ? styles.menuItemGrid : styles.menuItem, 
-                            { opacity: menuItemsOpacity }
-                          ]}
-                        >
-                          {item.image && (
-                            <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
-                              <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
-                            </View>
-                          )}
-                          <View style={styles.menuInfo}>
-                            <View style={styles.nameRatingRow}>
-                              <Text style={[
-                                styles.menuName,
-                                language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
-                              ]}>{item.name}</Text>
-                              {avgRating > 0 && (
-                                <View style={styles.ratingBadgeInline}>
-                                  <Star size={14} color={Colors.gold} fill={Colors.gold} />
-                                  <Text style={styles.ratingTextInline}>{avgRating.toFixed(1)}</Text>
-                                </View>
-                              )}
-                            </View>
-                            <Text style={[
-                              styles.menuDescription,
-                              language === 'en' && { fontFamily: 'CormorantGaramond_400Regular' }
-                            ]} numberOfLines={2}>
-                              {item.description}
-                            </Text>
-                            <View style={styles.priceContainer}>
-                              <Text style={[
-                                styles.menuPrice,
-                                language === 'en' && { fontFamily: 'PlayfairDisplay_700Bold' }
-                              ]}>${item.price.toFixed(2)}</Text>
-                            </View>
-                          </View>
-                        </Animated.View>
-                      );
-                    })}
-                  </View>
-                </View>
-              );
-            })}
-            
-            {ratingsStatsQuery.data && ratingsStatsQuery.data.length > 0 && (
-              <View style={styles.reviewsSection}>
-                <Text style={styles.reviewsTitle}>⭐ Customer Reviews</Text>
-                <View style={styles.overallRatingCard}>
-                  <View style={styles.overallRatingNumber}>
-                    <Text style={styles.overallRatingValue}>
-                      {(ratingsStatsQuery.data.reduce((sum, s) => sum + s.averageRating, 0) / ratingsStatsQuery.data.length).toFixed(1)}
-                    </Text>
-                    <View style={styles.overallStars}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={20} 
-                          color={Colors.gold}
-                          fill={Colors.gold}
-                        />
-                      ))}
-                    </View>
-                    <Text style={styles.overallRatingCount}>
-                      Based on {ratingsStatsQuery.data.reduce((sum, s) => sum + s.totalRatings, 0)} reviews
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.reviewsSubtitle}>Scan the QR code at your table to order and leave a review!</Text>
-              </View>
-            )}
-          </>
-        )}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            {language === 'en' ? '📱 Scan QR code at your table to order' : language === 'ku' ? '📱 QR کۆد لەسەر مێزەکەت بسکان بۆ داواکردن' : '📱 امسح رمز QR في طاولتك للطلب'}
+          </Text>
+        </View>
       </ScrollView>
-
-      <Animated.View style={[styles.footer, { transform: [{ translateY: headerTranslateY }] }]}>
-        <Text style={styles.footerText}>📱 Scan QR code at your table to order</Text>
-      </Animated.View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
-  },
-  customHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.background,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  headerCornerButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.backgroundGray,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  headerLogo: {
-    width: 50,
-    height: 50,
-  },
-  headerTitle: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.primary,
-    letterSpacing: -0.2,
+    backgroundColor: '#1a0000',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#1a0000',
   },
-  categoryFilterSection: {
-    backgroundColor: Colors.primary,
-    paddingTop: 16,
-    paddingBottom: 16,
+  header: {
+    backgroundColor: 'rgba(26, 0, 0, 0.85)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      },
+    }),
   },
-  categoryFilterHeader: {
+  headerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
-  categoryFilterTitle: {
-    fontSize: 18,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    letterSpacing: -0.3,
-  },
-  viewToggleButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: Colors.gold,
   },
-  categoryScrollContent: {
-    paddingHorizontal: 12,
+  headerLogoContainer: {
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
-    borderWidth: 0,
-    marginHorizontal: 6,
-  },
-  categoryChipActive: {
-    backgroundColor: Colors.gold,
-    borderWidth: 0,
-  },
-  categoryChipIcon: {
-    fontSize: 18,
-  },
-  categoryChipText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.cream,
-    letterSpacing: -0.2,
-  },
-  categoryChipTextActive: {
-    color: Colors.primary,
-  },
-  categorySection: {
-    marginTop: 4,
-    marginBottom: 0,
-  },
-  categorySectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingBottom: 12,
-    paddingHorizontal: 4,
-    backgroundColor: 'transparent',
-  },
-  categorySectionIcon: {
-    fontSize: 28,
-  },
-  categorySectionTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: Colors.text,
-    letterSpacing: -0.5,
-  },
-  menuList: {
     flex: 1,
   },
-  menuListContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 120,
+  headerLogo: {
+    width: 65,
+    height: 65,
   },
-  menuItem: {
-    flexDirection: 'row',
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: Colors.gold,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  menuItemGrid: {
-    width: '48%',
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 16,
-    padding: 0,
-    marginBottom: 16,
-    borderWidth: 2.5,
-    borderColor: Colors.gold,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 20,
-    elevation: 16,
-    overflow: 'hidden' as const,
-  },
-  menuItemsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
-    width: '100%',
-  },
-  menuItemsList: {
-    flexDirection: 'column',
-  },
-  imageContainer: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  imageContainerGrid: {
-    position: 'relative',
-    width: '100%',
-  },
-  menuImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  menuImageGrid: {
-    width: '100%',
-    height: 140,
-    borderRadius: 0,
-    borderWidth: 0,
-  },
-  nameRatingRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 6,
-    width: '100%',
-  },
-  ratingBadgeInline: {
+  viewOnlyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#D4AF37',
+    minWidth: 60,
+  },
+  viewOnlyBadgeText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#D4AF37',
+    fontWeight: '700' as const,
+  },
+  languageMenu: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    backgroundColor: 'rgba(61, 1, 1, 0.98)',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    overflow: 'hidden' as const,
+  },
+  languageOption: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
+  },
+  languageOptionActive: {
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+  },
+  languageOptionText: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center' as const,
+  },
+  languageOptionTextActive: {
+    fontWeight: '700' as const,
+    color: '#E8C968',
+  },
+  categorySection: {
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(212, 175, 55, 0.4)',
+  },
+  categoryScroll: {
+    backgroundColor: 'transparent',
+  },
+  categoryScrollContent: {
+    paddingHorizontal: 16,
+    gap: 12,
+    paddingVertical: 4,
+  },
+  categoryCard: {
+    width: 110,
+    height: 130,
+    borderRadius: 14,
+    overflow: 'hidden' as const,
+    borderWidth: 2,
+    borderColor: 'rgba(212, 175, 55, 0.4)',
+    backgroundColor: '#1a0000',
+    position: 'relative' as const,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 3px 10px rgba(212, 175, 55, 0.25)',
+      },
+    }),
+  },
+  categoryCardActive: {
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    transform: [{ scale: 1.05 }],
+  },
+  activeIndicatorDot: {
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D4AF37',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute' as const,
+  },
+  categoryOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  categoryTextContainer: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderTopWidth: 2,
+    borderTopColor: '#D4AF37',
+  },
+  categoryText: {
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#E8C968',
+    textAlign: 'center' as const,
+    letterSpacing: 0.2,
+    lineHeight: 16,
+  },
+  categoryTextActive: {
+    color: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  contentContainer: {
+    paddingTop: 20,
+    paddingBottom: Platform.select({ ios: 140, android: 130, default: 130 }),
+    paddingHorizontal: 16,
+  },
+  menuGrid: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    justifyContent: 'space-between' as const,
+    gap: 12,
+  },
+  menuItemCard: {
+    width: '48%' as const,
+    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    borderRadius: 16,
+    overflow: 'visible' as const,
+    borderWidth: 2.5,
+    borderColor: '#D4AF37',
+    marginBottom: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        width: 'calc(50% - 6px)',
+        minWidth: 180,
+        maxWidth: 300,
+        boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+      },
+    }),
+  },
+  premiumCard: {
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  imageContainer: {
+    width: '100%',
+    height: 120,
+    backgroundColor: '#F9FAFB',
+    overflow: 'hidden' as const,
+    position: 'relative' as const,
+  },
+  menuItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  ratingBadgeOnImage: {
+    position: 'absolute' as const,
+    bottom: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
     borderWidth: 1,
-    borderColor: Colors.gold,
-    flexShrink: 0,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
   },
-  ratingTextInline: {
-    fontSize: 13,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    letterSpacing: -0.2,
+  ratingTextOnImage: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#D4AF37',
   },
-  menuInfo: {
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'stretch',
+  premiumBadgeOnImage: {
+    position: 'absolute' as const,
+    top: 6,
+    left: 6,
+    backgroundColor: '#D4AF37',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  premiumBadgeOnImageText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#3d0101',
+  },
+  menuItemContent: {
     padding: 14,
-    gap: 8,
+    paddingTop: 12,
+    paddingBottom: 14,
   },
-  menuName: {
-    fontSize: 17,
+  menuItemName: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: Colors.text,
-    letterSpacing: -0.3,
-    textAlign: 'left' as const,
+    color: '#E8C968',
     lineHeight: 22,
-    flex: 0,
+    letterSpacing: 0.3,
+    marginBottom: 8,
+    textAlign: 'center' as const,
+    paddingHorizontal: 4,
   },
-  menuDescription: {
+  menuItemDescription: {
     fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: '500' as const,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: 'rgba(255, 255, 255, 0.6)',
     lineHeight: 18,
-    textAlign: 'left' as const,
-    flex: 1,
+    fontWeight: '400' as const,
+    marginBottom: 12,
+    textAlign: 'center' as const,
   },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 10,
-    marginTop: 'auto',
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(212, 175, 55, 0.3)',
-    width: '100%',
+  priceHighlight: {
+    alignItems: 'center' as const,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignSelf: 'center' as const,
+    minWidth: '70%' as const,
   },
-  menuPrice: {
-    fontSize: 20,
-    fontWeight: '900' as const,
-    color: Colors.gold,
-    letterSpacing: -0.5,
+  menuItemPrice: {
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: 0.3,
     textAlign: 'center' as const,
   },
   emptyState: {
     flex: 1,
+    width: '100%',
+    padding: 60,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 100,
   },
-  emptyIcon: {
-    fontSize: 80,
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: Colors.gold,
-    marginBottom: 8,
-    letterSpacing: -0.5,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
+  emptyStateText: {
+    fontSize: 18,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: 'rgba(232, 201, 104, 0.9)',
+    fontWeight: '700' as const,
     textAlign: 'center' as const,
-  },
-  reviewsSection: {
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 2,
-    borderTopColor: Colors.border,
-  },
-  reviewsTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: Colors.text,
-    marginBottom: 16,
-    letterSpacing: -0.5,
-    textAlign: 'center' as const,
-  },
-  reviewsSubtitle: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: Colors.textSecondary,
-    textAlign: 'center' as const,
-    marginTop: 16,
-  },
-  overallRatingCard: {
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.gold,
-    shadowColor: Colors.gold,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  overallRatingNumber: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  overallRatingValue: {
-    fontSize: 56,
-    fontWeight: '900' as const,
-    color: Colors.gold,
-    letterSpacing: -2,
-  },
-  overallStars: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  overallRatingCount: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: Colors.textSecondary,
-    marginTop: 4,
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
+    padding: 32,
+    paddingBottom: 24,
     alignItems: 'center',
-    borderTopWidth: 2,
-    borderTopColor: Colors.gold,
+    backgroundColor: 'transparent',
+    marginTop: 24,
   },
   footerText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#fff',
+    fontSize: 15,
+    fontFamily: 'NotoNaskhArabic_600SemiBold',
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center' as const,
+    lineHeight: 22,
   },
 });
