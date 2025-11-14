@@ -1,5 +1,5 @@
 [build]
-  command = "npx expo export -p web"
+  command = "npm install --legacy-peer-deps && npx expo export -p web"
   publish = "dist"
   
 [build.environment]
@@ -30,5 +30,5 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["@supabase/supabase-js", "superjson"]
-  included_files = ["backend/**/*.ts", "backend/**/*.js"]
+  external_node_modules = ["@supabase/supabase-js"]
+  included_files = ["backend/**/*", "types/**/*"]
