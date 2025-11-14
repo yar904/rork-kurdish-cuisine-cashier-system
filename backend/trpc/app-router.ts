@@ -21,6 +21,8 @@ import { getRatingsByMenuItemProcedure } from "./routes/ratings/getByMenuItem/ro
 import { getAllRatingsStatsProcedure } from "./routes/ratings/getAllStats/route";
 import { reportsSummaryProcedure } from "./routes/reports/summary/route";
 import { reportsComparisonProcedure } from "./routes/reports/comparison/route";
+import { reportsFinancialProcedure } from "./routes/reports/financial/route";
+import { reportsEmployeePerformanceProcedure } from "./routes/reports/employee-performance/route";
 import { getAllEmployeesProcedure } from "./routes/employees/getAll/route";
 import { createEmployeeProcedure } from "./routes/employees/create/route";
 import { updateEmployeeProcedure } from "./routes/employees/update/route";
@@ -78,6 +80,8 @@ export const appRouter = createTRPCRouter({
   reports: createTRPCRouter({
     summary: reportsSummaryProcedure,
     comparison: reportsComparisonProcedure,
+    financial: reportsFinancialProcedure,
+    employeePerformance: reportsEmployeePerformanceProcedure,
   }),
   employees: createTRPCRouter({
     getAll: getAllEmployeesProcedure,

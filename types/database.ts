@@ -17,6 +17,7 @@ export interface Database {
           name_arabic: string;
           category: string;
           price: number;
+          cost: number;
           description: string;
           description_kurdish: string;
           description_arabic: string;
@@ -32,6 +33,7 @@ export interface Database {
           name_arabic: string;
           category: string;
           price: number;
+          cost?: number;
           description: string;
           description_kurdish: string;
           description_arabic: string;
@@ -47,6 +49,7 @@ export interface Database {
           name_arabic?: string;
           category?: string;
           price?: number;
+          cost?: number;
           description?: string;
           description_kurdish?: string;
           description_arabic?: string;

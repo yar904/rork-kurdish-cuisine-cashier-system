@@ -1,19 +1,22 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Share, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Share, Alert, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
-import { Calendar, TrendingUp, TrendingDown, Download, FileText, BarChart3, DollarSign, ShoppingBag, Clock, Printer } from 'lucide-react-native';
+import { Calendar, TrendingUp, TrendingDown, Download, FileText, BarChart3, DollarSign, ShoppingBag, Printer, TrendingDown as LossIcon, Percent } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { printDailyReport } from '@/lib/printer';
+import { trpc } from '@/lib/trpc';
 
 type ReportPeriod = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom';
 
 export default function ReportsScreen() {
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>('today');
-  const [customStartDate, setCustomStartDate] = useState<Date>(new Date());
-  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
+  const [customStartDate] = useState<Date>(new Date());
+  const [customEndDate] = useState<Date>(new Date());
+
+
 
   const getDateRange = (period: ReportPeriod) => {
     const now = new Date();
@@ -22,109 +25,87 @@ export default function ReportsScreen() {
     switch (period) {
       case 'today':
         return {
-          start: today,
-          end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1),
+          start: today.toISOString(),
+          end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString(),
           label: 'Today',
         };
       case 'yesterday':
         const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
         return {
-          start: yesterday,
-          end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1),
+          start: yesterday.toISOString(),
+          end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString(),
           label: 'Yesterday',
         };
       case 'week':
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay());
         return {
-          start: weekStart,
-          end: now,
+          start: weekStart.toISOString(),
+          end: now.toISOString(),
           label: 'This Week',
         };
       case 'month':
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         return {
-          start: monthStart,
-          end: now,
+          start: monthStart.toISOString(),
+          end: now.toISOString(),
           label: 'This Month',
         };
       case 'year':
         const yearStart = new Date(today.getFullYear(), 0, 1);
         return {
-          start: yearStart,
-          end: now,
+          start: yearStart.toISOString(),
+          end: now.toISOString(),
           label: 'This Year',
         };
       case 'custom':
         return {
-          start: customStartDate,
-          end: customEndDate,
+          start: customStartDate.toISOString(),
+          end: customEndDate.toISOString(),
           label: 'Custom Range',
         };
       default:
         return {
-          start: today,
-          end: now,
+          start: today.toISOString(),
+          end: now.toISOString(),
           label: 'Today',
         };
     }
   };
 
-  const mockReportData = useMemo(() => {
-    const range = getDateRange(selectedPeriod);
-    
-    return {
-      summary: {
-        totalRevenue: 1250000,
-        totalOrders: 45,
-        averageOrderValue: 27777,
-        paidRevenue: 1100000,
-        paidOrders: 40,
-      },
-      comparison: {
-        revenue: 15.5,
-        orders: 12.3,
-        averageOrderValue: 8.2,
-      },
-      topItems: [
-        { id: '1', name: 'Kabab Teka', quantity: 25, revenue: 625000 },
-        { id: '2', name: 'Palaw', quantity: 20, revenue: 320000 },
-        { id: '3', name: 'Dolma', quantity: 18, revenue: 270000 },
-        { id: '4', name: 'Biryani', quantity: 15, revenue: 225000 },
-        { id: '5', name: 'Shorba', quantity: 12, revenue: 108000 },
-      ],
-      categoryBreakdown: [
-        { category: 'Kebabs', revenue: 550000, percentage: 44 },
-        { category: 'Rice Dishes', revenue: 320000, percentage: 25.6 },
-        { category: 'Appetizers', revenue: 200000, percentage: 16 },
-        { category: 'Drinks', revenue: 100000, percentage: 8 },
-        { category: 'Desserts', revenue: 80000, percentage: 6.4 },
-      ],
-      peakHours: [
-        { hour: 19, revenue: 450000, label: '7:00 PM' },
-        { hour: 20, revenue: 380000, label: '8:00 PM' },
-        { hour: 13, revenue: 280000, label: '1:00 PM' },
-      ],
-      dailySales: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en', { weekday: 'short' }),
-        revenue: Math.floor(Math.random() * 200000) + 100000,
-        orders: Math.floor(Math.random() * 20) + 10,
-      })),
-    };
+  const dateRange = useMemo(() => {
+    return getDateRange(selectedPeriod);
   }, [selectedPeriod, customStartDate, customEndDate]);
 
+  const financialQuery = trpc.reports.financial.useQuery({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+  });
+
+  const employeeQuery = trpc.reports.employeePerformance.useQuery({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+  });
+
+  const reportData = financialQuery.data;
+  const employeeData = employeeQuery.data;
+  const isLoading = financialQuery.isLoading || employeeQuery.isLoading;
+
   const handlePrintReport = async () => {
-    const range = getDateRange(selectedPeriod);
-    
+    if (!reportData) {
+      Alert.alert('Error', 'No data to print');
+      return;
+    }
+
     try {
       await printDailyReport({
-        title: 'Tapse Restaurant Sales Report',
-        period: range.label,
-        dateRange: `${range.start.toLocaleDateString()} - ${range.end.toLocaleDateString()}`,
-        summary: mockReportData.summary,
-        items: mockReportData.topItems,
-        categories: mockReportData.categoryBreakdown,
-        peakHours: mockReportData.peakHours,
+        title: 'Tapse Restaurant Financial Report',
+        period: dateRange.label,
+        dateRange: `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}`,
+        summary: reportData.summary,
+        items: reportData.topProfitableItems.map(i => ({ ...i, id: i.id, name: i.name, quantity: i.quantity, revenue: i.revenue })),
+        categories: reportData.categoryBreakdown.map(c => ({ category: c.category, revenue: c.revenue, percentage: (c.revenue / reportData.summary.totalRevenue) * 100 })),
+        peakHours: [],
       });
     } catch (error) {
       console.error('Print error:', error);
@@ -133,63 +114,70 @@ export default function ReportsScreen() {
   };
 
   const exportReport = async (format: 'pdf' | 'csv') => {
+    if (!reportData) {
+      Alert.alert('Error', 'No data to export');
+      return;
+    }
+
     let reportContent = '';
-    const range = getDateRange(selectedPeriod);
+    const startDate = new Date(dateRange.start).toLocaleDateString();
+    const endDate = new Date(dateRange.end).toLocaleDateString();
     
     if (format === 'csv') {
-      reportContent = `Tapse Restaurant - Sales Report\n`;
-      reportContent += `Period: ${range.label}\n`;
-      reportContent += `${range.start.toLocaleDateString()} - ${range.end.toLocaleDateString()}\n\n`;
+      reportContent = `Tapse Restaurant - Financial Report\n`;
+      reportContent += `Period: ${dateRange.label}\n`;
+      reportContent += `${startDate} - ${endDate}\n\n`;
       
-      reportContent += `Summary\n`;
-      reportContent += `Total Revenue,${formatPrice(mockReportData.summary.totalRevenue)}\n`;
-      reportContent += `Total Orders,${mockReportData.summary.totalOrders}\n`;
-      reportContent += `Average Order Value,${formatPrice(mockReportData.summary.averageOrderValue)}\n\n`;
+      reportContent += `Financial Summary\n`;
+      reportContent += `Total Revenue,${formatPrice(reportData.summary.totalRevenue)}\n`;
+      reportContent += `Total Cost,${formatPrice(reportData.summary.totalCost)}\n`;
+      reportContent += `Gross Profit,${formatPrice(reportData.summary.totalProfit)}\n`;
+      reportContent += `Labor Cost,${formatPrice(reportData.summary.laborCost)}\n`;
+      reportContent += `Net Profit,${formatPrice(reportData.summary.netProfit)}\n`;
+      reportContent += `Profit Margin,${reportData.summary.overallMargin.toFixed(2)}%\n`;
+      reportContent += `Total Orders,${reportData.summary.totalOrders}\n`;
+      reportContent += `Average Order,${formatPrice(reportData.summary.averageOrderValue)}\n\n`;
       
-      reportContent += `Top Selling Items\n`;
-      reportContent += `Item,Quantity,Revenue\n`;
-      mockReportData.topItems.forEach(item => {
-        reportContent += `${item.name},${item.quantity},${formatPrice(item.revenue)}\n`;
+      reportContent += `Top Profitable Items\n`;
+      reportContent += `Item,Quantity,Revenue,Cost,Profit,Margin\n`;
+      reportData.topProfitableItems.forEach(item => {
+        reportContent += `${item.name},${item.quantity},${formatPrice(item.revenue)},${formatPrice(item.cost)},${formatPrice(item.profit)},${item.margin.toFixed(1)}%\n`;
       });
       
-      reportContent += `\nCategory Breakdown\n`;
-      reportContent += `Category,Revenue,Percentage\n`;
-      mockReportData.categoryBreakdown.forEach(cat => {
-        reportContent += `${cat.category},${formatPrice(cat.revenue)},${cat.percentage}%\n`;
+      reportContent += `\nCategory Performance\n`;
+      reportContent += `Category,Revenue,Cost,Profit,Margin\n`;
+      reportData.categoryBreakdown.forEach(cat => {
+        reportContent += `${cat.category},${formatPrice(cat.revenue)},${formatPrice(cat.cost)},${formatPrice(cat.profit)},${cat.margin.toFixed(1)}%\n`;
       });
     } else {
       reportContent = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       reportContent += `   TAPSE RESTAURANT\n`;
-      reportContent += `   Sales Report\n`;
+      reportContent += `   Financial Report\n`;
       reportContent += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-      reportContent += `Period: ${range.label}\n`;
-      reportContent += `${range.start.toLocaleDateString()} - ${range.end.toLocaleDateString()}\n\n`;
+      reportContent += `Period: ${dateRange.label}\n`;
+      reportContent += `${startDate} - ${endDate}\n\n`;
       
-      reportContent += `SUMMARY\n`;
+      reportContent += `FINANCIAL SUMMARY\n`;
       reportContent += `${'─'.repeat(40)}\n`;
-      reportContent += `Total Revenue:     ${formatPrice(mockReportData.summary.totalRevenue)}\n`;
-      reportContent += `Total Orders:      ${mockReportData.summary.totalOrders}\n`;
-      reportContent += `Avg Order Value:   ${formatPrice(mockReportData.summary.averageOrderValue)}\n`;
-      reportContent += `Paid Revenue:      ${formatPrice(mockReportData.summary.paidRevenue)}\n\n`;
+      reportContent += `Revenue:          ${formatPrice(reportData.summary.totalRevenue)}\n`;
+      reportContent += `Cost:             ${formatPrice(reportData.summary.totalCost)}\n`;
+      reportContent += `Gross Profit:     ${formatPrice(reportData.summary.totalProfit)}\n`;
+      reportContent += `Labor Cost:       ${formatPrice(reportData.summary.laborCost)}\n`;
+      reportContent += `Net Profit:       ${formatPrice(reportData.summary.netProfit)}\n`;
+      reportContent += `Profit Margin:    ${reportData.summary.overallMargin.toFixed(2)}%\n\n`;
       
-      reportContent += `TOP SELLING ITEMS\n`;
+      reportContent += `TOP PROFITABLE ITEMS\n`;
       reportContent += `${'─'.repeat(40)}\n`;
-      mockReportData.topItems.forEach((item, i) => {
+      reportData.topProfitableItems.slice(0, 5).forEach((item, i) => {
         reportContent += `${i + 1}. ${item.name}\n`;
-        reportContent += `   Qty: ${item.quantity}  Revenue: ${formatPrice(item.revenue)}\n`;
+        reportContent += `   Profit: ${formatPrice(item.profit)} (${item.margin.toFixed(1)}%)\n`;
       });
       
-      reportContent += `\nCATEGORY BREAKDOWN\n`;
+      reportContent += `\nCATEGORY PERFORMANCE\n`;
       reportContent += `${'─'.repeat(40)}\n`;
-      mockReportData.categoryBreakdown.forEach(cat => {
+      reportData.categoryBreakdown.forEach(cat => {
         reportContent += `${cat.category}\n`;
-        reportContent += `  ${formatPrice(cat.revenue)} (${cat.percentage}%)\n`;
-      });
-      
-      reportContent += `\nPEAK HOURS\n`;
-      reportContent += `${'─'.repeat(40)}\n`;
-      mockReportData.peakHours.forEach(peak => {
-        reportContent += `${peak.label}: ${formatPrice(peak.revenue)}\n`;
+        reportContent += `  Profit: ${formatPrice(cat.profit)} (${cat.margin.toFixed(1)}%)\n`;
       });
       
       reportContent += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -199,7 +187,7 @@ export default function ReportsScreen() {
     try {
       await Share.share({
         message: reportContent,
-        title: `Tapse Report - ${range.label}`,
+        title: `Tapse Financial Report - ${dateRange.label}`,
       });
     } catch (error) {
       console.log('Share error:', error);
@@ -264,7 +252,17 @@ export default function ReportsScreen() {
         }}
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Generating financial report...</Text>
+        </View>
+      ) : !reportData ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No data available for selected period</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Calendar size={24} color={Colors.primary} />
@@ -319,42 +317,54 @@ export default function ReportsScreen() {
             <StatCard
               icon={DollarSign}
               label="Total Revenue"
-              value={formatPrice(mockReportData.summary.totalRevenue)}
-              growth={mockReportData.comparison.revenue}
+              value={formatPrice(reportData.summary.totalRevenue)}
+            />
+            <StatCard
+              icon={LossIcon}
+              label="Total Cost"
+              value={formatPrice(reportData.summary.totalCost)}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Gross Profit"
+              value={formatPrice(reportData.summary.totalProfit)}
+            />
+            <StatCard
+              icon={Percent}
+              label="Profit Margin"
+              value={`${reportData.summary.overallMargin.toFixed(1)}%`}
             />
             <StatCard
               icon={ShoppingBag}
               label="Total Orders"
-              value={mockReportData.summary.totalOrders.toString()}
-              growth={mockReportData.comparison.orders}
-            />
-            <StatCard
-              icon={TrendingUp}
-              label="Avg Order Value"
-              value={formatPrice(mockReportData.summary.averageOrderValue)}
-              growth={mockReportData.comparison.averageOrderValue}
+              value={reportData.summary.totalOrders.toString()}
             />
             <StatCard
               icon={DollarSign}
-              label="Paid Revenue"
-              value={formatPrice(mockReportData.summary.paidRevenue)}
+              label="Net Profit"
+              value={formatPrice(reportData.summary.netProfit)}
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Top Selling Items</Text>
+          <Text style={styles.sectionTitle}>Top Profitable Items</Text>
           <View style={styles.card}>
-            {mockReportData.topItems.map((item, index) => (
+            {reportData.topProfitableItems.map((item, index) => (
               <View key={item.id} style={styles.topItemRow}>
                 <View style={styles.topItemRank}>
                   <Text style={styles.topItemRankText}>{index + 1}</Text>
                 </View>
                 <View style={styles.topItemInfo}>
                   <Text style={styles.topItemName}>{item.name}</Text>
-                  <Text style={styles.topItemQuantity}>{item.quantity} sold</Text>
+                  <Text style={styles.topItemQuantity}>
+                    {item.quantity} sold • {item.margin.toFixed(1)}% margin
+                  </Text>
                 </View>
-                <Text style={styles.topItemRevenue}>{formatPrice(item.revenue)}</Text>
+                <View style={styles.topItemStats}>
+                  <Text style={styles.topItemRevenue}>{formatPrice(item.profit)}</Text>
+                  <Text style={styles.topItemProfit}>profit</Text>
+                </View>
               </View>
             ))}
           </View>
@@ -363,7 +373,7 @@ export default function ReportsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Category Performance</Text>
           <View style={styles.card}>
-            {mockReportData.categoryBreakdown.map((cat) => (
+            {reportData.categoryBreakdown.map((cat) => (
               <View key={cat.category} style={styles.categoryRow}>
                 <View style={styles.categoryInfo}>
                   <Text style={styles.categoryName}>{cat.category}</Text>
@@ -371,63 +381,76 @@ export default function ReportsScreen() {
                     <View
                       style={[
                         styles.progressBar,
-                        { width: `${cat.percentage}%`, backgroundColor: Colors.primary },
+                        { 
+                          width: `${cat.margin}%`, 
+                          backgroundColor: cat.margin > 50 ? Colors.success : cat.margin > 30 ? Colors.warning : Colors.error 
+                        },
                       ]}
                     />
                   </View>
                 </View>
                 <View style={styles.categoryStats}>
-                  <Text style={styles.categoryRevenue}>{formatPrice(cat.revenue)}</Text>
-                  <Text style={styles.categoryPercentage}>{cat.percentage}%</Text>
+                  <Text style={styles.categoryRevenue}>{formatPrice(cat.profit)}</Text>
+                  <Text style={styles.categoryPercentage}>{cat.margin.toFixed(1)}%</Text>
                 </View>
               </View>
             ))}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Clock size={24} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>Peak Hours</Text>
-          </View>
-          <View style={styles.card}>
-            {mockReportData.peakHours.map((peak) => (
-              <View key={peak.hour} style={styles.peakHourRow}>
-                <View style={styles.peakHourBadge}>
-                  <Clock size={16} color="#fff" />
-                </View>
-                <Text style={styles.peakHourLabel}>{peak.label}</Text>
-                <Text style={styles.peakHourRevenue}>{formatPrice(peak.revenue)}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Daily Sales Trend</Text>
-          <View style={styles.card}>
-            <View style={styles.chartContainer}>
-              {mockReportData.dailySales.map((day, index) => (
-                <View key={index} style={styles.chartBar}>
-                  <View
-                    style={[
-                      styles.chartBarFill,
-                      {
-                        height: `${(day.revenue / 200000) * 100}%`,
-                        backgroundColor: Colors.primary,
-                      },
-                    ]}
-                  />
-                  <Text style={styles.chartBarLabel}>{day.date}</Text>
-                  <Text style={styles.chartBarValue}>{day.orders}</Text>
+        {employeeData && employeeData.waiterPerformance.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Top Performing Waiters</Text>
+            <View style={styles.card}>
+              {employeeData.waiterPerformance.slice(0, 5).map((waiter, index) => (
+                <View key={waiter.name} style={styles.topItemRow}>
+                  <View style={styles.topItemRank}>
+                    <Text style={styles.topItemRankText}>{index + 1}</Text>
+                  </View>
+                  <View style={styles.topItemInfo}>
+                    <Text style={styles.topItemName}>{waiter.name}</Text>
+                    <Text style={styles.topItemQuantity}>
+                      {waiter.totalOrders} orders • Avg: {formatPrice(waiter.averageOrderValue)}
+                    </Text>
+                  </View>
+                  <Text style={styles.topItemRevenue}>{formatPrice(waiter.totalRevenue)}</Text>
                 </View>
               ))}
+            </View>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Daily Profit Trend</Text>
+          <View style={styles.card}>
+            <View style={styles.chartContainer}>
+              {reportData.dailyFinancials.map((day, index) => {
+                const maxProfit = Math.max(...reportData.dailyFinancials.map(d => d.profit));
+                return (
+                  <View key={index} style={styles.chartBar}>
+                    <View
+                      style={[
+                        styles.chartBarFill,
+                        {
+                          height: maxProfit > 0 ? `${(day.profit / maxProfit) * 100}%` : '10%',
+                          backgroundColor: day.profit > 0 ? Colors.success : Colors.error,
+                        },
+                      ]}
+                    />
+                    <Text style={styles.chartBarLabel}>
+                      {new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
+                    </Text>
+                    <Text style={styles.chartBarValue}>{formatPrice(day.profit)}</Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
         </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -713,6 +736,38 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.text,
     fontWeight: '700' as const,
+    marginTop: 2,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    marginTop: 16,
+    fontWeight: '600' as const,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  topItemStats: {
+    alignItems: 'flex-end',
+  },
+  topItemProfit: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
     marginTop: 2,
   },
 });

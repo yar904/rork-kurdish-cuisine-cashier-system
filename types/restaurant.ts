@@ -11,6 +11,7 @@ export interface MenuItem {
   nameArabic: string;
   category: MenuCategory;
   price: number;
+  cost?: number;
   description: string;
   descriptionKurdish: string;
   descriptionArabic: string;
