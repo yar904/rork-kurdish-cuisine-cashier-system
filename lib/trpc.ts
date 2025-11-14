@@ -25,7 +25,7 @@ const getTRPCUrl = () => {
   const baseUrl = getBaseUrl();
   
   if (baseUrl.includes('/.netlify/functions')) {
-    const url = `${baseUrl}/api/trpc`;
+    const url = `${baseUrl}/trpc`;
     console.log('[TRPC] Final tRPC URL (Netlify):', url);
     return url;
   }
