@@ -222,8 +222,8 @@ export default function PublicMenuScreen() {
               resizeMode="cover"
             />
             
-            {hasRatings && (
-              <View style={styles.actionButtons}>
+            <View style={styles.actionButtons}>
+              {hasRatings && (
                 <TouchableOpacity
                   style={styles.circularButton}
                   onPress={(e) => handleShowReviews(item, e)}
@@ -231,8 +231,8 @@ export default function PublicMenuScreen() {
                 >
                   <Star size={16} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
                 </TouchableOpacity>
-              </View>
-            )}
+              )}
+            </View>
             
             {isPremium && (
               <View style={styles.premiumBadgeOnImage}>
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     position: 'absolute' as const,
-    bottom: 8,
+    top: 8,
     right: 8,
     flexDirection: 'row' as const,
     gap: 8,

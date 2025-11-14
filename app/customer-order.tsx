@@ -1028,31 +1028,47 @@ export default function CustomerOrderScreen() {
                         {item.image && (
                           <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
                             <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
-                            {totalRatings > 0 && (
-                              <View style={styles.ratingBadge}>
-                                <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
-                              </View>
-                            )}
+                            <View style={styles.actionButtons}>
+                              {totalRatings > 0 && (
+                                <TouchableOpacity
+                                  style={styles.circularButton}
+                                  onPress={() => {
+                                    setSelectedItem({
+                                      id: item.id,
+                                      name: item.name,
+                                      price: item.price,
+                                      description: item.description,
+                                      image: item.image,
+                                      category: item.category,
+                                    });
+                                    setItemModalVisible(true);
+                                  }}
+                                  activeOpacity={0.8}
+                                >
+                                  <Star size={16} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
+                                </TouchableOpacity>
+                              )}
+                              <TouchableOpacity
+                                style={styles.circularButtonAdd}
+                                onPress={() => addToCart({
+                                  id: item.id,
+                                  name: item.name,
+                                  price: item.price,
+                                  description: item.description,
+                                  image: item.image,
+                                  category: item.category,
+                                })}
+                                activeOpacity={0.8}
+                              >
+                                <Plus size={18} color="#D4AF37" strokeWidth={3} />
+                              </TouchableOpacity>
+                            </View>
                           </View>
                         )}
                         <View style={styles.menuInfo}>
                           <Text style={styles.menuName}>{getMenuItemName(item)}</Text>
                           <Text style={styles.menuPrice}>{item.price.toLocaleString()} IQD</Text>
                         </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.addToCartButton}
-                          onPress={() => addToCart({
-                            id: item.id,
-                            name: item.name,
-                            price: item.price,
-                            description: item.description,
-                            image: item.image,
-                            category: item.category,
-                          })}
-                          activeOpacity={0.7}
-                        >
-                          <Plus size={18} color="#D4AF37" strokeWidth={3} />
                         </TouchableOpacity>
                         </Animated.View>
                         </View>
@@ -1817,14 +1833,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  ratingBadge: {
+  actionButtons: {
     position: 'absolute' as const,
     top: 8,
     right: 8,
+    flexDirection: 'row' as const,
+    gap: 8,
+    zIndex: 5,
+  },
+  circularButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     borderWidth: 2,
@@ -1833,14 +1854,38 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
       },
       android: {
         elevation: 6,
       },
       web: {
-        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
+        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.6)',
+      },
+    }),
+  },
+  circularButtonAdd: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(61, 1, 1, 0.9)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.6)',
       },
     }),
   },
@@ -1860,33 +1905,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 56,
   },
-  addToCartButton: {
-    position: 'absolute' as const,
-    bottom: 10,
-    right: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
-      },
-    }),
-  },
+
   menuName: {
     fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
