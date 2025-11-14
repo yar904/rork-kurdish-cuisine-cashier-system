@@ -21,10 +21,20 @@ const getBaseUrl = () => {
   return 'http://localhost:3000';
 };
 
+const getTRPCUrl = () => {
+  const baseUrl = getBaseUrl();
+  
+  if (baseUrl.includes('/.netlify/functions/api')) {
+    return `${baseUrl}/trpc`;
+  }
+  
+  return `${baseUrl}/api/trpc`;
+};
+
 export const trpcClient = trpc.createClient({
   links: [
     httpLink({
-      url: `${getBaseUrl()}/api/trpc`,
+      url: getTRPCUrl(),
       transformer: superjson,
       fetch: (url, options) => {
         console.log('[TRPC] Making request to:', url);
