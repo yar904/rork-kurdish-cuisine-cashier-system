@@ -6,39 +6,15 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
-    const url = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-    console.log('[TRPC] Using API base URL:', url);
-    return url;
-  }
-
-  if (typeof window !== 'undefined') {
-    console.log('[TRPC] Using localhost (web)');
-    return 'http://localhost:3000';
-  }
-
-  console.log('[TRPC] Using localhost (server)');
-  return 'http://localhost:3000';
+  const baseURL = 'https://tapse.netlify.app/.netlify/functions/api';
+  console.log('[TRPC] Base URL:', baseURL);
+  return baseURL;
 };
 
 const getTRPCUrl = () => {
-  const baseUrl = getBaseUrl();
-  
-  if (baseUrl.includes('netlify.app')) {
-    const url = `${baseUrl}/.netlify/functions/api/trpc`;
-    console.log('[TRPC] Final tRPC URL (Netlify):', url);
-    return url;
-  }
-  
-  if (baseUrl.includes('/.netlify/functions')) {
-    const url = `${baseUrl}/trpc`;
-    console.log('[TRPC] Final tRPC URL (Netlify functions):', url);
-    return url;
-  }
-  
-  const url = `${baseUrl}/api/trpc`;
-  console.log('[TRPC] Final tRPC URL (normal):', url);
-  return url;
+  const finalUrl = 'https://tapse.netlify.app/.netlify/functions/api/trpc';
+  console.log('[TRPC] tRPC URL:', finalUrl);
+  return finalUrl;
 };
 
 let isBackendHealthy = true;
