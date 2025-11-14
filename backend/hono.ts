@@ -33,6 +33,11 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
+app.use("/api/trpc/*", async (c, next) => {
+  console.log('[Hono] tRPC request received:', c.req.method, c.req.url);
+  await next();
+});
+
 app.use(
   "/api/trpc/*",
   trpcServer({
