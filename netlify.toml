@@ -36,5 +36,5 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "none"
-  external_node_modules = ["@supabase/supabase-js", "@hono/node-server", "hono"]
+  external_node_modules = ["@supabase/supabase-js", "@hono/node-server", "hono", "@trpc/server", "@hono/trpc-server", "zod", "superjson"]
   included_files = ["backend/**/*", "types/**/*"]
