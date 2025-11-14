@@ -22,7 +22,7 @@ import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -110,28 +110,108 @@ export default function CustomerOrderScreen() {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const plateRotate = useRef(new Animated.Value(0)).current;
 
-  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+  const menuQuery = useQuery({
+    queryKey: ['menu-items'],
+    queryFn: async () => {
+      console.log('[CustomerOrder] Fetching menu items from Supabase');
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('available', true)
+        .order('category', { ascending: true });
+      
+      if (error) {
+        console.error('[CustomerOrder] Error fetching menu:', error);
+        return [];
+      }
+      console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
+      return data || [];
+    },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
   
   const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
   
-  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
+  const ratingsStatsQuery = useQuery({
+    queryKey: ['ratings-stats'],
+    queryFn: async () => {
+      console.log('[CustomerOrder] Fetching ratings from Supabase');
+      const { data, error } = await supabase
+        .from('ratings')
+        .select('menu_item_id, rating');
+      
+      if (error) {
+        console.error('[CustomerOrder] Error fetching ratings:', error);
+        return [];
+      }
+
+      const statsMap = new Map<string, { sum: number; count: number }>();
+      data?.forEach(rating => {
+        const current = statsMap.get(rating.menu_item_id) || { sum: 0, count: 0 };
+        statsMap.set(rating.menu_item_id, {
+          sum: current.sum + rating.rating,
+          count: current.count + 1
+        });
+      });
+
+      const stats = Array.from(statsMap.entries()).map(([menuItemId, { sum, count }]) => ({
+        menuItemId,
+        averageRating: sum / count,
+        totalRatings: count
+      }));
+      
+      console.log('[CustomerOrder] ✅ Ratings loaded:', stats.length);
+      return stats;
+    },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  const createOrderMutation = trpc.orders.create.useMutation({
+  const createOrderMutation = useMutation({
+    mutationFn: async (orderData: { tableNumber: number; items: Array<{ menuItemId: string; quantity: number; notes?: string }>; total: number }) => {
+      console.log('[CustomerOrder] Creating order:', orderData);
+      
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          table_number: orderData.tableNumber,
+          total: orderData.total,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+      console.log('[CustomerOrder] ✅ Order created:', order.id);
+
+      const orderItems = orderData.items.map(item => ({
+        order_id: order.id,
+        menu_item_id: item.menuItemId,
+        quantity: item.quantity,
+        notes: item.notes,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+      console.log('[CustomerOrder] ✅ Order items created:', orderItems.length);
+
+      return order;
+    },
     onSuccess: () => {
+      console.log('[CustomerOrder] ✅ Order submitted successfully');
       Alert.alert(
         'Order Submitted!',
         'Your order has been sent to the kitchen. We\'ll bring it to your table soon!',
         [{ text: 'OK', onPress: () => setCart([]) }]
       );
     },
-    onError: (error) => {
-      Alert.alert('Error', error.message);
+    onError: (error: any) => {
+      console.error('[CustomerOrder] ❌ Order submission failed:', error);
+      Alert.alert('Error', error?.message || 'Failed to submit order. Please try again.');
     },
   });
 
