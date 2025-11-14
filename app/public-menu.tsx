@@ -551,6 +551,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a0000',
   },
   header: {
+    backgroundColor: 'rgba(58, 0, 16, 0.92)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
@@ -875,7 +876,7 @@ const styles = StyleSheet.create({
   priceHighlight: {
     marginBottom: 0,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'rgba(212, 175, 55, 0.08)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
