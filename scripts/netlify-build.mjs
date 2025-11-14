@@ -64,6 +64,10 @@ async function buildNetlifyFunction() {
         '@supabase/supabase-js',
         '@hono/node-server',
         'hono',
+        '@trpc/server',
+        '@hono/trpc-server',
+        'zod',
+        'superjson',
       ],
       plugins: [aliasPlugin],
       define: {
@@ -72,6 +76,7 @@ async function buildNetlifyFunction() {
       loader: {
         '.ts': 'ts',
       },
+      logLevel: 'info',
     });
 
     console.log('✅ Netlify function built successfully');
