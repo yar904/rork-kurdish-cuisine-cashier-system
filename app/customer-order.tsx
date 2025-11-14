@@ -56,6 +56,8 @@ export default function CustomerOrderScreen() {
   const { notifyServiceRequest } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
+  
+  // ⚠️ CRITICAL: All hooks MUST be called before any conditional returns
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isGridView, setIsGridView] = useState<boolean>(true);
@@ -526,6 +528,7 @@ export default function CustomerOrderScreen() {
     Alert.alert('Reviews', 'Customer reviews coming soon!');
   };
 
+  // ⚠️ All useEffect hooks - must be before any conditional returns
   useEffect(() => {
     categories.forEach((cat, index) => {
       if (!categoryScales.has(cat)) {
@@ -704,8 +707,7 @@ export default function CustomerOrderScreen() {
     }
   }, [orderModalVisible, cart.length, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
 
-
-
+  // ✅ Now safe to have conditional returns - all hooks have been called
   if (!table) {
     console.log('[CustomerOrder] No table number provided');
     return (
