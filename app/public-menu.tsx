@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Star, Globe, X, ShoppingCart, Plus } from 'lucide-react-native';
+import { Star, X, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
-import { Language } from '@/constants/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function PublicMenuScreen() {
   const router = useRouter();
@@ -28,7 +28,6 @@ export default function PublicMenuScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const { language, setLanguage } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [selectedItem, setSelectedItem] = useState<typeof MENU_ITEMS[0] | null>(null);
   const [itemModalVisible, setItemModalVisible] = useState(false);
   const [cart, setCart] = useState<Array<{ item: typeof MENU_ITEMS[0], quantity: number }>>([]);
@@ -223,8 +222,8 @@ export default function PublicMenuScreen() {
               resizeMode="cover"
             />
             
-            <View style={styles.actionButtons}>
-              {hasRatings && (
+            {hasRatings && (
+              <View style={styles.actionButtons}>
                 <TouchableOpacity
                   style={styles.circularButton}
                   onPress={(e) => handleShowReviews(item, e)}
@@ -232,16 +231,8 @@ export default function PublicMenuScreen() {
                 >
                   <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
                 </TouchableOpacity>
-              )}
-              
-              <TouchableOpacity
-                style={styles.circularButton}
-                onPress={(e) => handleAddToCart(item, e)}
-                activeOpacity={0.8}
-              >
-                <Plus size={20} color="#D4AF37" strokeWidth={3} />
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
             
             {isPremium && (
               <View style={styles.premiumBadgeOnImage}>
@@ -334,13 +325,9 @@ export default function PublicMenuScreen() {
 
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity 
-            style={styles.headerIconButton}
-            onPress={() => setShowLanguageMenu(!showLanguageMenu)}
-            activeOpacity={0.7}
-          >
-            <Globe size={24} color="#D4AF37" strokeWidth={2} />
-          </TouchableOpacity>
+          <View style={styles.headerCornerButton}>
+            <LanguageSwitcher />
+          </View>
           
           <View style={styles.headerLogoContainer}>
             <Image 
@@ -352,34 +339,6 @@ export default function PublicMenuScreen() {
           
           <View style={styles.viewOnlyBadge} />
         </View>
-
-        {showLanguageMenu && (
-          <View style={styles.languageMenu}>
-            {(['en', 'ku', 'ar'] as Language[]).map((lang) => (
-              <TouchableOpacity
-                key={lang}
-                style={[
-                  styles.languageOption,
-                  language === lang && styles.languageOptionActive,
-                ]}
-                onPress={() => {
-                  setLanguage(lang);
-                  setShowLanguageMenu(false);
-                }}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.languageOptionText,
-                    language === lang && styles.languageOptionTextActive,
-                  ]}
-                >
-                  {lang === 'en' ? 'English' : lang === 'ku' ? 'کوردی' : 'العربية'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
       </View>
 
       <View style={styles.categoryScrollSection}>
@@ -615,7 +574,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 8,
   },
-  headerIconButton: {
+  headerCornerButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -641,35 +600,6 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#D4AF37',
     fontWeight: '700' as const,
-  },
-  languageMenu: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    backgroundColor: 'rgba(61, 1, 1, 0.98)',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
-    overflow: 'hidden' as const,
-  },
-  languageOption: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
-  },
-  languageOptionActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.25)',
-  },
-  languageOptionText: {
-    fontSize: 18,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    fontWeight: '600' as const,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center' as const,
-  },
-  languageOptionTextActive: {
-    fontWeight: '700' as const,
-    color: '#E8C968',
   },
   categoryScrollSection: {
     backgroundColor: 'transparent',
