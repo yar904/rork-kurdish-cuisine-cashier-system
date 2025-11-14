@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '@/backend/lib/supabase';
 
 export const getCustomerOrderHistoryProcedure = publicProcedure
   .input(
