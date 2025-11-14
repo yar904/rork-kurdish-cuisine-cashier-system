@@ -59,8 +59,20 @@ export default function CustomerOrderScreen() {
   const { notifyServiceRequest } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
-  const { language } = useLanguage();
+  const { language, tc } = useLanguage();
   const t = translations[language];
+
+  const getMenuItemName = (item: any) => {
+    if (language === 'ku') return item.nameKurdish || item.name;
+    if (language === 'ar') return item.nameArabic || item.name;
+    return item.name;
+  };
+
+  const getMenuItemDescription = (item: any) => {
+    if (language === 'ku') return item.descriptionKurdish || item.description;
+    if (language === 'ar') return item.descriptionArabic || item.description;
+    return item.description;
+  };
   
   // ⚠️ CRITICAL: All hooks MUST be called before any conditional returns
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -899,7 +911,7 @@ export default function CustomerOrderScreen() {
                         styles.categoryCardText,
                         isActive && styles.categoryCardTextActive
                       ]}>
-                        {CATEGORY_NAMES[category] || category}
+                        {tc(category)}
                       </Text>
                     </View>
                   </Animated.View>
@@ -942,7 +954,7 @@ export default function CustomerOrderScreen() {
                     <View style={styles.categorySectionHeader}>
                       <View style={styles.sectionHeaderLine} />
                       <Text style={styles.categorySectionTitle}>
-                        {CATEGORY_NAMES[category] || category}
+                        {tc(category)}
                       </Text>
                       <View style={styles.sectionHeaderLine} />
                     </View>
@@ -995,7 +1007,7 @@ export default function CustomerOrderScreen() {
                           </View>
                         )}
                         <View style={styles.menuInfo}>
-                          <Text style={styles.menuName}>{item.name}</Text>
+                          <Text style={styles.menuName}>{getMenuItemName(item)}</Text>
                           <Text style={styles.menuPrice}>{item.price.toLocaleString()} IQD</Text>
                         </View>
                         </Animated.View>
@@ -1201,7 +1213,7 @@ export default function CustomerOrderScreen() {
                   {cart.map((item) => (
                     <View key={item.menuItem.id} style={styles.orderModalItem}>
                       <View style={styles.orderModalItemInfo}>
-                        <Text style={styles.orderModalItemName}>{item.menuItem.name}</Text>
+                        <Text style={styles.orderModalItemName}>{getMenuItemName(item.menuItem)}</Text>
                         <Text style={styles.orderModalItemPrice}>
                           {(item.menuItem.price * item.quantity).toLocaleString()} IQD
                         </Text>
@@ -1301,8 +1313,8 @@ export default function CustomerOrderScreen() {
                 )}
 
                 <View style={styles.itemModalInfo}>
-                  <Text style={styles.itemModalName}>{selectedItem.name}</Text>
-                  <Text style={styles.itemModalDescription}>{selectedItem.description}</Text>
+                  <Text style={styles.itemModalName}>{getMenuItemName(selectedItem)}</Text>
+                  <Text style={styles.itemModalDescription}>{getMenuItemDescription(selectedItem)}</Text>
                   
                   {ratingsStatsQuery.data?.find(stat => stat.menuItemId === selectedItem.id) && (
                     <View style={styles.itemModalRating}>
@@ -1360,7 +1372,7 @@ export default function CustomerOrderScreen() {
               {cart.map((item) => (
                 <View key={item.menuItem.id} style={styles.cartItem}>
                   <View style={styles.cartItemInfo}>
-                    <Text style={styles.cartItemName}>{item.menuItem.name}</Text>
+                    <Text style={styles.cartItemName}>{getMenuItemName(item.menuItem)}</Text>
                     <Text style={styles.cartItemPrice}>
                       {(item.menuItem.price * item.quantity).toLocaleString()} IQD
                     </Text>
@@ -1448,7 +1460,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 12,
+    paddingBottom: 8,
   },
   headerCornerButton: {
     width: 40,
@@ -1464,8 +1476,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   tableIndicator: {
     flexDirection: 'row',

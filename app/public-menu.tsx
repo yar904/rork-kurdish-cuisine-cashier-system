@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   headerIconButton: {
     width: 40,
@@ -583,8 +583,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerLogo: {
-    width: 65,
-    height: 65,
+    width: 80,
+    height: 80,
   },
   viewOnlyBadge: {
     width: 40,
