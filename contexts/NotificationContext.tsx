@@ -104,8 +104,8 @@ export const [NotificationProvider, useNotifications] = createContextHook(() => 
   }, [permission.granted]);
 
   const notifyNewOrder = useCallback(async (orderId: string, tableNumber: number) => {
-    await showNotification('New Order! 🍽️', {
-      body: `New order received for Table ${tableNumber}`,
+    await showNotification('داواکاریی نوێ! / New Order! 🍽️', {
+      body: `داواکاریی نوێ بۆ میزی / New order received for Table ${tableNumber}`,
       tag: `order-${orderId}`,
       requireInteraction: true,
       url: '/kitchen',
@@ -113,8 +113,8 @@ export const [NotificationProvider, useNotifications] = createContextHook(() => 
   }, [showNotification]);
 
   const notifyOrderReady = useCallback(async (orderId: string, tableNumber: number) => {
-    await showNotification('Order Ready! ✅', {
-      body: `Order for Table ${tableNumber} is ready to serve`,
+    await showNotification('داواکاری ئامادەیە! / Order Ready! ✅', {
+      body: `داواکاری بۆ میزی ${tableNumber} ئامادەیە / Order for Table ${tableNumber} is ready to serve`,
       tag: `order-ready-${orderId}`,
       requireInteraction: true,
       url: '/waiter',
@@ -125,8 +125,9 @@ export const [NotificationProvider, useNotifications] = createContextHook(() => 
     tableNumber: number,
     requestType: string
   ) => {
-    await showNotification('Service Request 🔔', {
-      body: `Table ${tableNumber} needs ${requestType}`,
+    const requestTypeText = requestType === 'waiter' ? 'پێشخزمەتکار / waiter' : requestType === 'bill' ? 'حیساب / bill' : requestType;
+    await showNotification('داواکاری خزمەتگوزاری / Service Request 🔔', {
+      body: `میزی ${tableNumber} پێویستی / Table ${tableNumber} needs ${requestTypeText}`,
       tag: `service-${tableNumber}`,
       requireInteraction: true,
       url: '/waiter',

@@ -182,7 +182,7 @@ export default function MenuManagementScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen 
         options={{ 
-          title: 'Menu Management',
+          title: 'بەڕێوەبردنی لیستە / Menu Management',
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
         }} 
@@ -192,7 +192,7 @@ export default function MenuManagementScreen() {
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search menu items..."
+            placeholder="گەڕان بۆ خواردن... / Search menu items..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={Colors.textLight}
@@ -210,7 +210,7 @@ export default function MenuManagementScreen() {
             onPress={() => setFilterCategory(null)}
           >
             <Text style={[styles.categoryChipText, !filterCategory && styles.categoryChipTextActive]}>
-              All
+              هەموو / All
             </Text>
           </TouchableOpacity>
           {Object.entries(CATEGORY_NAMES).map(([key, value]) => (
@@ -234,14 +234,14 @@ export default function MenuManagementScreen() {
           }}
         >
           <Plus size={20} color="#fff" />
-          <Text style={styles.addButtonText}>Add Menu Item</Text>
+          <Text style={styles.addButtonText}>زیادکردنی خواردن / Add Menu Item</Text>
         </TouchableOpacity>
       </View>
 
       {menuQuery.isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Loading menu items...</Text>
+          <Text style={styles.loadingText}>باردەکرێت... / Loading menu items...</Text>
         </View>
       ) : (
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -250,13 +250,12 @@ export default function MenuManagementScreen() {
               <View key={item.id} style={[styles.menuCard, isTablet && styles.menuCardTablet]}>
                 <View style={styles.menuCardHeader}>
                   <View style={styles.menuCardInfo}>
-                    <Text style={styles.menuCardName}>{item.name}</Text>
-                    <Text style={styles.menuCardNameSecondary}>{item.name_kurdish}</Text>
-                    <Text style={styles.menuCardNameSecondary}>{item.name_arabic}</Text>
+                    <Text style={styles.menuCardName}>{item.name_kurdish}</Text>
+                    <Text style={styles.menuCardNameSecondary}>{item.name}</Text>
                   </View>
                   <View style={[styles.availabilityBadge, item.available ? styles.availableBadge : styles.unavailableBadge]}>
                     <Text style={styles.availabilityText}>
-                      {item.available ? 'Available' : 'Unavailable'}
+                      {item.available ? 'بەردەستە / Available' : 'نابەردەست / Unavailable'}
                     </Text>
                   </View>
                 </View>
@@ -274,7 +273,7 @@ export default function MenuManagementScreen() {
                     onPress={() => handleEdit(item)}
                   >
                     <Edit size={18} color="#fff" />
-                    <Text style={styles.actionBtnText}>Edit</Text>
+                    <Text style={styles.actionBtnText}>دەستکاری / Edit</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -282,7 +281,7 @@ export default function MenuManagementScreen() {
                     onPress={() => handleDelete(item.id, item.name)}
                   >
                     <Trash2 size={18} color="#fff" />
-                    <Text style={styles.actionBtnText}>Delete</Text>
+                    <Text style={styles.actionBtnText}>سڕینەوە / Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -291,9 +290,9 @@ export default function MenuManagementScreen() {
 
           {filteredItems.length === 0 && (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No menu items found</Text>
+              <Text style={styles.emptyStateText}>هیچ خواردنێک نەدۆزرایەوە / No menu items found</Text>
               <Text style={styles.emptyStateSubtext}>
-                {searchQuery || filterCategory ? 'Try adjusting your filters' : 'Add your first menu item to get started'}
+                {searchQuery || filterCategory ? 'پالاوتنیکان گۆڕین / Try adjusting your filters' : 'یەکەم خواردن زیادبکە / Add your first menu item to get started'}
               </Text>
             </View>
           )}
@@ -309,7 +308,7 @@ export default function MenuManagementScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>
-              {editingItem.id ? 'Edit Menu Item' : 'Add Menu Item'}
+              {editingItem.id ? 'دەستکاری خواردن / Edit Menu Item' : 'زیادکردنی خواردن / Add Menu Item'}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
               <X size={24} color={Colors.text} />
@@ -318,9 +317,9 @@ export default function MenuManagementScreen() {
 
           <ScrollView style={styles.modalContent} contentContainerStyle={styles.modalContentContainer}>
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>Kurdish (کوردی) - Required</Text>
+              <Text style={styles.formSectionTitle}>کوردی (Kurdish) - پێویستە / Required</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name (ناو) *</Text>
+                <Text style={styles.inputLabel}>ناو / Name *</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.nameKurdish}
@@ -331,7 +330,7 @@ export default function MenuManagementScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description (وەسف) *</Text>
+                <Text style={styles.inputLabel}>وەسف / Description *</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionKurdish}
@@ -345,9 +344,9 @@ export default function MenuManagementScreen() {
             </View>
 
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>English (Optional)</Text>
+              <Text style={styles.formSectionTitle}>English - دیاریکراو / Optional</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name</Text>
+                <Text style={styles.inputLabel}>Name / ناو</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.name}
@@ -358,7 +357,7 @@ export default function MenuManagementScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description</Text>
+                <Text style={styles.inputLabel}>Description / وەسف</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.description}
@@ -372,9 +371,9 @@ export default function MenuManagementScreen() {
             </View>
 
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>Arabic (عربي) - Optional</Text>
+              <Text style={styles.formSectionTitle}>عەرەبی (Arabic) - دیاریکراو / Optional</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name (اسم)</Text>
+                <Text style={styles.inputLabel}>اسم / Name</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.nameArabic}
@@ -385,7 +384,7 @@ export default function MenuManagementScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description (وصف)</Text>
+                <Text style={styles.inputLabel}>وصف / Description</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editingItem.descriptionArabic}
@@ -399,10 +398,10 @@ export default function MenuManagementScreen() {
             </View>
 
             <View style={styles.formSection}>
-              <Text style={styles.formSectionTitle}>Details</Text>
+              <Text style={styles.formSectionTitle}>وردەکارییەکان / Details</Text>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Category *</Text>
+                <Text style={styles.inputLabel}>پۆل / Category *</Text>
                 <TouchableOpacity
                   style={styles.pickerButton}
                   onPress={() => setCategoryPickerVisible(!categoryPickerVisible)}
@@ -432,7 +431,7 @@ export default function MenuManagementScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Price (IQD) *</Text>
+                <Text style={styles.inputLabel}>نرخ / Price (IQD) *</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.price}
@@ -444,7 +443,7 @@ export default function MenuManagementScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Image URL (optional)</Text>
+                <Text style={styles.inputLabel}>وێنە / Image URL (دیاریکراو / optional)</Text>
                 <TextInput
                   style={styles.input}
                   value={editingItem.image}
@@ -461,7 +460,7 @@ export default function MenuManagementScreen() {
                 <View style={[styles.checkbox, editingItem.available && styles.checkboxChecked]}>
                   {editingItem.available && <Text style={styles.checkmark}>✓</Text>}
                 </View>
-                <Text style={styles.availabilityToggleText}>Available for ordering</Text>
+                <Text style={styles.availabilityToggleText}>بەردەستە بۆ داواکردن / Available for ordering</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -471,7 +470,7 @@ export default function MenuManagementScreen() {
               style={[styles.modalButton, styles.cancelButton]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -484,7 +483,7 @@ export default function MenuManagementScreen() {
               ) : (
                 <>
                   <Save size={20} color="#fff" />
-                  <Text style={styles.saveButtonText}>Save</Text>
+                  <Text style={styles.saveButtonText}>پاشەکەوت / Save</Text>
                 </>
               )}
             </TouchableOpacity>

@@ -197,7 +197,7 @@ export default function ManagerScreen() {
         </View>
 
         {order.waiterName && (
-          <Text style={styles.waiterName}>{t('waiter')}: {order.waiterName}</Text>
+          <Text style={styles.waiterName}>پێشخزمەتکار / {t('waiter')}: {order.waiterName}</Text>
         )}
 
         <View style={styles.orderItems}>
@@ -214,7 +214,7 @@ export default function ManagerScreen() {
 
         <View style={styles.orderFooter}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>{t('total')}:</Text>
+            <Text style={styles.totalLabel}>کۆی گشتی / {t('total')}:</Text>
             <Text style={styles.totalAmount}>{formatPrice(order.total)}</Text>
           </View>
           {canServe && (
@@ -223,7 +223,7 @@ export default function ManagerScreen() {
               onPress={() => handleServeOrder(order.id)}
             >
               <ClipboardList size={16} color="#fff" />
-              <Text style={styles.paidButtonText}>Mark as Served</Text>
+              <Text style={styles.paidButtonText}>پێشکەش کراوە / Mark as Served</Text>
             </TouchableOpacity>
           )}
           {canMarkPaid && (
@@ -233,14 +233,14 @@ export default function ManagerScreen() {
                 onPress={() => handleSplitBill(order)}
               >
                 <Users size={16} color={Colors.primary} />
-                <Text style={styles.splitButtonText}>Split Bill</Text>
+                <Text style={styles.splitButtonText}>دابەشکردنی حیساب / Split Bill</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.paidButton}
                 onPress={() => handleMarkPaid(order.id)}
               >
                 <DollarSign size={16} color="#fff" />
-                <Text style={styles.paidButtonText}>{t('markAsPaid')}</Text>
+                <Text style={styles.paidButtonText}>دراوە / {t('markAsPaid')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -252,7 +252,7 @@ export default function ManagerScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - Waiter`,
+        title: `${t('restaurantName')} - پێشخزمەتکار / Waiter`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
@@ -262,7 +262,7 @@ export default function ManagerScreen() {
           {readyOrders.length > 0 && (
             <View style={styles.readyNotification}>
               <Text style={styles.readyNotificationText}>
-                ✅ {readyOrders.length} order{readyOrders.length > 1 ? 's' : ''} ready to serve!
+                ✅ {readyOrders.length} داواکاری / order{readyOrders.length > 1 ? 's' : ''} ئامادەیە / ready to serve!
               </Text>
             </View>
           )}
@@ -271,14 +271,14 @@ export default function ManagerScreen() {
               <View style={styles.serviceRequestHeader}>
                 <Bell size={20} color={Colors.warning} />
                 <Text style={styles.serviceRequestText}>
-                  Table {request.tableNumber} - {request.requestType === 'bill' ? '💵 Bill Request' : '👤 Waiter Call'}
+                  میز / Table {request.tableNumber} - {request.requestType === 'bill' ? '💵 داواکاری حیساب / Bill Request' : '👤 بانگهێشتی پێشخزمەتکار / Waiter Call'}
                 </Text>
               </View>
               <TouchableOpacity
                 style={styles.resolveButton}
                 onPress={() => handleResolveServiceRequest(request.id)}
               >
-                <Text style={styles.resolveButtonText}>Resolve</Text>
+                <Text style={styles.resolveButtonText}>چارەسەرکراوە / Resolved</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -294,7 +294,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'active' && styles.filterButtonTextActive,
           ]}>
-            {t('activeOrders')}
+            چالاک / {t('activeOrders')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -305,7 +305,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'all' && styles.filterButtonTextActive,
           ]}>
-            {t('allOrders')}
+            هەموو / {t('allOrders')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -316,7 +316,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'completed' && styles.filterButtonTextActive,
           ]}>
-            {t('completed')}
+            تەواو / {t('completed')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -325,9 +325,9 @@ export default function ManagerScreen() {
         {tableNumbers.length === 0 ? (
           <View style={styles.emptyState}>
             <ClipboardList size={64} color={Colors.textLight} />
-            <Text style={styles.emptyStateTitle}>{t('noOrders')}</Text>
+            <Text style={styles.emptyStateTitle}>هیچ داواکارییەک نییە / {t('noOrders')}</Text>
             <Text style={styles.emptyStateText}>
-              {t('ordersWillAppear')}
+              داواکارییەکان لێرە دەردەکەون / {t('ordersWillAppear')}
             </Text>
           </View>
         ) : (
@@ -335,10 +335,10 @@ export default function ManagerScreen() {
             {tableNumbers.map(tableNumber => (
               <View key={tableNumber} style={[styles.tableSection, !isPhone && styles.tableSectionTablet]}>
                 <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderText}>{t('table')} {tableNumber}</Text>
+                  <Text style={styles.tableHeaderText}>میز / {t('table')} {tableNumber}</Text>
                   <View style={styles.tableHeaderBadge}>
                     <Text style={styles.tableHeaderBadgeText}>
-                      {ordersByTable[tableNumber].length} {ordersByTable[tableNumber].length === 1 ? t('order') : t('orders')}
+                      {ordersByTable[tableNumber].length} داواکاری / {ordersByTable[tableNumber].length === 1 ? t('order') : t('orders')}
                     </Text>
                   </View>
                 </View>
@@ -360,7 +360,7 @@ export default function ManagerScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Split Bill</Text>
+              <Text style={styles.modalTitle}>دابەشکردنی حیساب / Split Bill</Text>
               <TouchableOpacity onPress={() => setSplitBillModal({ visible: false, order: null })}>
                 <X size={24} color={Colors.text} />
               </TouchableOpacity>
@@ -368,22 +368,22 @@ export default function ManagerScreen() {
 
             {splitBillModal.order && (
               <View style={styles.modalBody}>
-                <Text style={styles.modalLabel}>Order #{splitBillModal.order.id}</Text>
-                <Text style={styles.modalTotalLabel}>Total: {formatPrice(splitBillModal.order.total)}</Text>
+                <Text style={styles.modalLabel}>داواکاری / Order #{splitBillModal.order.id}</Text>
+                <Text style={styles.modalTotalLabel}>کۆی گشتی / Total: {formatPrice(splitBillModal.order.total)}</Text>
 
-                <Text style={styles.modalLabel}>Split among how many people?</Text>
+                <Text style={styles.modalLabel}>دابەش بکە بۆ چەند کەس؟ / Split among how many people?</Text>
                 <TextInput
                   style={styles.splitInput}
                   keyboardType="number-pad"
                   value={splitPeople}
                   onChangeText={setSplitPeople}
-                  placeholder="Number of people"
+                  placeholder="ژمارەی کەسەکان / Number of people"
                   placeholderTextColor={Colors.textLight}
                 />
 
                 {parseInt(splitPeople) > 0 && (
                   <View style={styles.splitResult}>
-                    <Text style={styles.splitResultLabel}>Amount per person:</Text>
+                    <Text style={styles.splitResultLabel}>بڕی هەر کەسێک / Amount per person:</Text>
                     <Text style={styles.splitResultAmount}>
                       {formatPrice(parseFloat(calculateSplitAmount(splitBillModal.order.total, parseInt(splitPeople))))}
                     </Text>
@@ -395,7 +395,7 @@ export default function ManagerScreen() {
                     style={styles.modalCancelButton}
                     onPress={() => setSplitBillModal({ visible: false, order: null })}
                   >
-                    <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                    <Text style={styles.modalCancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.modalConfirmButton}
@@ -404,15 +404,15 @@ export default function ManagerScreen() {
                       if (people > 0) {
                         const amountPerPerson = calculateSplitAmount(splitBillModal.order!.total, people);
                         Alert.alert(
-                          'Bill Split',
-                          `Total: ${formatPrice(splitBillModal.order!.total)}\nPeople: ${people}\nPer Person: ${formatPrice(parseFloat(amountPerPerson))}`,
+                          'دابەشکردنی حیساب / Bill Split',
+                          `کۆی گشتی / Total: ${formatPrice(splitBillModal.order!.total)}\nکەسەکان / People: ${people}\nهەر کەسێک / Per Person: ${formatPrice(parseFloat(amountPerPerson))}`,
                           [{ text: 'OK' }]
                         );
                         setSplitBillModal({ visible: false, order: null });
                       }
                     }}
                   >
-                    <Text style={styles.modalConfirmButtonText}>Confirm</Text>
+                    <Text style={styles.modalConfirmButtonText}>پەسەندکردن / Confirm</Text>
                   </TouchableOpacity>
                 </View>
               </View>
