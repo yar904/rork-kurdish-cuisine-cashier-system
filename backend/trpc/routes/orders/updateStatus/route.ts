@@ -1,5 +1,5 @@
-import { publicProcedure } from "@/backend/trpc/create-context";
-import { supabase } from "@/backend/lib/supabase";
+import { publicProcedure } from "../../../create-context";
+import { supabase } from "../../../lib/supabase";
 import { z } from "zod";
 
 export default publicProcedure
