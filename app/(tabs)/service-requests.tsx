@@ -71,7 +71,7 @@ export default function ServiceRequestsScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Service Requests',
+          title: 'داواکاریە خزمەتگوزارییەکان / Service Requests',
           headerStyle: { backgroundColor: Colors.primary },
           headerTintColor: '#fff',
         }}
@@ -83,7 +83,7 @@ export default function ServiceRequestsScreen() {
           onPress={() => setFilter('pending')}
         >
           <Text style={[styles.filterButtonText, filter === 'pending' && styles.filterButtonTextActive]}>
-            Pending
+            چاوەڕوان / Pending
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -91,7 +91,7 @@ export default function ServiceRequestsScreen() {
           onPress={() => setFilter('all')}
         >
           <Text style={[styles.filterButtonText, filter === 'all' && styles.filterButtonTextActive]}>
-            All
+            هەموو / All
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -99,7 +99,7 @@ export default function ServiceRequestsScreen() {
           onPress={() => setFilter('resolved')}
         >
           <Text style={[styles.filterButtonText, filter === 'resolved' && styles.filterButtonTextActive]}>
-            Resolved
+            چارەسەرکراوە / Resolved
           </Text>
         </TouchableOpacity>
       </View>
@@ -107,7 +107,7 @@ export default function ServiceRequestsScreen() {
       {serviceRequestsQuery.isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Loading service requests...</Text>
+          <Text style={styles.loadingText}>باردەکرێت... / Loading service requests...</Text>
         </View>
       ) : (
         <ScrollView
@@ -124,8 +124,8 @@ export default function ServiceRequestsScreen() {
           {serviceRequestsQuery.data && serviceRequestsQuery.data.length === 0 ? (
             <View style={styles.emptyState}>
               <Bell size={64} color={Colors.textLight} />
-              <Text style={styles.emptyStateText}>No service requests</Text>
-              <Text style={styles.emptyStateSubtext}>All requests have been handled</Text>
+              <Text style={styles.emptyStateText}>هیچ داواکارییەک نییە / No service requests</Text>
+              <Text style={styles.emptyStateSubtext}>هەموو داواکارییەکان چارەسەرکراون / All requests have been handled</Text>
             </View>
           ) : (
             serviceRequestsQuery.data?.map((request: any) => (
@@ -143,8 +143,8 @@ export default function ServiceRequestsScreen() {
                       </Text>
                     </View>
                     <View>
-                      <Text style={styles.requestTable}>Table {request.table_number}</Text>
-                      <Text style={styles.requestType}>{request.request_type}</Text>
+                      <Text style={styles.requestTable}>میز / Table {request.table_number}</Text>
+                      <Text style={styles.requestType}>{request.request_type === 'waiter' ? 'پێشخزمەتکار / Waiter' : request.request_type === 'bill' ? 'حیساب / Bill' : request.request_type}</Text>
                     </View>
                   </View>
                   <View
@@ -183,7 +183,7 @@ export default function ServiceRequestsScreen() {
                         ) : (
                           <>
                             <Clock size={16} color="#fff" />
-                            <Text style={styles.actionButtonText}>In Progress</Text>
+                            <Text style={styles.actionButtonText}>بەردەوامە / In Progress</Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -197,7 +197,7 @@ export default function ServiceRequestsScreen() {
                         ) : (
                           <>
                             <Check size={16} color="#fff" />
-                            <Text style={styles.actionButtonText}>Resolve</Text>
+                            <Text style={styles.actionButtonText}>چارەسەرکردن / Resolve</Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -216,7 +216,7 @@ export default function ServiceRequestsScreen() {
                         ) : (
                           <>
                             <Check size={16} color="#fff" />
-                            <Text style={styles.actionButtonText}>Resolve</Text>
+                            <Text style={styles.actionButtonText}>چارەسەرکردن / Resolve</Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -226,7 +226,7 @@ export default function ServiceRequestsScreen() {
 
                 {request.resolved_by && request.resolved_at && (
                   <Text style={styles.resolvedInfo}>
-                    Resolved by {request.resolved_by} • {formatDistanceToNow(new Date(request.resolved_at), { addSuffix: true })}
+                    چارەسەرکراوە لەلایەن / Resolved by {request.resolved_by} • {formatDistanceToNow(new Date(request.resolved_at), { addSuffix: true })}
                   </Text>
                 )}
               </View>
