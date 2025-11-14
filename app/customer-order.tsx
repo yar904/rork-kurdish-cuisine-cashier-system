@@ -187,44 +187,12 @@ export default function CustomerOrderScreen() {
     retry: false,
   });
 
-  const createOrderMutation = useMutation({
-    mutationFn: async (orderData: { tableNumber: number; items: Array<{ menuItemId: string; quantity: number; notes?: string }>; total: number }) => {
-      console.log('[CustomerOrder] Creating order:', orderData);
-      
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          table_number: orderData.tableNumber,
-          total: orderData.total,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-      console.log('[CustomerOrder] ✅ Order created:', order.id);
-
-      const orderItems = orderData.items.map(item => ({
-        order_id: order.id,
-        menu_item_id: item.menuItemId,
-        quantity: item.quantity,
-        notes: item.notes,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-      console.log('[CustomerOrder] ✅ Order items created:', orderItems.length);
-
-      return order;
-    },
-    onSuccess: () => {
-      console.log('[CustomerOrder] ✅ Order submitted successfully');
+  const createOrderMutation = trpc.orders.create.useMutation({
+    onSuccess: (data) => {
+      console.log('[CustomerOrder] ✅ Order submitted successfully:', data.orderId);
       Alert.alert(
-        'Order Submitted!',
-        'Your order has been sent to the kitchen. We\'ll bring it to your table soon!',
+        t.orderSubmitted || 'Order Submitted!',
+        t.orderSentToKitchen || 'Your order has been sent to the kitchen. We\'ll bring it to your table soon!',
         [{ text: 'OK', onPress: () => setCart([]) }]
       );
     },
@@ -405,6 +373,7 @@ export default function CustomerOrderScreen() {
       return;
     }
 
+    console.log('[CustomerOrder] 🚀 Submitting order via tRPC');
     createOrderMutation.mutate({
       tableNumber: parseInt(table),
       items: cart.map(item => ({

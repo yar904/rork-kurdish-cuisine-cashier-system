@@ -31,20 +31,32 @@ export default publicProcedure.query(async () => {
 
   return orders.map(order => ({
     id: order.id,
-    table_number: order.table_number,
+    tableNumber: order.table_number,
     status: order.status,
-    waiter_name: order.waiter_name,
+    waiterName: order.waiter_name,
     total: order.total,
-    split_info: order.split_info,
-    created_at: order.created_at,
-    updated_at: order.updated_at,
+    splitInfo: order.split_info,
+    createdAt: new Date(order.created_at),
+    updatedAt: new Date(order.updated_at),
     items: (order.order_items as any[]).map(item => {
       const menuItem = menuItems.find(mi => mi.id === item.menu_item_id);
       return {
-        menu_item_id: item.menu_item_id,
+        menuItem: menuItem ? {
+          id: menuItem.id,
+          name: menuItem.name,
+          nameKurdish: menuItem.name_kurdish || menuItem.name,
+          nameArabic: menuItem.name_arabic || menuItem.name,
+          category: menuItem.category,
+          price: menuItem.price,
+          cost: menuItem.cost,
+          description: menuItem.description || '',
+          descriptionKurdish: menuItem.description || '',
+          descriptionArabic: menuItem.description || '',
+          image: menuItem.image,
+          available: menuItem.available,
+        } : null,
         quantity: item.quantity,
         notes: item.notes,
-        menuItem: menuItem || null,
       };
     }),
   }));

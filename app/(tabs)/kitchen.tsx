@@ -8,6 +8,7 @@ import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useRealtime } from '@/contexts/RealtimeContext';
 
 
 
@@ -15,6 +16,7 @@ export default function KitchenScreen() {
   const { t } = useLanguage();
   const { width } = useWindowDimensions();
   const { notifyOrderReady } = useNotifications();
+  const { subscribeToOrders } = useRealtime();
   const previousOrdersRef = useRef<Order[]>([]);
   
   const isPhone = width < 768;
@@ -22,7 +24,7 @@ export default function KitchenScreen() {
   const isDesktop = width >= 1200;
 
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 
   const updateOrderMutation = trpc.orders.updateStatus.useMutation({
@@ -32,6 +34,17 @@ export default function KitchenScreen() {
   });
 
   const orders = ordersQuery.data || [];
+
+  useEffect(() => {
+    const unsubscribe = subscribeToOrders(() => {
+      console.log('[Kitchen] 🔴 Real-time order update detected - refetching');
+      ordersQuery.refetch();
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribeToOrders, ordersQuery]);
 
   useEffect(() => {
     const newOrders = orders.filter(o => o.status === 'new');
@@ -221,7 +234,7 @@ export default function KitchenScreen() {
       </TouchableOpacity>
 
       <View style={styles.orderItems}>
-        {order.items.map((item, index) => (
+        {order.items.filter(item => item.menuItem).map((item, index) => (
           <View key={index} style={styles.orderItem}>
             <View style={styles.quantityBadge}>
               <Text style={styles.quantityBadgeText}>{item.quantity}x</Text>

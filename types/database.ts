@@ -445,6 +445,32 @@ export interface Database {
           created_at?: string;
         };
       };
+      ratings: {
+        Row: {
+          id: string;
+          menu_item_id: string;
+          table_number: number;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          menu_item_id: string;
+          table_number: number;
+          rating: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          menu_item_id?: string;
+          table_number?: number;
+          rating?: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+      };
       menu_item_ingredients: {
         Row: {
           id: string;
