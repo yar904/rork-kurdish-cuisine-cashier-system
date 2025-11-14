@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a0000',
   },
   header: {
-    backgroundColor: 'rgba(26, 0, 0, 0.25)',
+    backgroundColor: 'transparent',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
@@ -566,7 +566,6 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 4px 16px rgba(212, 175, 55, 0.2)',
-        backdropFilter: 'blur(12px)',
       },
     }),
   },
