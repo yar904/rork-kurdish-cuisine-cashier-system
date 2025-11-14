@@ -1,47 +1,106 @@
-const { Hono } = require('hono');
-const { handle } = require('hono/netlify');
-const { cors } = require('hono/cors');
-const { trpcServer } = require('@hono/trpc-server');
-const { appRouter } = require('../../backend/trpc/app-router');
-const { createContext } = require('../../backend/trpc/create-context');
+const { createClient } = require('@supabase/supabase-js');
 
-const app = new Hono();
+const supabaseUrl = process.env.SUPABASE_PROJECT_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-app.use('*', cors({
-  origin: (origin) => {
-    const allowedOrigins = [
-      'https://kurdish-cuisine-cashier-system.rork.app',
-      'https://tapse.netlify.app',
-      'http://localhost:8081',
-      'http://localhost:3000',
-    ];
-    if (!origin || 
-        origin.startsWith('exp://') || 
-        origin.endsWith('.rork.app') || 
-        origin.endsWith('.netlify.app') ||
-        origin.endsWith('.supabase.co') ||
-        allowedOrigins.includes(origin)) {
-      return origin || '*';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-trpc-source',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
+};
+
+exports.handler = async (event, context) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: '',
+    };
+  }
+
+  const path = event.path.replace('/.netlify/functions/api', '');
+
+  try {
+    if (path === '/' || path === '') {
+      return {
+        statusCode: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: '✅ Backend is running on Netlify',
+          version: '1.0.0',
+          timestamp: new Date().toISOString(),
+        }),
+      };
     }
-    return null;
-  },
-  credentials: true,
-}));
 
-app.use('/trpc/*', trpcServer({
-  router: appRouter,
-  createContext,
-}));
+    if (path === '/health' || path === '/api/health') {
+      return {
+        statusCode: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'ok',
+          timestamp: new Date().toISOString(),
+          environment: process.env.NODE_ENV || 'production',
+        }),
+      };
+    }
 
-app.get('/', (c) => c.json({ 
-  status: '✅ Backend is running on Netlify', 
-  version: '1.0.0',
-  timestamp: new Date().toISOString()
-}));
+    if (path === '/test' || path === '/api/test') {
+      const { data, error } = await supabase.from('restaurants').select('*').limit(1);
+      
+      if (error) {
+        return {
+          statusCode: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: '❌ Error connecting to Supabase',
+            error: error.message,
+          }),
+        };
+      }
 
-app.get('/api/health', (c) => c.json({
-  status: 'ok',
-  timestamp: new Date().toISOString(),
-}));
+      return {
+        statusCode: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: '🔥 Backend is live and connected to Supabase!',
+          supabaseConnected: true,
+          sample: data,
+        }),
+      };
+    }
 
-exports.handler = handle(app);
+    if (path.startsWith('/trpc') || path.startsWith('/api/trpc')) {
+      return {
+        statusCode: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'tRPC endpoint - frontend should use Supabase directly',
+          note: 'This app uses Supabase client-side for all data operations',
+        }),
+      };
+    }
+
+    return {
+      statusCode: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: 'Not found',
+        path,
+      }),
+    };
+  } catch (error) {
+    console.error('Function error:', error);
+    return {
+      statusCode: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: 'Internal server error',
+        message: error.message,
+      }),
+    };
+  }
+};
