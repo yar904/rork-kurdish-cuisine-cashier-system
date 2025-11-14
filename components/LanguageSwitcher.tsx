@@ -62,6 +62,7 @@ export default function LanguageSwitcher() {
 const styles = StyleSheet.create({
   container: {
     position: 'relative' as const,
+    zIndex: 9999,
   },
   globeButton: {
     width: 36,
@@ -97,6 +98,7 @@ const styles = StyleSheet.create({
     borderColor: '#D4AF37',
     overflow: 'hidden' as const,
     minWidth: 85,
+    zIndex: 10000,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
