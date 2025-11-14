@@ -229,7 +229,7 @@ export default function PublicMenuScreen() {
                   onPress={(e) => handleShowReviews(item, e)}
                   activeOpacity={0.8}
                 >
-                  <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
+                  <Star size={16} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
                 </TouchableOpacity>
               </View>
             )}
@@ -802,20 +802,20 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     position: 'absolute' as const,
-    top: 8,
+    bottom: 8,
     right: 8,
     flexDirection: 'row' as const,
     gap: 8,
     zIndex: 5,
   },
   circularButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#D4AF37',
     ...Platform.select({
       ios: {

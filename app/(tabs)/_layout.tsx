@@ -34,7 +34,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.gold,
-        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.5)',
+        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.45)',
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarBackground: () => (
@@ -114,33 +114,33 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: Platform.select({ ios: 85, default: 68 }) as number,
+    height: Platform.select({ ios: 90, default: 70 }) as number,
     backgroundColor: 'transparent',
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(212, 175, 55, 0.6)',
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(212, 175, 55, 0.7)',
     elevation: 0,
-    paddingBottom: Platform.select({ ios: 24, default: 10 }) as number,
-    paddingTop: 10,
+    paddingBottom: Platform.select({ ios: 26, default: 12 }) as number,
+    paddingTop: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: -6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 16,
+        shadowOffset: { width: 0, height: -8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
       },
       android: {
-        elevation: 16,
+        elevation: 20,
       },
       web: {
-        boxShadow: '0 -6px 24px rgba(212, 175, 55, 0.35)',
+        boxShadow: '0 -8px 32px rgba(212, 175, 55, 0.45)',
       },
     }),
   },
   tabBarBackground: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(212, 175, 55, 0.6)',
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(212, 175, 55, 0.7)',
   },
   tabBarItem: {
     paddingVertical: 5,
@@ -149,12 +149,12 @@ const styles = StyleSheet.create({
   },
   tabBarLabel: {
     fontSize: 11,
-    fontWeight: '700' as const,
-    letterSpacing: 0.3,
+    fontWeight: '800' as const,
+    letterSpacing: 0.4,
     marginTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   tabBarIcon: {
     marginBottom: 2,
