@@ -124,16 +124,15 @@ export default function CustomerOrderScreen() {
         .order('category', { ascending: true });
       
       if (error) {
-        console.error('[CustomerOrder] Error fetching menu:', error.message || error);
-        throw error;
+        console.warn('[CustomerOrder] Could not fetch menu from database, using fallback data:', error.message);
+        return [];
       }
       console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
       return data || [];
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 2,
-    retryDelay: 1000,
+    retry: false,
   });
   
   const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
@@ -224,8 +223,41 @@ export default function CustomerOrderScreen() {
 
   const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
 
-  const callWaiterMutation = trpc.serviceRequests.create.useMutation();
-  const requestBillMutation = trpc.serviceRequests.create.useMutation();
+  const callWaiterMutation = useMutation({
+    mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
+      const { data: result, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: data.tableNumber,
+          type: data.type,
+          message: data.message,
+          status: 'pending',
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+  });
+
+  const requestBillMutation = useMutation({
+    mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
+      const { data: result, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: data.tableNumber,
+          type: data.type,
+          message: data.message,
+          status: 'pending',
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+  });
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -433,11 +465,11 @@ export default function CustomerOrderScreen() {
     try {
       await callWaiterMutation.mutateAsync({
         tableNumber: parseInt(table),
-        requestType: 'waiter',
-        messageText: 'Customer requesting assistance',
+        type: 'waiter',
+        message: 'Customer requesting assistance',
       });
 
-      console.log('[CustomerOrder] ✅ Waiter called via tRPC');
+      console.log('[CustomerOrder] ✅ Waiter called successfully');
       
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
       notifyServiceRequest(parseInt(table), 'waiter');
@@ -467,11 +499,11 @@ export default function CustomerOrderScreen() {
     try {
       await requestBillMutation.mutateAsync({
         tableNumber: parseInt(table),
-        requestType: 'bill',
-        messageText: 'Customer requesting bill',
+        type: 'bill',
+        message: 'Customer requesting bill',
       });
 
-      console.log('[CustomerOrder] ✅ Bill requested via tRPC');
+      console.log('[CustomerOrder] ✅ Bill requested successfully');
       
       setLastRequestTime(prev => ({ ...prev, bill: now }));
       notifyServiceRequest(parseInt(table), 'bill');
