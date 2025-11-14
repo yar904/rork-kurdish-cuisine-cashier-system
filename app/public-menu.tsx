@@ -551,7 +551,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a0000',
   },
   header: {
-    backgroundColor: 'transparent',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
