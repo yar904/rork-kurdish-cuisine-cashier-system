@@ -1498,19 +1498,22 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    backgroundColor: 'rgba(26, 0, 0, 0.85)',
+    backgroundColor: 'rgba(26, 0, 0, 0.25)',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.2)',
+        backdropFilter: 'blur(12px)',
       },
     }),
   },
