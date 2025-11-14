@@ -972,8 +972,16 @@ export default function CustomerOrderScreen() {
                 }
 
                       return (
-                        <TouchableOpacity
+                        <View
                           key={item.id}
+                          style={isGridView ? styles.menuItemGrid : styles.menuItem}
+                        >
+                        <Animated.View 
+                          style={[
+                            { width: '100%', transform: [{ scale: scaleAnim }] }
+                          ]}
+                        >
+                        <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => {
                             setSelectedItem({
@@ -986,32 +994,39 @@ export default function CustomerOrderScreen() {
                             });
                             setItemModalVisible(true);
                           }}
-                          style={isGridView ? styles.menuItemGrid : styles.menuItem}
-                        >
-                        <Animated.View 
-                          style={[
-                            { width: '100%', opacity: menuItemsOpacity, transform: [{ scale: scaleAnim }] }
-                          ]}
                         >
                         {item.image && (
                           <View style={isGridView ? styles.imageContainerGrid : styles.imageContainer}>
                             <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
-                            <View style={styles.itemActions}>
-                              {totalRatings > 0 && (
-                                <View style={styles.ratingBadge}>
-                                  <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                  <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
-                                </View>
-                              )}
-                            </View>
+                            {totalRatings > 0 && (
+                              <View style={styles.ratingBadge}>
+                                <Star size={14} color="#D4AF37" fill="#D4AF37" />
+                                <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                              </View>
+                            )}
                           </View>
                         )}
                         <View style={styles.menuInfo}>
                           <Text style={styles.menuName}>{getMenuItemName(item)}</Text>
                           <Text style={styles.menuPrice}>{item.price.toLocaleString()} IQD</Text>
                         </View>
-                        </Animated.View>
                         </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.addToCartButton}
+                          onPress={() => addToCart({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            description: item.description,
+                            image: item.image,
+                            category: item.category,
+                          })}
+                          activeOpacity={0.7}
+                        >
+                          <Plus size={18} color="#1a0000" strokeWidth={3} />
+                        </TouchableOpacity>
+                        </Animated.View>
+                        </View>
                       );
                     })}
                   </View>
@@ -1460,7 +1475,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 8,
+    paddingBottom: 4,
+    height: 110,
   },
   headerCornerButton: {
     width: 40,
@@ -1476,8 +1492,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLogo: {
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
   },
   tableIndicator: {
     flexDirection: 'row',
@@ -1772,31 +1788,25 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  itemActions: {
-    position: 'absolute' as const,
-    bottom: 6,
-    right: 6,
-    flexDirection: 'row',
-    gap: 8,
-  },
-
-
   ratingBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
+    position: 'absolute' as const,
+    top: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
+    gap: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700' as const,
-    color: '#fff',
+    color: '#D4AF37',
+    letterSpacing: 0.2,
   },
   ratingCount: {
     fontSize: 9,
@@ -1806,7 +1816,34 @@ const styles = StyleSheet.create({
   menuInfo: {
     padding: 10,
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 56,
+  },
+  addToCartButton: {
+    position: 'absolute' as const,
+    bottom: 10,
+    right: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#D4AF37',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#E8C968',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
+      },
+    }),
   },
   menuName: {
     fontSize: 14,

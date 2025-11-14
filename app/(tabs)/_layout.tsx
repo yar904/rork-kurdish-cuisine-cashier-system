@@ -5,7 +5,7 @@ import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
-import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -33,20 +33,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: Colors.gold,
+        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.4)',
         headerShown: false,
-        tabBarStyle: Platform.OS === 'ios' ? styles.iosTabBar : styles.androidTabBar,
+        tabBarStyle: styles.tabBar,
         tabBarBackground: () => (
-          Platform.OS === 'ios' ? (
-            <BlurView
-              intensity={80}
-              tint="light"
-              style={styles.glassBackground}
-            />
-          ) : (
-            <View style={styles.androidBackground} />
-          )
+          <LinearGradient
+            colors={['rgba(26, 0, 0, 0.98)', 'rgba(61, 1, 1, 0.98)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.tabBarBackground}
+          />
         ),
         tabBarItemStyle: styles.tabBarItem,
         tabBarLabelStyle: styles.tabBarLabel,
@@ -112,50 +109,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.background,
   },
-  iosTabBar: {
+  tabBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 52,
+    height: Platform.select({ ios: 80, default: 65 }) as number,
     backgroundColor: 'transparent',
-    borderTopWidth: 0.5,
-    borderTopColor: 'rgba(0, 0, 0, 0.05)',
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(212, 175, 55, 0.4)',
     elevation: 0,
-    paddingBottom: 6,
-    paddingTop: 4,
+    paddingBottom: Platform.select({ ios: 20, default: 8 }) as number,
+    paddingTop: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 -4px 20px rgba(212, 175, 55, 0.3)',
+      },
+    }),
   },
-  androidTabBar: {
-    backgroundColor: Colors.cream,
-    borderTopColor: Colors.border,
-    borderTopWidth: 1,
-    height: 50,
-    paddingBottom: 4,
-    paddingTop: 4,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  glassBackground: {
+  tabBarBackground: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
-  },
-  androidBackground: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.cream,
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(212, 175, 55, 0.4)',
   },
   tabBarItem: {
-    paddingVertical: 0,
+    paddingVertical: 4,
   },
   tabBarLabel: {
-    fontSize: 9,
-    fontWeight: '600' as const,
-    letterSpacing: -0.2,
-    marginTop: -1,
+    fontSize: 10,
+    fontWeight: '700' as const,
+    letterSpacing: 0.2,
+    marginTop: 2,
   },
   tabBarIcon: {
-    marginBottom: -1,
+    marginBottom: 0,
   },
 });
