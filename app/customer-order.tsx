@@ -28,6 +28,8 @@ import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/constants/i18n';
 
 type CartItem = {
   menuItem: {
@@ -57,6 +59,8 @@ export default function CustomerOrderScreen() {
   const { notifyServiceRequest } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
+  const { language } = useLanguage();
+  const t = translations[language];
   
   // ⚠️ CRITICAL: All hooks MUST be called before any conditional returns
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -1049,7 +1053,7 @@ export default function CustomerOrderScreen() {
                   <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                     <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>Reviews</Text>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>{t.viewRatings}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1067,7 +1071,7 @@ export default function CustomerOrderScreen() {
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.callWaiter.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1082,7 +1086,7 @@ export default function CustomerOrderScreen() {
                   <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
                     <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>{t.yourOrder}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1100,7 +1104,7 @@ export default function CustomerOrderScreen() {
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.requestBill.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1119,7 +1123,7 @@ export default function CustomerOrderScreen() {
                   <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                     <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>Reviews</Text>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>{t.viewRatings}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1137,7 +1141,7 @@ export default function CustomerOrderScreen() {
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Call{"\n"}Waiter</Text>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.callWaiter.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1152,7 +1156,7 @@ export default function CustomerOrderScreen() {
                   <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
                     <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>My Order</Text>
+                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>{t.yourOrder}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1170,7 +1174,7 @@ export default function CustomerOrderScreen() {
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>Request{"\n"}Bill</Text>
+                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.requestBill.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1189,7 +1193,7 @@ export default function CustomerOrderScreen() {
         <View style={styles.orderModalOverlay}>
           <View style={styles.orderModalContent}>
             <View style={styles.orderModalHeader}>
-              <Text style={styles.orderModalTitle}>Your Order</Text>
+              <Text style={styles.orderModalTitle}>{t.yourOrder}</Text>
               <TouchableOpacity
                 style={styles.orderModalCloseButton}
                 onPress={() => setOrderModalVisible(false)}
@@ -1209,9 +1213,9 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
 
                 <View style={styles.emptyOrderTextContainer}>
-                  <Text style={styles.emptyOrderTitleNew}>Waiting for Your Order</Text>
+                  <Text style={styles.emptyOrderTitleNew}>{t.emptyCart}</Text>
                   <Text style={styles.emptyOrderSubtitleNew}>
-                    Our chef is ready to cook something amazing!
+                    {t.pleaseAddItems}
                   </Text>
                 </View>
               </View>
@@ -1223,7 +1227,7 @@ export default function CustomerOrderScreen() {
                       <View style={styles.orderModalItemInfo}>
                         <Text style={styles.orderModalItemName}>{item.menuItem.name}</Text>
                         <Text style={styles.orderModalItemPrice}>
-                          ${(item.menuItem.price * item.quantity).toFixed(2)}
+                          {(item.menuItem.price * item.quantity).toLocaleString()} IQD
                         </Text>
                       </View>
                       <View style={styles.quantityControls}>
@@ -1247,8 +1251,8 @@ export default function CustomerOrderScreen() {
 
                 <View style={styles.orderModalFooter}>
                   <View style={styles.orderModalTotal}>
-                    <Text style={styles.orderModalTotalLabel}>Total:</Text>
-                    <Text style={styles.orderModalTotalValue}>${cartTotal.toFixed(2)} IQD</Text>
+                    <Text style={styles.orderModalTotalLabel}>{t.total}:</Text>
+                    <Text style={styles.orderModalTotalValue}>{cartTotal.toLocaleString()} IQD</Text>
                   </View>
                   <TouchableOpacity
                     style={styles.orderModalSubmitButton}
@@ -1263,7 +1267,7 @@ export default function CustomerOrderScreen() {
                     ) : (
                       <>
                         <Send size={20} color="#fff" strokeWidth={2.5} />
-                        <Text style={styles.orderModalSubmitText}>Submit Order</Text>
+                        <Text style={styles.orderModalSubmitText}>{t.submitOrder}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -1291,7 +1295,7 @@ export default function CustomerOrderScreen() {
         activeOpacity={0.8}
       >
         <Eye size={20} color="#fff" strokeWidth={2.5} />
-        <Text style={styles.switchButtonText}>Public View</Text>
+        <Text style={styles.switchButtonText}>{t.viewAll}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -1349,7 +1353,7 @@ export default function CustomerOrderScreen() {
                     activeOpacity={0.8}
                   >
                     <Plus size={20} color="#fff" strokeWidth={2.5} />
-                    <Text style={styles.addToOrderButtonText}>Add to Order</Text>
+                    <Text style={styles.addToOrderButtonText}>{t.addToCart}</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -1369,8 +1373,8 @@ export default function CustomerOrderScreen() {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.cartTitle}>{cart.length} items</Text>
-              <Text style={styles.cartTotal}>${cartTotal.toFixed(2)}</Text>
+              <Text style={styles.cartTitle}>{cart.length} {t.items}</Text>
+              <Text style={styles.cartTotal}>{cartTotal.toLocaleString()} IQD</Text>
             </View>
 
             <ScrollView
@@ -1382,7 +1386,7 @@ export default function CustomerOrderScreen() {
                   <View style={styles.cartItemInfo}>
                     <Text style={styles.cartItemName}>{item.menuItem.name}</Text>
                     <Text style={styles.cartItemPrice}>
-                      ${(item.menuItem.price * item.quantity).toFixed(2)}
+                      {(item.menuItem.price * item.quantity).toLocaleString()} IQD
                     </Text>
                   </View>
                   <View style={styles.quantityControls}>
@@ -1415,7 +1419,7 @@ export default function CustomerOrderScreen() {
             ) : (
               <>
                 <Send size={20} color="#fff" />
-                <Text style={styles.submitButtonText}>Submit Order</Text>
+                <Text style={styles.submitButtonText}>{t.submitOrder}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -1719,7 +1723,7 @@ const styles = StyleSheet.create({
     overflow: 'visible' as const,
     borderWidth: 2.5,
     borderColor: '#D4AF37',
-    marginBottom: 12,
+    marginBottom: 16,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -1744,7 +1748,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 12,
-    paddingBottom: 12,
+    paddingBottom: 20,
   },
   menuItemsList: {
     flexDirection: 'column',
