@@ -595,8 +595,10 @@ export default function CustomerOrderScreen() {
     };
   }, [categories, categoryScales, isUserScrolling]);
 
+  const shouldAnimateEmptyOrder = orderModalVisible && cart.length === 0;
+
   useEffect(() => {
-    if (orderModalVisible && cart.length === 0) {
+    if (shouldAnimateEmptyOrder) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(chefFloatY, {
@@ -705,7 +707,7 @@ export default function CustomerOrderScreen() {
       pulseScale.stopAnimation();
       plateRotate.stopAnimation();
     }
-  }, [orderModalVisible, cart.length, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
+  }, [shouldAnimateEmptyOrder, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
 
   // ✅ Now safe to have conditional returns - all hooks have been called
   if (!table) {
