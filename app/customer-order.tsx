@@ -123,14 +123,15 @@ export default function CustomerOrderScreen() {
         .order('category', { ascending: true });
       
       if (error) {
-        console.error('[CustomerOrder] Error fetching menu:', error);
-        return [];
+        console.error('[CustomerOrder] Error fetching menu:', error.message || error);
+        throw new Error(`Failed to fetch menu: ${error.message || 'Unknown error'}`);
       }
       console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
       return data || [];
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: 2,
   });
   
   const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
@@ -144,7 +145,7 @@ export default function CustomerOrderScreen() {
         .select('menu_item_id, rating');
       
       if (error) {
-        console.error('[CustomerOrder] Error fetching ratings:', error);
+        console.error('[CustomerOrder] Error fetching ratings:', error.message || error);
         return [];
       }
 
@@ -168,6 +169,7 @@ export default function CustomerOrderScreen() {
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: 1,
   });
 
   const createOrderMutation = useMutation({
@@ -721,6 +723,35 @@ export default function CustomerOrderScreen() {
   }
 
   console.log('[CustomerOrder] Rendering customer order screen for table:', table);
+  console.log('[CustomerOrder] Menu query status:', menuQuery.status, 'Error:', menuQuery.error);
+  console.log('[CustomerOrder] Ratings query status:', ratingsStatsQuery.status, 'Error:', ratingsStatsQuery.error);
+
+  if (menuQuery.isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#D4AF37" />
+        <Text style={styles.loadingText}>Loading menu...</Text>
+      </View>
+    );
+  }
+
+  if (menuQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>Failed to load menu</Text>
+        <Text style={styles.errorSubtext}>
+          {menuQuery.error instanceof Error ? menuQuery.error.message : 'Unknown error occurred'}
+        </Text>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => menuQuery.refetch()}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.submitButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
