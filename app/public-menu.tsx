@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Star, Globe, X, ShoppingCart } from 'lucide-react-native';
+import { Star, Globe, X, ShoppingCart, Plus } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -31,6 +31,7 @@ export default function PublicMenuScreen() {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [selectedItem, setSelectedItem] = useState<typeof MENU_ITEMS[0] | null>(null);
   const [itemModalVisible, setItemModalVisible] = useState(false);
+  const [cart, setCart] = useState<Array<{ item: typeof MENU_ITEMS[0], quantity: number }>>([]);
   const categoryScales = useRef(new Map<string, Animated.Value>()).current;
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
@@ -180,6 +181,28 @@ export default function PublicMenuScreen() {
     setItemModalVisible(true);
   };
 
+  const handleAddToCart = (item: typeof MENU_ITEMS[0], event: any) => {
+    event.stopPropagation();
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    const existingItem = cart.find(c => c.item.id === item.id);
+    if (existingItem) {
+      setCart(cart.map(c => c.item.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
+    } else {
+      setCart([...cart, { item, quantity: 1 }]);
+    }
+  };
+
+  const handleShowReviews = (item: typeof MENU_ITEMS[0], event: any) => {
+    event.stopPropagation();
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setSelectedItem(item);
+    setItemModalVisible(true);
+  };
+
   const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
@@ -199,11 +222,27 @@ export default function PublicMenuScreen() {
               style={styles.menuItemImageHorizontal}
               resizeMode="cover"
             />
-            {hasRatings && (
-              <View style={styles.ratingBadgeOnImage}>
-                <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
-              </View>
-            )}
+            
+            <View style={styles.actionButtons}>
+              {hasRatings && (
+                <TouchableOpacity
+                  style={styles.circularButton}
+                  onPress={(e) => handleShowReviews(item, e)}
+                  activeOpacity={0.8}
+                >
+                  <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity
+                style={styles.circularButton}
+                onPress={(e) => handleAddToCart(item, e)}
+                activeOpacity={0.8}
+              >
+                <Plus size={20} color="#D4AF37" strokeWidth={3} />
+              </TouchableOpacity>
+            </View>
+            
             {isPremium && (
               <View style={styles.premiumBadgeOnImage}>
                 <Text style={styles.premiumBadgeOnImageText}>★</Text>
@@ -469,14 +508,22 @@ export default function PublicMenuScreen() {
         )}
       </ScrollView>
 
-      <TouchableOpacity
-        style={styles.switchButton}
-        onPress={() => router.push('/customer-order?table=1')}
-        activeOpacity={0.8}
-      >
-        <ShoppingCart size={20} color="#fff" strokeWidth={2.5} />
-        <Text style={styles.switchButtonText}>Customer View</Text>
-      </TouchableOpacity>
+      <View style={styles.cartContainer}>
+        <TouchableOpacity
+          style={styles.switchButton}
+          onPress={() => router.push('/customer-order?table=1')}
+          activeOpacity={0.8}
+        >
+          <ShoppingCart size={20} color="#fff" strokeWidth={2.5} />
+          <Text style={styles.switchButtonText}>Customer View</Text>
+        </TouchableOpacity>
+        
+        {cart.length > 0 && (
+          <View style={styles.cartBadge}>
+            <Text style={styles.cartBadgeText}>{cart.reduce((sum, c) => sum + c.quantity, 0)}</Text>
+          </View>
+        )}
+      </View>
 
       <Modal
         visible={itemModalVisible}
@@ -823,37 +870,37 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  ratingBadgeOnImage: {
+  actionButtons: {
     position: 'absolute' as const,
     top: 8,
     right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    flexDirection: 'row' as const,
+    gap: 8,
+    zIndex: 5,
+  },
+  circularButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#D4AF37',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
       },
       android: {
         elevation: 6,
       },
       web: {
-        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
+        boxShadow: '0 2px 12px rgba(212, 175, 55, 0.6)',
       },
     }),
-  },
-  ratingTextOnImage: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: '#D4AF37',
   },
   premiumBadgeOnImage: {
     position: 'absolute' as const,
@@ -1088,10 +1135,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: 0.5,
   },
-  switchButton: {
+  cartContainer: {
     position: 'absolute' as const,
     top: 100,
     right: 16,
+    zIndex: 999,
+  },
+  switchButton: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 6,
@@ -1101,7 +1151,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     borderColor: '#D4AF37',
-    zIndex: 999,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -1122,5 +1171,38 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: '#fff',
     letterSpacing: 0.2,
+  },
+  cartBadge: {
+    position: 'absolute' as const,
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#D4AF37',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#1a0000',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.8)',
+      },
+    }),
+  },
+  cartBadgeText: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#1a0000',
+    fontFamily: 'NotoNaskhArabic_700Bold',
   },
 });
