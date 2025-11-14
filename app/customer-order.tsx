@@ -23,6 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { trpc } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -221,8 +222,10 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [isCreatingServiceRequest, setIsCreatingServiceRequest] = useState(false);
   const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
+
+  const callWaiterMutation = trpc.serviceRequests.create.useMutation();
+  const requestBillMutation = trpc.serviceRequests.create.useMutation();
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -427,23 +430,14 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    setIsCreatingServiceRequest(true);
-
     try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: parseInt(table),
-          request_type: 'waiter',
-          message: 'Customer requesting assistance',
-          status: 'pending',
-        })
-        .select()
-        .single();
+      await callWaiterMutation.mutateAsync({
+        tableNumber: parseInt(table),
+        requestType: 'waiter',
+        messageText: 'Customer requesting assistance',
+      });
 
-      if (error) throw error;
-
-      console.log('[CustomerOrder] ✅ Waiter called via Supabase', data);
+      console.log('[CustomerOrder] ✅ Waiter called via tRPC');
       
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
       notifyServiceRequest(parseInt(table), 'waiter');
@@ -452,8 +446,6 @@ export default function CustomerOrderScreen() {
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
       showStatusMessage('❌ Could not send request. Please call a waiter manually.');
-    } finally {
-      setIsCreatingServiceRequest(false);
     }
   };
 
@@ -472,23 +464,14 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    setIsCreatingServiceRequest(true);
-
     try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: parseInt(table),
-          request_type: 'bill',
-          message: 'Customer requesting bill',
-          status: 'pending',
-        })
-        .select()
-        .single();
+      await requestBillMutation.mutateAsync({
+        tableNumber: parseInt(table),
+        requestType: 'bill',
+        messageText: 'Customer requesting bill',
+      });
 
-      if (error) throw error;
-
-      console.log('[CustomerOrder] ✅ Bill requested via Supabase', data);
+      console.log('[CustomerOrder] ✅ Bill requested via tRPC');
       
       setLastRequestTime(prev => ({ ...prev, bill: now }));
       notifyServiceRequest(parseInt(table), 'bill');
@@ -497,8 +480,6 @@ export default function CustomerOrderScreen() {
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
       showStatusMessage('❌ Could not send request. Please ask your waiter for the bill.');
-    } finally {
-      setIsCreatingServiceRequest(false);
     }
   };
 
@@ -1025,10 +1006,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={isCreatingServiceRequest}
+                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {isCreatingServiceRequest && requestStatus.type === 'waiter' ? (
+                  {callWaiterMutation.isPending ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1058,10 +1039,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={isCreatingServiceRequest}
+                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {isCreatingServiceRequest && requestStatus.type === 'bill' ? (
+                  {requestBillMutation.isPending ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1095,10 +1076,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={isCreatingServiceRequest}
+                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {isCreatingServiceRequest && requestStatus.type === 'waiter' ? (
+                  {callWaiterMutation.isPending ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1128,10 +1109,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={isCreatingServiceRequest}
+                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {isCreatingServiceRequest && requestStatus.type === 'bill' ? (
+                  {requestBillMutation.isPending ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
