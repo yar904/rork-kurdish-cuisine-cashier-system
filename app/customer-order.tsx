@@ -1000,8 +1000,7 @@ export default function CustomerOrderScreen() {
                             <Image source={{ uri: item.image }} style={isGridView ? styles.menuImageGrid : styles.menuImage} />
                             {totalRatings > 0 && (
                               <View style={styles.ratingBadge}>
-                                <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                                <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+                                <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
                               </View>
                             )}
                           </View>
@@ -1023,7 +1022,7 @@ export default function CustomerOrderScreen() {
                           })}
                           activeOpacity={0.7}
                         >
-                          <Plus size={18} color="#1a0000" strokeWidth={3} />
+                          <Plus size={18} color="#D4AF37" strokeWidth={3} />
                         </TouchableOpacity>
                         </Animated.View>
                         </View>
@@ -1792,15 +1791,28 @@ const styles = StyleSheet.create({
     position: 'absolute' as const,
     top: 8,
     right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
+      },
+    }),
   },
   ratingText: {
     fontSize: 12,
@@ -1825,11 +1837,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#D4AF37',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     borderWidth: 2,
-    borderColor: '#E8C968',
+    borderColor: '#D4AF37',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',

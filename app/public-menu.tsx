@@ -201,8 +201,7 @@ export default function PublicMenuScreen() {
             />
             {hasRatings && (
               <View style={styles.ratingBadgeOnImage}>
-                <Star size={14} color="#D4AF37" fill="#D4AF37" />
-                <Text style={styles.ratingTextOnImage}>{itemStats.averageRating.toFixed(1)}</Text>
+                <Star size={18} color="#D4AF37" fill="#D4AF37" strokeWidth={2} />
               </View>
             )}
             {isPremium && (
@@ -826,17 +825,30 @@ const styles = StyleSheet.create({
   },
   ratingBadgeOnImage: {
     position: 'absolute' as const,
-    bottom: 6,
-    right: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.6)',
+    top: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 2px 10px rgba(212, 175, 55, 0.5)',
+      },
+    }),
   },
   ratingTextOnImage: {
     fontSize: 12,
