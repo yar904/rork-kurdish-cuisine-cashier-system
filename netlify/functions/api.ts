@@ -69,6 +69,20 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     };
   }
 
+  let trcpPath = event.path.replace('/.netlify/functions/api', '');
+  if (!trcpPath.startsWith('/trpc')) {
+    console.log('[Netlify Function] Invalid tRPC path:', event.path);
+    return {
+      statusCode: 404,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
+        'Access-Control-Allow-Credentials': 'true',
+      },
+      body: JSON.stringify({ error: 'Not found' }),
+    };
+  }
+
   const url = new URL(event.rawUrl || `https://tapse.netlify.app${event.path}`);
   const request = new Request(url, {
     method: event.httpMethod,
@@ -76,7 +90,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     body: event.body || undefined,
   });
 
-  console.log('[Netlify Function] Forwarding to tRPC handler');
+  console.log('[Netlify Function] Forwarding to tRPC handler, path:', trcpPath);
 
   try {
     const response = await fetchRequestHandler({
