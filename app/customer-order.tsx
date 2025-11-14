@@ -124,7 +124,7 @@ export default function CustomerOrderScreen() {
       
       if (error) {
         console.error('[CustomerOrder] Error fetching menu:', error.message || error);
-        throw new Error(`Failed to fetch menu: ${error.message || 'Unknown error'}`);
+        throw error;
       }
       console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
       return data || [];
@@ -132,6 +132,7 @@ export default function CustomerOrderScreen() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
+    retryDelay: 1000,
   });
   
   const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
@@ -170,6 +171,7 @@ export default function CustomerOrderScreen() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 1,
+    retryDelay: 1000,
   });
 
   const createOrderMutation = useMutation({
@@ -736,12 +738,16 @@ export default function CustomerOrderScreen() {
   }
 
   if (menuQuery.isError) {
+    const errorMessage = menuQuery.error instanceof Error 
+      ? menuQuery.error.message 
+      : typeof menuQuery.error === 'object' && menuQuery.error !== null && 'message' in menuQuery.error
+      ? String(menuQuery.error.message)
+      : 'Unknown error occurred';
+
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>Failed to load menu</Text>
-        <Text style={styles.errorSubtext}>
-          {menuQuery.error instanceof Error ? menuQuery.error.message : 'Unknown error occurred'}
-        </Text>
+        <Text style={styles.errorSubtext}>{errorMessage}</Text>
         <TouchableOpacity
           style={styles.submitButton}
           onPress={() => menuQuery.refetch()}
