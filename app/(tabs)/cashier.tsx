@@ -128,7 +128,7 @@ export default function CashierScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - ${t('cashier')}`,
+        title: `کاشێر / Cashier`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
@@ -203,17 +203,17 @@ export default function CashierScreen() {
           <View style={styles.orderHeader}>
             <View style={styles.orderHeaderLeft}>
               <ShoppingCart size={24} color={Colors.primary} />
-              <Text style={styles.orderTitle}>{t('currentOrder')}</Text>
+              <Text style={styles.orderTitle}>داواکاری ئێستا / Current Order</Text>
             </View>
             {currentOrder.length > 0 && (
               <TouchableOpacity onPress={clearCurrentOrder}>
-                <Text style={styles.clearButton}>{t('clear')}</Text>
+                <Text style={styles.clearButton}>پاککردنەوە / Clear</Text>
               </TouchableOpacity>
             )}
           </View>
 
           <View style={styles.tableSelector}>
-            <Text style={styles.tableSelectorLabel}>{t('table')}:</Text>
+            <Text style={styles.tableSelectorLabel}>مێز / Table:</Text>
             <View style={styles.tableSelectorButtons}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(table => (
                 <TouchableOpacity
@@ -237,7 +237,7 @@ export default function CashierScreen() {
 
           <TextInput
             style={styles.waiterInput}
-            placeholder={`${t('waiterName')} (${t('optional')})`}
+            placeholder="ناوی گارسۆن / Waiter Name (دڵخواز / Optional)"
             value={waiterName}
             onChangeText={setWaiterName}
             placeholderTextColor={Colors.textLight}
@@ -251,7 +251,8 @@ export default function CashierScreen() {
           <ScrollView style={styles.orderItems}>
             {currentOrder.length === 0 ? (
               <View style={styles.emptyOrder}>
-                <Text style={styles.emptyOrderText}>{t('noItemsInOrder')}</Text>
+                <Text style={styles.emptyOrderText}>هیچ شتێک لە داواکاریدا نییە</Text>
+                <Text style={styles.emptyOrderSubtext}>No items in order</Text>
               </View>
             ) : (
               currentOrder.map((item, index) => (
@@ -290,7 +291,7 @@ export default function CashierScreen() {
 
           <View style={styles.orderFooter}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{t('total')}:</Text>
+              <Text style={styles.totalLabel}>کۆی گشتی / Total:</Text>
               <Text style={styles.totalAmount}>
                 {formatPrice(calculateTotal(currentOrder))}
               </Text>
@@ -304,7 +305,7 @@ export default function CashierScreen() {
               disabled={currentOrder.length === 0}
             >
               <Send size={20} color="#fff" />
-              <Text style={styles.submitButtonText}>{t('submitOrder')}</Text>
+              <Text style={styles.submitButtonText}>ناردنی داواکاری / Submit Order</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -626,9 +627,17 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyOrderText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+  },
+  emptyOrderSubtext: {
+    fontSize: 13,
     fontFamily: 'NotoNaskhArabic_400Regular',
     color: Colors.textLight,
+    marginTop: 4,
+    textAlign: 'center' as const,
   },
   orderItem: {
     backgroundColor: Colors.backgroundGray,

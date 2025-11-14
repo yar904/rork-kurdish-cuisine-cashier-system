@@ -198,8 +198,8 @@ export default function KitchenScreen() {
             </Text>
           </View>
           <View>
-            <Text style={styles.orderNumber}>{order.id}</Text>
-            <Text style={styles.tableNumber}>{t('table')} {order.tableNumber}</Text>
+            <Text style={styles.orderNumber}>#{order.id}</Text>
+            <Text style={styles.tableNumber}>مێز / Table {order.tableNumber}</Text>
           </View>
         </View>
         <View style={styles.orderHeaderRight}>
@@ -209,7 +209,7 @@ export default function KitchenScreen() {
       </View>
 
       {order.waiterName && (
-        <Text style={styles.waiterName}>{t('waiter')}: {order.waiterName}</Text>
+        <Text style={styles.waiterName}>گارسۆن / Waiter: {order.waiterName}</Text>
       )}
 
       <TouchableOpacity
@@ -217,7 +217,7 @@ export default function KitchenScreen() {
         onPress={() => handlePrintKitchen(order)}
       >
         <Printer size={16} color={Colors.primary} />
-        <Text style={styles.printButtonText}>Print</Text>
+        <Text style={styles.printButtonText}>چاپکردن / Print</Text>
       </TouchableOpacity>
 
       <View style={styles.orderItems}>
@@ -254,7 +254,7 @@ export default function KitchenScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - ${t('kitchen')}`,
+        title: `چێشتخانە / Kitchen`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
@@ -263,9 +263,10 @@ export default function KitchenScreen() {
         {activeOrders.length === 0 ? (
           <View style={styles.emptyState}>
             <ChefHat size={64} color={Colors.textLight} />
-            <Text style={styles.emptyStateTitle}>{t('noActiveOrders')}</Text>
-            <Text style={styles.emptyStateText}>
-              {t('newOrdersWillAppear')}
+            <Text style={styles.emptyStateTitle}>هیچ داواکاری چالاکی نییە</Text>
+            <Text style={styles.emptyStateText}>No Active Orders</Text>
+            <Text style={styles.emptyStateSubtext}>
+              داواکاری نوێ لێرە دەردەکەون / New orders will appear here
             </Text>
           </View>
         ) : (
@@ -273,7 +274,7 @@ export default function KitchenScreen() {
             <View style={styles.column}>
               <View style={styles.columnHeader}>
                 <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusNew }]} />
-                <Text style={styles.columnHeaderText}>{t('newOrders')}</Text>
+                <Text style={styles.columnHeaderText}>داواکاری نوێ / New Orders</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{newOrders.length}</Text>
                 </View>
@@ -284,7 +285,7 @@ export default function KitchenScreen() {
             <View style={styles.column}>
               <View style={styles.columnHeader}>
                 <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusPreparing }]} />
-                <Text style={styles.columnHeaderText}>{t('preparing')}</Text>
+                <Text style={styles.columnHeaderText}>ئامادەکردن / Preparing</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{preparingOrders.length}</Text>
                 </View>
@@ -295,7 +296,7 @@ export default function KitchenScreen() {
             <View style={styles.column}>
               <View style={styles.columnHeader}>
                 <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusReady }]} />
-                <Text style={styles.columnHeaderText}>{t('ready')}</Text>
+                <Text style={styles.columnHeaderText}>ئامادەیە / Ready</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{readyOrders.length}</Text>
                 </View>
@@ -330,9 +331,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   emptyStateText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: Colors.text,
     marginTop: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 4,
+    textAlign: 'center' as const,
   },
   columns: {
     padding: 16,
