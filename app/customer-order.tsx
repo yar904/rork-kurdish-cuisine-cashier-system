@@ -189,16 +189,28 @@ export default function CustomerOrderScreen() {
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: (data) => {
-      console.log('[CustomerOrder] ✅ Order submitted successfully:', data.orderId);
+      console.log('[CustomerOrder] ✅ Order submitted successfully');
+      console.log('[CustomerOrder] ✅ Order ID:', data.orderId);
+      console.log('[CustomerOrder] ✅ Full response:', JSON.stringify(data, null, 2));
+      
+      setCart([]);
+      
       Alert.alert(
         t.orderSubmitted || 'Order Submitted!',
-        t.orderSentToKitchen || 'Your order has been sent to the kitchen. We\'ll bring it to your table soon!',
-        [{ text: 'OK', onPress: () => setCart([]) }]
+        t.orderSentToKitchen || 'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
       );
     },
     onError: (error: any) => {
-      console.error('[CustomerOrder] ❌ Order submission failed:', error);
-      Alert.alert('Error', error?.message || 'Failed to submit order. Please try again.');
+      console.error('[CustomerOrder] ❌ Order submission failed');
+      console.error('[CustomerOrder] ❌ Error object:', error);
+      console.error('[CustomerOrder] ❌ Error message:', error?.message);
+      console.error('[CustomerOrder] ❌ Error data:', error?.data);
+      console.error('[CustomerOrder] ❌ Error shape:', error?.shape);
+      
+      Alert.alert(
+        'Order Failed', 
+        error?.message || 'Failed to submit order. Please try again.'
+      );
     },
   });
 
@@ -373,8 +385,7 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    console.log('[CustomerOrder] 🚀 Submitting order via tRPC');
-    createOrderMutation.mutate({
+    const payload = {
       tableNumber: parseInt(table),
       items: cart.map(item => ({
         menuItemId: item.menuItem.id,
@@ -382,7 +393,12 @@ export default function CustomerOrderScreen() {
         notes: item.notes,
       })),
       total: cartTotal,
-    });
+    };
+
+    console.log('[CustomerOrder] 🚀 Submitting order via tRPC');
+    console.log('[CustomerOrder] ⚠️ Input payload:', JSON.stringify(payload, null, 2));
+    
+    createOrderMutation.mutate(payload);
   };
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {

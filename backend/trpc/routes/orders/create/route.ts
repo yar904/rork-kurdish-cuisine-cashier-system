@@ -14,6 +14,8 @@ export default publicProcedure
     total: z.number(),
   }))
   .mutation(async ({ input }) => {
+    console.log('[Orders Create] 🚀 ORDER CREATION ROUTE HIT');
+    console.log('[Orders Create] 📥 Full input received:', JSON.stringify(input, null, 2));
     console.log('[Orders Create] Creating order for table:', input.tableNumber);
     
     const { data: order, error: orderError } = await supabase
