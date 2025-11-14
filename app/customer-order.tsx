@@ -57,8 +57,6 @@ export default function CustomerOrderScreen() {
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const [cart, setCart] = useState<CartItem[]>([]);
-  
-  const isCustomerMode = !!table;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isGridView, setIsGridView] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -138,6 +136,7 @@ export default function CustomerOrderScreen() {
   });
 
   const [isCreatingServiceRequest, setIsCreatingServiceRequest] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -329,28 +328,16 @@ export default function CustomerOrderScreen() {
 
   const handleCallWaiter = async () => {
     animateButton('waiter');
+    
     if (!table) {
-      setRequestStatus({
-        type: null,
-        message: '❌ Table number not found',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      showStatusMessage('❌ Table number not found');
+      return;
+    }
+
+    const now = Date.now();
+    const lastRequest = lastRequestTime.waiter || 0;
+    if (now - lastRequest < 10000) {
+      showStatusMessage('⏳ Please wait before calling again');
       return;
     }
 
@@ -364,70 +351,21 @@ export default function CustomerOrderScreen() {
           request_type: 'waiter',
           message: 'Customer requesting assistance',
           status: 'pending',
-          created_at: new Date().toISOString(),
         })
         .select()
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('[CustomerOrder] Call waiter request sent successfully via Supabase', data);
+      console.log('[CustomerOrder] ✅ Waiter called via Supabase', data);
       
+      setLastRequestTime(prev => ({ ...prev, waiter: now }));
       notifyServiceRequest(parseInt(table), 'waiter');
       
-      if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Service Request! 🔔', {
-          body: `Table ${table} needs waiter`,
-          icon: '/assets/images/icon.png',
-        });
-      }
-      
-      setRequestStatus({
-        type: 'waiter',
-        message: '✅ Waiter called! Someone will assist you shortly.',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
-      console.error('[CustomerOrder] Call waiter request failed', error);
-      setRequestStatus({
-        type: null,
-        message: '❌ Could not send request. Please call a waiter manually.',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
+      showStatusMessage('❌ Could not send request. Please call a waiter manually.');
     } finally {
       setIsCreatingServiceRequest(false);
     }
@@ -435,28 +373,16 @@ export default function CustomerOrderScreen() {
 
   const handleRequestBill = async () => {
     animateButton('bill');
+    
     if (!table) {
-      setRequestStatus({
-        type: null,
-        message: '❌ Table number not found',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      showStatusMessage('❌ Table number not found');
+      return;
+    }
+
+    const now = Date.now();
+    const lastRequest = lastRequestTime.bill || 0;
+    if (now - lastRequest < 10000) {
+      showStatusMessage('⏳ Please wait before requesting again');
       return;
     }
 
@@ -470,70 +396,21 @@ export default function CustomerOrderScreen() {
           request_type: 'bill',
           message: 'Customer requesting bill',
           status: 'pending',
-          created_at: new Date().toISOString(),
         })
         .select()
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('[CustomerOrder] Request bill sent successfully via Supabase', data);
+      console.log('[CustomerOrder] ✅ Bill requested via Supabase', data);
       
+      setLastRequestTime(prev => ({ ...prev, bill: now }));
       notifyServiceRequest(parseInt(table), 'bill');
       
-      if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Service Request! 🔔', {
-          body: `Table ${table} needs bill`,
-          icon: '/assets/images/icon.png',
-        });
-      }
-      
-      setRequestStatus({
-        type: 'bill',
-        message: '✅ Bill request sent! Staff will bring your bill shortly.',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
-      console.error('[CustomerOrder] Request bill failed', error);
-      setRequestStatus({
-        type: null,
-        message: '❌ Could not send request. Please ask your waiter for the bill.',
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
+      console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
+      showStatusMessage('❌ Could not send request. Please ask your waiter for the bill.');
     } finally {
       setIsCreatingServiceRequest(false);
     }
@@ -542,6 +419,26 @@ export default function CustomerOrderScreen() {
   const handleViewOrder = () => {
     animateButton('order');
     setOrderModalVisible(true);
+  };
+
+  const showStatusMessage = (message: string) => {
+    setRequestStatus({ type: null, message, visible: true });
+    
+    Animated.sequence([
+      Animated.timing(statusOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(3000),
+      Animated.timing(statusOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setRequestStatus({ type: null, message: '', visible: false });
+    });
   };
 
   const handleReviews = () => {
