@@ -34,12 +34,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.gold,
-        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.4)',
+        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.5)',
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarBackground: () => (
           <LinearGradient
-            colors={['rgba(26, 0, 0, 0.98)', 'rgba(61, 1, 1, 0.98)']}
+            colors={['rgba(61, 1, 1, 0.98)', 'rgba(26, 0, 0, 0.98)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.tabBarBackground}
@@ -114,44 +114,49 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: Platform.select({ ios: 80, default: 65 }) as number,
+    height: Platform.select({ ios: 85, default: 68 }) as number,
     backgroundColor: 'transparent',
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.4)',
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(212, 175, 55, 0.6)',
     elevation: 0,
-    paddingBottom: Platform.select({ ios: 20, default: 8 }) as number,
-    paddingTop: 8,
+    paddingBottom: Platform.select({ ios: 24, default: 10 }) as number,
+    paddingTop: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 12,
+        elevation: 16,
       },
       web: {
-        boxShadow: '0 -4px 20px rgba(212, 175, 55, 0.3)',
+        boxShadow: '0 -6px 24px rgba(212, 175, 55, 0.35)',
       },
     }),
   },
   tabBarBackground: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.4)',
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(212, 175, 55, 0.6)',
   },
   tabBarItem: {
-    paddingVertical: 4,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginHorizontal: 2,
   },
   tabBarLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700' as const,
-    letterSpacing: 0.2,
-    marginTop: 2,
+    letterSpacing: 0.3,
+    marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   tabBarIcon: {
-    marginBottom: 0,
+    marginBottom: 2,
   },
 });

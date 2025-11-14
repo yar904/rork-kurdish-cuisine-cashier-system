@@ -9,8 +9,8 @@ interface UseAutoHideTabBarOptions {
 
 export function useAutoHideTabBar(options: UseAutoHideTabBarOptions = {}) {
   const {
-    scrollThreshold = 5,
-    animationDuration = 300,
+    scrollThreshold = 2,
+    animationDuration = 200,
     hideOffset = 100,
   } = options;
 
@@ -24,7 +24,7 @@ export function useAutoHideTabBar(options: UseAutoHideTabBarOptions = {}) {
 
       if (Math.abs(scrollDelta) < scrollThreshold) return;
 
-      if (scrollDelta > 0 && currentScrollY > 100) {
+      if (scrollDelta > 0 && currentScrollY > 50) {
         Animated.timing(tabBarTranslateY, {
           toValue: hideOffset,
           duration: animationDuration,
