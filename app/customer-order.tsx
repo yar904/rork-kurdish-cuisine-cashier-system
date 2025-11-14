@@ -199,11 +199,44 @@ export default function CustomerOrderScreen() {
     retry: false,
   });
 
-  const createOrderMutation = trpc.orders.create.useMutation({
+  const createOrderMutation = useMutation({
+    mutationFn: async (payload: { tableNumber: number; items: any[]; total: number }) => {
+      console.log('[CustomerOrder] 🚀 Submitting order');
+      console.log('[CustomerOrder] 📋 Payload:', JSON.stringify(payload, null, 2));
+      
+      try {
+        console.log('[CustomerOrder] Attempting tRPC order submission...');
+        const trpcResult = await trpc.orders.create.mutate(payload);
+        console.log('[CustomerOrder] ✅ tRPC order submitted:', trpcResult);
+        return trpcResult;
+      } catch (trpcError: any) {
+        console.warn('[CustomerOrder] ⚠️ tRPC failed, using Supabase fallback');
+        console.warn('[CustomerOrder] tRPC error:', trpcError?.message);
+        
+        const { data, error } = await supabase
+          .from('orders')
+          .insert({
+            table_number: payload.tableNumber,
+            items: payload.items,
+            total: payload.total,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('[CustomerOrder] ❌ Supabase fallback also failed:', error);
+          throw new Error(error.message || 'Failed to submit order');
+        }
+        
+        console.log('[CustomerOrder] ✅ Order submitted via Supabase fallback:', data.id);
+        return { orderId: data.id, ...data };
+      }
+    },
     onSuccess: (data) => {
       console.log('[CustomerOrder] ✅ Order submitted successfully');
-      console.log('[CustomerOrder] ✅ Order ID:', data.orderId);
-      console.log('[CustomerOrder] ✅ Full response:', JSON.stringify(data, null, 2));
+      console.log('[CustomerOrder] ✅ Order ID:', data.orderId || data.id);
       
       setCart([]);
       
@@ -214,10 +247,7 @@ export default function CustomerOrderScreen() {
     },
     onError: (error: any) => {
       console.error('[CustomerOrder] ❌ Order submission failed');
-      console.error('[CustomerOrder] ❌ Error object:', error);
-      console.error('[CustomerOrder] ❌ Error message:', error?.message);
-      console.error('[CustomerOrder] ❌ Error data:', error?.data);
-      console.error('[CustomerOrder] ❌ Error shape:', error?.shape);
+      console.error('[CustomerOrder] ❌ Error:', error?.message || error);
       
       Alert.alert(
         'Order Failed', 
