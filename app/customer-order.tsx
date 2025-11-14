@@ -117,61 +117,70 @@ export default function CustomerOrderScreen() {
     queryKey: ['menu-items'],
     queryFn: async () => {
       console.log('[CustomerOrder] Fetching menu items from Supabase');
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*')
-        .eq('available', true)
-        .order('category', { ascending: true });
-      
-      if (error) {
-        console.warn('[CustomerOrder] Could not fetch menu from database, using fallback data:', error.message);
-        return [];
+      try {
+        const { data, error } = await supabase
+          .from('menu_items')
+          .select('*')
+          .eq('available', true)
+          .order('category', { ascending: true });
+        
+        if (error) {
+          console.warn('[CustomerOrder] Could not fetch menu from database, using fallback data:', error.message);
+          return MENU_ITEMS;
+        }
+        console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
+        return data && data.length > 0 ? data : MENU_ITEMS;
+      } catch (err) {
+        console.error('[CustomerOrder] Error fetching menu:', err);
+        return MENU_ITEMS;
       }
-      console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
-      return data || [];
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: false,
   });
   
-  const menuData = menuQuery.data?.length > 0 ? menuQuery.data : MENU_ITEMS;
+  const menuData = menuQuery.data || MENU_ITEMS;
   
   const ratingsStatsQuery = useQuery({
     queryKey: ['ratings-stats'],
     queryFn: async () => {
       console.log('[CustomerOrder] Fetching ratings from Supabase');
-      const { data, error } = await supabase
-        .from('ratings')
-        .select('menu_item_id, rating');
-      
-      if (error) {
-        console.error('[CustomerOrder] Error fetching ratings:', error.message || error);
+      try {
+        const { data, error } = await supabase
+          .from('ratings')
+          .select('menu_item_id, rating');
+        
+        if (error) {
+          console.warn('[CustomerOrder] Could not fetch ratings:', error.message);
+          return [];
+        }
+
+        const statsMap = new Map<string, { sum: number; count: number }>();
+        data?.forEach(rating => {
+          const current = statsMap.get(rating.menu_item_id) || { sum: 0, count: 0 };
+          statsMap.set(rating.menu_item_id, {
+            sum: current.sum + rating.rating,
+            count: current.count + 1
+          });
+        });
+
+        const stats = Array.from(statsMap.entries()).map(([menuItemId, { sum, count }]) => ({
+          menuItemId,
+          averageRating: sum / count,
+          totalRatings: count
+        }));
+        
+        console.log('[CustomerOrder] ✅ Ratings loaded:', stats.length);
+        return stats;
+      } catch (err) {
+        console.warn('[CustomerOrder] Error fetching ratings:', err);
         return [];
       }
-
-      const statsMap = new Map<string, { sum: number; count: number }>();
-      data?.forEach(rating => {
-        const current = statsMap.get(rating.menu_item_id) || { sum: 0, count: 0 };
-        statsMap.set(rating.menu_item_id, {
-          sum: current.sum + rating.rating,
-          count: current.count + 1
-        });
-      });
-
-      const stats = Array.from(statsMap.entries()).map(([menuItemId, { sum, count }]) => ({
-        menuItemId,
-        averageRating: sum / count,
-        totalRatings: count
-      }));
-      
-      console.log('[CustomerOrder] ✅ Ratings loaded:', stats.length);
-      return stats;
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 1,
-    retryDelay: 1000,
+    retry: false,
   });
 
   const createOrderMutation = useMutation({
@@ -225,6 +234,7 @@ export default function CustomerOrderScreen() {
 
   const callWaiterMutation = useMutation({
     mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
+      console.log('[CustomerOrder] 📞 Calling waiter via Supabase directly');
       const { data: result, error } = await supabase
         .from('service_requests')
         .insert({
@@ -236,13 +246,18 @@ export default function CustomerOrderScreen() {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('[CustomerOrder] ❌ Supabase error calling waiter:', error);
+        throw new Error(error.message || 'Failed to call waiter');
+      }
+      console.log('[CustomerOrder] ✅ Waiter called successfully:', result.id);
       return result;
     },
   });
 
   const requestBillMutation = useMutation({
     mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
+      console.log('[CustomerOrder] 🧾 Requesting bill via Supabase directly');
       const { data: result, error } = await supabase
         .from('service_requests')
         .insert({
@@ -254,7 +269,11 @@ export default function CustomerOrderScreen() {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('[CustomerOrder] ❌ Supabase error requesting bill:', error);
+        throw new Error(error.message || 'Failed to request bill');
+      }
+      console.log('[CustomerOrder] ✅ Bill requested successfully:', result.id);
       return result;
     },
   });
@@ -458,9 +477,11 @@ export default function CustomerOrderScreen() {
     const now = Date.now();
     const lastRequest = lastRequestTime.waiter || 0;
     if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait before calling again');
+      showStatusMessage('⏳ Please wait 10 seconds before calling again');
       return;
     }
+
+    console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
       await callWaiterMutation.mutateAsync({
@@ -468,8 +489,6 @@ export default function CustomerOrderScreen() {
         type: 'waiter',
         message: 'Customer requesting assistance',
       });
-
-      console.log('[CustomerOrder] ✅ Waiter called successfully');
       
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
       notifyServiceRequest(parseInt(table), 'waiter');
@@ -477,7 +496,7 @@ export default function CustomerOrderScreen() {
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
-      showStatusMessage('❌ Could not send request. Please call a waiter manually.');
+      showStatusMessage('❌ Request failed. Please try again or call a waiter manually.');
     }
   };
 
@@ -492,9 +511,11 @@ export default function CustomerOrderScreen() {
     const now = Date.now();
     const lastRequest = lastRequestTime.bill || 0;
     if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait before requesting again');
+      showStatusMessage('⏳ Please wait 10 seconds before requesting again');
       return;
     }
+
+    console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
       await requestBillMutation.mutateAsync({
@@ -502,8 +523,6 @@ export default function CustomerOrderScreen() {
         type: 'bill',
         message: 'Customer requesting bill',
       });
-
-      console.log('[CustomerOrder] ✅ Bill requested successfully');
       
       setLastRequestTime(prev => ({ ...prev, bill: now }));
       notifyServiceRequest(parseInt(table), 'bill');
@@ -511,7 +530,7 @@ export default function CustomerOrderScreen() {
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
-      showStatusMessage('❌ Could not send request. Please ask your waiter for the bill.');
+      showStatusMessage('❌ Request failed. Please try again or ask your waiter.');
     }
   };
 
