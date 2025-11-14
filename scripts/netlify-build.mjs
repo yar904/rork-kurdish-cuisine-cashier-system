@@ -18,11 +18,30 @@ async function buildNetlifyFunction() {
         const importPath = args.path.replace(/^@\/backend\//, '');
         const resolvedPath = path.resolve(__dirname, '../backend', importPath);
         
+        console.log('[Alias Plugin] Resolving:', args.path, '→', resolvedPath);
+        
         if (fs.existsSync(resolvedPath + '.ts')) {
           return { path: resolvedPath + '.ts' };
         }
         if (fs.existsSync(resolvedPath + '.js')) {
           return { path: resolvedPath + '.js' };
+        }
+        if (fs.existsSync(resolvedPath)) {
+          return { path: resolvedPath };
+        }
+        
+        console.error('[Alias Plugin] Could not resolve:', args.path);
+        return null;
+      });
+      
+      build.onResolve({ filter: /^@\/types\// }, args => {
+        const importPath = args.path.replace(/^@\/types\//, '');
+        const resolvedPath = path.resolve(__dirname, '../types', importPath);
+        
+        console.log('[Alias Plugin] Resolving type:', args.path, '→', resolvedPath);
+        
+        if (fs.existsSync(resolvedPath + '.ts')) {
+          return { path: resolvedPath + '.ts' };
         }
         if (fs.existsSync(resolvedPath)) {
           return { path: resolvedPath };
