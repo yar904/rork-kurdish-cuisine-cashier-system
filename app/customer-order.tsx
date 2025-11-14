@@ -1546,23 +1546,22 @@ const styles = StyleSheet.create({
     width: 110,
     height: 130,
     borderRadius: 14,
-    borderWidth: 3,
-    borderColor: '#D4AF37',
+    borderWidth: 0,
     zIndex: 1,
     pointerEvents: 'none' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'transparent',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 1,
-        shadowRadius: 32,
+        shadowRadius: 28,
       },
       android: {
         elevation: 18,
       },
       web: {
-        boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6), 0 0 150px rgba(212, 175, 55, 0.3), inset 0 0 40px rgba(212, 175, 55, 0.2)',
+        boxShadow: '0 0 40px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.5)',
       },
     }),
   },
@@ -1720,7 +1719,7 @@ const styles = StyleSheet.create({
     overflow: 'visible' as const,
     borderWidth: 2.5,
     borderColor: '#D4AF37',
-    marginBottom: 0,
+    marginBottom: 12,
     position: 'relative' as const,
     ...Platform.select({
       ios: {
@@ -1745,6 +1744,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 12,
+    paddingBottom: 12,
   },
   menuItemsList: {
     flexDirection: 'column',
