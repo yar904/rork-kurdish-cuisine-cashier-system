@@ -3,6 +3,11 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '../../backend/trpc/app-router';
 import { createContext } from '../../backend/trpc/create-context';
 
+console.log('[Netlify Function] Environment check:');
+console.log('[Netlify Function] SUPABASE_PROJECT_URL:', process.env.SUPABASE_PROJECT_URL ? '✅ Defined' : '❌ Undefined');
+console.log('[Netlify Function] SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅ Defined' : '❌ Undefined');
+console.log('[Netlify Function] NODE_ENV:', process.env.NODE_ENV);
+
 const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   console.log('[Netlify Function] Request:', event.httpMethod, event.path);
   console.log('[Netlify Function] Headers:', event.headers);
@@ -93,12 +98,19 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
   console.log('[Netlify Function] Forwarding to tRPC handler, path:', trcpPath);
 
   try {
+    console.log('[Netlify Function] Creating tRPC request...');
     const response = await fetchRequestHandler({
-      endpoint: '/.netlify/functions/api/trpc',
+      endpoint: '/trpc',
       req: request,
       router: appRouter,
       createContext: () => createContext({ req: request, resHeaders: new Headers() }),
+      onError: ({ path, error }) => {
+        console.error('[tRPC] Error on path:', path);
+        console.error('[tRPC] Error message:', error.message);
+        console.error('[tRPC] Error stack:', error.stack);
+      },
     });
+    console.log('[Netlify Function] tRPC response received');
 
     const responseBody = await response.text();
     console.log('[Netlify Function] tRPC response status:', response.status);
