@@ -62,10 +62,8 @@ async function buildNetlifyFunction() {
       format: 'cjs',
       external: [
         '@supabase/supabase-js',
-        '@hono/node-server',
-        'hono',
+        '@netlify/functions',
         '@trpc/server',
-        '@hono/trpc-server',
         'zod',
         'superjson',
       ],
