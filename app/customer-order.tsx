@@ -23,6 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -136,53 +137,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: (data, variables) => {
-      console.log('[CustomerOrder] Service request sent successfully');
-      const requestType = variables.requestType;
-      if (data && table) {
-        notifyServiceRequest(parseInt(table), requestType);
-        
-        if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification('Service Request! 🔔', {
-            body: `Table ${table} needs ${requestType}`,
-            icon: '/assets/images/icon.png',
-          });
-        }
-      }
-      
-      const message = requestType === 'bill' 
-        ? '✅ Bill request sent! Staff will bring your bill shortly.'
-        : requestType === 'assistance'
-        ? '✅ Assistance requested! Staff will help you shortly.'
-        : '✅ Waiter called! Someone will assist you shortly.';
-      
-      setRequestStatus({
-        type: requestType as 'waiter' | 'bill',
-        message,
-        visible: true,
-      });
-      
-      Animated.sequence([
-        Animated.timing(statusOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(3000),
-        Animated.timing(statusOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setRequestStatus({ type: null, message: '', visible: false });
-      });
-    },
-    onError: (error) => {
-      console.log('[CustomerOrder] Service request mutation error handled');
-    },
-  });
+  const [isCreatingServiceRequest, setIsCreatingServiceRequest] = useState(false);
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -399,21 +354,59 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    setRequestStatus({ type: 'waiter', message: '', visible: false });
+    setIsCreatingServiceRequest(true);
 
     try {
-      await createServiceRequestMutation.mutateAsync({
-        tableNumber: parseInt(table),
-        requestType: 'waiter',
-        messageText: 'Customer requesting assistance',
+      const { data, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: parseInt(table),
+          request_type: 'waiter',
+          message: 'Customer requesting assistance',
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('[CustomerOrder] Call waiter request sent successfully via Supabase', data);
+      
+      notifyServiceRequest(parseInt(table), 'waiter');
+      
+      if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Service Request! 🔔', {
+          body: `Table ${table} needs waiter`,
+          icon: '/assets/images/icon.png',
+        });
+      }
+      
+      setRequestStatus({
+        type: 'waiter',
+        message: '✅ Waiter called! Someone will assist you shortly.',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
       });
     } catch (error: any) {
       console.error('[CustomerOrder] Call waiter request failed', error);
-      console.error('[CustomerOrder] Error details:', {
-        message: error?.message,
-        cause: error?.cause,
-        stack: error?.stack,
-      });
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please call a waiter manually.',
@@ -435,6 +428,8 @@ export default function CustomerOrderScreen() {
       ]).start(() => {
         setRequestStatus({ type: null, message: '', visible: false });
       });
+    } finally {
+      setIsCreatingServiceRequest(false);
     }
   };
 
@@ -465,21 +460,59 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    setRequestStatus({ type: 'bill', message: '', visible: false });
+    setIsCreatingServiceRequest(true);
 
     try {
-      await createServiceRequestMutation.mutateAsync({
-        tableNumber: parseInt(table),
-        requestType: 'bill',
-        messageText: 'Customer requesting bill',
+      const { data, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: parseInt(table),
+          request_type: 'bill',
+          message: 'Customer requesting bill',
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('[CustomerOrder] Request bill sent successfully via Supabase', data);
+      
+      notifyServiceRequest(parseInt(table), 'bill');
+      
+      if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Service Request! 🔔', {
+          body: `Table ${table} needs bill`,
+          icon: '/assets/images/icon.png',
+        });
+      }
+      
+      setRequestStatus({
+        type: 'bill',
+        message: '✅ Bill request sent! Staff will bring your bill shortly.',
+        visible: true,
+      });
+      
+      Animated.sequence([
+        Animated.timing(statusOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(statusOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setRequestStatus({ type: null, message: '', visible: false });
       });
     } catch (error: any) {
       console.error('[CustomerOrder] Request bill failed', error);
-      console.error('[CustomerOrder] Error details:', {
-        message: error?.message,
-        cause: error?.cause,
-        stack: error?.stack,
-      });
       setRequestStatus({
         type: null,
         message: '❌ Could not send request. Please ask your waiter for the bill.',
@@ -501,6 +534,8 @@ export default function CustomerOrderScreen() {
       ]).start(() => {
         setRequestStatus({ type: null, message: '', visible: false });
       });
+    } finally {
+      setIsCreatingServiceRequest(false);
     }
   };
 
@@ -972,10 +1007,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={createServiceRequestMutation.isPending}
+                disabled={isCreatingServiceRequest}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
+                  {isCreatingServiceRequest && requestStatus.type === 'waiter' ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1005,10 +1040,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={createServiceRequestMutation.isPending}
+                disabled={isCreatingServiceRequest}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
+                  {isCreatingServiceRequest && requestStatus.type === 'bill' ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1042,10 +1077,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={createServiceRequestMutation.isPending}
+                disabled={isCreatingServiceRequest}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {createServiceRequestMutation.isPending && requestStatus.type === 'waiter' ? (
+                  {isCreatingServiceRequest && requestStatus.type === 'waiter' ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
@@ -1075,10 +1110,10 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={createServiceRequestMutation.isPending}
+                disabled={isCreatingServiceRequest}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {createServiceRequestMutation.isPending && requestStatus.type === 'bill' ? (
+                  {isCreatingServiceRequest && requestStatus.type === 'bill' ? (
                     <ActivityIndicator size="small" color={Colors.cream} />
                   ) : (
                     <>
