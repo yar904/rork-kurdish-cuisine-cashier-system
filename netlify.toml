@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --legacy-peer-deps && node scripts/netlify-build.mjs && npx expo export -p web"
+  command = "npm install --legacy-peer-deps && node --experimental-modules scripts/netlify-build.mjs && npx expo export -p web"
   publish = "dist"
   
 [build.environment]
