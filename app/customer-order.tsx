@@ -70,9 +70,7 @@ export default function CustomerOrderScreen() {
   const [addAnimations] = useState(new Map<string, Animated.Value>());
   const scrollViewRef = useRef<ScrollView>(null);
   const categoryRefs = useRef<Map<string, number>>(new Map());
-  const [languageModalVisible, setLanguageModalVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<CartItem['menuItem'] | null>(null);
-  const [itemModalVisible, setItemModalVisible] = useState(false);
+
   
   const scrollY = useRef(0);
   const lastScrollY = useRef(0);
@@ -93,6 +91,8 @@ export default function CustomerOrderScreen() {
   const [isUserScrollingItems, setIsUserScrollingItems] = useState(false);
   const itemUserScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const isGlassAvailable = Platform.OS === 'ios' ? isLiquidGlassAvailable() : false;
+  const [selectedItem, setSelectedItem] = useState<CartItem['menuItem'] | null>(null);
+  const [itemModalVisible, setItemModalVisible] = useState(false);
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
@@ -792,13 +792,9 @@ export default function CustomerOrderScreen() {
 
       <View style={styles.customHeader}>
         <View style={styles.headerTop}>
-          <TouchableOpacity 
-            style={styles.headerCornerButton}
-            onPress={() => setLanguageModalVisible(true)}
-            activeOpacity={0.7}
-          >
-            <Globe size={24} color="#D4AF37" strokeWidth={2} />
-          </TouchableOpacity>
+          <View style={styles.headerCornerButton}>
+            <LanguageSwitcher />
+          </View>
 
           <View style={styles.headerCenter}>
             <Image 
@@ -816,11 +812,6 @@ export default function CustomerOrderScreen() {
           </View>
         </View>
       </View>
-
-      <LanguageSwitcher
-        visible={languageModalVisible}
-        onClose={() => setLanguageModalVisible(false)}
-      />
 
       <View style={styles.categoryFilterSection}>
         <View style={styles.categoryContainer}>

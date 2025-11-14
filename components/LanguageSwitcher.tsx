@@ -1,186 +1,136 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
-import { Globe, X } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated } from 'react-native';
+import { Globe, Check } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { Colors } from '@/constants/colors';
 
-interface LanguageSwitcherProps {
-  visible: boolean;
-  onClose: () => void;
-  style?: any;
-}
-
-const LANGUAGES: { code: Language; name: string; nativeName: string; flag: string }[] = [
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'ku', name: 'Kurdish', nativeName: 'کوردی', flag: '🟢🔴' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+const LANGUAGES: { code: Language; name: string; nativeName: string }[] = [
+  { code: 'en', name: 'EN', nativeName: 'English' },
+  { code: 'ku', name: 'کو', nativeName: 'کوردی' },
+  { code: 'ar', name: 'عر', nativeName: 'العربية' },
 ];
 
-export default function LanguageSwitcher({ visible, onClose, style }: LanguageSwitcherProps) {
-  const { language, setLanguage, t } = useLanguage();
+export default function LanguageSwitcher() {
+  const { language, setLanguage } = useLanguage();
+  const [expanded, setExpanded] = useState(false);
 
   const handleLanguageSelect = (lang: Language) => {
     setLanguage(lang);
-    onClose();
+    setExpanded(false);
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <View style={styles.container}>
       <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1}
-        onPress={onClose}
+        style={styles.globeButton}
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}
       >
-        <View style={[styles.container, style]}>
-          <View style={styles.header}>
-            <Globe size={24} color={Colors.primary} />
-            <Text style={styles.title}>{t('selectLanguage')}</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color={Colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.languageList}>
-            {LANGUAGES.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                style={[
-                  styles.languageItem,
-                  language === lang.code && styles.languageItemActive,
-                ]}
-                onPress={() => handleLanguageSelect(lang.code)}
-              >
-                <Text style={styles.flag}>{lang.flag}</Text>
-                <View style={styles.languageText}>
-                  <Text style={[
-                    styles.languageName,
-                    language === lang.code && styles.languageNameActive,
-                  ]}>
-                    {lang.name}
-                  </Text>
-                  <Text style={[
-                    styles.languageNative,
-                    language === lang.code && styles.languageNativeActive,
-                  ]}>
-                    {lang.nativeName}
-                  </Text>
-                </View>
-                {language === lang.code && (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        <Globe size={20} color="#D4AF37" strokeWidth={2.5} />
       </TouchableOpacity>
-    </Modal>
+
+      {expanded && (
+        <View style={styles.languageList}>
+          {LANGUAGES.map((lang) => (
+            <TouchableOpacity
+              key={lang.code}
+              style={[
+                styles.languageItem,
+                language === lang.code && styles.languageItemActive,
+              ]}
+              onPress={() => handleLanguageSelect(lang.code)}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.languageCode,
+                language === lang.code && styles.languageCodeActive,
+              ]}>
+                {lang.name}
+              </Text>
+              {language === lang.code && (
+                <Check size={14} color="#D4AF37" strokeWidth={3} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
   container: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    width: '100%',
-    maxWidth: 400,
+    position: 'relative' as const,
+  },
+  globeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.5)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 6px rgba(212, 175, 55, 0.3)',
+      },
+    }),
+  },
+  languageList: {
+    position: 'absolute' as const,
+    top: 42,
+    left: 0,
+    backgroundColor: 'rgba(26, 0, 0, 0.98)',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    overflow: 'hidden' as const,
+    minWidth: 85,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
+        shadowOpacity: 0.5,
         shadowRadius: 12,
       },
       android: {
         elevation: 8,
       },
       web: {
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-      } as any,
+        boxShadow: '0 4px 16px rgba(212, 175, 55, 0.5)',
+      },
     }),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700' as const,
-    color: Colors.text,
-    marginLeft: 12,
-    flex: 1,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  languageList: {
-    padding: 12,
-  },
   languageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#f8f9fa',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.2)',
   },
   languageItemActive: {
-    backgroundColor: Colors.primary + '15',
-    borderWidth: 2,
-    borderColor: Colors.primary,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
   },
-  flag: {
-    fontSize: 32,
-    marginRight: 16,
-  },
-  languageText: {
-    flex: 1,
-  },
-  languageName: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: Colors.text,
-    marginBottom: 2,
-  },
-  languageNameActive: {
-    color: Colors.primary,
+  languageCode: {
+    fontSize: 15,
     fontWeight: '700' as const,
+    color: 'rgba(255, 255, 255, 0.85)',
+    letterSpacing: 0.3,
   },
-  languageNative: {
-    fontSize: 14,
-    color: '#666',
-  },
-  languageNativeActive: {
-    color: Colors.primary,
-  },
-  checkmark: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmarkText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700' as const,
+  languageCodeActive: {
+    color: '#D4AF37',
   },
 });
