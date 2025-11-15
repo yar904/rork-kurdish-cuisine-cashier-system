@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform } from 'react-native';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Animated } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
@@ -30,6 +30,9 @@ export default function CashierScreen() {
   const { t, tc } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
+  const scrollViewRef = useRef<ScrollView>(null);
+  const categoryAnimations = useRef<{ [key: string]: Animated.Value }>({});
+  const categoryPositions = useRef<{ [key: string]: number }>({});
 
   const { width } = useWindowDimensions();
   
@@ -44,6 +47,40 @@ export default function CashierScreen() {
   }, [isDesktop, isTablet]);
 
   const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
+
+  useEffect(() => {
+    categories.forEach(category => {
+      if (!categoryAnimations.current[category]) {
+        categoryAnimations.current[category] = new Animated.Value(selectedCategory === category ? 1 : 0);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    categories.forEach(category => {
+      const animation = categoryAnimations.current[category];
+      if (animation) {
+        Animated.spring(animation, {
+          toValue: selectedCategory === category ? 1 : 0,
+          useNativeDriver: true,
+          tension: 80,
+          friction: 10,
+        }).start();
+      }
+    });
+  }, [selectedCategory]);
+
+  const handleCategoryPress = (category: MenuCategory, index: number) => {
+    setSelectedCategory(category);
+    
+    const position = categoryPositions.current[category];
+    if (position !== undefined && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ 
+        x: Math.max(0, position - 50), 
+        animated: true 
+      });
+    }
+  };
 
   const filteredItems = useMemo(() => {
     return MENU_ITEMS.filter(item => item.category === selectedCategory && item.available);
@@ -136,28 +173,71 @@ export default function CashierScreen() {
       <View style={[styles.content, isPhone && styles.contentMobile]}>
         <View style={styles.menuSection}>
           <ScrollView 
+            ref={scrollViewRef}
             horizontal 
             showsHorizontalScrollIndicator={false}
             style={styles.categoryScroll}
             contentContainerStyle={styles.categoryScrollContent}
           >
-            {categories.map(category => (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === category && styles.categoryButtonActive,
-                ]}
-                onPress={() => setSelectedCategory(category)}
-              >
-                <Text style={[
-                  styles.categoryButtonText,
-                  selectedCategory === category && styles.categoryButtonTextActive,
-                ]}>
-                  {tc(category)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {categories.map((category, index) => {
+              const animation = categoryAnimations.current[category] || new Animated.Value(0);
+              const isActive = selectedCategory === category;
+              
+              const scale = animation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.92, 1],
+              });
+
+              const opacity = animation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.7, 1],
+              });
+
+              const glowIntensity = animation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1],
+              });
+
+              return (
+                <TouchableOpacity
+                  key={category}
+                  activeOpacity={0.8}
+                  onPress={() => handleCategoryPress(category, index)}
+                  onLayout={(event) => {
+                    categoryPositions.current[category] = event.nativeEvent.layout.x;
+                  }}
+                >
+                  <Animated.View
+                    style={[
+                      styles.categoryButton,
+                      isActive && styles.categoryButtonActive,
+                      {
+                        transform: [{ scale }],
+                        opacity,
+                      },
+                    ]}
+                  >
+                    {isActive && (
+                      <Animated.View 
+                        style={[
+                          styles.glowEffect,
+                          {
+                            opacity: glowIntensity,
+                          },
+                        ]} 
+                      />
+                    )}
+                    <Animated.Text style={[
+                      styles.categoryButtonText,
+                      isActive && styles.categoryButtonTextActive,
+                      { opacity },
+                    ]}>
+                      {tc(category)}
+                    </Animated.Text>
+                  </Animated.View>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
 
           <ScrollView style={styles.itemsScroll} contentContainerStyle={styles.itemsGrid}>
@@ -355,24 +435,54 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 18,
     backgroundColor: Colors.backgroundGray,
-    marginRight: 8,
-    minWidth: 100,
+    marginRight: 10,
+    minWidth: 110,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
+    position: 'relative',
+    overflow: 'visible',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
-        shadowRadius: 3,
+        shadowRadius: 4,
       },
       android: {
         elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        transition: 'none',
+      },
+    }),
+  },
+  glowEffect: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 22,
+    backgroundColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 0 20px rgba(204, 153, 51, 0.6), 0 0 40px rgba(204, 153, 51, 0.3)',
       },
     }),
   },
@@ -382,22 +492,27 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 16px rgba(204, 153, 51, 0.4)',
       },
     }),
   },
   categoryButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.text,
+    zIndex: 2,
   },
   categoryButtonTextActive: {
     color: '#fff',
+    fontSize: 16,
   },
   itemsScroll: {
     flex: 1,
