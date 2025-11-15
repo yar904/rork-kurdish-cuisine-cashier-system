@@ -1,48 +1,85 @@
-// File: lib/api.ts
+import { trpcClient } from "@/lib/trpc";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
-
-// Fetch all menu items
-export const getMenuItems = async () => {
-  const res = await fetch(`${API_URL}/menu`);
-  if (!res.ok) throw new Error("Failed to fetch menu items");
-  return await res.json();
+// Menu
+export const apiMenu = {
+  getAll: () => trpcClient.menu.getAll.query(),
+  create: (data: any) => trpcClient.menu.create.mutate(data),
+  update: (data: any) => trpcClient.menu.update.mutate(data),
+  delete: (id: string) => trpcClient.menu.delete.mutate({ id }),
 };
 
-// Create a new order
-export const createOrder = async (order: {
-  table_id: string;
-  total: number;
-  status: string;
-}) => {
-  const res = await fetch(`${API_URL}/orders`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(order),
-  });
-  if (!res.ok) throw new Error("Failed to create order");
-  return await res.json();
+// Orders
+export const apiOrders = {
+  create: (data: any) => trpcClient.orders.create.mutate(data),
+  getAll: () => trpcClient.orders.getAll.query(),
+  updateStatus: (data: any) => trpcClient.orders.updateStatus.mutate(data),
 };
 
-// Add an item to an order
-export const addOrderItem = async (item: {
-  order_id: string;
-  menu_item_id: string;
-  quantity: number;
-  price: number;
-}) => {
-  const res = await fetch(`${API_URL}/order-items`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(item),
-  });
-  if (!res.ok) throw new Error("Failed to add order item");
-  return await res.json();
+// Tables
+export const apiTables = {
+  getAll: () => trpcClient.tables.getAll.query(),
+  updateStatus: (data: any) => trpcClient.tables.updateStatus.mutate(data),
 };
 
-// Get all orders
-export const getAllOrders = async () => {
-  const res = await fetch(`${API_URL}/orders`);
-  if (!res.ok) throw new Error("Failed to fetch orders");
-  return await res.json();
+// Ratings
+export const apiRatings = {
+  create: (data: any) => trpcClient.ratings.create.mutate(data),
+  getByMenuItem: (id: string) =>
+    trpcClient.ratings.getByMenuItem.query({ menuItemId: id }),
+  getAllStats: () => trpcClient.ratings.getAllStats.query(),
+};
+
+// Service Requests
+export const apiService = {
+  create: (data: any) => trpcClient.serviceRequests.create.mutate(data),
+  getAll: () => trpcClient.serviceRequests.getAll.query(),
+  updateStatus: (data: any) =>
+    trpcClient.serviceRequests.updateStatus.mutate(data),
+};
+
+// Employees
+export const apiEmployees = {
+  getAll: () => trpcClient.employees.getAll.query(),
+  create: (data: any) => trpcClient.employees.create.mutate(data),
+  update: (data: any) => trpcClient.employees.update.mutate(data),
+  delete: (id: string) => trpcClient.employees.delete.mutate({ id }),
+  clockIn: (data: any) => trpcClient.employees.clockIn.mutate(data),
+  clockOut: (data: any) => trpcClient.employees.clockOut.mutate(data),
+  getClockRecords: (data: any) =>
+    trpcClient.employees.getClockRecords.query(data),
+  getShifts: () => trpcClient.employees.getShifts.query(),
+  createShift: (data: any) => trpcClient.employees.createShift.mutate(data),
+  getMetrics: (data: any) => trpcClient.employees.getMetrics.query(data),
+};
+
+// Inventory
+export const apiInventory = {
+  getAll: () => trpcClient.inventory.getAll.query(),
+  getLowStock: () => trpcClient.inventory.getLowStock.query(),
+  create: (data: any) => trpcClient.inventory.create.mutate(data),
+  update: (data: any) => trpcClient.inventory.update.mutate(data),
+  adjustStock: (data: any) => trpcClient.inventory.adjustStock.mutate(data),
+  getMovements: (data: any) => trpcClient.inventory.getMovements.query(data),
+};
+
+// Suppliers
+export const apiSuppliers = {
+  getAll: () => trpcClient.suppliers.getAll.query(),
+  create: (data: any) => trpcClient.suppliers.create.mutate(data),
+};
+
+// Customer History
+export const apiHistory = {
+  save: (data: any) => trpcClient.customerHistory.save.mutate(data),
+  getByTable: (id: string) =>
+    trpcClient.customerHistory.getByTable.query({ tableId: id }),
+};
+
+// Reports
+export const apiReports = {
+  summary: (data: any) => trpcClient.reports.summary.query(data),
+  comparison: (data: any) => trpcClient.reports.comparison.query(data),
+  financial: (data: any) => trpcClient.reports.financial.query(data),
+  employeePerformance: (data: any) =>
+    trpcClient.reports.employeePerformance.query(data),
 };
