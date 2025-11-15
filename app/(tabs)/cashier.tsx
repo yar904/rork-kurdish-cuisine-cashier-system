@@ -44,8 +44,8 @@ export default function CashierScreen() {
   const isDesktop = width >= 1200;
 
   const itemWidth = useMemo(() => {
-    if (isDesktop) return '23.5%';
-    if (isTablet) return '31%';
+    if (isDesktop) return '18%';
+    if (isTablet) return '23%';
     return '48%';
   }, [isDesktop, isTablet]);
 
@@ -554,13 +554,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E8EAED',
   },
   categoryScrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     gap: 8,
   },
   categoryButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: '#F1F3F5',
     marginRight: 6,
@@ -602,33 +602,32 @@ const styles = StyleSheet.create({
   },
   itemsGrid: {
     paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingVertical: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 16,
+    gap: 12,
   },
   menuItem: {
-    minWidth: 220,
+    minWidth: 180,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E8EAED',
     overflow: 'hidden' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
       web: {
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
       },
     }),
   },
@@ -637,50 +636,50 @@ const styles = StyleSheet.create({
   },
   menuItemImage: {
     width: '100%',
-    height: 180,
+    height: 140,
     backgroundColor: '#F8F9FA',
   },
   menuItemContent: {
-    padding: 16,
+    padding: 12,
   },
   menuItemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   menuItemName: {
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#212529',
     flex: 1,
-    lineHeight: 24,
+    lineHeight: 20,
   },
   menuItemPrice: {
-    fontSize: 19,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: Colors.primary,
-    marginLeft: 12,
+    marginLeft: 8,
   },
   menuItemKurdish: {
-    fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#6C757D',
-    marginBottom: 8,
-  },
-  menuItemDescription: {
     fontSize: 13,
     fontFamily: 'NotoNaskhArabic_400Regular',
+    color: '#6C757D',
+    marginBottom: 4,
+  },
+  menuItemDescription: {
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#868E96',
-    lineHeight: 19,
-    marginBottom: 12,
+    lineHeight: 17,
+    marginBottom: 8,
   },
   addButton: {
-    marginTop: 8,
+    marginTop: 4,
     alignSelf: 'flex-end',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -688,11 +687,11 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.35,
-        shadowRadius: 6,
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
     }),
   },
