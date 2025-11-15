@@ -6,7 +6,7 @@ import superjson from "superjson";
 export const trpc = createTRPCReact<AppRouter>();
 
 const API_URL =
-  "https://opspnzswjxzvywqjqvjy.supabase.co/functions/v1/tapse-backend";
+  "https://opspnzswjxzvywqjqvjy.functions.supabase.co/tapse-backend";
 
 export const trpcClient = trpc.createClient({
   transformer: superjson,
