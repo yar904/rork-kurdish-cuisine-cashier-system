@@ -892,7 +892,6 @@ export default function CustomerOrderScreen() {
               const categoryItems = menuData?.filter(item => item.category === category) || [];
               const displayImage = categoryItems[0]?.image || getCategoryImage(category);
               const isActive = selectedCategory === category;
-              const isInGlow = !isUserScrolling && index === currentCategoryIndex.current;
               
               if (!categoryScales.has(category)) {
                 categoryScales.set(category, new Animated.Value(0.75));
@@ -908,8 +907,42 @@ export default function CustomerOrderScreen() {
                     if (category !== 'all') {
                       scrollToCategory(category);
                     }
+                    
+                    // Reset all scales
+                    categories.forEach((cat, idx) => {
+                      const scale = categoryScales.get(cat);
+                      if (scale) {
+                        Animated.timing(scale, {
+                          toValue: 0.75,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }).start();
+                      }
+                    });
+                    
+                    // Animate selected category
+                    const selectedScale = categoryScales.get(category);
+                    if (selectedScale) {
+                      Animated.spring(selectedScale, {
+                        toValue: 1,
+                        friction: 8,
+                        tension: 100,
+                        useNativeDriver: true,
+                      }).start();
+                    }
+                    
                     setIsUserScrolling(true);
                     currentCategoryIndex.current = index;
+                    
+                    // Scroll to position
+                    if (categoryScrollViewRef.current) {
+                      const scrollPosition = index * 122;
+                      categoryScrollViewRef.current.scrollTo({ 
+                        x: scrollPosition, 
+                        animated: true 
+                      });
+                    }
+                    
                     if (userScrollTimeout.current) {
                       clearTimeout(userScrollTimeout.current);
                     }
@@ -1606,20 +1639,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
     pointerEvents: 'none' as const,
     backgroundColor: 'transparent',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 28,
-      },
-      android: {
-        elevation: 18,
-      },
-      web: {
-        boxShadow: '0 0 40px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.5)',
-      },
-    }),
   },
   categoryHighlightHidden: {
     opacity: 0,
@@ -1638,24 +1657,24 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212, 175, 55, 0.5)',
     backgroundColor: '#1a0000',
     position: 'relative' as const,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.2)',
-      },
-    }),
   },
   categoryCardActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 28,
+      },
+      android: {
+        elevation: 18,
+      },
+      web: {
+        boxShadow: '0 0 40px rgba(212, 175, 55, 0.9), 0 0 80px rgba(212, 175, 55, 0.6)',
+      },
+    }),
   },
   activeIndicatorDot: {
     position: 'absolute' as const,

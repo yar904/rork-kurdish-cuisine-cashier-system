@@ -33,26 +33,28 @@ export default function LanguageSwitcher() {
 
 const styles = StyleSheet.create({
   button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.5)',
+    borderColor: '#D4AF37',
     justifyContent: 'center' as const,
-    alignItems: 'center' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.3,
         shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
       web: {
-        boxShadow: '0 2px 4px rgba(212, 175, 55, 0.2)',
+        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)',
       },
     }),
   },
@@ -60,6 +62,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700' as const,
     color: '#D4AF37',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
 });
