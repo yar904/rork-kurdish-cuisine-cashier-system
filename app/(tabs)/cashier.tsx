@@ -156,38 +156,45 @@ export default function CashierScreen() {
   };
 
   const handleAddCustomItem = () => {
+    console.log('[Cashier] Adding custom item:', { customItemName, customItemPrice, customItemQuantity });
+
     if (!customItemName.trim()) {
-      Alert.alert('Error', 'Please enter item name');
+      Alert.alert('خطا / Error', 'تکایە ناوی خواردن بنووسە / Please enter item name');
       return;
     }
     
     const price = parseFloat(customItemPrice);
     if (isNaN(price) || price <= 0) {
-      Alert.alert('Error', 'Please enter valid price');
+      Alert.alert('خطا / Error', 'تکایە نرخێکی دروست بنووسە / Please enter valid price (numbers only)');
       return;
     }
     
-    const quantity = parseInt(customItemQuantity);
+    const quantity = parseInt(customItemQuantity, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      Alert.alert('Error', 'Please enter valid quantity');
+      Alert.alert('خطا / Error', 'تکایە ژمارەیەکی دروست بنووسە / Please enter valid quantity');
       return;
     }
 
     const customId = `custom-${Date.now()}`;
-    setOrderItems([...orderItems, {
+    const newItem = {
       id: customId,
       name: customItemName,
       nameKurdish: customItemName,
       price: price,
       quantity: quantity,
       image: customItemImage,
-    }]);
+    };
+
+    console.log('[Cashier] Custom item created:', newItem);
+    setOrderItems([...orderItems, newItem]);
 
     setCustomItemModal(false);
     setCustomItemName('');
     setCustomItemPrice('');
     setCustomItemQuantity('1');
     setCustomItemImage(undefined);
+
+    Alert.alert('✅ سەرکەوتوو / Success', `${customItemName} زیادکرا / added to order`);
   };
 
   const handlePrintReceipt = async () => {
@@ -611,13 +618,21 @@ export default function CashierScreen() {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={styles.modalCancelButton}
-                  onPress={() => setCustomItemModal(false)}
+                  onPress={() => {
+                    console.log('[Cashier] Cancel custom item');
+                    setCustomItemModal(false);
+                  }}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.modalCancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalConfirmButton}
-                  onPress={handleAddCustomItem}
+                  onPress={() => {
+                    console.log('[Cashier] Add button pressed');
+                    handleAddCustomItem();
+                  }}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.modalConfirmButtonText}>زیادکردن / Add</Text>
                 </TouchableOpacity>
@@ -1058,6 +1073,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: Colors.primary,
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   modalConfirmButtonText: {
     fontSize: 15,
