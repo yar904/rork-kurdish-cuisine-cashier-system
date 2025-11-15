@@ -12,7 +12,10 @@ export const trpcClient = trpc.createClient({
   transformer: superjson,
   links: [
     httpLink({
-      url: API_URL,
+      url: `${API_URL}/trpc`,
+      headers: {
+        "Content-Type": "application/json",
+      },
     }),
   ],
 });
