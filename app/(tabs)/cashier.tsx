@@ -572,7 +572,7 @@ export default function CashierScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>زیادکردنی خواردنی تایبەت / Add Custom Item</Text>
               <TouchableOpacity onPress={() => setCustomItemModal(false)}>
-                <X size={24} color={Colors.text} />
+                <X size={24} color="#000000" />
               </TouchableOpacity>
             </View>
 
@@ -602,7 +602,7 @@ export default function CashierScreen() {
                 value={customItemName}
                 onChangeText={setCustomItemName}
                 placeholder="e.g., Special Request"
-                placeholderTextColor={Colors.textLight}
+                placeholderTextColor="#999999"
               />
 
               <Text style={styles.inputLabel}>نرخ / Price (IQD)</Text>
@@ -612,7 +612,7 @@ export default function CashierScreen() {
                 onChangeText={setCustomItemPrice}
                 placeholder="23456"
                 keyboardType="numeric"
-                placeholderTextColor={Colors.textLight}
+                placeholderTextColor="#999999"
               />
 
               <Text style={styles.inputLabel}>ژمارە / Quantity</Text>
@@ -622,7 +622,7 @@ export default function CashierScreen() {
                 onChangeText={setCustomItemQuantity}
                 placeholder="1"
                 keyboardType="numeric"
-                placeholderTextColor={Colors.textLight}
+                placeholderTextColor="#999999"
               />
 
               <View style={styles.modalButtons}>
@@ -658,7 +658,7 @@ export default function CashierScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -675,13 +675,13 @@ const styles = StyleSheet.create({
   },
   categoryScrollContent: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    gap: 8,
+    paddingVertical: 4,
+    gap: 6,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 16,
     backgroundColor: '#4A0000',
     borderWidth: 1,
     borderColor: '#4A0000',
@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.gold,
   },
   categoryButtonText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600' as const,
     color: '#FFFFFF',
   },
@@ -706,14 +706,14 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#000000',
+    color: '#333333',
   },
   menuScroll: {
     flex: 1,
   },
   menuGrid: {
     paddingHorizontal: 12,
-    paddingTop: 6,
+    paddingTop: 8,
     paddingBottom: 12,
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
   menuItemImage: {
     width: '100%',
     height: 120,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   menuItemInfo: {
     padding: 10,
@@ -790,9 +790,9 @@ const styles = StyleSheet.create({
   },
   orderSection: {
     width: 380,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderLeftWidth: 1,
-    borderLeftColor: Colors.border,
+    borderLeftColor: '#E5E5EA',
   },
   orderHeader: {
     flexDirection: 'row',
@@ -800,23 +800,23 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    backgroundColor: Colors.cardBackground,
+    borderBottomColor: '#E5E5EA',
+    backgroundColor: '#FFFFFF',
   },
   orderTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
   },
   tableSelector: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E5E5EA',
   },
   label: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: Colors.textSecondary,
+    color: '#666666',
     marginBottom: 8,
   },
   tableButtons: {
@@ -828,11 +828,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   tableButtonActive: {
     backgroundColor: Colors.gold,
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   tableButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
   },
   tableButtonTextActive: {
     color: '#1a0000',
@@ -852,11 +852,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     fontSize: 13,
-    color: Colors.text,
+    color: '#000000',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   orderList: {
     flex: 1,
@@ -870,15 +870,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.textLight,
+    color: '#999999',
   },
   orderItem: {
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   orderItemRow: {
     flexDirection: 'row',
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   orderItemInfo: {
     flex: 1,
@@ -898,7 +898,7 @@ const styles = StyleSheet.create({
   orderItemName: {
     fontSize: 13,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
     flex: 1,
   },
   orderItemPrice: {
@@ -915,16 +915,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   quantityText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
     minWidth: 28,
     textAlign: 'center' as const,
   },
@@ -942,8 +942,8 @@ const styles = StyleSheet.create({
   footer: {
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    backgroundColor: Colors.backgroundGray,
+    borderTopColor: '#E5E5EA',
+    backgroundColor: '#F5F5F7',
   },
   totalRow: {
     flexDirection: 'row',
@@ -951,13 +951,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 12,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
   },
   totalLabel: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.textSecondary,
+    color: '#666666',
   },
   totalAmount: {
     fontSize: 20,
@@ -975,17 +975,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   actionButtonText: {
     fontSize: 10,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#000000',
   },
   actionButtonTextDisabled: {
     color: '#C7C7CC',
@@ -1016,7 +1016,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
@@ -1043,7 +1043,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#000000',
     flex: 1,
   },
   modalBody: {
@@ -1052,19 +1052,19 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textSecondary,
+    color: '#666666',
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: Colors.text,
+    color: '#000000',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -1075,13 +1075,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     alignItems: 'center',
   },
   modalCancelButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
   },
   modalConfirmButton: {
     flex: 1,
@@ -1111,10 +1111,10 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     borderStyle: 'dashed' as const,
     overflow: 'hidden',
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   imagePickerPlaceholder: {
     flex: 1,
@@ -1124,7 +1124,7 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#666666',
     fontWeight: '600' as const,
   },
   customItemPreviewImage: {
