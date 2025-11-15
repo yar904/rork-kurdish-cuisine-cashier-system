@@ -35,19 +35,19 @@ const CATEGORIES = [
   'stews', 'seafood', 'breads', 'desserts', 'drinks', 'shisha', 'hot-drinks'
 ];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  appetizers: 'APPETIZERS',
-  soups: 'SOUPS',
-  salads: 'SALADS',
-  kebabs: 'KEBABS',
-  'rice-dishes': 'RICE DISHES',
-  stews: 'STEWS',
-  seafood: 'SEAFOOD',
-  breads: 'BREADS',
-  desserts: 'DESSERTS',
-  drinks: 'COLD DRINKS',
-  shisha: 'SHISHA',
-  'hot-drinks': 'HOT DRINKS'
+const CATEGORY_LABELS: Record<string, { en: string; ku: string }> = {
+  appetizers: { en: 'APPETIZERS', ku: 'خواردنی پێشوەخت' },
+  soups: { en: 'SOUPS', ku: 'شۆربا' },
+  salads: { en: 'SALADS', ku: 'زەڵاتە' },
+  kebabs: { en: 'KEBABS', ku: 'کەباب' },
+  'rice-dishes': { en: 'RICE DISHES', ku: 'خواردنی برنج' },
+  stews: { en: 'STEWS', ku: 'خۆراک' },
+  seafood: { en: 'SEAFOOD', ku: 'ماسی و میگۆ' },
+  breads: { en: 'BREADS', ku: 'نان' },
+  desserts: { en: 'DESSERTS', ku: 'شیرینی' },
+  drinks: { en: 'COLD DRINKS', ku: 'خواردنەوەی سارد' },
+  shisha: { en: 'SHISHA', ku: 'شیشە' },
+  'hot-drinks': { en: 'HOT DRINKS', ku: 'خواردنەوەی گەرم' }
 };
 
 export default function CashierScreen() {
@@ -344,12 +344,20 @@ options={{
                 ]}
                 onPress={() => setSelectedCategory(category)}
               >
-                <Text style={[
-                  styles.categoryItemText,
-                  selectedCategory === category && styles.categoryItemTextActive
-                ]}>
-                  {CATEGORY_LABELS[category] || category.toUpperCase()}
-                </Text>
+                <View>
+                  <Text style={[
+                    styles.categoryItemText,
+                    selectedCategory === category && styles.categoryItemTextActive
+                  ]}>
+                    {CATEGORY_LABELS[category]?.en || category.toUpperCase()}
+                  </Text>
+                  <Text style={[
+                    styles.categoryItemTextKurdish,
+                    selectedCategory === category && styles.categoryItemTextActiveKurdish
+                  ]}>
+                    {CATEGORY_LABELS[category]?.ku || ''}
+                  </Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -436,7 +444,7 @@ options={{
           <ScrollView style={styles.orderList}>
             {orderItems.length === 0 ? (
               <View style={styles.emptyOrder}>
-                <Text style={styles.emptyText}>No items</Text>
+                <Text style={styles.emptyText}>No items / هیچ خواردنێک نیە</Text>
               </View>
             ) : (
               orderItems.map(item => (
@@ -494,7 +502,7 @@ options={{
                 onPress={() => setCustomItemModal(true)}
               >
                 <Plus size={16} color="#1C1C1E" />
-                <Text style={styles.actionButtonText}>Add Custom</Text>
+                <Text style={styles.actionButtonText}>زیادکردن / Add Custom</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -507,7 +515,7 @@ options={{
                 ) : (
                   <>
                     <Bell size={16} color="#1C1C1E" />
-                    <Text style={styles.actionButtonText}>Call Waiter</Text>
+                    <Text style={styles.actionButtonText}>بانگکردنی گارسۆن / Call</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -522,7 +530,7 @@ options={{
                 ) : (
                   <>
                     <Receipt size={16} color="#1C1C1E" />
-                    <Text style={styles.actionButtonText}>Request Bill</Text>
+                    <Text style={styles.actionButtonText}>پارە / Bill</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -533,7 +541,7 @@ options={{
                 disabled={orderItems.length === 0}
               >
                 <Printer size={16} color={orderItems.length > 0 ? '#1C1C1E' : '#C7C7CC'} />
-                <Text style={[styles.actionButtonText, orderItems.length === 0 && styles.actionButtonTextDisabled]}>Print</Text>
+                <Text style={[styles.actionButtonText, orderItems.length === 0 && styles.actionButtonTextDisabled]}>چاپ / Print</Text>
               </TouchableOpacity>
             </View>
 
@@ -551,7 +559,7 @@ options={{
               ) : (
                 <>
                   <Send size={20} color="#fff" />
-                  <Text style={styles.submitButtonText}>Submit Order</Text>
+                  <Text style={styles.submitButtonText}>ناردنی داواکاری / Submit Order</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -682,12 +690,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   categoryItemText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     color: '#1C1C1E',
+    marginBottom: 2,
   },
   categoryItemTextActive: {
     color: '#FFFFFF',
+  },
+  categoryItemTextKurdish: {
+    fontSize: 11,
+    fontWeight: '500' as const,
+    color: '#8E8E93',
+  },
+  categoryItemTextActiveKurdish: {
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   menuSection: {
     flex: 1,
