@@ -56,15 +56,29 @@ export default function RootLayout() {
       'Error while flushing PostHog',
     ]);
 
-    if (__DEV__) {
-      const originalConsoleError = console.error;
-      console.error = (...args) => {
-        if (typeof args[0] === 'string' && args[0].includes('PostHog')) {
-          return;
-        }
-        originalConsoleError(...args);
-      };
-    }
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    
+    console.error = (...args) => {
+      const message = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+      if (message && message.includes('PostHog')) {
+        return;
+      }
+      originalConsoleError(...args);
+    };
+    
+    console.warn = (...args) => {
+      const message = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]);
+      if (message && message.includes('PostHog')) {
+        return;
+      }
+      originalConsoleWarn(...args);
+    };
+
+    return () => {
+      console.error = originalConsoleError;
+      console.warn = originalConsoleWarn;
+    };
   }, []);
 
   const [fontsLoaded] = useFonts({
