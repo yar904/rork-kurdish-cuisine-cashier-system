@@ -15,6 +15,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
       headers: {
         "Content-Type": "application/json",
       },
+      transformer: superjson,
     }),
   ],
 });

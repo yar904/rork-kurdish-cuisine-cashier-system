@@ -166,7 +166,7 @@ export default function CashierScreen() {
   const callWaiterMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
-      return await trpcClient.serviceRequests.create({
+      return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
         type: 'waiter' as const,
         notes: 'Staff assistance requested from cashier',
@@ -185,7 +185,7 @@ export default function CashierScreen() {
   const requestBillMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
-      return await trpcClient.serviceRequests.create({
+      return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
         type: 'bill' as const,
         notes: 'Bill requested from cashier',
