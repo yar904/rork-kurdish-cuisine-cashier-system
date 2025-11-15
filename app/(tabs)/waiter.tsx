@@ -1,19 +1,44 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, TextInput, Modal, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ClipboardList, DollarSign, Users, X, Bell, Receipt } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useRealtime } from '@/contexts/RealtimeContext';
 
+type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
+type Order = {
+  id: string;
+  tableNumber: number;
+  status: OrderStatus;
+  total: number;
+  createdAt: Date;
+  waiterName?: string;
+  items: Array<{
+    quantity: number;
+    menuItem: {
+      name: string;
+      price: number;
+    };
+  }>;
+};
 
-export default function ManagerScreen() {
+type ServiceRequest = {
+  id: string;
+  tableNumber: number;
+  type: string;
+  status: string;
+  createdAt: Date;
+};
+
+export default function WaiterScreen() {
   const { t } = useLanguage();
   const { notifyServiceRequest } = useNotifications();
+  const { subscribeToServiceRequests, subscribeToOrders } = useRealtime();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [splitBillModal, setSplitBillModal] = useState<{ visible: boolean; order: Order | null }>({ visible: false, order: null });
   const [splitPeople, setSplitPeople] = useState<string>('2');
@@ -21,8 +46,6 @@ export default function ManagerScreen() {
   const previousServiceRequestsRef = useRef<any[]>([]);
   
   const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
 
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
     refetchInterval: 5000,
@@ -35,34 +58,100 @@ export default function ManagerScreen() {
   const updateOrderMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
       ordersQuery.refetch();
+      Alert.alert('Success', 'Order status updated');
+    },
+    onError: (error) => {
+      console.error('[Waiter] Order update error:', error);
+      Alert.alert('Error', error.message || 'Failed to update order');
     },
   });
 
   const updateServiceRequestMutation = trpc.serviceRequests.updateStatus.useMutation({
     onSuccess: () => {
       serviceRequestsQuery.refetch();
+      Alert.alert('Success', 'Request resolved');
+    },
+    onError: (error) => {
+      console.error('[Waiter] Service request update error:', error);
+      Alert.alert('Error', error.message || 'Failed to resolve request');
     },
   });
 
-  const orders = ordersQuery.data || [];
-  const serviceRequests = serviceRequestsQuery.data || [];
+  useEffect(() => {
+    const unsubscribeRequests = subscribeToServiceRequests(() => {
+      console.log('[Waiter] Real-time service request update');
+      serviceRequestsQuery.refetch();
+    });
+
+    const unsubscribeOrders = subscribeToOrders(() => {
+      console.log('[Waiter] Real-time order update');
+      ordersQuery.refetch();
+    });
+    
+    return () => {
+      unsubscribeRequests();
+      unsubscribeOrders();
+    };
+  }, [subscribeToServiceRequests, subscribeToOrders, serviceRequestsQuery, ordersQuery]);
+
+  const orders = useMemo(() => {
+    if (!ordersQuery.data) return [];
+    
+    return ordersQuery.data.map((o: any): Order => {
+      const orderItems = o.order_items || [];
+      const items = orderItems.map((item: any) => {
+        const menuItem = item.menu_items || item.menu_item;
+        if (!menuItem) return null;
+        
+        return {
+          quantity: item.quantity,
+          menuItem: {
+            name: menuItem.name || menuItem.name_kurdish,
+            price: menuItem.price,
+          },
+        };
+      }).filter((item: any): item is Order['items'][0] => item !== null);
+      
+      return {
+        id: o.id,
+        tableNumber: o.table_number,
+        status: o.status as OrderStatus,
+        total: o.total_amount,
+        createdAt: new Date(o.created_at),
+        waiterName: o.waiter_name || undefined,
+        items,
+      };
+    });
+  }, [ordersQuery.data]);
+
+  const serviceRequests = useMemo(() => {
+    if (!serviceRequestsQuery.data) return [];
+    
+    return serviceRequestsQuery.data.map((r: any): ServiceRequest => ({
+      id: r.id,
+      tableNumber: r.table_number,
+      type: r.type,
+      status: r.status,
+      createdAt: new Date(r.created_at),
+    }));
+  }, [serviceRequestsQuery.data]);
 
   useEffect(() => {
     const pendingRequests = serviceRequests.filter(r => r.status === 'pending');
-    const previousPendingRequests = previousServiceRequestsRef.current.filter(r => r.status === 'pending');
+    const previousPendingRequests = previousServiceRequestsRef.current.filter((r: any) => r.status === 'pending');
     
     if (pendingRequests.length > previousPendingRequests.length) {
       const newRequests = pendingRequests.filter(nr => 
-        !previousPendingRequests.some(pr => pr.id === nr.id)
+        !previousPendingRequests.some((pr: any) => pr.id === nr.id)
       );
       
       newRequests.forEach(request => {
-        console.log(`🔔 SERVICE REQUEST: Table ${request.tableNumber} - ${request.requestType}`);
-        notifyServiceRequest(request.tableNumber, request.requestType);
+        console.log(`🔔 SERVICE REQUEST: Table ${request.tableNumber} - ${request.type}`);
+        notifyServiceRequest(request.tableNumber, request.type);
         
         if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
           new Notification('Service Request! 🔔', {
-            body: `Table ${request.tableNumber} needs ${request.requestType}`,
+            body: `Table ${request.tableNumber} needs ${request.type}`,
             icon: '/assets/images/icon.png',
           });
         }
@@ -75,9 +164,9 @@ export default function ManagerScreen() {
   const filteredOrders = useMemo(() => {
     if (selectedFilter === 'all') return orders;
     if (selectedFilter === 'active') {
-      return orders.filter(o => o.status !== 'paid');
+      return orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
     }
-    return orders.filter(o => o.status === 'paid');
+    return orders.filter(o => o.status === 'completed');
   }, [orders, selectedFilter]);
 
   const ordersByTable = useMemo(() => {
@@ -98,17 +187,17 @@ export default function ManagerScreen() {
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'new': return Colors.statusNew;
+      case 'pending': return Colors.statusNew;
       case 'preparing': return Colors.statusPreparing;
       case 'ready': return Colors.statusReady;
       case 'served': return Colors.statusServed;
-      case 'paid': return Colors.statusPaid;
+      case 'completed': return Colors.statusPaid;
       default: return Colors.textLight;
     }
   };
 
   const getStatusLabel = (status: OrderStatus) => {
-    return t(status as keyof typeof t);
+    return t(status as keyof typeof t) || status;
   };
 
   const formatTime = (date: Date) => {
@@ -122,39 +211,33 @@ export default function ManagerScreen() {
   const handleMarkPaid = async (orderId: string) => {
     try {
       await updateOrderMutation.mutateAsync({
-        orderId,
-        status: 'paid',
+        id: orderId,
+        status: 'completed',
       });
-      Alert.alert('Success', 'Order marked as paid');
     } catch (error) {
       console.error('Error marking order as paid:', error);
-      Alert.alert('Error', 'Failed to mark order as paid');
     }
   };
 
   const handleServeOrder = async (orderId: string) => {
     try {
       await updateOrderMutation.mutateAsync({
-        orderId,
+        id: orderId,
         status: 'served',
       });
-      Alert.alert('Success', 'Order marked as served');
     } catch (error) {
       console.error('Error marking order as served:', error);
-      Alert.alert('Error', 'Failed to mark order as served');
     }
   };
 
   const handleResolveServiceRequest = async (requestId: string) => {
     try {
       await updateServiceRequestMutation.mutateAsync({
-        requestId,
-        status: 'resolved',
+        id: requestId,
+        status: 'completed',
       });
-      Alert.alert('Success', 'Service request resolved');
     } catch (error) {
       console.error('Error resolving service request:', error);
-      Alert.alert('Error', 'Failed to resolve service request');
     }
   };
 
@@ -187,7 +270,7 @@ export default function ManagerScreen() {
           <View style={styles.orderHeaderLeft}>
             <View style={[styles.statusDot, { backgroundColor: getStatusColor(order.status) }]} />
             <View>
-              <Text style={styles.orderNumber}>{order.id}</Text>
+              <Text style={styles.orderNumber}>#{order.id}</Text>
               <Text style={styles.orderTime}>{formatTime(order.createdAt)}</Text>
             </View>
           </View>
@@ -221,9 +304,16 @@ export default function ManagerScreen() {
             <TouchableOpacity
               style={styles.serveButton}
               onPress={() => handleServeOrder(order.id)}
+              disabled={updateOrderMutation.isPending}
             >
-              <ClipboardList size={16} color="#fff" />
-              <Text style={styles.paidButtonText}>پێشکەش کراوە / Mark as Served</Text>
+              {updateOrderMutation.isPending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <ClipboardList size={16} color="#fff" />
+                  <Text style={styles.paidButtonText}>پێشکەش کراوە / Mark as Served</Text>
+                </>
+              )}
             </TouchableOpacity>
           )}
           {canMarkPaid && (
@@ -238,9 +328,16 @@ export default function ManagerScreen() {
               <TouchableOpacity
                 style={styles.paidButton}
                 onPress={() => handleMarkPaid(order.id)}
+                disabled={updateOrderMutation.isPending}
               >
-                <DollarSign size={16} color="#fff" />
-                <Text style={styles.paidButtonText}>دراوە / {t('markAsPaid')}</Text>
+                {updateOrderMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <DollarSign size={16} color="#fff" />
+                    <Text style={styles.paidButtonText}>دراوە / {t('markAsPaid') || 'Mark as Paid'}</Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           )}
@@ -249,10 +346,26 @@ export default function ManagerScreen() {
     );
   };
 
+  if (ordersQuery.isLoading || serviceRequestsQuery.isLoading) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ 
+          title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: '#fff',
+        }} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - پێشخزمەتکار / Waiter`,
+        title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
       }} />
@@ -269,16 +382,21 @@ export default function ManagerScreen() {
           {pendingServiceRequests.map(request => (
             <View key={request.id} style={styles.serviceRequestAlert}>
               <View style={styles.serviceRequestHeader}>
-                <Bell size={20} color={Colors.warning} />
+                {request.type === 'bill' ? <Receipt size={20} color={Colors.warning} /> : <Bell size={20} color={Colors.warning} />}
                 <Text style={styles.serviceRequestText}>
-                  میز / Table {request.tableNumber} - {request.requestType === 'bill' ? '💵 داواکاری حیساب / Bill Request' : '👤 بانگهێشتی پێشخزمەتکار / Waiter Call'}
+                  میز / Table {request.tableNumber} - {request.type === 'bill' ? '💵 داواکاری حیساب / Bill Request' : '👤 بانگهێشتی پێشخزمەتکار / Waiter Call'}
                 </Text>
               </View>
               <TouchableOpacity
                 style={styles.resolveButton}
                 onPress={() => handleResolveServiceRequest(request.id)}
+                disabled={updateServiceRequestMutation.isPending}
               >
-                <Text style={styles.resolveButtonText}>چارەسەرکراوە / Resolved</Text>
+                {updateServiceRequestMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.resolveButtonText}>چارەسەرکراوە / Resolved</Text>
+                )}
               </TouchableOpacity>
             </View>
           ))}
@@ -294,7 +412,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'active' && styles.filterButtonTextActive,
           ]}>
-            چالاک / {t('activeOrders')}
+            چالاک / {t('activeOrders') || 'Active'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -305,7 +423,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'all' && styles.filterButtonTextActive,
           ]}>
-            هەموو / {t('allOrders')}
+            هەموو / {t('allOrders') || 'All'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -316,7 +434,7 @@ export default function ManagerScreen() {
             styles.filterButtonText,
             selectedFilter === 'completed' && styles.filterButtonTextActive,
           ]}>
-            تەواو / {t('completed')}
+            تەواو / {t('completed') || 'Completed'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -325,9 +443,9 @@ export default function ManagerScreen() {
         {tableNumbers.length === 0 ? (
           <View style={styles.emptyState}>
             <ClipboardList size={64} color={Colors.textLight} />
-            <Text style={styles.emptyStateTitle}>هیچ داواکارییەک نییە / {t('noOrders')}</Text>
+            <Text style={styles.emptyStateTitle}>هیچ داواکارییەک نییە / {t('noOrders') || 'No Orders'}</Text>
             <Text style={styles.emptyStateText}>
-              داواکارییەکان لێرە دەردەکەون / {t('ordersWillAppear')}
+              داواکارییەکان لێرە دەردەکەون / {t('ordersWillAppear') || 'Orders will appear here'}
             </Text>
           </View>
         ) : (
@@ -335,10 +453,10 @@ export default function ManagerScreen() {
             {tableNumbers.map(tableNumber => (
               <View key={tableNumber} style={[styles.tableSection, !isPhone && styles.tableSectionTablet]}>
                 <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderText}>میز / {t('table')} {tableNumber}</Text>
+                  <Text style={styles.tableHeaderText}>میز / {t('table') || 'Table'} {tableNumber}</Text>
                   <View style={styles.tableHeaderBadge}>
                     <Text style={styles.tableHeaderBadgeText}>
-                      {ordersByTable[tableNumber].length} داواکاری / {ordersByTable[tableNumber].length === 1 ? t('order') : t('orders')}
+                      {ordersByTable[tableNumber].length} {t('order') || 'order'}{ordersByTable[tableNumber].length !== 1 ? 's' : ''}
                     </Text>
                   </View>
                 </View>
@@ -428,6 +546,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.backgroundGray,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
   filterBar: {
     flexDirection: 'row',
@@ -831,7 +959,6 @@ const styles = StyleSheet.create({
   readyNotification: {
     backgroundColor: Colors.success,
     padding: 16,
-    margin: 16,
     borderRadius: 12,
     ...Platform.select({
       ios: {

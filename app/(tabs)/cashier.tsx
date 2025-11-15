@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -9,15 +9,16 @@ import {
   Alert, 
   ActivityIndicator,
   Platform,
-  Image
+  Image,
+  Modal
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt, Printer } from 'lucide-react-native';
-import { MENU_ITEMS } from '@/constants/menu';
+import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt, Printer, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { printOrderReceipt } from '@/lib/printer';
+import { useRealtime } from '@/contexts/RealtimeContext';
 
 type OrderItem = {
   id: string;
@@ -28,27 +29,49 @@ type OrderItem = {
   image?: string;
 };
 
+const CATEGORIES = [
+  'appetizers', 'soups', 'salads', 'kebabs', 'rice-dishes', 
+  'stews', 'seafood', 'breads', 'desserts', 'drinks', 'shisha', 'hot-drinks'
+];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  appetizers: 'APPETIZERS',
+  soups: 'SOUPS',
+  salads: 'SALADS',
+  kebabs: 'KEBABS',
+  'rice-dishes': 'RICE DISHES',
+  stews: 'STEWS',
+  seafood: 'SEAFOOD',
+  breads: 'BREADS',
+  desserts: 'DESSERTS',
+  drinks: 'COLD DRINKS',
+  shisha: 'SHISHA',
+  'hot-drinks': 'HOT DRINKS'
+};
+
 export default function CashierScreen() {
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
   const [waiterName, setWaiterName] = useState('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('appetizers');
+  const [customItemModal, setCustomItemModal] = useState(false);
+  const [customItemName, setCustomItemName] = useState('');
+  const [customItemPrice, setCustomItemPrice] = useState('');
+  const [customItemQuantity, setCustomItemQuantity] = useState('1');
+  
+  const { subscribeToOrders } = useRealtime();
 
-  const categories = [
-    'appetizers', 'soups', 'kebabs', 'rice-dishes', 
-    'stews', 'breads', 'desserts', 'drinks'
-  ];
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+    refetchInterval: 10000,
+  });
 
-  const categoryLabels: Record<string, string> = {
-    appetizers: 'APPETIZERS',
-    soups: 'SOUPS',
-    kebabs: 'KEBABS',
-    'rice-dishes': 'RICE DISHES',
-    stews: 'STEWS',
-    breads: 'BREADS',
-    desserts: 'DESSERTS',
-    drinks: 'DRINKS'
-  };
+  useEffect(() => {
+    const unsubscribe = subscribeToOrders(() => {
+      console.log('[Cashier] Real-time menu update');
+      menuQuery.refetch();
+    });
+    return unsubscribe;
+  }, [subscribeToOrders, menuQuery]);
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: () => {
@@ -58,25 +81,36 @@ export default function CashierScreen() {
     },
     onError: (error) => {
       console.error('[Cashier] Order error:', error);
-      Alert.alert('❌ Error', error.message);
+      Alert.alert('❌ Error', error.message || 'Failed to submit order');
     },
   });
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       console.log('[Cashier] Service request created:', data);
-      Alert.alert('✅ Success', 
-        variables.type === 'waiter' ? 'Waiter called' : 'Bill requested'
-      );
+      Alert.alert('✅ Success', 'Request sent successfully');
     },
     onError: (error) => {
       console.error('[Cashier] Service request error:', error);
-      Alert.alert('❌ Error', error.message);
+      Alert.alert('❌ Error', error.message || 'Failed to send request');
     },
   });
 
+  const menuItems = useMemo(() => {
+    if (!menuQuery.data) return [];
+    return menuQuery.data.map((item: any) => ({
+      id: item.id,
+      name: item.name || item.name_kurdish,
+      nameKurdish: item.name_kurdish,
+      category: item.category,
+      price: item.price,
+      image: item.image,
+      available: item.available !== false,
+    }));
+  }, [menuQuery.data]);
+
   const addItem = (itemId: string) => {
-    const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+    const menuItem = menuItems.find(item => item.id === itemId);
     if (!menuItem) return;
 
     const existingItem = orderItems.find(item => item.id === itemId);
@@ -97,6 +131,39 @@ export default function CashierScreen() {
         image: menuItem.image,
       }]);
     }
+  };
+
+  const handleAddCustomItem = () => {
+    if (!customItemName.trim()) {
+      Alert.alert('Error', 'Please enter item name');
+      return;
+    }
+    
+    const price = parseFloat(customItemPrice);
+    if (isNaN(price) || price <= 0) {
+      Alert.alert('Error', 'Please enter valid price');
+      return;
+    }
+    
+    const quantity = parseInt(customItemQuantity);
+    if (isNaN(quantity) || quantity <= 0) {
+      Alert.alert('Error', 'Please enter valid quantity');
+      return;
+    }
+
+    const customId = `custom-${Date.now()}`;
+    setOrderItems([...orderItems, {
+      id: customId,
+      name: customItemName,
+      nameKurdish: customItemName,
+      price: price,
+      quantity: quantity,
+    }]);
+
+    setCustomItemModal(false);
+    setCustomItemName('');
+    setCustomItemPrice('');
+    setCustomItemQuantity('1');
   };
 
   const handlePrintReceipt = async () => {
@@ -170,9 +237,10 @@ export default function CashierScreen() {
       waiterName: waiterName || undefined,
       totalAmount: calculateTotal(),
       items: orderItems.map(item => ({
-        menuItemId: item.id,
+        menuItemId: item.id.startsWith('custom-') ? '35' : item.id,
         quantity: item.quantity,
         price: item.price,
+        notes: item.id.startsWith('custom-') ? `Custom: ${item.name}` : undefined,
       })),
     };
 
@@ -208,7 +276,7 @@ export default function CashierScreen() {
     });
   };
 
-  const filteredMenuItems = MENU_ITEMS.filter(
+  const filteredMenuItems = menuItems.filter(
     item => item.category === selectedCategory && item.available
   );
 
@@ -230,7 +298,7 @@ export default function CashierScreen() {
             style={styles.categoryScroll}
             contentContainerStyle={styles.categoryScrollContent}
           >
-            {categories.map(category => (
+            {CATEGORIES.map(category => (
               <TouchableOpacity
                 key={category}
                 style={[
@@ -243,39 +311,46 @@ export default function CashierScreen() {
                   styles.categoryButtonText,
                   selectedCategory === category && styles.categoryButtonTextActive
                 ]}>
-                  {categoryLabels[category] || category.toUpperCase()}
+                  {CATEGORY_LABELS[category] || category.toUpperCase()}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
-          <ScrollView style={styles.menuScroll}>
-            <View style={styles.menuGrid}>
-              {filteredMenuItems.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.menuItem}
-                  onPress={() => addItem(item.id)}
-                >
-                  {item.image && (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.menuItemImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.menuItemInfo}>
-                    <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
-                    <Text style={styles.menuItemNameKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
-                    <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-                  </View>
-                  <TouchableOpacity style={styles.addButton} onPress={() => addItem(item.id)}>
-                    <Plus size={18} color="#fff" />
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              ))}
+          {menuQuery.isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Loading menu...</Text>
             </View>
-          </ScrollView>
+          ) : (
+            <ScrollView style={styles.menuScroll}>
+              <View style={styles.menuGrid}>
+                {filteredMenuItems.map(item => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.menuItem}
+                    onPress={() => addItem(item.id)}
+                  >
+                    {item.image && (
+                      <Image
+                        source={{ uri: item.image }}
+                        style={styles.menuItemImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                    <View style={styles.menuItemInfo}>
+                      <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
+                      <Text style={styles.menuItemNameKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
+                      <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.addButton} onPress={() => addItem(item.id)}>
+                      <Plus size={18} color="#fff" />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          )}
         </View>
 
         <View style={styles.orderSection}>
@@ -368,6 +443,14 @@ export default function CashierScreen() {
             <View style={styles.actionRow}>
               <TouchableOpacity
                 style={styles.actionButton}
+                onPress={() => setCustomItemModal(true)}
+              >
+                <Plus size={16} color={Colors.primary} />
+                <Text style={styles.actionButtonText}>Add Custom</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
                 onPress={handleCallWaiter}
                 disabled={createServiceRequestMutation.isPending}
               >
@@ -427,6 +510,70 @@ export default function CashierScreen() {
           </View>
         </View>
       </View>
+
+      <Modal
+        visible={customItemModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCustomItemModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>زیادکردنی خواردنی تایبەت / Add Custom Item</Text>
+              <TouchableOpacity onPress={() => setCustomItemModal(false)}>
+                <X size={24} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.inputLabel}>ناو / Name</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={customItemName}
+                onChangeText={setCustomItemName}
+                placeholder="e.g., Special Request"
+                placeholderTextColor={Colors.textLight}
+              />
+
+              <Text style={styles.inputLabel}>نرخ / Price (IQD)</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={customItemPrice}
+                onChangeText={setCustomItemPrice}
+                placeholder="23456"
+                keyboardType="numeric"
+                placeholderTextColor={Colors.textLight}
+              />
+
+              <Text style={styles.inputLabel}>ژمارە / Quantity</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={customItemQuantity}
+                onChangeText={setCustomItemQuantity}
+                placeholder="1"
+                keyboardType="numeric"
+                placeholderTextColor={Colors.textLight}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setCustomItemModal(false)}
+                >
+                  <Text style={styles.modalCancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalConfirmButton}
+                  onPress={handleAddCustomItem}
+                >
+                  <Text style={styles.modalConfirmButtonText}>زیادکردن / Add</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -470,6 +617,16 @@ const styles = StyleSheet.create({
   categoryButtonTextActive: {
     color: '#fff',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+  },
   menuScroll: {
     flex: 1,
   },
@@ -477,13 +634,12 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'flex-start',
+    gap: 12,
   },
   menuItem: {
     width: '31%',
     minWidth: 160,
-    maxWidth: 200,
+    maxWidth: 220,
     backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
@@ -755,6 +911,93 @@ const styles = StyleSheet.create({
     backgroundColor: '#C7C7CC',
   },
   submitButtonText: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: '#1C1C1E',
+    flex: 1,
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#8E8E93',
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  modalInput: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#1C1C1E',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  modalCancelButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F2F2F7',
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
+  },
+  modalConfirmButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+  },
+  modalConfirmButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
     color: '#fff',

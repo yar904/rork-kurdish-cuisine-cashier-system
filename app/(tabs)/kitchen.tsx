@@ -1,16 +1,32 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, ArrowRight, Printer } from 'lucide-react-native';
 import { printKitchenTicket } from '@/lib/printer';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Order, OrderStatus } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
 
+type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
+type Order = {
+  id: string;
+  tableNumber: number;
+  status: OrderStatus;
+  createdAt: Date;
+  waiterName?: string;
+  items: Array<{
+    quantity: number;
+    notes?: string;
+    menuItem: {
+      name: string;
+      nameKurdish: string;
+      price: number;
+    };
+  }>;
+};
 
 export default function KitchenScreen() {
   const { t } = useLanguage();
@@ -20,8 +36,6 @@ export default function KitchenScreen() {
   const previousOrdersRef = useRef<Order[]>([]);
   
   const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
 
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
     refetchInterval: 5000,
@@ -31,9 +45,42 @@ export default function KitchenScreen() {
     onSuccess: () => {
       ordersQuery.refetch();
     },
+    onError: (error) => {
+      console.error('[Kitchen] Update error:', error);
+      Alert.alert('Error', error.message || 'Failed to update order status');
+    },
   });
 
-  const orders = ordersQuery.data || [];
+  const orders = useMemo(() => {
+    if (!ordersQuery.data) return [];
+    
+    return ordersQuery.data.map((o: any): Order => {
+      const orderItems = o.order_items || [];
+      const items = orderItems.map((item: any) => {
+        const menuItem = item.menu_items || item.menu_item;
+        if (!menuItem) return null;
+        
+        return {
+          quantity: item.quantity,
+          notes: item.notes || undefined,
+          menuItem: {
+            name: menuItem.name || menuItem.name_kurdish,
+            nameKurdish: menuItem.name_kurdish,
+            price: menuItem.price,
+          },
+        };
+      }).filter((item: any): item is Order['items'][0] => item !== null);
+      
+      return {
+        id: o.id,
+        tableNumber: o.table_number,
+        status: o.status as OrderStatus,
+        createdAt: new Date(o.created_at),
+        waiterName: o.waiter_name || undefined,
+        items,
+      };
+    });
+  }, [ordersQuery.data]);
 
   useEffect(() => {
     const unsubscribe = subscribeToOrders(() => {
@@ -47,8 +94,8 @@ export default function KitchenScreen() {
   }, [subscribeToOrders, ordersQuery]);
 
   useEffect(() => {
-    const newOrders = orders.filter(o => o.status === 'new');
-    const previousNewOrders = previousOrdersRef.current.filter(o => o.status === 'new');
+    const newOrders = orders.filter(o => o.status === 'pending');
+    const previousNewOrders = previousOrdersRef.current.filter(o => o.status === 'pending');
     
     if (newOrders.length > previousNewOrders.length) {
       const addedOrders = newOrders.filter(no => 
@@ -71,12 +118,12 @@ export default function KitchenScreen() {
 
   const activeOrders = useMemo(() => {
     const filtered = orders.filter(order => 
-      order.status === 'new' || order.status === 'preparing' || order.status === 'ready'
+      order.status === 'pending' || order.status === 'preparing' || order.status === 'ready'
     );
     
     return filtered.sort((a, b) => {
-      if (a.status === 'preparing' && b.status === 'new') return -1;
-      if (a.status === 'new' && b.status === 'preparing') return 1;
+      if (a.status === 'preparing' && b.status === 'pending') return -1;
+      if (a.status === 'pending' && b.status === 'preparing') return 1;
       
       const aItemCount = a.items.reduce((sum, item) => sum + item.quantity, 0);
       const bItemCount = b.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -89,8 +136,8 @@ export default function KitchenScreen() {
     });
   }, [orders]);
 
-  const newOrders = useMemo(() => 
-    activeOrders.filter(o => o.status === 'new'), 
+  const pendingOrders = useMemo(() => 
+    activeOrders.filter(o => o.status === 'pending'), 
     [activeOrders]
   );
   
@@ -106,18 +153,18 @@ export default function KitchenScreen() {
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'new': return Colors.statusNew;
+      case 'pending': return Colors.statusNew;
       case 'preparing': return Colors.statusPreparing;
       case 'ready': return Colors.statusReady;
       case 'served': return Colors.statusServed;
-      case 'paid': return Colors.statusPaid;
+      case 'completed': return Colors.statusPaid;
       default: return Colors.textLight;
     }
   };
 
   const getNextStatus = (status: OrderStatus): OrderStatus | null => {
     switch (status) {
-      case 'new': return 'preparing';
+      case 'pending': return 'preparing';
       case 'preparing': return 'ready';
       case 'ready': return 'served';
       default: return null;
@@ -126,9 +173,9 @@ export default function KitchenScreen() {
 
   const getNextStatusLabel = (status: OrderStatus): string => {
     switch (status) {
-      case 'new': return t('startPreparing');
-      case 'preparing': return t('markReady');
-      case 'ready': return t('markServed');
+      case 'pending': return t('startPreparing') || 'Start Preparing';
+      case 'preparing': return t('markReady') || 'Mark as Ready';
+      case 'ready': return t('markServed') || 'Mark as Served';
       default: return '';
     }
   };
@@ -138,7 +185,7 @@ export default function KitchenScreen() {
     if (nextStatus) {
       try {
         await updateOrderMutation.mutateAsync({
-          orderId,
+          id: orderId,
           status: nextStatus,
         });
         
@@ -179,14 +226,13 @@ export default function KitchenScreen() {
         Alert.alert('Success', `Order updated to ${nextStatus}`);
       } catch (error) {
         console.error('Error updating order status:', error);
-        Alert.alert('Error', 'Failed to update order status');
       }
     }
   };
 
   const handlePrintKitchen = async (order: Order) => {
     try {
-      await printKitchenTicket(order, t('restaurantName'));
+      await printKitchenTicket(order as any, t('restaurantName') || 'Kurdish Cuisine');
     } catch (error) {
       console.error('Print error:', error);
       Alert.alert('Error', 'Failed to print kitchen ticket');
@@ -207,7 +253,7 @@ export default function KitchenScreen() {
         <View style={styles.orderHeaderLeft}>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
             <Text style={styles.statusBadgeText}>
-              {t(order.status as keyof typeof t).toUpperCase()}
+              {order.status.toUpperCase()}
             </Text>
           </View>
           <View>
@@ -234,7 +280,7 @@ export default function KitchenScreen() {
       </TouchableOpacity>
 
       <View style={styles.orderItems}>
-        {order.items.filter(item => item.menuItem).map((item, index) => (
+        {order.items.map((item, index) => (
           <View key={index} style={styles.orderItem}>
             <View style={styles.quantityBadge}>
               <Text style={styles.quantityBadgeText}>{item.quantity}x</Text>
@@ -254,15 +300,38 @@ export default function KitchenScreen() {
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: getStatusColor(getNextStatus(order.status)!) }]}
           onPress={() => handleStatusUpdate(order.id, order.status)}
+          disabled={updateOrderMutation.isPending}
         >
-          <Text style={styles.actionButtonText}>
-            {getNextStatusLabel(order.status)}
-          </Text>
-          <ArrowRight size={20} color="#fff" />
+          {updateOrderMutation.isPending ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Text style={styles.actionButtonText}>
+                {getNextStatusLabel(order.status)}
+              </Text>
+              <ArrowRight size={20} color="#fff" />
+            </>
+          )}
         </TouchableOpacity>
       )}
     </View>
   );
+
+  if (ordersQuery.isLoading) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ 
+          title: `چێشتخانە / Kitchen`,
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: '#fff',
+        }} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading orders...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -287,12 +356,12 @@ export default function KitchenScreen() {
             <View style={styles.column}>
               <View style={styles.columnHeader}>
                 <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusNew }]} />
-                <Text style={styles.columnHeaderText}>داواکاری نوێ / New Orders</Text>
+                <Text style={styles.columnHeaderText}>داواکاری نوێ / Pending</Text>
                 <View style={styles.columnHeaderBadge}>
-                  <Text style={styles.columnHeaderBadgeText}>{newOrders.length}</Text>
+                  <Text style={styles.columnHeaderBadgeText}>{pendingOrders.length}</Text>
                 </View>
               </View>
-              {newOrders.map(renderOrder)}
+              {pendingOrders.map(renderOrder)}
             </View>
 
             <View style={styles.column}>
@@ -330,6 +399,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
   emptyState: {
     flex: 1,
@@ -556,28 +635,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700' as const,
     color: '#fff',
-  },
-  readyNotification: {
-    backgroundColor: Colors.success,
-    padding: 16,
-    margin: 16,
-    borderRadius: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.success,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-  },
-  readyNotificationText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700' as const,
-    textAlign: 'center' as const,
   },
 });
