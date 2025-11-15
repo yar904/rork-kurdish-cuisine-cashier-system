@@ -1133,9 +1133,9 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
                   <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                    <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
+                    <Star size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>{t.viewRatings}</Text>
+                  <Text style={styles.actionButtonText}>{t.viewRatings}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1147,13 +1147,13 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
                   {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color={Colors.cream} />
+                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
+                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.callWaiter.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1166,9 +1166,9 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
                   <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
-                    <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+                    <Utensils size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>{t.yourOrder}</Text>
+                  <Text style={styles.actionButtonText}>{t.yourOrder}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1180,13 +1180,13 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
                   {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color={Colors.cream} />
+                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.requestBill.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1203,9 +1203,9 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.reviews }] }]}>
                   <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                    <Star size={20} color={Colors.gold} strokeWidth={2.5} fill={Colors.gold} />
+                    <Star size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextGold]}>{t.viewRatings}</Text>
+                  <Text style={styles.actionButtonText}>{t.viewRatings}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1217,13 +1217,13 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
                   {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color={Colors.cream} />
+                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color={Colors.cream} strokeWidth={2.5} />
+                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.callWaiter.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1236,9 +1236,9 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.order }] }]}>
                   <View style={[styles.actionIconContainer, styles.actionIconPrimary]}>
-                    <Utensils size={20} color={Colors.primary} strokeWidth={2.5} />
+                    <Utensils size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                   </View>
-                  <Text style={[styles.actionButtonText, styles.actionButtonTextDark]}>{t.yourOrder}</Text>
+                  <Text style={styles.actionButtonText}>{t.yourOrder}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1250,13 +1250,13 @@ export default function CustomerOrderScreen() {
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
                   {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color={Colors.cream} />
+                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color={Colors.cream} strokeWidth={2.5} />
+                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={[styles.actionButtonText, styles.actionButtonTextLight]}>{t.requestBill.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1532,9 +1532,9 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    backgroundColor: 'rgba(61, 1, 1, 0.4)',
+    backgroundColor: 'rgba(61, 1, 1, 0.15)',
     borderBottomWidth: 2,
-    borderBottomColor: 'rgba(212, 175, 55, 0.5)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.35)',
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -2074,14 +2074,14 @@ const styles = StyleSheet.create({
     }),
   },
   actionIconPrimary: {
-    backgroundColor: Colors.gold,
-    borderWidth: 2,
-    borderColor: Colors.goldLight,
+    backgroundColor: 'rgba(212, 175, 55, 0.25)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.6)',
   },
   actionIconSecondary: {
-    backgroundColor: 'rgba(61, 1, 1, 0.8)',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderColor: 'rgba(212, 175, 55, 0.4)',
   },
   actionButtonText: {
     fontSize: 10,
@@ -2090,15 +2090,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     lineHeight: 12,
     marginTop: 2,
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   actionButtonTextLight: {
     color: 'rgba(255, 255, 255, 0.95)',
   },
   actionButtonTextGold: {
-    color: Colors.gold,
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   actionButtonTextDark: {
-    color: Colors.primary,
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   cartFooter: {
     position: 'absolute',
