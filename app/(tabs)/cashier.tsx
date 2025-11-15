@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   },
   categoryScrollContent: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     gap: 8,
   },
   categoryButton: {
@@ -601,7 +601,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   itemsGrid: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 16,
