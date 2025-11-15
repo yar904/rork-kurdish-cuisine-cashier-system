@@ -37,6 +37,7 @@ export default function PublicMenuScreen() {
   const currentCategoryIndex = useRef(0);
   const userScrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const glowTranslateX = useRef(new Animated.Value(0)).current;
 
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
@@ -300,6 +301,12 @@ export default function PublicMenuScreen() {
       const scrollPosition = nextIndex * 122;
       currentCategoryIndex.current = nextIndex;
       
+      Animated.timing(glowTranslateX, {
+        toValue: scrollPosition,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+      
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
         animated: true 
@@ -343,7 +350,10 @@ export default function PublicMenuScreen() {
 
       <View style={styles.categoryScrollSection}>
         <View style={styles.categoryContainer}>
-          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
+          <Animated.View style={[
+            styles.categoryHighlight,
+            { transform: [{ translateX: glowTranslateX }] }
+          ]} />
           <ScrollView 
             ref={categoryScrollViewRef}
             horizontal
@@ -394,6 +404,14 @@ export default function PublicMenuScreen() {
                   setSelectedCategory(category.id);
                   setIsUserScrolling(true);
                   currentCategoryIndex.current = index;
+                  
+                  const scrollPosition = index * 122;
+                  Animated.timing(glowTranslateX, {
+                    toValue: scrollPosition,
+                    duration: 400,
+                    useNativeDriver: true,
+                  }).start();
+                  
                   if (userScrollTimeout.current) {
                     clearTimeout(userScrollTimeout.current);
                   }
@@ -638,9 +656,6 @@ const styles = StyleSheet.create({
         boxShadow: '0 0 50px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.6), 0 0 150px rgba(212, 175, 55, 0.3), inset 0 0 40px rgba(212, 175, 55, 0.2)',
       },
     }),
-  },
-  categoryHighlightHidden: {
-    opacity: 0,
   },
   categoryScroll: {
     backgroundColor: 'transparent',
