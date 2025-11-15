@@ -11,7 +11,7 @@ import { Colors } from '@/constants/colors';
 import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
 import AIRecommendations from '@/components/AIRecommendations';
 import { useMutation } from '@tanstack/react-query';
-import { trpc } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpc';
 
 
 
@@ -166,7 +166,7 @@ export default function CashierScreen() {
   const callWaiterMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
-      return await trpc.serviceRequests.create.mutate({
+      return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
         requestType: 'waiter',
         messageText: 'Staff assistance requested from cashier',
@@ -185,7 +185,7 @@ export default function CashierScreen() {
   const requestBillMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
-      return await trpc.serviceRequests.create.mutate({
+      return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
         requestType: 'bill',
         messageText: 'Bill requested from cashier',
