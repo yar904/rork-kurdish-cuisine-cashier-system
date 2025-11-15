@@ -1635,10 +1635,25 @@ const styles = StyleSheet.create({
     width: 110,
     height: 130,
     borderRadius: 14,
-    borderWidth: 0,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
     zIndex: 1,
     pointerEvents: 'none' as const,
     backgroundColor: 'transparent',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#D4AF37',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 12,
+      },
+      web: {
+        boxShadow: '0 0 24px rgba(212, 175, 55, 0.7), 0 0 48px rgba(212, 175, 55, 0.4)',
+      },
+    }),
   },
   categoryHighlightHidden: {
     opacity: 0,
@@ -1661,20 +1676,6 @@ const styles = StyleSheet.create({
   categoryCardActive: {
     borderWidth: 3,
     borderColor: '#D4AF37',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 28,
-      },
-      android: {
-        elevation: 18,
-      },
-      web: {
-        boxShadow: '0 0 40px rgba(212, 175, 55, 0.9), 0 0 80px rgba(212, 175, 55, 0.6)',
-      },
-    }),
   },
   activeIndicatorDot: {
     position: 'absolute' as const,
