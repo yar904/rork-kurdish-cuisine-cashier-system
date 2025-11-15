@@ -3,18 +3,18 @@ import { fetchRequestHandler } from "npm:@trpc/server@10.45.0/adapters/fetch";
 import { createContext } from "../_shared/trpc-context.ts";
 import { appRouter } from "./router.ts";
 
-const cors = {
+const corsHeaders: HeadersInit = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, x-trpc-source",
 };
 
-serve(async (req: Request) => {
+serve(async (req: Request): Promise<Response> => {
   const url = new URL(req.url);
   const { pathname } = url;
 
   if (req.method === "OPTIONS") {
-    return new Response("", { status: 204, headers: cors });
+    return new Response("ok", { status: 200, headers: corsHeaders });
   }
 
   if (pathname.endsWith("/health")) {
@@ -25,26 +25,40 @@ serve(async (req: Request) => {
       }),
       {
         status: 200,
-        headers: { ...cors, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
 
-  const response = await fetchRequestHandler({
-    endpoint: "/tapse-backend",
-    req,
-    router: appRouter,
-    createContext,
-  });
+  try {
+    const response = await fetchRequestHandler({
+      endpoint: "/tapse-backend",
+      req,
+      router: appRouter,
+      createContext,
+      onError({ error, path }) {
+        console.error(`[tRPC Error] ${path}:`, error);
+      },
+    });
 
-  const headers = new Headers(response.headers);
-  Object.entries(cors).forEach(([key, value]) => {
-    headers.set(key, value);
-  });
+    const headers = new Headers(response.headers);
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      headers.set(key, value);
+    });
 
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  } catch (error) {
+    console.error("[Supabase Function Error]", error);
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
 });
