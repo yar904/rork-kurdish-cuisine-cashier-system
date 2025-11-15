@@ -893,7 +893,7 @@ const styles = StyleSheet.create({
   priceHighlight: {
     marginBottom: 0,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.08)',
+    backgroundColor: 'rgba(58, 0, 16, 0.25)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
