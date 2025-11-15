@@ -1532,7 +1532,7 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    backgroundColor: 'rgba(61, 1, 1, 0.15)',
+    backgroundColor: 'rgba(61, 1, 1, 0.05)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.35)',
     ...Platform.select({
@@ -1717,7 +1717,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(26, 0, 0, 0.95)',
+    backgroundColor: 'rgba(26, 0, 0, 0.75)',
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderTopWidth: 2,
@@ -1937,11 +1937,11 @@ const styles = StyleSheet.create({
   },
 
   menuName: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '800' as const,
-    color: '#E8C968',
-    lineHeight: 20,
+    color: '#FFFFFF',
+    lineHeight: 21,
     letterSpacing: 0.3,
     marginBottom: 0,
     marginTop: 0,
@@ -1949,19 +1949,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     ...Platform.select({
       web: {
-        fontSize: 16,
-        lineHeight: 22,
+        fontSize: 17,
+        lineHeight: 23,
       },
     }),
   },
   menuPrice: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoNaskhArabic_700Bold',
     fontWeight: '700' as const,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#D4AF37',
     letterSpacing: 0.3,
     textAlign: 'center' as const,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'rgba(212, 175, 55, 0.08)',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -1969,7 +1969,7 @@ const styles = StyleSheet.create({
     minWidth: '70%' as const,
     ...Platform.select({
       web: {
-        fontSize: 16,
+        fontSize: 15,
       },
     }),
   },

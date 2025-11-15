@@ -37,12 +37,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: '#D4AF37',
     justifyContent: 'center' as const,
+    minWidth: 50,
     ...Platform.select({
       ios: {
         shadowColor: '#D4AF37',
@@ -63,5 +64,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#D4AF37',
     letterSpacing: 0.3,
+    textAlign: 'center' as const,
+    minWidth: 24,
   },
 });
