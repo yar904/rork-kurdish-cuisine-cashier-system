@@ -666,33 +666,34 @@ const styles = StyleSheet.create({
   },
   menuSection: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
   },
   categoryScroll: {
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E5E5EA',
   },
   categoryScrollContent: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     gap: 8,
   },
   categoryButton: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#4A0000',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#4A0000',
   },
   categoryButtonActive: {
     backgroundColor: Colors.gold,
     borderColor: Colors.gold,
   },
   categoryButtonText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600' as const,
-    color: Colors.textLight,
+    color: '#FFFFFF',
   },
   categoryButtonTextActive: {
     color: '#1a0000',
@@ -705,13 +706,15 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#000000',
   },
   menuScroll: {
     flex: 1,
   },
   menuGrid: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingTop: 6,
+    paddingBottom: 12,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
@@ -720,12 +723,12 @@ const styles = StyleSheet.create({
     width: '31%',
     minWidth: 160,
     maxWidth: 220,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.border,
-    marginBottom: 12,
+    borderColor: '#E5E5EA',
+    marginBottom: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -749,12 +752,12 @@ const styles = StyleSheet.create({
   menuItemName: {
     fontSize: 13,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#000000',
     marginBottom: 2,
   },
   menuItemNameKurdish: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#666666',
     marginBottom: 6,
   },
   menuItemPrice: {
