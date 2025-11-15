@@ -301,6 +301,12 @@ export default function PublicMenuScreen() {
       const scrollPosition = nextIndex * 122;
       currentCategoryIndex.current = nextIndex;
       
+      Animated.timing(glowTranslateX, {
+        toValue: scrollPosition,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+      
       categoryScrollViewRef.current.scrollTo({ 
         x: scrollPosition, 
         animated: true 
@@ -314,7 +320,7 @@ export default function PublicMenuScreen() {
         clearInterval(autoScrollInterval.current);
       }
     };
-  }, [categories, isUserScrolling, categoryScales]);
+  }, [categories, isUserScrolling, categoryScales, glowTranslateX]);
 
   return (
     <ImageBackground
