@@ -10,8 +10,7 @@ import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
 import AIRecommendations from '@/components/AIRecommendations';
-import { useMutation } from '@tanstack/react-query';
-import { trpc, trpcClient } from '@/lib/trpc';
+import { trpc } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 
 
@@ -164,22 +163,7 @@ export default function CashierScreen() {
     }
   };
 
-  const callWaiterMutation = useMutation({
-    mutationFn: async (data: { tableNumber: number }) => {
-      console.log('[Cashier] Calling waiter for table:', data.tableNumber);
-      try {
-        const result = await trpcClient.serviceRequests.create.mutate({
-          tableNumber: data.tableNumber,
-          type: 'waiter',
-          notes: 'Staff assistance requested from cashier',
-        });
-        console.log('[Cashier] ✅ Service request created:', result);
-        return result;
-      } catch (err) {
-        console.error('[Cashier] ❌ tRPC error:', err);
-        throw new Error(err instanceof Error ? err.message : 'Failed to call waiter');
-      }
-    },
+  const callWaiterMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: () => {
       console.log('[Cashier] ✅ Waiter called successfully');
       Alert.alert(t('success'), 'Waiter has been notified');
@@ -190,22 +174,7 @@ export default function CashierScreen() {
     },
   });
 
-  const requestBillMutation = useMutation({
-    mutationFn: async (data: { tableNumber: number }) => {
-      console.log('[Cashier] Requesting bill for table:', data.tableNumber);
-      try {
-        const result = await trpcClient.serviceRequests.create.mutate({
-          tableNumber: data.tableNumber,
-          type: 'bill',
-          notes: 'Bill requested from cashier',
-        });
-        console.log('[Cashier] ✅ Bill request created:', result);
-        return result;
-      } catch (err) {
-        console.error('[Cashier] ❌ tRPC error:', err);
-        throw new Error(err instanceof Error ? err.message : 'Failed to request bill');
-      }
-    },
+  const requestBillMutation = trpc.serviceRequests.create.useMutation({
     onSuccess: () => {
       console.log('[Cashier] ✅ Bill request sent successfully');
       Alert.alert(t('success'), 'Bill request has been sent');
@@ -221,7 +190,12 @@ export default function CashierScreen() {
       Alert.alert('Error', 'Please select a table first');
       return;
     }
-    callWaiterMutation.mutate({ tableNumber: selectedTable });
+    console.log('[Cashier] Calling waiter for table:', selectedTable);
+    callWaiterMutation.mutate({
+      tableNumber: selectedTable,
+      type: 'waiter',
+      notes: 'Staff assistance requested from cashier',
+    });
   };
 
   const handleRequestBill = () => {
@@ -229,7 +203,12 @@ export default function CashierScreen() {
       Alert.alert('Error', 'Please select a table first');
       return;
     }
-    requestBillMutation.mutate({ tableNumber: selectedTable });
+    console.log('[Cashier] Requesting bill for table:', selectedTable);
+    requestBillMutation.mutate({
+      tableNumber: selectedTable,
+      type: 'bill',
+      notes: 'Bill requested from cashier',
+    });
   };
 
 
