@@ -610,6 +610,22 @@ export default function CustomerOrderScreen() {
     });
   }, [categories, categoryScales, filteredMenu, itemScales]);
 
+  useEffect(() => {
+    const firstCategory = categories[0];
+    if (firstCategory) {
+      setSelectedCategory(firstCategory);
+      const scale = categoryScales.get(firstCategory);
+      if (scale) {
+        Animated.spring(scale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  }, []);
+
 
 
   const shouldAnimateEmptyOrder = orderModalVisible && cart.length === 0;
@@ -807,7 +823,7 @@ export default function CustomerOrderScreen() {
 
       <View style={styles.categoryFilterSection}>
         <View style={styles.categoryContainer}>
-          <View style={[styles.categoryHighlight, isUserScrolling && styles.categoryHighlightHidden]} />
+          <View style={styles.categoryHighlight} />
           <ScrollView
             ref={categoryScrollViewRef}
             horizontal
