@@ -9,8 +9,7 @@ interface UseAutoHideTabBarOptions {
 
 export function useAutoHideTabBar(options: UseAutoHideTabBarOptions = {}) {
   const {
-    scrollThreshold = 2,
-    animationDuration = 200,
+    scrollThreshold = 1,
     hideOffset = 100,
   } = options;
 
@@ -24,23 +23,25 @@ export function useAutoHideTabBar(options: UseAutoHideTabBarOptions = {}) {
 
       if (Math.abs(scrollDelta) < scrollThreshold) return;
 
-      if (scrollDelta > 0 && currentScrollY > 50) {
-        Animated.timing(tabBarTranslateY, {
+      if (scrollDelta > 0 && currentScrollY > 30) {
+        Animated.spring(tabBarTranslateY, {
           toValue: hideOffset,
-          duration: animationDuration,
+          tension: 100,
+          friction: 10,
           useNativeDriver: true,
         }).start();
       } else if (scrollDelta < 0) {
-        Animated.timing(tabBarTranslateY, {
+        Animated.spring(tabBarTranslateY, {
           toValue: 0,
-          duration: animationDuration,
+          tension: 120,
+          friction: 10,
           useNativeDriver: true,
         }).start();
       }
 
       lastScrollY.current = currentScrollY;
     },
-    [tabBarTranslateY, scrollThreshold, animationDuration, hideOffset]
+    [tabBarTranslateY, scrollThreshold, hideOffset]
   );
 
   return {
