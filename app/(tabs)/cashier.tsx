@@ -12,6 +12,7 @@ import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
 import AIRecommendations from '@/components/AIRecommendations';
 import { useMutation } from '@tanstack/react-query';
 import { trpc, trpcClient } from '@/lib/trpc';
+import { supabase } from '@/lib/supabase';
 
 
 
@@ -166,11 +167,19 @@ export default function CashierScreen() {
   const callWaiterMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
-      return await trpcClient.serviceRequests.create.mutate({
-        tableNumber: data.tableNumber,
-        type: 'waiter' as const,
-        notes: 'Staff assistance requested from cashier',
-      });
+      const { data: result, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: data.tableNumber,
+          request_type: 'waiter',
+          status: 'pending',
+          message: 'Staff assistance requested from cashier',
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       console.log('[Cashier] ✅ Waiter called successfully');
@@ -185,11 +194,19 @@ export default function CashierScreen() {
   const requestBillMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
-      return await trpcClient.serviceRequests.create.mutate({
-        tableNumber: data.tableNumber,
-        type: 'bill' as const,
-        notes: 'Bill requested from cashier',
-      });
+      const { data: result, error } = await supabase
+        .from('service_requests')
+        .insert({
+          table_number: data.tableNumber,
+          request_type: 'bill',
+          status: 'pending',
+          message: 'Bill requested from cashier',
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       console.log('[Cashier] ✅ Bill request sent successfully');
