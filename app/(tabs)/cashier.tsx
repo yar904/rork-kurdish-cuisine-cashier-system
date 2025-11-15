@@ -8,14 +8,16 @@ import {
   TextInput, 
   Alert, 
   ActivityIndicator,
-  Platform 
+  Platform,
+  Image
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt, Printer } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { printOrderReceipt } from '@/lib/printer';
 
 type OrderItem = {
   id: string;
@@ -23,6 +25,7 @@ type OrderItem = {
   nameKurdish: string;
   price: number;
   quantity: number;
+  image?: string;
 };
 
 export default function CashierScreen() {
@@ -35,6 +38,17 @@ export default function CashierScreen() {
     'appetizers', 'soups', 'kebabs', 'rice-dishes', 
     'stews', 'breads', 'desserts', 'drinks'
   ];
+
+  const categoryLabels: Record<string, string> = {
+    appetizers: 'APPETIZERS',
+    soups: 'SOUPS',
+    kebabs: 'KEBABS',
+    'rice-dishes': 'RICE DISHES',
+    stews: 'STEWS',
+    breads: 'BREADS',
+    desserts: 'DESSERTS',
+    drinks: 'DRINKS'
+  };
 
   const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: () => {
@@ -80,7 +94,43 @@ export default function CashierScreen() {
         nameKurdish: menuItem.nameKurdish,
         price: menuItem.price,
         quantity: 1,
+        image: menuItem.image,
       }]);
+    }
+  };
+
+  const handlePrintReceipt = async () => {
+    if (orderItems.length === 0) {
+      Alert.alert('Error', 'No items to print');
+      return;
+    }
+
+    const mockOrder = {
+      id: `ORD-${Date.now()}`,
+      tableNumber: selectedTable || 0,
+      waiterName: waiterName || undefined,
+      total: calculateTotal(),
+      createdAt: new Date().toISOString(),
+      items: orderItems.map(item => ({
+        menuItem: {
+          name: item.name,
+          nameKurdish: item.nameKurdish,
+          price: item.price,
+        },
+        quantity: item.quantity,
+        notes: undefined,
+      })),
+    };
+
+    try {
+      await printOrderReceipt(mockOrder as any, {
+        name: 'Kurdish Cuisine Cashier',
+        address: 'Your Restaurant Address',
+        phone: '+964 XXX XXX XXXX',
+      });
+    } catch (error) {
+      console.error('Print error:', error);
+      Alert.alert('Print Error', 'Failed to print receipt');
     }
   };
 
@@ -193,7 +243,7 @@ export default function CashierScreen() {
                   styles.categoryButtonText,
                   selectedCategory === category && styles.categoryButtonTextActive
                 ]}>
-                  {category.replace('-', ' ').toUpperCase()}
+                  {categoryLabels[category] || category.toUpperCase()}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -207,12 +257,21 @@ export default function CashierScreen() {
                   style={styles.menuItem}
                   onPress={() => addItem(item.id)}
                 >
-                  <Text style={styles.menuItemName}>{item.name}</Text>
-                  <Text style={styles.menuItemNameKurdish}>{item.nameKurdish}</Text>
-                  <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-                  <View style={styles.addButton}>
-                    <Plus size={20} color="#fff" />
+                  {item.image && (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.menuItemImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <View style={styles.menuItemInfo}>
+                    <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.menuItemNameKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
+                    <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
                   </View>
+                  <TouchableOpacity style={styles.addButton} onPress={() => addItem(item.id)}>
+                    <Plus size={18} color="#fff" />
+                  </TouchableOpacity>
                 </TouchableOpacity>
               ))}
             </View>
@@ -336,6 +395,15 @@ export default function CashierScreen() {
                   </>
                 )}
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handlePrintReceipt}
+                disabled={orderItems.length === 0}
+              >
+                <Printer size={16} color={orderItems.length > 0 ? Colors.primary : '#C7C7CC'} />
+                <Text style={[styles.actionButtonText, orderItems.length === 0 && styles.actionButtonTextDisabled]}>Print</Text>
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity
@@ -409,36 +477,47 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
+    justifyContent: 'flex-start',
   },
   menuItem: {
-    width: '48%',
-    minWidth: 150,
+    width: '31%',
+    minWidth: 160,
+    maxWidth: 200,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 12,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E5E5EA',
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
+  menuItemImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: '#F2F2F7',
+  },
+  menuItemInfo: {
+    padding: 10,
+  },
   menuItemName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700' as const,
     color: '#1C1C1E',
     marginBottom: 2,
   },
   menuItemNameKurdish: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#8E8E93',
     marginBottom: 6,
   },
@@ -446,16 +525,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700' as const,
     color: Colors.primary,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   addButton: {
-    alignSelf: 'flex-end',
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    position: 'absolute' as const,
+    bottom: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   orderSection: {
     width: 380,
@@ -625,7 +717,7 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     marginBottom: 12,
   },
   actionButton: {
@@ -633,18 +725,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     backgroundColor: '#F9F9F9',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
   actionButtonText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600' as const,
     color: '#1C1C1E',
+  },
+  actionButtonTextDisabled: {
+    color: '#C7C7CC',
   },
   submitButton: {
     flexDirection: 'row',
