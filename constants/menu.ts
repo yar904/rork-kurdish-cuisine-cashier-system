@@ -443,6 +443,19 @@ export const MENU_ITEMS: MenuItem[] = [
     image: 'https://images.unsplash.com/photo-1579992357154-faf4bde95b3d?w=400&h=300&fit=crop',
     available: true,
   },
+  {
+    id: '35',
+    name: 'Garlic Bread',
+    nameKurdish: 'نانی سیر',
+    nameArabic: 'خبز الثوم',
+    category: 'breads',
+    price: 23456,
+    description: 'Toasted bread with garlic butter and herbs',
+    descriptionKurdish: 'نانی توستکراو بە کەرەی سیر و گیا',
+    descriptionArabic: 'خبز محمص بزبدة الثوم والأعشاب',
+    image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=400&h=300&fit=crop',
+    available: true,
+  },
 ];
 
 export const CATEGORY_NAMES: Record<string, string> = {

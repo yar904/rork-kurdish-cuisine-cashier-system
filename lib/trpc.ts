@@ -8,14 +8,24 @@ export const trpc = createTRPCReact<AppRouter>();
 const API_URL =
   "https://opsnzswjxzvywvqjvjvy.functions.supabase.co/tapse-backend";
 
+const getBaseUrl = () => {
+  return API_URL;
+};
+
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: API_URL,
-      headers: {
+      url: getBaseUrl(),
+      headers: () => ({
         "Content-Type": "application/json",
-      },
+      }),
       transformer: superjson,
+      fetch(url, options) {
+        return fetch(url, {
+          ...options,
+          credentials: "omit",
+        });
+      },
     }),
   ],
 });
