@@ -30,10 +30,21 @@ serve(async (req: Request) => {
     );
   }
 
-  return fetchRequestHandler({
+  const response = await fetchRequestHandler({
     endpoint: "/tapse-backend",
     req,
     router: appRouter,
     createContext,
+  });
+
+  const headers = new Headers(response.headers);
+  Object.entries(cors).forEach(([key, value]) => {
+    headers.set(key, value);
+  });
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
   });
 });
