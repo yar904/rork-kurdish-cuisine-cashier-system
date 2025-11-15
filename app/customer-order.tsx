@@ -610,57 +610,7 @@ export default function CustomerOrderScreen() {
     });
   }, [categories, categoryScales, filteredMenu, itemScales]);
 
-  useEffect(() => {
-    if (isUserScrolling) {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-        autoScrollInterval.current = null;
-      }
-      return;
-    }
 
-    const scrollToNextCategory = () => {
-      if (!categoryScrollViewRef.current) return;
-      
-      const currentIndex = currentCategoryIndex.current;
-      const nextIndex = (currentIndex + 1) % categories.length;
-      
-      const currentScale = categoryScales.get(categories[currentIndex]);
-      if (currentScale) {
-        Animated.timing(currentScale, {
-          toValue: 0.75,
-          duration: 400,
-          useNativeDriver: true,
-        }).start();
-      }
-      
-      const nextScale = categoryScales.get(categories[nextIndex]);
-      if (nextScale) {
-        Animated.spring(nextScale, {
-          toValue: 1,
-          friction: 8,
-          tension: 100,
-          useNativeDriver: true,
-        }).start();
-      }
-      
-      const scrollPosition = nextIndex * 122;
-      currentCategoryIndex.current = nextIndex;
-      
-      categoryScrollViewRef.current.scrollTo({ 
-        x: scrollPosition, 
-        animated: true 
-      });
-    };
-
-    autoScrollInterval.current = setInterval(scrollToNextCategory, 2500);
-
-    return () => {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-      }
-    };
-  }, [categories, categoryScales, isUserScrolling]);
 
   const shouldAnimateEmptyOrder = orderModalVisible && cart.length === 0;
 
