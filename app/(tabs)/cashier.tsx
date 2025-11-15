@@ -361,7 +361,11 @@ export default function CashierScreen() {
 
           <View style={styles.tableSelector}>
             <Text style={styles.tableSelectorLabel}>مێز / Table:</Text>
-            <View style={styles.tableSelectorButtons}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.tableSelectorButtons}
+            >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(table => (
                 <TouchableOpacity
                   key={table}
@@ -379,7 +383,7 @@ export default function CashierScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           <TextInput
@@ -742,24 +746,24 @@ const styles = StyleSheet.create({
   },
   tableSelector: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
   },
   tableSelectorLabel: {
     fontSize: 13,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#495057',
-    marginBottom: 12,
+    marginBottom: 8,
     letterSpacing: 0.3,
   },
   tableSelectorButtons: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 10,
+    paddingRight: 10,
   },
   tableButton: {
-    width: 54,
-    height: 54,
+    width: 48,
+    height: 48,
     borderRadius: 10,
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
@@ -793,9 +797,9 @@ const styles = StyleSheet.create({
   },
   waiterInput: {
     marginHorizontal: 20,
-    marginTop: 16,
+    marginTop: 8,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: 10,
     backgroundColor: '#F8F9FA',
     borderWidth: 1.5,
