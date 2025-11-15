@@ -965,7 +965,9 @@ export default function CustomerOrderScreen() {
                     )}
                     {category === 'all' && (
                       <View style={styles.categoryCardImagePlaceholder}>
-                        <Text style={styles.categoryCardImagePlaceholderIcon}>🍽️</Text>
+                        <View style={styles.allIconContainer}>
+                          <Grid3x3 size={40} color="#D4AF37" strokeWidth={2.5} />
+                        </View>
                       </View>
                     )}
                     <View style={styles.categoryCardOverlay} />
@@ -1531,7 +1533,7 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    backgroundColor: 'rgba(26, 0, 0, 0.25)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
@@ -1697,12 +1699,15 @@ const styles = StyleSheet.create({
   categoryCardImagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: 'rgba(61, 1, 1, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryCardImagePlaceholderIcon: {
-    fontSize: 48,
+  allIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   categoryCardOverlay: {
     ...StyleSheet.absoluteFillObject,
