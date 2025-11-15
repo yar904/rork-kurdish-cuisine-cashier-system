@@ -1,377 +1,249 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Animated, ActivityIndicator } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  TextInput, 
+  Alert, 
+  ActivityIndicator,
+  Platform 
+} from 'react-native';
+import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, Eye, Bell, Receipt } from 'lucide-react-native';
-import { useRestaurant } from '@/contexts/RestaurantContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt } from 'lucide-react-native';
 import { MENU_ITEMS } from '@/constants/menu';
-import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
-import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
-import AIRecommendations from '@/components/AIRecommendations';
 import { trpc } from '@/lib/trpc';
-import { supabase } from '@/lib/supabase';
 
-
+type OrderItem = {
+  id: string;
+  name: string;
+  nameKurdish: string;
+  price: number;
+  quantity: number;
+};
 
 export default function CashierScreen() {
-  const {
-    currentOrder,
-    selectedTable,
-    setSelectedTable,
-    addItemToCurrentOrder,
-    removeItemFromCurrentOrder,
-    updateItemQuantity,
-    submitOrder,
-    clearCurrentOrder,
-    calculateTotal,
-    orders,
-  } = useRestaurant();
+  const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [waiterName, setWaiterName] = useState('');
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('appetizers');
 
-  const { t, tc } = useLanguage();
-  const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
-  const [waiterName, setWaiterName] = useState<string>('');
-  const scrollViewRef = useRef<ScrollView>(null);
-  const categoryAnimations = useRef<{ [key: string]: Animated.Value }>({});
-  const categoryPositions = useRef<{ [key: string]: number }>({});
+  const categories = [
+    'appetizers', 'soups', 'kebabs', 'rice-dishes', 
+    'stews', 'breads', 'desserts', 'drinks'
+  ];
 
-  const { width } = useWindowDimensions();
-  
-  const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
+  const createOrderMutation = trpc.orders.create.useMutation({
+    onSuccess: () => {
+      Alert.alert('✅ Success', 'Order submitted successfully');
+      setOrderItems([]);
+      setWaiterName('');
+    },
+    onError: (error) => {
+      console.error('[Cashier] Order error:', error);
+      Alert.alert('❌ Error', error.message);
+    },
+  });
 
-  const itemWidth = useMemo(() => {
-    if (isDesktop) return '18%';
-    if (isTablet) return '23%';
-    return '48%';
-  }, [isDesktop, isTablet]);
+  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
+    onSuccess: (data, variables) => {
+      console.log('[Cashier] Service request created:', data);
+      Alert.alert('✅ Success', 
+        variables.type === 'waiter' ? 'Waiter called' : 'Bill requested'
+      );
+    },
+    onError: (error) => {
+      console.error('[Cashier] Service request error:', error);
+      Alert.alert('❌ Error', error.message);
+    },
+  });
 
-  const categories: MenuCategory[] = ['appetizers', 'soups', 'kebabs', 'rice-dishes', 'stews', 'breads', 'desserts', 'drinks'];
+  const addItem = (itemId: string) => {
+    const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+    if (!menuItem) return;
 
-  useEffect(() => {
-    categories.forEach(category => {
-      if (!categoryAnimations.current[category]) {
-        categoryAnimations.current[category] = new Animated.Value(selectedCategory === category ? 1 : 0);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    categories.forEach(category => {
-      const animation = categoryAnimations.current[category];
-      if (animation) {
-        Animated.spring(animation, {
-          toValue: selectedCategory === category ? 1 : 0,
-          useNativeDriver: true,
-          tension: 80,
-          friction: 10,
-        }).start();
-      }
-    });
-  }, [selectedCategory]);
-
-  const handleCategoryPress = (category: MenuCategory, index: number) => {
-    setSelectedCategory(category);
+    const existingItem = orderItems.find(item => item.id === itemId);
     
-    const position = categoryPositions.current[category];
-    if (position !== undefined && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ 
-        x: Math.max(0, position - 50), 
-        animated: true 
-      });
+    if (existingItem) {
+      setOrderItems(orderItems.map(item => 
+        item.id === itemId 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setOrderItems([...orderItems, {
+        id: menuItem.id,
+        name: menuItem.name,
+        nameKurdish: menuItem.nameKurdish,
+        price: menuItem.price,
+        quantity: 1,
+      }]);
     }
   };
 
-  const filteredItems = useMemo(() => {
-    return MENU_ITEMS.filter(item => item.category === selectedCategory && item.available);
-  }, [selectedCategory]);
+  const updateQuantity = (itemId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setOrderItems(orderItems.filter(item => item.id !== itemId));
+    } else {
+      setOrderItems(orderItems.map(item => 
+        item.id === itemId 
+          ? { ...item, quantity: newQuantity }
+          : item
+      ));
+    }
+  };
 
-  const handleSubmitOrder = async () => {
-    if (currentOrder.length === 0) {
-      Alert.alert(t('emptyOrder'), t('pleaseAddItems'));
+  const removeItem = (itemId: string) => {
+    setOrderItems(orderItems.filter(item => item.id !== itemId));
+  };
+
+  const calculateTotal = () => {
+    return orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
+  const handleSubmitOrder = () => {
+    if (!selectedTable) {
+      Alert.alert('Error', 'Please select a table');
       return;
     }
 
-    Alert.alert(
-      t('submitOrder'),
-      `${t('submitOrderConfirm')} ${selectedTable}?`,
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('submit'),
-          onPress: async () => {
-            try {
-              const result = await submitOrder(waiterName || undefined);
-              if (result?.orderId) {
-                Alert.alert(
-                  t('success'),
-                  t('orderSubmitted'),
-                  [
-                    {
-                      text: 'Print Receipt',
-                      onPress: () => handlePrintReceipt(result.orderId),
-                    },
-                    {
-                      text: 'Print Kitchen',
-                      onPress: () => handlePrintKitchen(result.orderId),
-                    },
-                    { text: 'OK' },
-                  ]
-                );
-              } else {
-                Alert.alert(t('success'), t('orderSubmitted'));
-              }
-            } catch (err) {
-              console.error('Submit order error:', err);
-              Alert.alert('Error', 'Failed to submit order');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handlePrintReceipt = async (orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-
-    try {
-      await printOrderReceipt(order, {
-        name: t('restaurantName'),
-        address: 'Erbil, Kurdistan Region, Iraq',
-        phone: '+964 750 123 4567',
-        taxId: 'TAX-12345',
-      });
-    } catch (error) {
-      console.error('Print error:', error);
-      Alert.alert('Error', 'Failed to print receipt');
+    if (orderItems.length === 0) {
+      Alert.alert('Error', 'Please add items to order');
+      return;
     }
+
+    const orderData = {
+      tableNumber: selectedTable,
+      waiterName: waiterName || undefined,
+      totalAmount: calculateTotal(),
+      items: orderItems.map(item => ({
+        menuItemId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+
+    console.log('[Cashier] Submitting order:', orderData);
+    createOrderMutation.mutate(orderData);
   };
-
-  const handlePrintKitchen = async (orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-
-    try {
-      await printKitchenTicket(order, t('restaurantName'));
-    } catch (error) {
-      console.error('Print error:', error);
-      Alert.alert('Error', 'Failed to print kitchen ticket');
-    }
-  };
-
-  const callWaiterMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: () => {
-      console.log('[Cashier] ✅ Waiter called successfully');
-      Alert.alert(t('success'), 'Waiter has been notified');
-    },
-    onError: (error: Error) => {
-      console.error('[Cashier] ❌ Call waiter failed:', error.message);
-      Alert.alert('Error', `Failed to call waiter: ${error.message}`);
-    },
-  });
-
-  const requestBillMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: () => {
-      console.log('[Cashier] ✅ Bill request sent successfully');
-      Alert.alert(t('success'), 'Bill request has been sent');
-    },
-    onError: (error: Error) => {
-      console.error('[Cashier] ❌ Request bill failed:', error.message);
-      Alert.alert('Error', `Failed to request bill: ${error.message}`);
-    },
-  });
 
   const handleCallWaiter = () => {
     if (!selectedTable) {
-      Alert.alert('Error', 'Please select a table first');
+      Alert.alert('Error', 'Please select a table');
       return;
     }
+
     console.log('[Cashier] Calling waiter for table:', selectedTable);
-    callWaiterMutation.mutate({
+    createServiceRequestMutation.mutate({
       tableNumber: selectedTable,
       type: 'waiter',
-      notes: 'Staff assistance requested from cashier',
+      notes: 'Waiter requested from cashier',
     });
   };
 
   const handleRequestBill = () => {
     if (!selectedTable) {
-      Alert.alert('Error', 'Please select a table first');
+      Alert.alert('Error', 'Please select a table');
       return;
     }
+
     console.log('[Cashier] Requesting bill for table:', selectedTable);
-    requestBillMutation.mutate({
+    createServiceRequestMutation.mutate({
       tableNumber: selectedTable,
       type: 'bill',
       notes: 'Bill requested from cashier',
     });
   };
 
-
+  const filteredMenuItems = MENU_ITEMS.filter(
+    item => item.category === selectedCategory && item.available
+  );
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: `کاشێر / Cashier`,
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: '#fff',
-        headerRight: () => (
-          <TouchableOpacity 
-            style={styles.previewButton}
-            onPress={() => router.push('/public-menu')}
-            activeOpacity={0.7}
-          >
-            <Eye size={20} color="#fff" strokeWidth={2} />
-            <Text style={styles.previewButtonText}>Menu</Text>
-          </TouchableOpacity>
-        ),
-      }} />
+      <Stack.Screen 
+        options={{ 
+          title: 'کاشێر / Cashier',
+          headerStyle: { backgroundColor: Colors.primary },
+          headerTintColor: '#fff',
+        }} 
+      />
 
-      <View style={[styles.content, isPhone && styles.contentMobile]}>
+      <View style={styles.content}>
         <View style={styles.menuSection}>
           <ScrollView 
-            ref={scrollViewRef}
             horizontal 
             showsHorizontalScrollIndicator={false}
             style={styles.categoryScroll}
             contentContainerStyle={styles.categoryScrollContent}
           >
-            {categories.map((category, index) => {
-              const animation = categoryAnimations.current[category] || new Animated.Value(0);
-              const isActive = selectedCategory === category;
-              
-              const scale = animation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.92, 1],
-              });
-
-              const opacity = animation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.7, 1],
-              });
-
-              const glowIntensity = animation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 1],
-              });
-
-              return (
-                <TouchableOpacity
-                  key={category}
-                  activeOpacity={0.8}
-                  onPress={() => handleCategoryPress(category, index)}
-                  onLayout={(event) => {
-                    categoryPositions.current[category] = event.nativeEvent.layout.x;
-                  }}
-                >
-                  <Animated.View
-                    style={[
-                      styles.categoryButton,
-                      isActive && styles.categoryButtonActive,
-                      {
-                        transform: [{ scale }],
-                        opacity,
-                      },
-                    ]}
-                  >
-                    {isActive && (
-                      <Animated.View 
-                        style={[
-                          styles.glowEffect,
-                          {
-                            opacity: glowIntensity,
-                          },
-                        ]} 
-                      />
-                    )}
-                    <Animated.Text style={[
-                      styles.categoryButtonText,
-                      isActive && styles.categoryButtonTextActive,
-                      { opacity },
-                    ]}>
-                      {tc(category)}
-                    </Animated.Text>
-                  </Animated.View>
-                </TouchableOpacity>
-              );
-            })}
+            {categories.map(category => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && styles.categoryButtonActive
+                ]}
+                onPress={() => setSelectedCategory(category)}
+              >
+                <Text style={[
+                  styles.categoryButtonText,
+                  selectedCategory === category && styles.categoryButtonTextActive
+                ]}>
+                  {category.replace('-', ' ').toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
 
-          <ScrollView style={styles.itemsScroll} contentContainerStyle={styles.itemsGrid}>
-            {filteredItems.map(item => {
-              return (
+          <ScrollView style={styles.menuScroll}>
+            <View style={styles.menuGrid}>
+              {filteredMenuItems.map(item => (
                 <TouchableOpacity
                   key={item.id}
-                  style={[styles.menuItem, isPhone && styles.menuItemPhone, !isPhone && { width: itemWidth }]}
-                  onPress={() => addItemToCurrentOrder(item.id)}
+                  style={styles.menuItem}
+                  onPress={() => addItem(item.id)}
                 >
-                  {item.image && (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.menuItemImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.menuItemContent}>
-                    <View style={styles.menuItemHeader}>
-                      <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
-                    </View>
-                    <Text style={styles.menuItemKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
-                    <Text style={styles.menuItemDescription} numberOfLines={2}>
-                      {item.description}
-                    </Text>
-                    <View style={styles.addButton}>
-                      <Plus size={24} color="#fff" />
-                    </View>
+                  <Text style={styles.menuItemName}>{item.name}</Text>
+                  <Text style={styles.menuItemNameKurdish}>{item.nameKurdish}</Text>
+                  <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+                  <View style={styles.addButton}>
+                    <Plus size={20} color="#fff" />
                   </View>
                 </TouchableOpacity>
-              );
-            })}
+              ))}
+            </View>
           </ScrollView>
         </View>
 
-        <View style={[
-          styles.orderSection,
-          isTablet && styles.orderSectionTablet,
-          isDesktop && styles.orderSectionDesktop,
-          isPhone && styles.orderSectionMobile,
-        ]}>
+        <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
-            <View style={styles.orderHeaderLeft}>
-              <ShoppingCart size={24} color={Colors.primary} />
-              <Text style={styles.orderTitle}>داواکاری ئێستا / Current Order</Text>
-            </View>
-            {currentOrder.length > 0 && (
-              <TouchableOpacity onPress={clearCurrentOrder}>
-                <Text style={styles.clearButton}>پاککردنەوە / Clear</Text>
-              </TouchableOpacity>
-            )}
+            <ShoppingCart size={20} color={Colors.primary} />
+            <Text style={styles.orderTitle}>داواکاری / Order</Text>
           </View>
 
           <View style={styles.tableSelector}>
-            <Text style={styles.tableSelectorLabel}>مێز / Table:</Text>
-            <ScrollView
-              horizontal
+            <Text style={styles.label}>مێز / Table:</Text>
+            <ScrollView 
+              horizontal 
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tableSelectorButtons}
+              contentContainerStyle={styles.tableButtons}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(table => (
                 <TouchableOpacity
                   key={table}
                   style={[
                     styles.tableButton,
-                    selectedTable === table && styles.tableButtonActive,
+                    selectedTable === table && styles.tableButtonActive
                   ]}
                   onPress={() => setSelectedTable(table)}
                 >
                   <Text style={[
                     styles.tableButtonText,
-                    selectedTable === table && styles.tableButtonTextActive,
+                    selectedTable === table && styles.tableButtonTextActive
                   ]}>
                     {table}
                   </Text>
@@ -381,52 +253,46 @@ export default function CashierScreen() {
           </View>
 
           <TextInput
-            style={styles.waiterInput}
-            placeholder="ناوی گارسۆن / Waiter Name (دڵخواز / Optional)"
+            style={styles.input}
+            placeholder="ناوی گارسۆن / Waiter Name (Optional)"
             value={waiterName}
             onChangeText={setWaiterName}
-            placeholderTextColor={Colors.textLight}
+            placeholderTextColor="#999"
           />
 
-          <AIRecommendations
-            tableNumber={selectedTable}
-            onSelectItem={(itemId) => addItemToCurrentOrder(itemId)}
-          />
-
-          <ScrollView style={styles.orderItems}>
-            {currentOrder.length === 0 ? (
+          <ScrollView style={styles.orderList}>
+            {orderItems.length === 0 ? (
               <View style={styles.emptyOrder}>
-                <Text style={styles.emptyOrderText}>هیچ شتێک لە داواکاریدا نییە</Text>
-                <Text style={styles.emptyOrderSubtext}>No items in order</Text>
+                <Text style={styles.emptyText}>No items</Text>
               </View>
             ) : (
-              currentOrder.map((item, index) => (
-                <View key={index} style={styles.orderItem}>
+              orderItems.map(item => (
+                <View key={item.id} style={styles.orderItem}>
                   <View style={styles.orderItemInfo}>
-                    <Text style={styles.orderItemName}>{item.menuItem.name}</Text>
+                    <Text style={styles.orderItemName}>{item.name}</Text>
                     <Text style={styles.orderItemPrice}>
-                      {formatPrice(item.menuItem.price * item.quantity)}
+                      {formatPrice(item.price * item.quantity)}
                     </Text>
                   </View>
                   <View style={styles.orderItemControls}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity - 1)}
+                      onPress={() => updateQuantity(item.id, item.quantity - 1)}
                     >
                       <Minus size={16} color={Colors.primary} />
                     </TouchableOpacity>
                     <Text style={styles.quantityText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateItemQuantity(index, item.quantity + 1)}
+                      onPress={() => updateQuantity(item.id, item.quantity + 1)}
                     >
                       <Plus size={16} color={Colors.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.deleteButton}
-                      onPress={() => removeItemFromCurrentOrder(index)}
+                      onPress={() => removeItem(item.id)}
                     >
-                      <Trash2 size={16} color={Colors.error} />
+                      <Trash2 size={16} color="#FF3B30" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -434,49 +300,39 @@ export default function CashierScreen() {
             )}
           </ScrollView>
 
-          <View style={styles.orderFooter}>
+          <View style={styles.footer}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>کۆی گشتی / Total:</Text>
-              <Text style={styles.totalAmount}>
-                {formatPrice(calculateTotal(currentOrder))}
-              </Text>
+              <Text style={styles.totalAmount}>{formatPrice(calculateTotal())}</Text>
             </View>
 
-            <View style={styles.actionButtonsRow}>
+            <View style={styles.actionRow}>
               <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  callWaiterMutation.isPending && styles.actionButtonDisabled,
-                ]}
+                style={styles.actionButton}
                 onPress={handleCallWaiter}
-                disabled={callWaiterMutation.isPending}
+                disabled={createServiceRequestMutation.isPending}
               >
-                {callWaiterMutation.isPending ? (
+                {createServiceRequestMutation.isPending ? (
                   <ActivityIndicator size="small" color={Colors.primary} />
                 ) : (
                   <>
-                    <Bell size={18} color={Colors.primary} />
-                    <Text style={styles.actionButtonText}>بانگکردنی گارسۆن</Text>
-                    <Text style={styles.actionButtonTextEn}>Call Waiter</Text>
+                    <Bell size={16} color={Colors.primary} />
+                    <Text style={styles.actionButtonText}>Call Waiter</Text>
                   </>
                 )}
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  requestBillMutation.isPending && styles.actionButtonDisabled,
-                ]}
+                style={styles.actionButton}
                 onPress={handleRequestBill}
-                disabled={requestBillMutation.isPending}
+                disabled={createServiceRequestMutation.isPending}
               >
-                {requestBillMutation.isPending ? (
+                {createServiceRequestMutation.isPending ? (
                   <ActivityIndicator size="small" color={Colors.primary} />
                 ) : (
                   <>
-                    <Receipt size={18} color={Colors.primary} />
-                    <Text style={styles.actionButtonText}>داواکردنی پسوولە</Text>
-                    <Text style={styles.actionButtonTextEn}>Request Bill</Text>
+                    <Receipt size={16} color={Colors.primary} />
+                    <Text style={styles.actionButtonText}>Request Bill</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -485,19 +341,24 @@ export default function CashierScreen() {
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                currentOrder.length === 0 && styles.submitButtonDisabled,
+                (orderItems.length === 0 || createOrderMutation.isPending) && 
+                styles.submitButtonDisabled
               ]}
               onPress={handleSubmitOrder}
-              disabled={currentOrder.length === 0}
+              disabled={orderItems.length === 0 || createOrderMutation.isPending}
             >
-              <Send size={20} color="#fff" />
-              <Text style={styles.submitButtonText}>ناردنی داواکاری / Submit Order</Text>
+              {createOrderMutation.isPending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Send size={20} color="#fff" />
+                  <Text style={styles.submitButtonText}>Submit Order</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
       </View>
-
-
     </View>
   );
 }
@@ -507,155 +368,84 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F7',
   },
-  previewButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginRight: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  previewButtonText: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: '#fff',
-  },
   content: {
     flex: 1,
-    flexDirection: 'row' as const,
-    ...Platform.select({
-      web: {
-        maxWidth: 1920,
-        alignSelf: 'center' as const,
-        width: '100%',
-      },
-    }),
-  },
-  contentMobile: {
-    flexDirection: 'column' as const,
+    flexDirection: 'row',
   },
   menuSection: {
     flex: 1,
     backgroundColor: '#F5F5F7',
   },
   categoryScroll: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E2',
-    maxHeight: 56,
+    borderBottomColor: '#E5E5EA',
   },
   categoryScrollContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
+    padding: 12,
+    gap: 8,
   },
   categoryButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#F5F5F7',
-    marginRight: 6,
-    minWidth: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glowEffect: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-    opacity: 0.08,
+    backgroundColor: '#F2F2F7',
   },
   categoryButtonActive: {
     backgroundColor: Colors.primary,
   },
   categoryButtonText: {
     fontSize: 12,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    color: '#8E8E93',
+    fontWeight: '600' as const,
+    color: '#666',
   },
   categoryButtonTextActive: {
-    color: '#FFFFFF',
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: '#fff',
   },
-  itemsScroll: {
+  menuScroll: {
     flex: 1,
   },
-  itemsGrid: {
+  menuGrid: {
     padding: 12,
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
-    gap: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
   menuItem: {
-    minWidth: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden' as const,
+    width: '48%',
+    minWidth: 150,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
       },
       android: {
         elevation: 2,
       },
-      web: {
-        cursor: 'pointer',
-        boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
-      },
     }),
-  },
-  menuItemPhone: {
-    width: '100%',
-  },
-  menuItemImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#F9F9F9',
-  },
-  menuItemContent: {
-    padding: 10,
-  },
-  menuItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 4,
   },
   menuItemName: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: '#1C1C1E',
-    flex: 1,
-    lineHeight: 18,
+    marginBottom: 2,
+  },
+  menuItemNameKurdish: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 6,
   },
   menuItemPrice: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: Colors.primary,
-    marginLeft: 6,
-  },
-  menuItemKurdish: {
-    fontSize: 11,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#8E8E93',
-    marginBottom: 4,
-  },
-  menuItemDescription: {
-    fontSize: 11,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#8E8E93',
-    lineHeight: 14,
     marginBottom: 8,
   },
   addButton: {
@@ -666,77 +456,39 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
   },
   orderSection: {
     width: 380,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderLeftWidth: 1,
     borderLeftColor: '#E5E5EA',
   },
-  orderSectionTablet: {
-    width: 360,
-  },
-  orderSectionDesktop: {
-    width: 400,
-  },
-  orderSectionMobile: {
-    width: '100%',
-    flex: 0,
-    height: '45%',
-    borderLeftWidth: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-  },
   orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#FAFAFA',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  orderHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+    backgroundColor: '#FAFAFA',
   },
   orderTitle: {
-    fontSize: 15,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 16,
+    fontWeight: '700' as const,
     color: '#1C1C1E',
   },
-  clearButton: {
-    fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_600SemiBold',
-    color: '#FF3B30',
-  },
   tableSelector: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F7',
   },
-  tableSelectorLabel: {
+  label: {
     fontSize: 12,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '600' as const,
     color: '#8E8E93',
     marginBottom: 8,
   },
-  tableSelectorButtons: {
+  tableButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
@@ -757,29 +509,27 @@ const styles = StyleSheet.create({
   },
   tableButtonText: {
     fontSize: 15,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: '#3A3A3C',
   },
   tableButtonTextActive: {
-    color: '#FFFFFF',
+    color: '#fff',
   },
-  waiterInput: {
-    marginHorizontal: 16,
-    marginVertical: 10,
-    paddingHorizontal: 14,
+  input: {
+    marginHorizontal: 12,
+    marginVertical: 8,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
     backgroundColor: '#F2F2F7',
     fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_400Regular',
     color: '#1C1C1E',
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
-  orderItems: {
+  orderList: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    padding: 12,
   },
   emptyOrder: {
     flex: 1,
@@ -787,18 +537,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 40,
   },
-  emptyOrderText: {
+  emptyText: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#C7C7CC',
-    textAlign: 'center' as const,
-  },
-  emptyOrderSubtext: {
-    fontSize: 12,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#D1D1D6',
-    marginTop: 4,
-    textAlign: 'center' as const,
   },
   orderItem: {
     backgroundColor: '#F9F9F9',
@@ -811,20 +552,18 @@ const styles = StyleSheet.create({
   orderItemInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   orderItemName: {
     fontSize: 13,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: '#1C1C1E',
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: Colors.primary,
-    marginLeft: 10,
   },
   orderItemControls: {
     flexDirection: 'row',
@@ -835,7 +574,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -843,7 +582,7 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 15,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: '#1C1C1E',
     minWidth: 28,
     textAlign: 'center' as const,
@@ -859,69 +598,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFCDD2',
   },
-  orderFooter: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
+  footer: {
+    padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#E5E5EA',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    padding: 12,
     backgroundColor: '#F9F9F9',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   totalLabel: {
     fontSize: 14,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '700' as const,
     color: '#8E8E93',
   },
   totalAmount: {
-    fontSize: 22,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontSize: 20,
+    fontWeight: '700' as const,
     color: Colors.primary,
   },
-  actionButtonsRow: {
+  actionRow: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#F9F9F9',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    gap: 5,
-    minHeight: 70,
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
-  actionButtonDisabled: {
-    opacity: 0.5,
-  },
   actionButtonText: {
     fontSize: 11,
-    fontFamily: 'NotoNaskhArabic_700Bold',
+    fontWeight: '600' as const,
     color: '#1C1C1E',
-    textAlign: 'center' as const,
-  },
-  actionButtonTextEn: {
-    fontSize: 10,
-    fontFamily: 'NotoNaskhArabic_400Regular',
-    color: '#8E8E93',
-    textAlign: 'center' as const,
   },
   submitButton: {
     flexDirection: 'row',
@@ -932,32 +655,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
   },
   submitButtonDisabled: {
     backgroundColor: '#C7C7CC',
-    ...Platform.select({
-      ios: {
-        shadowOpacity: 0.1,
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
   },
   submitButtonText: {
     fontSize: 15,
-    fontFamily: 'NotoNaskhArabic_700Bold',
-    color: '#FFFFFF',
+    fontWeight: '700' as const,
+    color: '#fff',
   },
 });
