@@ -658,7 +658,7 @@ export default function CashierScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+    backgroundColor: Colors.background,
   },
   content: {
     flex: 1,
@@ -666,12 +666,12 @@ const styles = StyleSheet.create({
   },
   menuSection: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+    backgroundColor: Colors.background,
   },
   categoryScroll: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundGray,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: Colors.border,
   },
   categoryScrollContent: {
     padding: 12,
@@ -681,18 +681,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.cardBackground,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   categoryButtonActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
+    borderColor: Colors.gold,
   },
   categoryButtonText: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: '#666',
+    color: Colors.textLight,
   },
   categoryButtonTextActive: {
-    color: '#fff',
+    color: '#1a0000',
   },
   loadingContainer: {
     flex: 1,
@@ -702,7 +705,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.textSecondary,
   },
   menuScroll: {
     flex: 1,
@@ -717,11 +720,11 @@ const styles = StyleSheet.create({
     width: '31%',
     minWidth: 160,
     maxWidth: 220,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
     marginBottom: 12,
     ...Platform.select({
       ios: {
@@ -738,7 +741,7 @@ const styles = StyleSheet.create({
   menuItemImage: {
     width: '100%',
     height: 120,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.backgroundGray,
   },
   menuItemInfo: {
     padding: 10,
@@ -746,18 +749,18 @@ const styles = StyleSheet.create({
   menuItemName: {
     fontSize: 13,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
     marginBottom: 2,
   },
   menuItemNameKurdish: {
     fontSize: 11,
-    color: '#8E8E93',
+    color: Colors.textSecondary,
     marginBottom: 6,
   },
   menuItemPrice: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: Colors.gold,
     marginBottom: 4,
   },
   addButton: {
@@ -767,7 +770,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
@@ -784,9 +787,9 @@ const styles = StyleSheet.create({
   },
   orderSection: {
     width: 380,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundGray,
     borderLeftWidth: 1,
-    borderLeftColor: '#E5E5EA',
+    borderLeftColor: Colors.border,
   },
   orderHeader: {
     flexDirection: 'row',
@@ -794,23 +797,23 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    backgroundColor: '#FAFAFA',
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.cardBackground,
   },
   orderTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
   },
   tableSelector: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: Colors.border,
   },
   label: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: '#8E8E93',
+    color: Colors.textSecondary,
     marginBottom: 8,
   },
   tableButtons: {
@@ -822,23 +825,23 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.cardBackground,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
   },
   tableButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: Colors.gold,
+    borderColor: Colors.gold,
   },
   tableButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#3A3A3C',
+    color: Colors.text,
   },
   tableButtonTextActive: {
-    color: '#fff',
+    color: '#1a0000',
   },
   input: {
     marginHorizontal: 12,
@@ -846,11 +849,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.cardBackground,
     fontSize: 13,
-    color: '#1C1C1E',
+    color: Colors.text,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
   },
   orderList: {
     flex: 1,
@@ -864,15 +867,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#C7C7CC',
+    color: Colors.textLight,
   },
   orderItem: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#F2F2F7',
+    borderColor: Colors.border,
   },
   orderItemRow: {
     flexDirection: 'row',
@@ -883,7 +886,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 8,
-    backgroundColor: '#E5E5EA',
+    backgroundColor: Colors.backgroundGray,
   },
   orderItemInfo: {
     flex: 1,
@@ -892,13 +895,13 @@ const styles = StyleSheet.create({
   orderItemName: {
     fontSize: 13,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: Colors.gold,
   },
   orderItemControls: {
     flexDirection: 'row',
@@ -909,16 +912,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundGray,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
   },
   quantityText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
     minWidth: 28,
     textAlign: 'center' as const,
   },
@@ -936,8 +939,8 @@ const styles = StyleSheet.create({
   footer: {
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-    backgroundColor: '#fff',
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.backgroundGray,
   },
   totalRow: {
     flexDirection: 'row',
@@ -945,18 +948,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     padding: 12,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
   },
   totalLabel: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: '#8E8E93',
+    color: Colors.textSecondary,
   },
   totalAmount: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: Colors.gold,
   },
   actionRow: {
     flexDirection: 'row',
@@ -969,24 +972,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
   },
   actionButtonText: {
     fontSize: 10,
     fontWeight: '600' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
   },
   actionButtonTextDisabled: {
     color: '#C7C7CC',
   },
   submitButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -1000,7 +1003,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#fff',
+    color: '#1a0000',
   },
   modalOverlay: {
     flex: 1,
@@ -1010,7 +1013,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
@@ -1037,7 +1040,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '800' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
     flex: 1,
   },
   modalBody: {
@@ -1046,19 +1049,19 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: '#8E8E93',
+    color: Colors.textSecondary,
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.backgroundGray,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1C1C1E',
+    color: Colors.text,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -1069,19 +1072,19 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: Colors.backgroundGray,
     alignItems: 'center',
   },
   modalCancelButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
+    color: Colors.text,
   },
   modalConfirmButton: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     alignItems: 'center',
     ...Platform.select({
       ios: {
@@ -1098,17 +1101,17 @@ const styles = StyleSheet.create({
   modalConfirmButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#fff',
+    color: '#1a0000',
   },
   imagePickerButton: {
     width: '100%',
     height: 180,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
     borderStyle: 'dashed' as const,
     overflow: 'hidden',
-    backgroundColor: '#F9F9F9',
+    backgroundColor: Colors.backgroundGray,
   },
   imagePickerPlaceholder: {
     flex: 1,
@@ -1118,7 +1121,7 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 13,
-    color: '#8E8E93',
+    color: Colors.textSecondary,
     fontWeight: '600' as const,
   },
   customItemPreviewImage: {

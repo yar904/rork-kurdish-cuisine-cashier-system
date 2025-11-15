@@ -87,16 +87,16 @@ export const Colors = {
   cream: '#FFFDD0',
   creamDark: '#F5F3C8',
   
-  background: '#FFFDD0',
-  backgroundGray: '#F5F3C8',
-  cardBackground: '#FFFFFF',
+  background: '#1a0000',
+  backgroundGray: '#2d0000',
+  cardBackground: '#3d0101',
   
-  text: '#1A1A1A',
-  textSecondary: '#666666',
+  text: '#FFFFFF',
+  textSecondary: '#D4AF37',
   textLight: '#999999',
   
-  border: '#E0E0E0',
-  borderLight: '#F0F0F0',
+  border: '#5d0202',
+  borderLight: '#4d0101',
   
   success: '#10B981',
   warning: '#F59E0B',
