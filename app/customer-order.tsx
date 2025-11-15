@@ -626,6 +626,40 @@ export default function CustomerOrderScreen() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isUserScrolling || categories.length <= 1) return;
+
+    autoScrollInterval.current = setInterval(() => {
+      currentCategoryIndex.current = (currentCategoryIndex.current + 1) % categories.length;
+      const nextCategory = categories[currentCategoryIndex.current];
+      
+      categories.forEach((cat, idx) => {
+        const scale = categoryScales.get(cat);
+        if (scale) {
+          Animated.timing(scale, {
+            toValue: idx === currentCategoryIndex.current ? 1 : 0.75,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        }
+      });
+
+      if (categoryScrollViewRef.current) {
+        const scrollPosition = currentCategoryIndex.current * 122;
+        categoryScrollViewRef.current.scrollTo({ 
+          x: scrollPosition, 
+          animated: true 
+        });
+      }
+    }, 3000);
+
+    return () => {
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+      }
+    };
+  }, [isUserScrolling, categories, categoryScales]);
+
 
 
   const shouldAnimateEmptyOrder = orderModalVisible && cart.length === 0;
