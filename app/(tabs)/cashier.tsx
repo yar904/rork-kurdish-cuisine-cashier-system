@@ -12,6 +12,7 @@ import {
   Image,
   Modal
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt, Printer, X } from 'lucide-react-native';
@@ -58,6 +59,7 @@ export default function CashierScreen() {
   const [customItemName, setCustomItemName] = useState('');
   const [customItemPrice, setCustomItemPrice] = useState('');
   const [customItemQuantity, setCustomItemQuantity] = useState('1');
+  const [customItemImage, setCustomItemImage] = useState<string | undefined>(undefined);
   
   const { subscribeToOrders } = useRealtime();
 
@@ -133,6 +135,26 @@ export default function CashierScreen() {
     }
   };
 
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Camera roll permissions are required to add images');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images' as any,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      setCustomItemImage(result.assets[0].uri);
+    }
+  };
+
   const handleAddCustomItem = () => {
     if (!customItemName.trim()) {
       Alert.alert('Error', 'Please enter item name');
@@ -158,12 +180,14 @@ export default function CashierScreen() {
       nameKurdish: customItemName,
       price: price,
       quantity: quantity,
+      image: customItemImage,
     }]);
 
     setCustomItemModal(false);
     setCustomItemName('');
     setCustomItemPrice('');
     setCustomItemQuantity('1');
+    setCustomItemImage(undefined);
   };
 
   const handlePrintReceipt = async () => {
@@ -402,11 +426,20 @@ export default function CashierScreen() {
             ) : (
               orderItems.map(item => (
                 <View key={item.id} style={styles.orderItem}>
-                  <View style={styles.orderItemInfo}>
-                    <Text style={styles.orderItemName}>{item.name}</Text>
-                    <Text style={styles.orderItemPrice}>
-                      {formatPrice(item.price * item.quantity)}
-                    </Text>
+                  <View style={styles.orderItemRow}>
+                    {item.image && (
+                      <Image
+                        source={{ uri: item.image }}
+                        style={styles.orderItemImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                    <View style={styles.orderItemInfo}>
+                      <Text style={styles.orderItemName} numberOfLines={2}>{item.name}</Text>
+                      <Text style={styles.orderItemPrice}>
+                        {formatPrice(item.price * item.quantity)}
+                      </Text>
+                    </View>
                   </View>
                   <View style={styles.orderItemControls}>
                     <TouchableOpacity
@@ -527,6 +560,25 @@ export default function CashierScreen() {
             </View>
 
             <View style={styles.modalBody}>
+              <Text style={styles.inputLabel}>وێنە / Image (Optional)</Text>
+              <TouchableOpacity
+                style={styles.imagePickerButton}
+                onPress={handlePickImage}
+              >
+                {customItemImage ? (
+                  <Image
+                    source={{ uri: customItemImage }}
+                    style={styles.customItemPreviewImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.imagePickerPlaceholder}>
+                    <Plus size={32} color="#C7C7CC" />
+                    <Text style={styles.imagePickerText}>وێنەیەک هەڵبژێرە / Select Image</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
               <Text style={styles.inputLabel}>ناو / Name</Text>
               <TextInput
                 style={styles.modalInput}
@@ -797,10 +849,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F2F2F7',
   },
-  orderItemInfo: {
+  orderItemRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 10,
     marginBottom: 8,
+  },
+  orderItemImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#E5E5EA',
+  },
+  orderItemInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   orderItemName: {
     fontSize: 13,
@@ -1001,5 +1063,30 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700' as const,
     color: '#fff',
+  },
+  imagePickerButton: {
+    width: '100%',
+    height: 180,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E5EA',
+    borderStyle: 'dashed' as const,
+    overflow: 'hidden',
+    backgroundColor: '#F9F9F9',
+  },
+  imagePickerPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  imagePickerText: {
+    fontSize: 13,
+    color: '#8E8E93',
+    fontWeight: '600' as const,
+  },
+  customItemPreviewImage: {
+    width: '100%',
+    height: '100%',
   },
 });
