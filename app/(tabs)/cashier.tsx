@@ -324,40 +324,38 @@ export default function CashierScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen 
-        options={{ 
+options={{ 
           title: 'کاشێر / Cashier',
-          headerStyle: { backgroundColor: Colors.primary },
-          headerTintColor: '#fff',
+          headerStyle: { backgroundColor: '#FFFFFF' },
+          headerTintColor: '#1C1C1E',
+          headerShadowVisible: false,
         }} 
       />
 
       <View style={styles.content}>
-        <View style={styles.menuSection}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryScroll}
-            contentContainerStyle={styles.categoryScrollContent}
-          >
+        <View style={styles.categorySection}>
+          <ScrollView style={styles.categoryList}>
             {CATEGORIES.map(category => (
               <TouchableOpacity
                 key={category}
                 style={[
-                  styles.categoryButton,
-                  selectedCategory === category && styles.categoryButtonActive
+                  styles.categoryItem,
+                  selectedCategory === category && styles.categoryItemActive
                 ]}
                 onPress={() => setSelectedCategory(category)}
               >
                 <Text style={[
-                  styles.categoryButtonText,
-                  selectedCategory === category && styles.categoryButtonTextActive
+                  styles.categoryItemText,
+                  selectedCategory === category && styles.categoryItemTextActive
                 ]}>
                   {CATEGORY_LABELS[category] || category.toUpperCase()}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
 
+        <View style={styles.menuSection}>
           {menuQuery.isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={Colors.primary} />
@@ -385,7 +383,7 @@ export default function CashierScreen() {
                       <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
                     </View>
                     <TouchableOpacity style={styles.addButton} onPress={() => addItem(item.id)}>
-                      <Plus size={18} color="#fff" />
+                      <Plus size={16} color="#fff" />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 ))}
@@ -396,7 +394,7 @@ export default function CashierScreen() {
 
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
-            <ShoppingCart size={20} color={Colors.primary} />
+            <ShoppingCart size={20} color="#1C1C1E" />
             <Text style={styles.orderTitle}>داواکاری / Order</Text>
           </View>
 
@@ -463,20 +461,20 @@ export default function CashierScreen() {
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, item.quantity - 1)}
                     >
-                      <Minus size={16} color={Colors.primary} />
+                      <Minus size={14} color="#1C1C1E" />
                     </TouchableOpacity>
                     <Text style={styles.quantityText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, item.quantity + 1)}
                     >
-                      <Plus size={16} color={Colors.primary} />
+                      <Plus size={14} color="#1C1C1E" />
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.deleteButton}
                       onPress={() => removeItem(item.id)}
                     >
-                      <Trash2 size={16} color="#FF3B30" />
+                      <Trash2 size={14} color="#FFFFFF" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -495,7 +493,7 @@ export default function CashierScreen() {
                 style={styles.actionButton}
                 onPress={() => setCustomItemModal(true)}
               >
-                <Plus size={16} color={Colors.primary} />
+                <Plus size={16} color="#1C1C1E" />
                 <Text style={styles.actionButtonText}>Add Custom</Text>
               </TouchableOpacity>
 
@@ -505,10 +503,10 @@ export default function CashierScreen() {
                 disabled={createServiceRequestMutation.isPending}
               >
                 {createServiceRequestMutation.isPending ? (
-                  <ActivityIndicator size="small" color={Colors.primary} />
+                  <ActivityIndicator size="small" color="#1C1C1E" />
                 ) : (
                   <>
-                    <Bell size={16} color={Colors.primary} />
+                    <Bell size={16} color="#1C1C1E" />
                     <Text style={styles.actionButtonText}>Call Waiter</Text>
                   </>
                 )}
@@ -520,10 +518,10 @@ export default function CashierScreen() {
                 disabled={createServiceRequestMutation.isPending}
               >
                 {createServiceRequestMutation.isPending ? (
-                  <ActivityIndicator size="small" color={Colors.primary} />
+                  <ActivityIndicator size="small" color="#1C1C1E" />
                 ) : (
                   <>
-                    <Receipt size={16} color={Colors.primary} />
+                    <Receipt size={16} color="#1C1C1E" />
                     <Text style={styles.actionButtonText}>Request Bill</Text>
                   </>
                 )}
@@ -534,7 +532,7 @@ export default function CashierScreen() {
                 onPress={handlePrintReceipt}
                 disabled={orderItems.length === 0}
               >
-                <Printer size={16} color={orderItems.length > 0 ? Colors.primary : '#C7C7CC'} />
+                <Printer size={16} color={orderItems.length > 0 ? '#1C1C1E' : '#C7C7CC'} />
                 <Text style={[styles.actionButtonText, orderItems.length === 0 && styles.actionButtonTextDisabled]}>Print</Text>
               </TouchableOpacity>
             </View>
@@ -658,45 +656,109 @@ export default function CashierScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F5F7',
   },
   content: {
     flex: 1,
     flexDirection: 'row',
   },
-  menuSection: {
-    flex: 1,
+  categorySection: {
+    width: 200,
     backgroundColor: '#FFFFFF',
+    borderRightWidth: 1,
+    borderRightColor: '#E5E5EA',
   },
-  categoryScroll: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+  categoryList: {
+    padding: 16,
   },
-  categoryScrollContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    gap: 6,
+  categoryItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#F5F5F7',
   },
-  categoryButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    borderRadius: 16,
-    backgroundColor: '#4A0000',
-    borderWidth: 1,
-    borderColor: '#4A0000',
+  categoryItemActive: {
+    backgroundColor: Colors.primary,
   },
-  categoryButtonActive: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
-  },
-  categoryButtonText: {
-    fontSize: 10,
+  categoryItemText: {
+    fontSize: 14,
     fontWeight: '600' as const,
+    color: '#1C1C1E',
+  },
+  categoryItemTextActive: {
     color: '#FFFFFF',
   },
-  categoryButtonTextActive: {
-    color: '#1a0000',
+  menuSection: {
+    flex: 1,
+    backgroundColor: '#F5F5F7',
+  },
+  menuScroll: {
+    flex: 1,
+  },
+  menuGrid: {
+    padding: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  menuItem: {
+    width: '30%',
+    minWidth: 180,
+    maxWidth: 240,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      },
+    }),
+  },
+  menuItemImage: {
+    width: '100%',
+    height: 130,
+    backgroundColor: '#E5E5EA',
+  },
+  menuItemInfo: {
+    padding: 12,
+    paddingBottom: 56,
+  },
+  menuItemName: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
+    marginBottom: 4,
+  },
+  menuItemNameKurdish: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginBottom: 8,
+  },
+  menuItemPrice: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+  },
+  addButton: {
+    position: 'absolute' as const,
+    bottom: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -706,91 +768,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#333333',
-  },
-  menuScroll: {
-    flex: 1,
-  },
-  menuGrid: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  menuItem: {
-    width: '31%',
-    minWidth: 160,
-    maxWidth: 220,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    marginBottom: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  menuItemImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#F5F5F7',
-  },
-  menuItemInfo: {
-    padding: 10,
-  },
-  menuItemName: {
-    fontSize: 13,
-    fontWeight: '700' as const,
-    color: '#000000',
-    marginBottom: 2,
-  },
-  menuItemNameKurdish: {
-    fontSize: 11,
-    color: '#666666',
-    marginBottom: 6,
-  },
-  menuItemPrice: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.gold,
-    marginBottom: 4,
-  },
-  addButton: {
-    position: 'absolute' as const,
-    bottom: 8,
-    right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.gold,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    color: '#8E8E93',
   },
   orderSection: {
-    width: 380,
-    backgroundColor: '#F5F5F7',
+    width: 360,
+    backgroundColor: '#FFFFFF',
     borderLeftWidth: 1,
     borderLeftColor: '#E5E5EA',
   },
@@ -801,66 +783,60 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
-    backgroundColor: '#FFFFFF',
   },
   orderTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700' as const,
-    color: '#000000',
+    color: '#1C1C1E',
   },
   tableSelector: {
-    padding: 12,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600' as const,
-    color: '#666666',
+    color: '#8E8E93',
     marginBottom: 8,
   },
   tableButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
   },
   tableButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#F5F5F7',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E5E5EA',
   },
   tableButtonActive: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
+    backgroundColor: Colors.primary,
   },
   tableButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700' as const,
-    color: '#000000',
+    color: '#1C1C1E',
   },
   tableButtonTextActive: {
-    color: '#1a0000',
+    color: '#FFFFFF',
   },
   input: {
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     marginVertical: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    fontSize: 13,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    backgroundColor: '#F5F5F7',
+    fontSize: 14,
+    color: '#1C1C1E',
   },
   orderList: {
     flex: 1,
-    padding: 12,
+    padding: 16,
   },
   emptyOrder: {
     flex: 1,
@@ -870,41 +846,38 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#999999',
+    color: '#8E8E93',
   },
   orderItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: '#F5F5F7',
+    borderRadius: 8,
     padding: 12,
     marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   orderItemRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     marginBottom: 8,
   },
   orderItemImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: '#F5F5F7',
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+    backgroundColor: '#E5E5EA',
   },
   orderItemInfo: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   orderItemName: {
-    fontSize: 13,
-    fontWeight: '700' as const,
-    color: '#000000',
-    flex: 1,
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    marginBottom: 4,
   },
   orderItemPrice: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.gold,
+    color: Colors.primary,
   },
   orderItemControls: {
     flexDirection: 'row',
@@ -912,62 +885,55 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#F5F5F7',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   quantityText: {
     fontSize: 15,
-    fontWeight: '700' as const,
-    color: '#000000',
-    minWidth: 28,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    minWidth: 24,
     textAlign: 'center' as const,
   },
   deleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#FFEBEE',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 'auto' as const,
-    borderWidth: 1,
-    borderColor: '#FFCDD2',
   },
   footer: {
-    padding: 12,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#E5E5EA',
-    backgroundColor: '#F5F5F7',
+    backgroundColor: '#FFFFFF',
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    marginBottom: 16,
   },
   totalLabel: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#666666',
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#8E8E93',
   },
   totalAmount: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700' as const,
-    color: Colors.gold,
+    color: Colors.primary,
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 16,
   },
   actionButton: {
     flex: 1,
@@ -975,27 +941,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: '#F5F5F7',
+    borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
+    paddingHorizontal: 8,
   },
   actionButtonText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600' as const,
-    color: '#000000',
+    color: '#1C1C1E',
   },
   actionButtonTextDisabled: {
     color: '#C7C7CC',
   },
   submitButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.gold,
-    borderRadius: 12,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    paddingVertical: 14,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
@@ -1004,9 +967,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#C7C7CC',
   },
   submitButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700' as const,
-    color: '#1a0000',
+    color: '#FFFFFF',
   },
   modalOverlay: {
     flex: 1,
@@ -1017,9 +980,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 16,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 420,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1042,29 +1005,27 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '800' as const,
-    color: '#000000',
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
     flex: 1,
   },
   modalBody: {
     padding: 20,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
-    color: '#666666',
+    color: '#8E8E93',
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
     backgroundColor: '#F5F5F7',
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
+    fontSize: 15,
+    color: '#1C1C1E',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -1074,42 +1035,31 @@ const styles = StyleSheet.create({
   modalCancelButton: {
     flex: 1,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: '#F5F5F7',
     alignItems: 'center',
   },
   modalCancelButtonText: {
     fontSize: 15,
-    fontWeight: '700' as const,
-    color: '#000000',
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
   },
   modalConfirmButton: {
     flex: 1,
     padding: 14,
-    borderRadius: 12,
-    backgroundColor: Colors.gold,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
   },
   modalConfirmButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: '#1a0000',
+    color: '#FFFFFF',
   },
   imagePickerButton: {
     width: '100%',
-    height: 180,
-    borderRadius: 12,
+    height: 160,
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: '#E5E5EA',
     borderStyle: 'dashed' as const,
@@ -1124,8 +1074,8 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 13,
-    color: '#666666',
-    fontWeight: '600' as const,
+    color: '#8E8E93',
+    fontWeight: '500' as const,
   },
   customItemPreviewImage: {
     width: '100%',
