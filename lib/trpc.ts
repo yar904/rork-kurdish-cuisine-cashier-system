@@ -1,17 +1,16 @@
 import { createTRPCReact } from "@trpc/react-query";
-import { httpLink } from "@trpc/client";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 
 export const trpc = createTRPCReact<AppRouter>();
 
 const API_URL =
-  "https://opspnezswjxzvywqjqvjy.functions.supabase.co/tapse-backend";
+  "https://opsnzswjxzvywvqjvjvy.functions.supabase.co/tapse-backend";
 
-export const trpcClient = trpc.createClient({
-  transformer: superjson,
+export const trpcClient = createTRPCClient<AppRouter>({
   links: [
-    httpLink({
+    httpBatchLink({
       url: `${API_URL}/trpc`,
       headers: {
         "Content-Type": "application/json",
