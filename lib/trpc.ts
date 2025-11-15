@@ -9,10 +9,10 @@ const API_URL =
   "https://opspnzswjxzvywqjqvjy.supabase.co/functions/v1/tapse-backend";
 
 export const trpcClient = trpc.createClient({
+  transformer: superjson,
   links: [
     httpLink({
-      url: `${API_URL}/trpc`,
-      transformer: superjson,
+      url: API_URL,
     }),
   ],
 });

@@ -36,8 +36,9 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     const data = ordersQuery.data;
     if (data && data.length > 0) {
       const mappedOrders = data.map(o => {
-          const items: OrderItem[] = o.items.map(item => {
-            const menuItem = menuData.find(m => m.id === item.menu_item_id);
+          const orderItems = o.order_items || [];
+          const items: OrderItem[] = orderItems.map((item: any) => {
+            const menuItem = menuData.find(m => m.id === item.menu_item_id) || item.menu_items;
             if (!menuItem) {
               return null;
             }
@@ -56,7 +57,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
             createdAt: new Date(o.created_at),
             updatedAt: new Date(o.updated_at),
             waiterName: o.waiter_name || undefined,
-            total: o.total,
+            total: o.total_amount,
           };
       });
       setOrders(mappedOrders);
@@ -208,10 +209,11 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
         items: currentOrder.map(item => ({
           menuItemId: item.menuItem.id,
           quantity: item.quantity,
+          price: item.menuItem.price,
           notes: item.notes,
         })),
         waiterName,
-        total,
+        totalAmount: total,
       });
       
       console.log('Order submitted successfully:', result);
@@ -236,19 +238,12 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
         await trpcClient.customerHistory.save.mutate({
           tableNumber: selectedTable,
           orderId: result.orderId,
-          orderData: {
-            id: result.orderId,
-            tableNumber: selectedTable,
-            items: currentOrder.map(item => ({
-              name: item.menuItem.name,
-              quantity: item.quantity,
-              price: item.menuItem.price,
-              notes: item.notes,
-            })),
-            total,
-            status: 'new',
-            createdAt: new Date().toISOString(),
-          },
+          items: currentOrder.map(item => ({
+            name: item.menuItem.name,
+            quantity: item.quantity,
+            price: item.menuItem.price,
+            notes: item.notes,
+          })),
         });
         console.log('Order history saved for customer');
       } catch (historyError) {
@@ -277,7 +272,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
     
     try {
       await updateOrderStatusMutation.mutateAsync({
-        orderId,
+        id: orderId,
         status,
       });
       console.log(`Order ${orderId} status updated to ${status} in database`);
