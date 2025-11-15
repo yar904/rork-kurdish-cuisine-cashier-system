@@ -482,18 +482,20 @@ export default function PublicMenuScreen() {
       <View style={styles.cartContainer}>
         <TouchableOpacity
           style={styles.switchButton}
+          onPress={() => router.push('/(tabs)/cashier')}
+          activeOpacity={0.8}
+        >
+          <ShoppingCart size={18} color="#fff" strokeWidth={2.5} />
+          <Text style={styles.switchButtonText}>Staff</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.switchButton, { backgroundColor: 'rgba(212, 175, 55, 0.15)' }]}
           onPress={() => router.push('/customer-order?table=1')}
           activeOpacity={0.8}
         >
-          <ShoppingCart size={20} color="#fff" strokeWidth={2.5} />
-          <Text style={styles.switchButtonText}>Customer View</Text>
+          <Text style={styles.switchButtonText}>Order</Text>
         </TouchableOpacity>
-        
-        {cart.length > 0 && (
-          <View style={styles.cartBadge}>
-            <Text style={styles.cartBadgeText}>{cart.reduce((sum, c) => sum + c.quantity, 0)}</Text>
-          </View>
-        )}
       </View>
 
       <Modal
@@ -1081,6 +1083,8 @@ const styles = StyleSheet.create({
     top: 100,
     right: 16,
     zIndex: 999,
+    flexDirection: 'column' as const,
+    gap: 8,
   },
   switchButton: {
     flexDirection: 'row' as const,

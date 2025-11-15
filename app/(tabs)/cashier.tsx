@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Animated } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send, Eye } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -28,6 +28,7 @@ export default function CashierScreen() {
   } = useRestaurant();
 
   const { t, tc } = useLanguage();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('appetizers');
   const [waiterName, setWaiterName] = useState<string>('');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -168,6 +169,16 @@ export default function CashierScreen() {
         title: `کاشێر / Cashier`,
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: '#fff',
+        headerRight: () => (
+          <TouchableOpacity 
+            style={styles.previewButton}
+            onPress={() => router.push('/public-menu')}
+            activeOpacity={0.7}
+          >
+            <Eye size={20} color="#fff" strokeWidth={2} />
+            <Text style={styles.previewButtonText}>Menu</Text>
+          </TouchableOpacity>
+        ),
       }} />
 
       <View style={[styles.content, isPhone && styles.contentMobile]}>
@@ -399,7 +410,22 @@ export default function CashierScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
+  },
+  previewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginRight: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  previewButtonText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: '#fff',
   },
   content: {
     flex: 1,
@@ -417,72 +443,73 @@ const styles = StyleSheet.create({
   },
   menuSection: {
     flex: 2,
-    backgroundColor: Colors.background,
+    backgroundColor: '#fff',
     minWidth: 0,
   },
   categoryScroll: {
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    backgroundColor: Colors.background,
+    borderBottomColor: '#E5E5E7',
+    backgroundColor: '#fff',
     ...Platform.select({
       web: {
-        boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
       },
     }),
   },
   categoryScrollContent: {
-    padding: 12,
-    gap: 8,
+    padding: 16,
+    gap: 10,
   },
   categoryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 18,
-    backgroundColor: Colors.backgroundGray,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F7',
     marginRight: 10,
-    minWidth: 110,
+    minWidth: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: 'transparent',
     position: 'relative',
     overflow: 'visible',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 2,
+        elevation: 1,
       },
       web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
         transition: 'none',
       },
     }),
   },
   glowEffect: {
     position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderRadius: 22,
+    top: -3,
+    left: -3,
+    right: -3,
+    bottom: -3,
+    borderRadius: 23,
     backgroundColor: Colors.primary,
+    opacity: 0.15,
     ...Platform.select({
       ios: {
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: 12,
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 0 20px rgba(204, 153, 51, 0.6), 0 0 40px rgba(204, 153, 51, 0.3)',
+        boxShadow: '0 0 12px rgba(204, 153, 51, 0.4), 0 0 24px rgba(204, 153, 51, 0.2)',
       },
     }),
   },
@@ -492,15 +519,15 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 6,
+        elevation: 4,
       },
       web: {
-        boxShadow: '0 4px 16px rgba(204, 153, 51, 0.4)',
+        boxShadow: '0 2px 12px rgba(204, 153, 51, 0.3)',
       },
     }),
   },
@@ -516,30 +543,30 @@ const styles = StyleSheet.create({
   },
   itemsScroll: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   itemsGrid: {
-    padding: 24,
+    padding: 20,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
-    gap: 20,
+    gap: 16,
   },
   menuItem: {
     minWidth: 220,
-    backgroundColor: Colors.background,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: Colors.border,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E5E7',
     overflow: 'hidden' as const,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 4,
+        elevation: 2,
       },
       web: {
         cursor: 'pointer',
@@ -552,11 +579,11 @@ const styles = StyleSheet.create({
   },
   menuItemImage: {
     width: '100%',
-    height: 180,
-    backgroundColor: Colors.backgroundGray,
+    height: 160,
+    backgroundColor: '#F5F5F7',
   },
   menuItemContent: {
-    padding: 16,
+    padding: 14,
   },
   menuItemHeader: {
     flexDirection: 'row',
@@ -611,21 +638,21 @@ const styles = StyleSheet.create({
     }),
   },
   orderSection: {
-    width: 440,
-    backgroundColor: Colors.background,
-    borderLeftWidth: 2,
-    borderColor: Colors.border,
+    width: 420,
+    backgroundColor: '#fff',
+    borderLeftWidth: 1,
+    borderColor: '#E5E5E7',
     ...Platform.select({
       web: {
-        boxShadow: '-4px 0 12px rgba(0,0,0,0.08)',
+        boxShadow: '-2px 0 8px rgba(0,0,0,0.06)',
       },
     }),
   },
   orderSectionTablet: {
-    width: 400,
+    width: 380,
   },
   orderSectionDesktop: {
-    width: 480,
+    width: 440,
   },
   orderSectionMobile: {
     width: '100%',
