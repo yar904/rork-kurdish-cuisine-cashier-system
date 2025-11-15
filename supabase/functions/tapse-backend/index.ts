@@ -1,36 +1,39 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { fetchRequestHandler } from "npm:@trpc/server@10.45.0/adapters/fetch";
-import { appRouter } from "./router.ts";
 import { createContext } from "../_shared/trpc-context.ts";
+import { appRouter } from "./router.ts";
 
-const corsHeaders = {
+const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, x-trpc-source",
-  "Access-Control-Allow-Credentials": "true",
 };
 
-serve(async (req) => {
-  const { pathname } = new URL(req.url);
+serve(async (req: Request) => {
+  const url = new URL(req.url);
+  const { pathname } = url;
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response("", { status: 204, headers: cors });
   }
 
   if (pathname.endsWith("/health")) {
-    return new Response(JSON.stringify({ status: "ok", path: pathname }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { ...cors, "Content-Type": "application/json" },
+      }
+    );
   }
 
   return fetchRequestHandler({
-    endpoint: "/trpc",
+    endpoint: "/tapse-backend",
     req,
     router: appRouter,
     createContext,
-    responseMeta() {
-      return { headers: corsHeaders };
-    },
   });
 });
