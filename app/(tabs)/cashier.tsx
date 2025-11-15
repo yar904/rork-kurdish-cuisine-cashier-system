@@ -168,8 +168,8 @@ export default function CashierScreen() {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
       return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
-        requestType: 'waiter',
-        messageText: 'Staff assistance requested from cashier',
+        type: 'waiter',
+        notes: 'Staff assistance requested from cashier',
       });
     },
     onSuccess: () => {
@@ -187,8 +187,8 @@ export default function CashierScreen() {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
       return await trpcClient.serviceRequests.create.mutate({
         tableNumber: data.tableNumber,
-        requestType: 'bill',
-        messageText: 'Bill requested from cashier',
+        type: 'bill',
+        notes: 'Bill requested from cashier',
       });
     },
     onSuccess: () => {
