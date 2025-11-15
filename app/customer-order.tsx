@@ -964,11 +964,10 @@ export default function CustomerOrderScreen() {
                       />
                     )}
                     {category === 'all' && (
-                      <View style={styles.categoryCardImagePlaceholder}>
-                        <View style={styles.allIconContainer}>
-                          <Grid3x3 size={40} color="#D4AF37" strokeWidth={2.5} />
-                        </View>
-                      </View>
+                      <Image 
+                        source={{ uri: 'https://images.unsplash.com/photo-1546069901-120a39972937?w=400&h=300&fit=crop' }} 
+                        style={styles.categoryCardImage}
+                      />
                     )}
                     <View style={styles.categoryCardOverlay} />
                     <View style={styles.categoryCardLabel}>
@@ -1533,7 +1532,7 @@ const styles = StyleSheet.create({
   },
 
   customHeader: {
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(61, 1, 1, 0.4)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(212, 175, 55, 0.5)',
     ...Platform.select({
