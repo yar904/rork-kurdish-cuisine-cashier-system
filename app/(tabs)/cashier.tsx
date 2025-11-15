@@ -168,7 +168,7 @@ export default function CashierScreen() {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
       return await trpcClient.serviceRequests.create({
         tableNumber: data.tableNumber,
-        type: 'waiter',
+        type: 'waiter' as const,
         notes: 'Staff assistance requested from cashier',
       });
     },
@@ -187,7 +187,7 @@ export default function CashierScreen() {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
       return await trpcClient.serviceRequests.create({
         tableNumber: data.tableNumber,
-        type: 'bill',
+        type: 'bill' as const,
         notes: 'Bill requested from cashier',
       });
     },
