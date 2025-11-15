@@ -167,54 +167,52 @@ export default function CashierScreen() {
   const callWaiterMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Calling waiter for table:', data.tableNumber);
-      const { data: result, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: data.tableNumber,
-          request_type: 'waiter',
-          status: 'pending',
-          message: 'Staff assistance requested from cashier',
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return result;
+      try {
+        const result = await trpcClient.serviceRequests.create.mutate({
+          tableNumber: data.tableNumber,
+          type: 'waiter',
+          notes: 'Staff assistance requested from cashier',
+        });
+        console.log('[Cashier] ✅ Service request created:', result);
+        return result;
+      } catch (err) {
+        console.error('[Cashier] ❌ tRPC error:', err);
+        throw new Error(err instanceof Error ? err.message : 'Failed to call waiter');
+      }
     },
     onSuccess: () => {
       console.log('[Cashier] ✅ Waiter called successfully');
       Alert.alert(t('success'), 'Waiter has been notified');
     },
-    onError: (error: any) => {
-      console.error('[Cashier] ❌ Call waiter failed:', error);
-      Alert.alert('Error', 'Failed to call waiter. Please try again.');
+    onError: (error: Error) => {
+      console.error('[Cashier] ❌ Call waiter failed:', error.message);
+      Alert.alert('Error', `Failed to call waiter: ${error.message}`);
     },
   });
 
   const requestBillMutation = useMutation({
     mutationFn: async (data: { tableNumber: number }) => {
       console.log('[Cashier] Requesting bill for table:', data.tableNumber);
-      const { data: result, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: data.tableNumber,
-          request_type: 'bill',
-          status: 'pending',
-          message: 'Bill requested from cashier',
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return result;
+      try {
+        const result = await trpcClient.serviceRequests.create.mutate({
+          tableNumber: data.tableNumber,
+          type: 'bill',
+          notes: 'Bill requested from cashier',
+        });
+        console.log('[Cashier] ✅ Bill request created:', result);
+        return result;
+      } catch (err) {
+        console.error('[Cashier] ❌ tRPC error:', err);
+        throw new Error(err instanceof Error ? err.message : 'Failed to request bill');
+      }
     },
     onSuccess: () => {
       console.log('[Cashier] ✅ Bill request sent successfully');
       Alert.alert(t('success'), 'Bill request has been sent');
     },
-    onError: (error: any) => {
-      console.error('[Cashier] ❌ Request bill failed:', error);
-      Alert.alert('Error', 'Failed to request bill. Please try again.');
+    onError: (error: Error) => {
+      console.error('[Cashier] ❌ Request bill failed:', error.message);
+      Alert.alert('Error', `Failed to request bill: ${error.message}`);
     },
   });
 
