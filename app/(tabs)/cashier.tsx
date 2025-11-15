@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Image, useWindowDimensions, Platform, Animated, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
-import { ShoppingCart, Plus, Minus, Trash2, Send, Eye } from 'lucide-react-native';
+import { ShoppingCart, Plus, Minus, Trash2, Send, Eye, Bell, Receipt } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MENU_ITEMS } from '@/constants/menu';
@@ -10,6 +10,8 @@ import { MenuCategory } from '@/types/restaurant';
 import { Colors } from '@/constants/colors';
 import { printOrderReceipt, printKitchenTicket } from '@/lib/printer';
 import AIRecommendations from '@/components/AIRecommendations';
+import { useMutation } from '@tanstack/react-query';
+import { trpc } from '@/lib/trpc';
 
 
 
@@ -159,6 +161,60 @@ export default function CashierScreen() {
       console.error('Print error:', error);
       Alert.alert('Error', 'Failed to print kitchen ticket');
     }
+  };
+
+  const callWaiterMutation = useMutation({
+    mutationFn: async (data: { tableNumber: number }) => {
+      console.log('[Cashier] Calling waiter for table:', data.tableNumber);
+      return await trpc.serviceRequests.create.mutate({
+        tableNumber: data.tableNumber,
+        requestType: 'waiter',
+        messageText: 'Staff assistance requested from cashier',
+      });
+    },
+    onSuccess: () => {
+      console.log('[Cashier] ✅ Waiter called successfully');
+      Alert.alert(t('success'), 'Waiter has been notified');
+    },
+    onError: (error: any) => {
+      console.error('[Cashier] ❌ Call waiter failed:', error);
+      Alert.alert('Error', 'Failed to call waiter. Please try again.');
+    },
+  });
+
+  const requestBillMutation = useMutation({
+    mutationFn: async (data: { tableNumber: number }) => {
+      console.log('[Cashier] Requesting bill for table:', data.tableNumber);
+      return await trpc.serviceRequests.create.mutate({
+        tableNumber: data.tableNumber,
+        requestType: 'bill',
+        messageText: 'Bill requested from cashier',
+      });
+    },
+    onSuccess: () => {
+      console.log('[Cashier] ✅ Bill request sent successfully');
+      Alert.alert(t('success'), 'Bill request has been sent');
+    },
+    onError: (error: any) => {
+      console.error('[Cashier] ❌ Request bill failed:', error);
+      Alert.alert('Error', 'Failed to request bill. Please try again.');
+    },
+  });
+
+  const handleCallWaiter = () => {
+    if (!selectedTable) {
+      Alert.alert('Error', 'Please select a table first');
+      return;
+    }
+    callWaiterMutation.mutate({ tableNumber: selectedTable });
+  };
+
+  const handleRequestBill = () => {
+    if (!selectedTable) {
+      Alert.alert('Error', 'Please select a table first');
+      return;
+    }
+    requestBillMutation.mutate({ tableNumber: selectedTable });
   };
 
 
@@ -387,6 +443,47 @@ export default function CashierScreen() {
                 {formatPrice(calculateTotal(currentOrder))}
               </Text>
             </View>
+
+            <View style={styles.actionButtonsRow}>
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  callWaiterMutation.isPending && styles.actionButtonDisabled,
+                ]}
+                onPress={handleCallWaiter}
+                disabled={callWaiterMutation.isPending}
+              >
+                {callWaiterMutation.isPending ? (
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                ) : (
+                  <>
+                    <Bell size={18} color={Colors.primary} />
+                    <Text style={styles.actionButtonText}>بانگکردنی گارسۆن</Text>
+                    <Text style={styles.actionButtonTextEn}>Call Waiter</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  requestBillMutation.isPending && styles.actionButtonDisabled,
+                ]}
+                onPress={handleRequestBill}
+                disabled={requestBillMutation.isPending}
+              >
+                {requestBillMutation.isPending ? (
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                ) : (
+                  <>
+                    <Receipt size={18} color={Colors.primary} />
+                    <Text style={styles.actionButtonText}>داواکردنی پسوولە</Text>
+                    <Text style={styles.actionButtonTextEn}>Request Bill</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               style={[
                 styles.submitButton,
@@ -912,5 +1009,50 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'NotoNaskhArabic_700Bold',
     color: '#fff',
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    gap: 6,
+    minHeight: 80,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  actionButtonDisabled: {
+    opacity: 0.6,
+    borderColor: Colors.textLight,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontFamily: 'NotoNaskhArabic_700Bold',
+    color: Colors.primary,
+    textAlign: 'center' as const,
+  },
+  actionButtonTextEn: {
+    fontSize: 12,
+    fontFamily: 'NotoNaskhArabic_400Regular',
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
   },
 });
