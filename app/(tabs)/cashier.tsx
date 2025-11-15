@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   itemsGrid: {
-    padding: 20,
+    padding: 12,
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: 16,
