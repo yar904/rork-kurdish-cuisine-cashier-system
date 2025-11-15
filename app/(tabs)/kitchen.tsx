@@ -41,6 +41,12 @@ export default function KitchenScreen() {
     refetchInterval: 5000,
   });
 
+  useEffect(() => {
+    console.log('[Kitchen] Orders query data:', ordersQuery.data);
+    console.log('[Kitchen] Orders query loading:', ordersQuery.isLoading);
+    console.log('[Kitchen] Orders query error:', ordersQuery.error);
+  }, [ordersQuery.data, ordersQuery.isLoading, ordersQuery.error]);
+
   const updateOrderMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
       ordersQuery.refetch();

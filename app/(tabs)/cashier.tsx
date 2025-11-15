@@ -100,15 +100,20 @@ export default function CashierScreen() {
 
   const menuItems = useMemo(() => {
     if (!menuQuery.data) return [];
-    return menuQuery.data.map((item: any) => ({
-      id: item.id,
-      name: item.name || item.name_kurdish,
-      nameKurdish: item.name_kurdish,
-      category: item.category,
-      price: item.price,
-      image: item.image,
-      available: item.available !== false,
-    }));
+    console.log('[Cashier] Raw menu data:', menuQuery.data);
+    return menuQuery.data.map((item: any) => {
+      const menuItem = {
+        id: item.id,
+        name: item.name || item.name_kurdish,
+        nameKurdish: item.name_kurdish,
+        category: item.category,
+        price: item.price,
+        image: item.image,
+        available: item.available !== false,
+      };
+      console.log('[Cashier] Mapped menu item:', menuItem);
+      return menuItem;
+    });
   }, [menuQuery.data]);
 
   const addItem = (itemId: string) => {
@@ -307,9 +312,14 @@ export default function CashierScreen() {
     });
   };
 
-  const filteredMenuItems = menuItems.filter(
-    item => item.category === selectedCategory && item.available
-  );
+  const filteredMenuItems = useMemo(() => {
+    const filtered = menuItems.filter(
+      item => item.category === selectedCategory && item.available
+    );
+    console.log('[Cashier] Selected category:', selectedCategory);
+    console.log('[Cashier] Filtered items:', filtered.length);
+    return filtered;
+  }, [menuItems, selectedCategory]);
 
   return (
     <View style={styles.container}>

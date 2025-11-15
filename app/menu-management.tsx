@@ -96,38 +96,37 @@ export default function MenuManagementScreen() {
   }, [checkAccess]);
 
   const handleSave = () => {
-    if (!editingItem.nameKurdish) {
-      Alert.alert('Validation Error', 'Kurdish name is required. Other languages are optional.');
-      return;
-    }
+    console.log('[MenuManagement] Save button clicked');
+    console.log('[MenuManagement] Editing item:', editingItem);
 
-    if (!editingItem.descriptionKurdish) {
-      Alert.alert('Validation Error', 'Kurdish description is required. Other languages are optional.');
+    if (!editingItem.nameKurdish.trim()) {
+      Alert.alert('Validation Error / خطا', 'تکایە ناوی کوردی بنووسە / Please enter Kurdish name');
       return;
     }
 
     const price = parseFloat(editingItem.price);
     if (isNaN(price) || price < 0) {
-      Alert.alert('Validation Error', 'Please enter a valid price');
+      Alert.alert('Validation Error / خطا', 'تکایە نرخێکی دروست بنووسە / Please enter a valid price');
       return;
     }
 
     const data = {
       name: editingItem.name || editingItem.nameKurdish,
       nameKurdish: editingItem.nameKurdish,
-      nameArabic: editingItem.nameArabic || editingItem.nameKurdish,
       category: editingItem.category,
       price: price,
-      description: editingItem.description || editingItem.descriptionKurdish,
-      descriptionKurdish: editingItem.descriptionKurdish,
-      descriptionArabic: editingItem.descriptionArabic || editingItem.descriptionKurdish,
-      image: editingItem.image || null,
+      description: editingItem.description || editingItem.descriptionKurdish || '',
+      image: editingItem.image || undefined,
       available: editingItem.available,
     };
 
+    console.log('[MenuManagement] Submitting data:', data);
+
     if (editingItem.id) {
+      console.log('[MenuManagement] Updating item ID:', editingItem.id);
       updateMutation.mutate({ id: editingItem.id, ...data });
     } else {
+      console.log('[MenuManagement] Creating new item');
       createMutation.mutate(data);
     }
   };
