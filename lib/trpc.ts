@@ -11,7 +11,7 @@ const API_URL =
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: `${API_URL}/trpc`,
+      url: API_URL,
       headers: {
         "Content-Type": "application/json",
       },
