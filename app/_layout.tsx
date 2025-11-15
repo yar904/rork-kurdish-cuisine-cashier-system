@@ -52,7 +52,19 @@ export default function RootLayout() {
     LogBox.ignoreLogs([
       'PostHog',
       'PostHogFetchNetworkError',
+      'Network error while fetching PostHog',
+      'Error while flushing PostHog',
     ]);
+
+    if (__DEV__) {
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        if (typeof args[0] === 'string' && args[0].includes('PostHog')) {
+          return;
+        }
+        originalConsoleError(...args);
+      };
+    }
   }, []);
 
   const [fontsLoaded] = useFonts({
