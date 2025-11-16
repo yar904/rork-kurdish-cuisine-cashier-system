@@ -5,7 +5,7 @@ import { Colors } from "@/constants/colors";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -33,18 +33,10 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.gold,
-        tabBarInactiveTintColor: 'rgba(212, 175, 55, 0.45)',
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarBackground: () => (
-          <LinearGradient
-            colors={['rgba(61, 1, 1, 0.98)', 'rgba(26, 0, 0, 0.98)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.tabBarBackground}
-          />
-        ),
         tabBarItemStyle: styles.tabBarItem,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarIconStyle: styles.tabBarIcon,
@@ -115,32 +107,24 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.select({ ios: 90, default: 70 }) as number,
-    backgroundColor: 'transparent',
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.7)',
-    elevation: 0,
+    backgroundColor: '#007AFF',
+    borderTopWidth: 0,
     paddingBottom: Platform.select({ ios: 26, default: 12 }) as number,
     paddingTop: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: -8 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 20,
+        elevation: 8,
       },
       web: {
-        boxShadow: '0 -8px 32px rgba(212, 175, 55, 0.45)',
+        boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
       },
     }),
-  },
-  tabBarBackground: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(212, 175, 55, 0.7)',
   },
   tabBarItem: {
     paddingVertical: 5,
@@ -149,12 +133,9 @@ const styles = StyleSheet.create({
   },
   tabBarLabel: {
     fontSize: 11,
-    fontWeight: '800' as const,
-    letterSpacing: 0.4,
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
     marginTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   tabBarIcon: {
     marginBottom: 2,
