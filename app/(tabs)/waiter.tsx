@@ -4,10 +4,10 @@ import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ClipboardList, DollarSign, Users, X, Bell, Receipt } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
+import { POSContainer, POSCard, POSButton, POSHeader, POSStatusBadge } from '@/components/pos-ui';
 
 type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
@@ -187,12 +187,12 @@ export default function WaiterScreen() {
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'pending': return Colors.statusNew;
-      case 'preparing': return Colors.statusPreparing;
-      case 'ready': return Colors.statusReady;
-      case 'served': return Colors.statusServed;
-      case 'completed': return Colors.statusPaid;
-      default: return Colors.textLight;
+      case 'pending': return '#FF9500';
+      case 'preparing': return '#5856D6';
+      case 'ready': return '#34C759';
+      case 'served': return '#007AFF';
+      case 'completed': return '#10B981';
+      default: return '#8E8E93';
     }
   };
 
@@ -348,27 +348,34 @@ export default function WaiterScreen() {
 
   if (ordersQuery.isLoading || serviceRequestsQuery.isLoading) {
     return (
-      <View style={styles.container}>
+      <POSContainer>
         <Stack.Screen options={{ 
           title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
-          headerStyle: { backgroundColor: Colors.primary },
+          headerStyle: { backgroundColor: '#3D0101' },
           headerTintColor: '#fff',
+          headerShadowVisible: false,
         }} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color="#3D0101" />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
-      </View>
+      </POSContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <POSContainer>
       <Stack.Screen options={{ 
         title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
-        headerStyle: { backgroundColor: Colors.primary },
+        headerStyle: { backgroundColor: '#3D0101' },
         headerTintColor: '#fff',
+        headerShadowVisible: false,
       }} />
+
+      <POSHeader
+        title="Waiter Dashboard / پێشخزمەتکار"
+        subtitle={`${orders.filter(o => o.status !== 'completed').length} active tables`}
+      />
 
       {(pendingServiceRequests.length > 0 || readyOrders.length > 0) && (
         <View style={styles.alertsSection}>
@@ -538,14 +545,14 @@ export default function WaiterScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </POSContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   loadingContainer: {
     flex: 1,
@@ -555,31 +562,31 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
   },
   filterBar: {
     flexDirection: 'row',
     padding: 16,
     gap: 8,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E5E5EA',
   },
   filterButton: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     alignItems: 'center',
   },
   filterButtonActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3D0101',
   },
   filterButtonText: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   filterButtonTextActive: {
     color: '#fff',
@@ -596,12 +603,12 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginTop: 16,
   },
   emptyStateText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginTop: 8,
   },
   tablesContainer: {
