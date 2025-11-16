@@ -7,8 +7,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTables } from '@/contexts/TableContext';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Colors } from '@/constants/colors';
+
 import { TableStatus } from '@/types/restaurant';
+import { POSContainer, POSCard, POSButton } from '@/components/pos-ui';
 
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
@@ -54,11 +55,11 @@ export default function AdminScreen() {
 
   const getTableStatusColor = (status: TableStatus) => {
     switch (status) {
-      case 'available': return Colors.success;
-      case 'occupied': return Colors.error;
-      case 'reserved': return Colors.warning;
-      case 'needs-cleaning': return Colors.info;
-      default: return Colors.textLight;
+      case 'available': return '#10B981';
+      case 'occupied': return '#EF4444';
+      case 'reserved': return '#F59E0B';
+      case 'needs-cleaning': return '#0A84FF';
+      default: return '#8E8E93';
     }
   };
 
@@ -171,9 +172,10 @@ export default function AdminScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: user.role === 'admin' ? 'Super Admin' : 'Restaurant Manager',
-        headerStyle: { backgroundColor: Colors.primary },
+        title: user.role === 'admin' ? 'Admin' : 'Manager',
+        headerStyle: { backgroundColor: '#0A84FF' },
         headerTintColor: '#fff',
+        headerShadowVisible: false,
         headerRight: () => (
           <View style={styles.headerRight}>
             {newOrdersCount > 0 && (
@@ -696,7 +698,7 @@ export default function AdminScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   content: {
     flex: 1,
@@ -722,8 +724,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '800' as const,
-    color: Colors.text,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
   },
   tableGrid: {
     flexDirection: 'row',
@@ -734,11 +736,11 @@ const styles = StyleSheet.create({
   tableCard: {
     flexBasis: '47%',
     minWidth: 160,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -775,11 +777,11 @@ const styles = StyleSheet.create({
   tableNumber: {
     fontSize: 20,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   tableCapacity: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   tableStatusText: {
@@ -789,7 +791,7 @@ const styles = StyleSheet.create({
   },
   tableOrders: {
     fontSize: 12,
-    color: Colors.primary,
+    color: '#0A84FF',
     fontWeight: '600' as const,
     marginTop: 4,
   },
@@ -808,15 +810,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     padding: 10,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   actionButtonText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   quickActions: {
     flexDirection: 'column',
@@ -829,7 +831,7 @@ const styles = StyleSheet.create({
   },
   quickActionCard: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -849,16 +851,16 @@ const styles = StyleSheet.create({
   quickActionTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     textAlign: 'center' as const,
   },
   quickActionSubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
   },
   legend: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     marginTop: 16,
@@ -866,7 +868,7 @@ const styles = StyleSheet.create({
   legendTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 12,
   },
   legendItems: {
@@ -886,7 +888,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   legendHint: {
@@ -945,12 +947,12 @@ const styles = StyleSheet.create({
   userInfoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     gap: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -970,11 +972,11 @@ const styles = StyleSheet.create({
   userRole: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   userSubtext: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   logoutButtonCard: {
@@ -983,10 +985,10 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   logoutButtonText: {
     fontSize: 14,
@@ -997,11 +999,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   credentialCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1023,13 +1025,13 @@ const styles = StyleSheet.create({
   credentialRole: {
     fontSize: 18,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     flex: 1,
   },
   eyeButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   credentialContent: {
     marginBottom: 12,
@@ -1037,7 +1039,7 @@ const styles = StyleSheet.create({
   credentialLabel: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginBottom: 8,
   },
   passwordContainer: {
@@ -1047,18 +1049,18 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   copyButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#0A84FF',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -1070,7 +1072,7 @@ const styles = StyleSheet.create({
   },
   credentialDescription: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontStyle: 'italic' as const,
     lineHeight: 18,
   },
@@ -1078,7 +1080,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#0A84FF',
     borderRadius: 12,
     padding: 16,
     marginTop: 8,
@@ -1107,7 +1109,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   managerInfoCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
@@ -1129,12 +1131,12 @@ const styles = StyleSheet.create({
   managerInfoTitle: {
     fontSize: 24,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     textAlign: 'center' as const,
   },
   managerInfoDescription: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
     lineHeight: 22,
     marginBottom: 8,
@@ -1153,7 +1155,7 @@ const styles = StyleSheet.create({
   permissionText: {
     fontSize: 15,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   exportGrid: {
     flexDirection: 'row',
@@ -1166,13 +1168,13 @@ const styles = StyleSheet.create({
   exportCard: {
     flexBasis: '47%',
     minWidth: 160,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     gap: 12,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1192,17 +1194,17 @@ const styles = StyleSheet.create({
   exportCardTitle: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     textAlign: 'center' as const,
   },
   exportCardSubtitle: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
     fontWeight: '600' as const,
   },
   menuManagementCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
@@ -1224,12 +1226,12 @@ const styles = StyleSheet.create({
   menuManagementTitle: {
     fontSize: 22,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     textAlign: 'center' as const,
   },
   menuManagementSubtitle: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
     lineHeight: 22,
   },
@@ -1241,13 +1243,13 @@ const styles = StyleSheet.create({
   managementCard: {
     flexBasis: '47%',
     minWidth: 160,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     gap: 12,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -1263,12 +1265,12 @@ const styles = StyleSheet.create({
   managementCardTitle: {
     fontSize: 18,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     textAlign: 'center' as const,
   },
   managementCardSubtitle: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
     fontWeight: '600' as const,
   },
