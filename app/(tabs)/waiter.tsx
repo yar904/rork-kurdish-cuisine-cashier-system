@@ -7,8 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
-import { POSContainer, POSCard, POSButton, POSHeader, POSStatusBadge } from '@/components/pos-ui';
-import { Colors } from '@/constants/colors';
+import { POSContainer, POSCard, POSButton } from '@/components/pos-ui';
 
 type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
@@ -188,11 +187,11 @@ export default function WaiterScreen() {
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'pending': return '#FF9500';
-      case 'preparing': return '#5856D6';
-      case 'ready': return '#34C759';
-      case 'served': return '#007AFF';
-      case 'completed': return '#10B981';
+      case 'pending': return '#3B82F6';
+      case 'preparing': return '#F59E0B';
+      case 'ready': return '#10B981';
+      case 'served': return '#8B5CF6';
+      case 'completed': return '#6B7280';
       default: return '#8E8E93';
     }
   };
@@ -266,12 +265,12 @@ export default function WaiterScreen() {
     const canServe = order.status === 'ready';
     
     return (
-      <View key={order.id} style={styles.orderCard}>
+      <POSCard key={order.id} style={{ marginBottom: 12 }}>
         <View style={styles.orderHeader}>
           <View style={styles.orderHeaderLeft}>
             <View style={[styles.statusDot, { backgroundColor: getStatusColor(order.status) }]} />
             <View>
-              <Text style={styles.orderNumber}>#{order.id}</Text>
+              <Text style={styles.orderNumber}>#{order.id.slice(0, 8)}</Text>
               <Text style={styles.orderTime}>{formatTime(order.createdAt)}</Text>
             </View>
           </View>
@@ -281,7 +280,7 @@ export default function WaiterScreen() {
         </View>
 
         {order.waiterName && (
-          <Text style={styles.waiterName}>پێشخزمەتکار / {t('waiter')}: {order.waiterName}</Text>
+          <Text style={styles.waiterName}>Waiter: {order.waiterName}</Text>
         )}
 
         <View style={styles.orderItems}>
@@ -298,52 +297,39 @@ export default function WaiterScreen() {
 
         <View style={styles.orderFooter}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>کۆی گشتی / {t('total')}:</Text>
+            <Text style={styles.totalLabel}>Total:</Text>
             <Text style={styles.totalAmount}>{formatPrice(order.total)}</Text>
           </View>
           {canServe && (
-            <TouchableOpacity
-              style={styles.serveButton}
+            <POSButton
+              variant="success"
+              title="Mark as Served"
               onPress={() => handleServeOrder(order.id)}
-              disabled={updateOrderMutation.isPending}
-            >
-              {updateOrderMutation.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <ClipboardList size={16} color="#fff" />
-                  <Text style={styles.paidButtonText}>پێشکەش کراوە / Mark as Served</Text>
-                </>
-              )}
-            </TouchableOpacity>
+              loading={updateOrderMutation.isPending}
+              style={{ marginTop: 8 }}
+            />
           )}
           {canMarkPaid && (
             <View style={styles.orderActions}>
-              <TouchableOpacity
-                style={styles.splitButton}
+              <POSButton
+                variant="secondary"
+                title="Split Bill"
                 onPress={() => handleSplitBill(order)}
-              >
-                <Users size={16} color={Colors.primary} />
-                <Text style={styles.splitButtonText}>دابەشکردنی حیساب / Split Bill</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.paidButton}
+                icon={<Users size={16} color="#2563EB" />}
+                style={{ flex: 1 }}
+              />
+              <POSButton
+                variant="success"
+                title="Mark as Paid"
                 onPress={() => handleMarkPaid(order.id)}
-                disabled={updateOrderMutation.isPending}
-              >
-                {updateOrderMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <DollarSign size={16} color="#fff" />
-                    <Text style={styles.paidButtonText}>دراوە / {t('markAsPaid') || 'Mark as Paid'}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+                loading={updateOrderMutation.isPending}
+                icon={<DollarSign size={16} color="#fff" />}
+                style={{ flex: 1 }}
+              />
             </View>
           )}
         </View>
-      </View>
+      </POSCard>
     );
   };
 
@@ -351,13 +337,13 @@ export default function WaiterScreen() {
     return (
       <POSContainer>
         <Stack.Screen options={{ 
-          title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
-          headerStyle: { backgroundColor: '#3D0101' },
+          title: 'Waiter Dashboard',
+          headerStyle: { backgroundColor: '#2563EB' },
           headerTintColor: '#fff',
           headerShadowVisible: false,
         }} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3D0101" />
+          <ActivityIndicator size="large" color="#2563EB" />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </POSContainer>
@@ -367,32 +353,34 @@ export default function WaiterScreen() {
   return (
     <POSContainer>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName') || 'Restaurant'} - پێشخزمەتکار / Waiter`,
-        headerStyle: { backgroundColor: '#3D0101' },
+        title: 'Waiter Dashboard',
+        headerStyle: { backgroundColor: '#2563EB' },
         headerTintColor: '#fff',
         headerShadowVisible: false,
       }} />
 
-      <POSHeader
-        title="Waiter Dashboard / پێشخزمەتکار"
-        subtitle={`${orders.filter(o => o.status !== 'completed').length} active tables`}
-      />
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Waiter Dashboard</Text>
+          <Text style={styles.headerSubtitle}>{orders.filter(o => o.status !== 'completed').length} active tables</Text>
+        </View>
+      </View>
 
       {(pendingServiceRequests.length > 0 || readyOrders.length > 0) && (
         <View style={styles.alertsSection}>
           {readyOrders.length > 0 && (
             <View style={styles.readyNotification}>
               <Text style={styles.readyNotificationText}>
-                ✅ {readyOrders.length} داواکاری / order{readyOrders.length > 1 ? 's' : ''} ئامادەیە / ready to serve!
+                ✅ {readyOrders.length} order{readyOrders.length > 1 ? 's' : ''} ready to serve!
               </Text>
             </View>
           )}
           {pendingServiceRequests.map(request => (
             <View key={request.id} style={styles.serviceRequestAlert}>
               <View style={styles.serviceRequestHeader}>
-                {request.type === 'bill' ? <Receipt size={20} color={Colors.warning} /> : <Bell size={20} color={Colors.warning} />}
+                {request.type === 'bill' ? <Receipt size={20} color="#F59E0B" /> : <Bell size={20} color="#F59E0B" />}
                 <Text style={styles.serviceRequestText}>
-                  میز / Table {request.tableNumber} - {request.type === 'bill' ? '💵 داواکاری حیساب / Bill Request' : '👤 بانگهێشتی پێشخزمەتکار / Waiter Call'}
+                  Table {request.tableNumber} - {request.type === 'bill' ? 'Bill Request' : 'Waiter Call'}
                 </Text>
               </View>
               <TouchableOpacity
@@ -403,7 +391,7 @@ export default function WaiterScreen() {
                 {updateServiceRequestMutation.isPending ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.resolveButtonText}>چارەسەرکراوە / Resolved</Text>
+                  <Text style={styles.resolveButtonText}>Resolved</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -420,7 +408,7 @@ export default function WaiterScreen() {
             styles.filterButtonText,
             selectedFilter === 'active' && styles.filterButtonTextActive,
           ]}>
-            چالاک / {t('activeOrders') || 'Active'}
+            Active
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -431,7 +419,7 @@ export default function WaiterScreen() {
             styles.filterButtonText,
             selectedFilter === 'all' && styles.filterButtonTextActive,
           ]}>
-            هەموو / {t('allOrders') || 'All'}
+            All
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -442,7 +430,7 @@ export default function WaiterScreen() {
             styles.filterButtonText,
             selectedFilter === 'completed' && styles.filterButtonTextActive,
           ]}>
-            تەواو / {t('completed') || 'Completed'}
+            Completed
           </Text>
         </TouchableOpacity>
       </View>
@@ -450,10 +438,10 @@ export default function WaiterScreen() {
       <ScrollView style={styles.content}>
         {tableNumbers.length === 0 ? (
           <View style={styles.emptyState}>
-            <ClipboardList size={64} color={Colors.textLight} />
-            <Text style={styles.emptyStateTitle}>هیچ داواکارییەک نییە / {t('noOrders') || 'No Orders'}</Text>
+            <ClipboardList size={64} color="#8E8E93" />
+            <Text style={styles.emptyStateTitle}>No Orders</Text>
             <Text style={styles.emptyStateText}>
-              داواکارییەکان لێرە دەردەکەون / {t('ordersWillAppear') || 'Orders will appear here'}
+              Orders will appear here
             </Text>
           </View>
         ) : (
@@ -461,10 +449,10 @@ export default function WaiterScreen() {
             {tableNumbers.map(tableNumber => (
               <View key={tableNumber} style={[styles.tableSection, !isPhone && styles.tableSectionTablet]}>
                 <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderText}>میز / {t('table') || 'Table'} {tableNumber}</Text>
+                  <Text style={styles.tableHeaderText}>Table {tableNumber}</Text>
                   <View style={styles.tableHeaderBadge}>
                     <Text style={styles.tableHeaderBadgeText}>
-                      {ordersByTable[tableNumber].length} {t('order') || 'order'}{ordersByTable[tableNumber].length !== 1 ? 's' : ''}
+                      {ordersByTable[tableNumber].length} order{ordersByTable[tableNumber].length !== 1 ? 's' : ''}
                     </Text>
                   </View>
                 </View>
@@ -486,30 +474,30 @@ export default function WaiterScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>دابەشکردنی حیساب / Split Bill</Text>
+              <Text style={styles.modalTitle}>Split Bill</Text>
               <TouchableOpacity onPress={() => setSplitBillModal({ visible: false, order: null })}>
-                <X size={24} color={Colors.text} />
+                <X size={24} color="#1C1C1E" />
               </TouchableOpacity>
             </View>
 
             {splitBillModal.order && (
               <View style={styles.modalBody}>
-                <Text style={styles.modalLabel}>داواکاری / Order #{splitBillModal.order.id}</Text>
-                <Text style={styles.modalTotalLabel}>کۆی گشتی / Total: {formatPrice(splitBillModal.order.total)}</Text>
+                <Text style={styles.modalLabel}>Order #{splitBillModal.order.id.slice(0, 8)}</Text>
+                <Text style={styles.modalTotalLabel}>Total: {formatPrice(splitBillModal.order.total)}</Text>
 
-                <Text style={styles.modalLabel}>دابەش بکە بۆ چەند کەس؟ / Split among how many people?</Text>
+                <Text style={styles.modalLabel}>Split among how many people?</Text>
                 <TextInput
                   style={styles.splitInput}
                   keyboardType="number-pad"
                   value={splitPeople}
                   onChangeText={setSplitPeople}
-                  placeholder="ژمارەی کەسەکان / Number of people"
-                  placeholderTextColor={Colors.textLight}
+                  placeholder="Number of people"
+                  placeholderTextColor="#8E8E93"
                 />
 
                 {parseInt(splitPeople) > 0 && (
                   <View style={styles.splitResult}>
-                    <Text style={styles.splitResultLabel}>بڕی هەر کەسێک / Amount per person:</Text>
+                    <Text style={styles.splitResultLabel}>Amount per person:</Text>
                     <Text style={styles.splitResultAmount}>
                       {formatPrice(parseFloat(calculateSplitAmount(splitBillModal.order.total, parseInt(splitPeople))))}
                     </Text>
@@ -517,29 +505,29 @@ export default function WaiterScreen() {
                 )}
 
                 <View style={styles.modalButtons}>
-                  <TouchableOpacity
-                    style={styles.modalCancelButton}
+                  <POSButton
+                    variant="secondary"
+                    title="Cancel"
                     onPress={() => setSplitBillModal({ visible: false, order: null })}
-                  >
-                    <Text style={styles.modalCancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalConfirmButton}
+                    style={{ flex: 1 }}
+                  />
+                  <POSButton
+                    variant="primary"
+                    title="Confirm"
                     onPress={() => {
                       const people = parseInt(splitPeople);
                       if (people > 0) {
                         const amountPerPerson = calculateSplitAmount(splitBillModal.order!.total, people);
                         Alert.alert(
-                          'دابەشکردنی حیساب / Bill Split',
-                          `کۆی گشتی / Total: ${formatPrice(splitBillModal.order!.total)}\nکەسەکان / People: ${people}\nهەر کەسێک / Per Person: ${formatPrice(parseFloat(amountPerPerson))}`,
+                          'Bill Split',
+                          `Total: ${formatPrice(splitBillModal.order!.total)}\nPeople: ${people}\nPer Person: ${formatPrice(parseFloat(amountPerPerson))}`,
                           [{ text: 'OK' }]
                         );
                         setSplitBillModal({ visible: false, order: null });
                       }
                     }}
-                  >
-                    <Text style={styles.modalConfirmButtonText}>پەسەندکردن / Confirm</Text>
-                  </TouchableOpacity>
+                    style={{ flex: 1 }}
+                  />
                 </View>
               </View>
             )}
@@ -551,10 +539,6 @@ export default function WaiterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F7',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -564,6 +548,22 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 14,
     color: '#8E8E93',
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 4,
   },
   filterBar: {
     flexDirection: 'row',
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterButtonActive: {
-    backgroundColor: '#3D0101',
+    backgroundColor: '#2563EB',
   },
   filterButtonText: {
     fontSize: 14,
@@ -650,10 +650,10 @@ const styles = StyleSheet.create({
   tableHeaderText: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   tableHeaderBadge: {
-    backgroundColor: Colors.cream,
+    backgroundColor: '#F5F5F7',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -661,25 +661,7 @@ const styles = StyleSheet.create({
   tableHeaderBadgeText: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: Colors.text,
-  },
-  orderCard: {
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    color: '#1C1C1E',
   },
   orderHeader: {
     flexDirection: 'row',
@@ -700,11 +682,11 @@ const styles = StyleSheet.create({
   orderNumber: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   orderTime: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginTop: 2,
   },
   statusBadge: {
@@ -720,7 +702,7 @@ const styles = StyleSheet.create({
   },
   waiterName: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginBottom: 12,
   },
   orderItems: {
@@ -736,22 +718,22 @@ const styles = StyleSheet.create({
   orderItemQuantity: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#2563EB',
     minWidth: 30,
   },
   orderItemName: {
     fontSize: 14,
-    color: Colors.text,
+    color: '#1C1C1E',
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   orderFooter: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: '#E5E5EA',
     paddingTop: 12,
     gap: 8,
   },
@@ -763,65 +745,24 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   totalAmount: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#2563EB',
   },
   orderActions: {
     flexDirection: 'row' as const,
     gap: 8,
-  },
-  splitButton: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    padding: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-  },
-  splitButtonText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.primary,
-  },
-  paidButton: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.success,
-    borderRadius: 8,
-    padding: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-  },
-  paidButtonText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
-  serveButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.statusReady,
-    borderRadius: 8,
-    padding: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
     marginTop: 8,
   },
   alertsSection: {
     padding: 12,
     gap: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E5E5EA',
   },
   serviceRequestAlert: {
     backgroundColor: '#FFF4E6',
@@ -831,7 +772,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.warning,
+    borderColor: '#F59E0B',
   },
   serviceRequestHeader: {
     flexDirection: 'row',
@@ -842,11 +783,11 @@ const styles = StyleSheet.create({
   serviceRequestText: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     flex: 1,
   },
   resolveButton: {
-    backgroundColor: Colors.success,
+    backgroundColor: '#10B981',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -864,7 +805,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
@@ -886,12 +827,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E5E5EA',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   modalBody: {
     padding: 20,
@@ -900,26 +841,26 @@ const styles = StyleSheet.create({
   modalLabel: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   modalTotalLabel: {
     fontSize: 24,
     fontWeight: '800' as const,
-    color: Colors.primary,
+    color: '#2563EB',
     marginBottom: 8,
   },
   splitInput: {
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   splitResult: {
-    backgroundColor: Colors.cream,
+    backgroundColor: '#EFF6FF',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -928,49 +869,25 @@ const styles = StyleSheet.create({
   splitResultLabel: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
   },
   splitResultAmount: {
     fontSize: 32,
     fontWeight: '800' as const,
-    color: Colors.primary,
+    color: '#2563EB',
   },
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
   },
-  modalCancelButton: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: Colors.backgroundGray,
-    alignItems: 'center',
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: Colors.text,
-  },
-  modalConfirmButton: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-  },
-  modalConfirmButtonText: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
   readyNotification: {
-    backgroundColor: Colors.success,
+    backgroundColor: '#10B981',
     padding: 16,
     borderRadius: 12,
     ...Platform.select({
       ios: {
-        shadowColor: Colors.success,
+        shadowColor: '#10B981',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
         shadowRadius: 12,
