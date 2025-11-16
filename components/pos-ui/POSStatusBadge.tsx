@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/colors';
 
 type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
@@ -13,15 +12,15 @@ export function POSStatusBadge({ status, label }: POSStatusBadgeProps) {
   const getStatusColor = (s: OrderStatus) => {
     switch (s) {
       case 'pending':
-        return Colors.statusNew;
+        return '#3B82F6';
       case 'preparing':
-        return Colors.statusPreparing;
+        return '#F59E0B';
       case 'ready':
-        return Colors.statusReady;
+        return '#10B981';
       case 'served':
-        return Colors.statusServed;
+        return '#8B5CF6';
       case 'completed':
-        return Colors.statusPaid;
+        return '#6B7280';
       case 'cancelled':
         return '#6B7280';
       default:

@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
   primaryButton: {
-    backgroundColor: '#3d0101',
+    backgroundColor: '#2563EB',
   },
   primaryButtonText: {
     color: '#FFFFFF',
