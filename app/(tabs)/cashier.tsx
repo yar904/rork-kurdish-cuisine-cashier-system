@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
-  Alert, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
   ActivityIndicator,
   Platform,
   Image,
-  Modal
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack } from 'expo-router';
 import { formatPrice } from '@/constants/currency';
 import { ShoppingCart, Plus, Minus, Trash2, Send, Bell, Receipt, Printer, X } from 'lucide-react-native';
-import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { printOrderReceipt } from '@/lib/printer';
 import { useRealtime } from '@/contexts/RealtimeContext';
@@ -31,23 +30,33 @@ type OrderItem = {
 };
 
 const CATEGORIES = [
-  'appetizers', 'soups', 'salads', 'kebabs', 'rice-dishes', 
-  'stews', 'seafood', 'breads', 'desserts', 'drinks', 'shisha', 'hot-drinks'
+  'appetizers',
+  'soups',
+  'salads',
+  'kebabs',
+  'rice-dishes',
+  'stews',
+  'seafood',
+  'breads',
+  'desserts',
+  'drinks',
+  'shisha',
+  'hot-drinks',
 ];
 
 const CATEGORY_LABELS: Record<string, { en: string; ku: string }> = {
-  appetizers: { en: 'APPETIZERS', ku: 'خواردنی پێشوەخت' },
-  soups: { en: 'SOUPS', ku: 'شۆربا' },
-  salads: { en: 'SALADS', ku: 'زەڵاتە' },
-  kebabs: { en: 'KEBABS', ku: 'کەباب' },
-  'rice-dishes': { en: 'RICE DISHES', ku: 'خواردنی برنج' },
-  stews: { en: 'STEWS', ku: 'خۆراک' },
-  seafood: { en: 'SEAFOOD', ku: 'ماسی و میگۆ' },
-  breads: { en: 'BREADS', ku: 'نان' },
-  desserts: { en: 'DESSERTS', ku: 'شیرینی' },
-  drinks: { en: 'COLD DRINKS', ku: 'خواردنەوەی سارد' },
-  shisha: { en: 'SHISHA', ku: 'شیشە' },
-  'hot-drinks': { en: 'HOT DRINKS', ku: 'خواردنەوەی گەرم' }
+  appetizers: { en: 'Appetizers', ku: 'خواردنی پێشوەخت' },
+  soups: { en: 'Soups', ku: 'شۆربا' },
+  salads: { en: 'Salads', ku: 'زەڵاتە' },
+  kebabs: { en: 'Kebabs', ku: 'کەباب' },
+  'rice-dishes': { en: 'Rice Dishes', ku: 'خواردنی برنج' },
+  stews: { en: 'Stews', ku: 'خۆراک' },
+  seafood: { en: 'Seafood', ku: 'ماسی و میگۆ' },
+  breads: { en: 'Breads', ku: 'نان' },
+  desserts: { en: 'Desserts', ku: 'شیرینی' },
+  drinks: { en: 'Cold Drinks', ku: 'خواردنەوەی سارد' },
+  shisha: { en: 'Shisha', ku: 'شیشە' },
+  'hot-drinks': { en: 'Hot Drinks', ku: 'خواردنەوەی گەرم' },
 };
 
 export default function CashierScreen() {
@@ -60,7 +69,7 @@ export default function CashierScreen() {
   const [customItemPrice, setCustomItemPrice] = useState('');
   const [customItemQuantity, setCustomItemQuantity] = useState('1');
   const [customItemImage, setCustomItemImage] = useState<string | undefined>(undefined);
-  
+
   const { subscribeToOrders } = useRealtime();
 
   const menuQuery = trpc.menu.getAll.useQuery(undefined, {
@@ -117,32 +126,35 @@ export default function CashierScreen() {
   }, [menuQuery.data]);
 
   const addItem = (itemId: string) => {
-    const menuItem = menuItems.find(item => item.id === itemId);
+    const menuItem = menuItems.find((item) => item.id === itemId);
     if (!menuItem) return;
 
-    const existingItem = orderItems.find(item => item.id === itemId);
-    
+    const existingItem = orderItems.find((item) => item.id === itemId);
+
     if (existingItem) {
-      setOrderItems(orderItems.map(item => 
-        item.id === itemId 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+      setOrderItems(
+        orderItems.map((item) =>
+          item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      );
     } else {
-      setOrderItems([...orderItems, {
-        id: menuItem.id,
-        name: menuItem.name,
-        nameKurdish: menuItem.nameKurdish,
-        price: menuItem.price,
-        quantity: 1,
-        image: menuItem.image,
-      }]);
+      setOrderItems([
+        ...orderItems,
+        {
+          id: menuItem.id,
+          name: menuItem.name,
+          nameKurdish: menuItem.nameKurdish,
+          price: menuItem.price,
+          quantity: 1,
+          image: menuItem.image,
+        },
+      ]);
     }
   };
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert('Permission Denied', 'Camera roll permissions are required to add images');
       return;
@@ -161,22 +173,26 @@ export default function CashierScreen() {
   };
 
   const handleAddCustomItem = () => {
-    console.log('[Cashier] Adding custom item:', { customItemName, customItemPrice, customItemQuantity });
+    console.log('[Cashier] Adding custom item:', {
+      customItemName,
+      customItemPrice,
+      customItemQuantity,
+    });
 
     if (!customItemName.trim()) {
-      Alert.alert('خطا / Error', 'تکایە ناوی خواردن بنووسە / Please enter item name');
+      Alert.alert('Error', 'Please enter item name');
       return;
     }
-    
+
     const price = parseFloat(customItemPrice);
     if (isNaN(price) || price <= 0) {
-      Alert.alert('خطا / Error', 'تکایە نرخێکی دروست بنووسە / Please enter valid price (numbers only)');
+      Alert.alert('Error', 'Please enter valid price (numbers only)');
       return;
     }
-    
+
     const quantity = parseInt(customItemQuantity, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      Alert.alert('خطا / Error', 'تکایە ژمارەیەکی دروست بنووسە / Please enter valid quantity');
+      Alert.alert('Error', 'Please enter valid quantity');
       return;
     }
 
@@ -199,7 +215,7 @@ export default function CashierScreen() {
     setCustomItemQuantity('1');
     setCustomItemImage(undefined);
 
-    Alert.alert('✅ سەرکەوتوو / Success', `${customItemName} زیادکرا / added to order`);
+    Alert.alert('✅ Success', `${customItemName} added to order`);
   };
 
   const handlePrintReceipt = async () => {
@@ -214,7 +230,7 @@ export default function CashierScreen() {
       waiterName: waiterName || undefined,
       total: calculateTotal(),
       createdAt: new Date().toISOString(),
-      items: orderItems.map(item => ({
+      items: orderItems.map((item) => ({
         menuItem: {
           name: item.name,
           nameKurdish: item.nameKurdish,
@@ -239,22 +255,20 @@ export default function CashierScreen() {
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setOrderItems(orderItems.filter(item => item.id !== itemId));
+      setOrderItems(orderItems.filter((item) => item.id !== itemId));
     } else {
-      setOrderItems(orderItems.map(item => 
-        item.id === itemId 
-          ? { ...item, quantity: newQuantity }
-          : item
-      ));
+      setOrderItems(
+        orderItems.map((item) => (item.id === itemId ? { ...item, quantity: newQuantity } : item))
+      );
     }
   };
 
   const removeItem = (itemId: string) => {
-    setOrderItems(orderItems.filter(item => item.id !== itemId));
+    setOrderItems(orderItems.filter((item) => item.id !== itemId));
   };
 
   const calculateTotal = () => {
-    return orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
   const handleSubmitOrder = () => {
@@ -272,7 +286,7 @@ export default function CashierScreen() {
       tableNumber: selectedTable,
       waiterName: waiterName || undefined,
       totalAmount: calculateTotal(),
-      items: orderItems.map(item => ({
+      items: orderItems.map((item) => ({
         menuItemId: item.id.startsWith('custom-') ? '35' : item.id,
         quantity: item.quantity,
         price: item.price,
@@ -314,7 +328,7 @@ export default function CashierScreen() {
 
   const filteredMenuItems = useMemo(() => {
     const filtered = menuItems.filter(
-      item => item.category === selectedCategory && item.available
+      (item) => item.category === selectedCategory && item.available
     );
     console.log('[Cashier] Selected category:', selectedCategory);
     console.log('[Cashier] Filtered items:', filtered.length);
@@ -323,38 +337,44 @@ export default function CashierScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen 
-options={{ 
-          title: 'کاشێر / Cashier',
+      <Stack.Screen
+        options={{
+          title: 'Cashier / کاشێر',
           headerStyle: { backgroundColor: '#FFFFFF' },
           headerTintColor: '#1C1C1E',
           headerShadowVisible: false,
-        }} 
+        }}
       />
 
       <View style={styles.content}>
         <View style={styles.categorySection}>
-          <ScrollView style={styles.categoryList}>
-            {CATEGORIES.map(category => (
+          <Text style={styles.categorySectionTitle}>Categories</Text>
+          <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
+            {CATEGORIES.map((category) => (
               <TouchableOpacity
                 key={category}
                 style={[
                   styles.categoryItem,
-                  selectedCategory === category && styles.categoryItemActive
+                  selectedCategory === category && styles.categoryItemActive,
                 ]}
                 onPress={() => setSelectedCategory(category)}
+                activeOpacity={0.7}
               >
                 <View>
-                  <Text style={[
-                    styles.categoryItemText,
-                    selectedCategory === category && styles.categoryItemTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.categoryItemText,
+                      selectedCategory === category && styles.categoryItemTextActive,
+                    ]}
+                  >
                     {CATEGORY_LABELS[category]?.en || category.toUpperCase()}
                   </Text>
-                  <Text style={[
-                    styles.categoryItemTextKurdish,
-                    selectedCategory === category && styles.categoryItemTextActiveKurdish
-                  ]}>
+                  <Text
+                    style={[
+                      styles.categoryItemTextKurdish,
+                      selectedCategory === category && styles.categoryItemTextActiveKurdish,
+                    ]}
+                  >
                     {CATEGORY_LABELS[category]?.ku || ''}
                   </Text>
                 </View>
@@ -366,33 +386,34 @@ options={{
         <View style={styles.menuSection}>
           {menuQuery.isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={Colors.primary} />
+              <ActivityIndicator size="large" color="#3d0101" />
               <Text style={styles.loadingText}>Loading menu...</Text>
             </View>
           ) : (
-            <ScrollView style={styles.menuScroll}>
+            <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
               <View style={styles.menuGrid}>
-                {filteredMenuItems.map(item => (
+                {filteredMenuItems.map((item) => (
                   <TouchableOpacity
                     key={item.id}
                     style={styles.menuItem}
                     onPress={() => addItem(item.id)}
+                    activeOpacity={0.9}
                   >
                     {item.image && (
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.menuItemImage}
-                        resizeMode="cover"
-                      />
+                      <Image source={{ uri: item.image }} style={styles.menuItemImage} resizeMode="cover" />
                     )}
                     <View style={styles.menuItemInfo}>
-                      <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.menuItemNameKurdish} numberOfLines={1}>{item.nameKurdish}</Text>
+                      <Text style={styles.menuItemName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={styles.menuItemNameKurdish} numberOfLines={1}>
+                        {item.nameKurdish}
+                      </Text>
                       <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
                     </View>
-                    <TouchableOpacity style={styles.addButton} onPress={() => addItem(item.id)}>
-                      <Plus size={16} color="#fff" />
-                    </TouchableOpacity>
+                    <View style={styles.addButton}>
+                      <Plus size={18} color="#fff" />
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -403,29 +424,29 @@ options={{
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
             <ShoppingCart size={20} color="#1C1C1E" />
-            <Text style={styles.orderTitle}>داواکاری / Order</Text>
+            <Text style={styles.orderTitle}>Order / داواکاری</Text>
           </View>
 
           <View style={styles.tableSelector}>
-            <Text style={styles.label}>مێز / Table:</Text>
-            <ScrollView 
-              horizontal 
+            <Text style={styles.label}>Table / مێز</Text>
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.tableButtons}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(table => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((table) => (
                 <TouchableOpacity
                   key={table}
-                  style={[
-                    styles.tableButton,
-                    selectedTable === table && styles.tableButtonActive
-                  ]}
+                  style={[styles.tableButton, selectedTable === table && styles.tableButtonActive]}
                   onPress={() => setSelectedTable(table)}
+                  activeOpacity={0.7}
                 >
-                  <Text style={[
-                    styles.tableButtonText,
-                    selectedTable === table && styles.tableButtonTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.tableButtonText,
+                      selectedTable === table && styles.tableButtonTextActive,
+                    ]}
+                  >
                     {table}
                   </Text>
                 </TouchableOpacity>
@@ -435,30 +456,28 @@ options={{
 
           <TextInput
             style={styles.input}
-            placeholder="ناوی گارسۆن / Waiter Name (Optional)"
+            placeholder="Waiter Name (Optional)"
             value={waiterName}
             onChangeText={setWaiterName}
             placeholderTextColor="#999"
           />
 
-          <ScrollView style={styles.orderList}>
+          <ScrollView style={styles.orderList} showsVerticalScrollIndicator={false}>
             {orderItems.length === 0 ? (
               <View style={styles.emptyOrder}>
-                <Text style={styles.emptyText}>No items / هیچ خواردنێک نیە</Text>
+                <Text style={styles.emptyText}>No items</Text>
               </View>
             ) : (
-              orderItems.map(item => (
+              orderItems.map((item) => (
                 <View key={item.id} style={styles.orderItem}>
                   <View style={styles.orderItemRow}>
                     {item.image && (
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.orderItemImage}
-                        resizeMode="cover"
-                      />
+                      <Image source={{ uri: item.image }} style={styles.orderItemImage} resizeMode="cover" />
                     )}
                     <View style={styles.orderItemInfo}>
-                      <Text style={styles.orderItemName} numberOfLines={2}>{item.name}</Text>
+                      <Text style={styles.orderItemName} numberOfLines={2}>
+                        {item.name}
+                      </Text>
                       <Text style={styles.orderItemPrice}>
                         {formatPrice(item.price * item.quantity)}
                       </Text>
@@ -468,6 +487,7 @@ options={{
                     <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, item.quantity - 1)}
+                      activeOpacity={0.7}
                     >
                       <Minus size={14} color="#1C1C1E" />
                     </TouchableOpacity>
@@ -475,12 +495,14 @@ options={{
                     <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, item.quantity + 1)}
+                      activeOpacity={0.7}
                     >
                       <Plus size={14} color="#1C1C1E" />
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.deleteButton}
                       onPress={() => removeItem(item.id)}
+                      activeOpacity={0.7}
                     >
                       <Trash2 size={14} color="#FFFFFF" />
                     </TouchableOpacity>
@@ -492,7 +514,7 @@ options={{
 
           <View style={styles.footer}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>کۆی گشتی / Total:</Text>
+              <Text style={styles.totalLabel}>Total:</Text>
               <Text style={styles.totalAmount}>{formatPrice(calculateTotal())}</Text>
             </View>
 
@@ -500,23 +522,21 @@ options={{
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => setCustomItemModal(true)}
+                activeOpacity={0.7}
               >
                 <Plus size={16} color="#1C1C1E" />
-                <Text style={styles.actionButtonText}>زیادکردن / Add Custom</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 disabled={createServiceRequestMutation.isPending}
+                activeOpacity={0.7}
               >
                 {createServiceRequestMutation.isPending ? (
                   <ActivityIndicator size="small" color="#1C1C1E" />
                 ) : (
-                  <>
-                    <Bell size={16} color="#1C1C1E" />
-                    <Text style={styles.actionButtonText}>بانگکردنی گارسۆن / Call</Text>
-                  </>
+                  <Bell size={16} color="#1C1C1E" />
                 )}
               </TouchableOpacity>
 
@@ -524,14 +544,12 @@ options={{
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 disabled={createServiceRequestMutation.isPending}
+                activeOpacity={0.7}
               >
                 {createServiceRequestMutation.isPending ? (
                   <ActivityIndicator size="small" color="#1C1C1E" />
                 ) : (
-                  <>
-                    <Receipt size={16} color="#1C1C1E" />
-                    <Text style={styles.actionButtonText}>پارە / Bill</Text>
-                  </>
+                  <Receipt size={16} color="#1C1C1E" />
                 )}
               </TouchableOpacity>
 
@@ -539,27 +557,28 @@ options={{
                 style={styles.actionButton}
                 onPress={handlePrintReceipt}
                 disabled={orderItems.length === 0}
+                activeOpacity={0.7}
               >
                 <Printer size={16} color={orderItems.length > 0 ? '#1C1C1E' : '#C7C7CC'} />
-                <Text style={[styles.actionButtonText, orderItems.length === 0 && styles.actionButtonTextDisabled]}>چاپ / Print</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                (orderItems.length === 0 || createOrderMutation.isPending) && 
-                styles.submitButtonDisabled
+                (orderItems.length === 0 || createOrderMutation.isPending) &&
+                  styles.submitButtonDisabled,
               ]}
               onPress={handleSubmitOrder}
               disabled={orderItems.length === 0 || createOrderMutation.isPending}
+              activeOpacity={0.8}
             >
               {createOrderMutation.isPending ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <>
                   <Send size={20} color="#fff" />
-                  <Text style={styles.submitButtonText}>ناردنی داواکاری / Submit Order</Text>
+                  <Text style={styles.submitButtonText}>Submit Order</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -576,17 +595,18 @@ options={{
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>زیادکردنی خواردنی تایبەت / Add Custom Item</Text>
-              <TouchableOpacity onPress={() => setCustomItemModal(false)}>
+              <Text style={styles.modalTitle}>Add Custom Item</Text>
+              <TouchableOpacity onPress={() => setCustomItemModal(false)} activeOpacity={0.7}>
                 <X size={24} color="#000000" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={styles.inputLabel}>وێنە / Image (Optional)</Text>
+              <Text style={styles.inputLabel}>Image (Optional)</Text>
               <TouchableOpacity
                 style={styles.imagePickerButton}
                 onPress={handlePickImage}
+                activeOpacity={0.7}
               >
                 {customItemImage ? (
                   <Image
@@ -597,12 +617,12 @@ options={{
                 ) : (
                   <View style={styles.imagePickerPlaceholder}>
                     <Plus size={32} color="#C7C7CC" />
-                    <Text style={styles.imagePickerText}>وێنەیەک هەڵبژێرە / Select Image</Text>
+                    <Text style={styles.imagePickerText}>Select Image</Text>
                   </View>
                 )}
               </TouchableOpacity>
 
-              <Text style={styles.inputLabel}>ناو / Name</Text>
+              <Text style={styles.inputLabel}>Name</Text>
               <TextInput
                 style={styles.modalInput}
                 value={customItemName}
@@ -611,7 +631,7 @@ options={{
                 placeholderTextColor="#999999"
               />
 
-              <Text style={styles.inputLabel}>نرخ / Price (IQD)</Text>
+              <Text style={styles.inputLabel}>Price (IQD)</Text>
               <TextInput
                 style={styles.modalInput}
                 value={customItemPrice}
@@ -621,7 +641,7 @@ options={{
                 placeholderTextColor="#999999"
               />
 
-              <Text style={styles.inputLabel}>ژمارە / Quantity</Text>
+              <Text style={styles.inputLabel}>Quantity</Text>
               <TextInput
                 style={styles.modalInput}
                 value={customItemQuantity}
@@ -640,7 +660,7 @@ options={{
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modalCancelButtonText}>پاشگەزبوونەوە / Cancel</Text>
+                  <Text style={styles.modalCancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalConfirmButton}
@@ -650,7 +670,7 @@ options={{
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modalConfirmButtonText}>زیادکردن / Add</Text>
+                  <Text style={styles.modalConfirmButtonText}>Add</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -671,23 +691,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   categorySection: {
-    width: 200,
+    width: 180,
     backgroundColor: '#FFFFFF',
     borderRightWidth: 1,
     borderRightColor: '#E5E5EA',
   },
-  categoryList: {
+  categorySectionTitle: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#8E8E93',
     padding: 16,
+    paddingBottom: 8,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  },
+  categoryList: {
+    flex: 1,
+    paddingHorizontal: 12,
   },
   categoryItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 6,
     backgroundColor: '#F5F5F7',
   },
   categoryItemActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3d0101',
   },
   categoryItemText: {
     fontSize: 13,
@@ -704,7 +734,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   categoryItemTextActiveKurdish: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.75)',
   },
   menuSection: {
     flex: 1,
@@ -717,12 +747,12 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 12,
   },
   menuItem: {
-    width: '30%',
-    minWidth: 180,
-    maxWidth: 240,
+    width: 'calc(50% - 6px)' as any,
+    minWidth: 160,
+    maxWidth: 200,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     overflow: 'hidden',
@@ -743,37 +773,37 @@ const styles = StyleSheet.create({
   },
   menuItemImage: {
     width: '100%',
-    height: 130,
+    height: 120,
     backgroundColor: '#E5E5EA',
   },
   menuItemInfo: {
     padding: 12,
-    paddingBottom: 56,
+    paddingBottom: 48,
   },
   menuItemName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700' as const,
     color: '#1C1C1E',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   menuItemNameKurdish: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#8E8E93',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   menuItemPrice: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#3d0101',
   },
   addButton: {
     position: 'absolute' as const,
-    bottom: 12,
-    right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.primary,
+    bottom: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#3d0101',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -788,7 +818,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   orderSection: {
-    width: 360,
+    width: 340,
     backgroundColor: '#FFFFFF',
     borderLeftWidth: 1,
     borderLeftColor: '#E5E5EA',
@@ -802,7 +832,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5EA',
   },
   orderTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700' as const,
     color: '#1C1C1E',
   },
@@ -823,18 +853,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tableButton: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: 8,
     backgroundColor: '#F5F5F7',
     justifyContent: 'center',
     alignItems: 'center',
   },
   tableButtonActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3d0101',
   },
   tableButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: '#1C1C1E',
   },
@@ -894,7 +924,7 @@ const styles = StyleSheet.create({
   orderItemPrice: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#3d0101',
   },
   orderItemControls: {
     flexDirection: 'row',
@@ -920,7 +950,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 6,
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 'auto' as const,
@@ -945,7 +975,7 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#3d0101',
   },
   actionRow: {
     flexDirection: 'row',
@@ -962,23 +992,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 8,
-  },
-  actionButtonText: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    color: '#1C1C1E',
-  },
-  actionButtonTextDisabled: {
-    color: '#C7C7CC',
+    minHeight: 44,
   },
   submitButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3d0101',
     borderRadius: 8,
     paddingVertical: 14,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    minHeight: 48,
   },
   submitButtonDisabled: {
     backgroundColor: '#C7C7CC',
@@ -1065,7 +1089,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 14,
     borderRadius: 8,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3d0101',
     alignItems: 'center',
   },
   modalConfirmButtonText: {

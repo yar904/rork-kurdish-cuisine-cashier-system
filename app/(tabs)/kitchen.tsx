@@ -1,10 +1,18 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Platform, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, ArrowRight, Printer } from 'lucide-react-native';
 import { printKitchenTicket } from '@/lib/printer';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
@@ -28,14 +36,20 @@ type Order = {
   }>;
 };
 
+const STATUS_COLORS = {
+  pending: '#3B82F6',
+  preparing: '#F59E0B',
+  ready: '#10B981',
+  served: '#8B5CF6',
+  completed: '#6B7280',
+  cancelled: '#EF4444',
+};
+
 export default function KitchenScreen() {
   const { t } = useLanguage();
-  const { width } = useWindowDimensions();
   const { notifyOrderReady } = useNotifications();
   const { subscribeToOrders } = useRealtime();
   const previousOrdersRef = useRef<Order[]>([]);
-  
-  const isPhone = width < 768;
 
   const ordersQuery = trpc.orders.getAll.useQuery(undefined, {
     refetchInterval: 5000,
@@ -59,24 +73,26 @@ export default function KitchenScreen() {
 
   const orders = useMemo(() => {
     if (!ordersQuery.data) return [];
-    
+
     return ordersQuery.data.map((o: any): Order => {
       const orderItems = o.order_items || [];
-      const items = orderItems.map((item: any) => {
-        const menuItem = item.menu_items || item.menu_item;
-        if (!menuItem) return null;
-        
-        return {
-          quantity: item.quantity,
-          notes: item.notes || undefined,
-          menuItem: {
-            name: menuItem.name || menuItem.name_kurdish,
-            nameKurdish: menuItem.name_kurdish,
-            price: menuItem.price,
-          },
-        };
-      }).filter((item: any): item is Order['items'][0] => item !== null);
-      
+      const items = orderItems
+        .map((item: any) => {
+          const menuItem = item.menu_items || item.menu_item;
+          if (!menuItem) return null;
+
+          return {
+            quantity: item.quantity,
+            notes: item.notes || undefined,
+            menuItem: {
+              name: menuItem.name || menuItem.name_kurdish,
+              nameKurdish: menuItem.name_kurdish,
+              price: menuItem.price,
+            },
+          };
+        })
+        .filter((item: any): item is Order['items'][0] => item !== null);
+
       return {
         id: o.id,
         tableNumber: o.table_number,
@@ -90,27 +106,31 @@ export default function KitchenScreen() {
 
   useEffect(() => {
     const unsubscribe = subscribeToOrders(() => {
-      console.log('[Kitchen] 🔴 Real-time order update detected - refetching');
+      console.log('[Kitchen] Real-time order update detected - refetching');
       ordersQuery.refetch();
     });
-    
+
     return () => {
       unsubscribe();
     };
   }, [subscribeToOrders, ordersQuery]);
 
   useEffect(() => {
-    const newOrders = orders.filter(o => o.status === 'pending');
-    const previousNewOrders = previousOrdersRef.current.filter(o => o.status === 'pending');
-    
+    const newOrders = orders.filter((o) => o.status === 'pending');
+    const previousNewOrders = previousOrdersRef.current.filter((o) => o.status === 'pending');
+
     if (newOrders.length > previousNewOrders.length) {
-      const addedOrders = newOrders.filter(no => 
-        !previousNewOrders.some(po => po.id === no.id)
+      const addedOrders = newOrders.filter(
+        (no) => !previousNewOrders.some((po) => po.id === no.id)
       );
-      
-      addedOrders.forEach(order => {
+
+      addedOrders.forEach((order) => {
         console.log(`🔔 NEW ORDER: #${order.id} for Table ${order.tableNumber}`);
-        if (Platform.OS === 'web' && 'Notification' in window && Notification.permission === 'granted') {
+        if (
+          Platform.OS === 'web' &&
+          'Notification' in window &&
+          Notification.permission === 'granted'
+        ) {
           new Notification('New Order! 🍽️', {
             body: `Order #${order.id} for Table ${order.tableNumber}`,
             icon: '/assets/images/icon.png',
@@ -118,71 +138,69 @@ export default function KitchenScreen() {
         }
       });
     }
-    
+
     previousOrdersRef.current = orders;
   }, [orders]);
 
   const activeOrders = useMemo(() => {
-    const filtered = orders.filter(order => 
-      order.status === 'pending' || order.status === 'preparing' || order.status === 'ready'
+    const filtered = orders.filter(
+      (order) =>
+        order.status === 'pending' || order.status === 'preparing' || order.status === 'ready'
     );
-    
+
     return filtered.sort((a, b) => {
       if (a.status === 'preparing' && b.status === 'pending') return -1;
       if (a.status === 'pending' && b.status === 'preparing') return 1;
-      
+
       const aItemCount = a.items.reduce((sum, item) => sum + item.quantity, 0);
       const bItemCount = b.items.reduce((sum, item) => sum + item.quantity, 0);
-      
+
       if (aItemCount !== bItemCount) {
         return aItemCount - bItemCount;
       }
-      
+
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
   }, [orders]);
 
-  const pendingOrders = useMemo(() => 
-    activeOrders.filter(o => o.status === 'pending'), 
-    [activeOrders]
-  );
-  
-  const preparingOrders = useMemo(() => 
-    activeOrders.filter(o => o.status === 'preparing'), 
-    [activeOrders]
-  );
-  
-  const readyOrders = useMemo(() => 
-    activeOrders.filter(o => o.status === 'ready'), 
+  const pendingOrders = useMemo(
+    () => activeOrders.filter((o) => o.status === 'pending'),
     [activeOrders]
   );
 
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case 'pending': return Colors.statusNew;
-      case 'preparing': return Colors.statusPreparing;
-      case 'ready': return Colors.statusReady;
-      case 'served': return Colors.statusServed;
-      case 'completed': return Colors.statusPaid;
-      default: return Colors.textLight;
-    }
-  };
+  const preparingOrders = useMemo(
+    () => activeOrders.filter((o) => o.status === 'preparing'),
+    [activeOrders]
+  );
+
+  const readyOrders = useMemo(
+    () => activeOrders.filter((o) => o.status === 'ready'),
+    [activeOrders]
+  );
 
   const getNextStatus = (status: OrderStatus): OrderStatus | null => {
     switch (status) {
-      case 'pending': return 'preparing';
-      case 'preparing': return 'ready';
-      case 'ready': return 'served';
-      default: return null;
+      case 'pending':
+        return 'preparing';
+      case 'preparing':
+        return 'ready';
+      case 'ready':
+        return 'served';
+      default:
+        return null;
     }
   };
 
   const getNextStatusLabel = (status: OrderStatus): string => {
     switch (status) {
-      case 'pending': return t('startPreparing') || 'Start Preparing';
-      case 'preparing': return t('markReady') || 'Mark as Ready';
-      case 'ready': return t('markServed') || 'Mark as Served';
-      default: return '';
+      case 'pending':
+        return 'Start Preparing';
+      case 'preparing':
+        return 'Mark as Ready';
+      case 'ready':
+        return 'Mark as Served';
+      default:
+        return '';
     }
   };
 
@@ -194,16 +212,17 @@ export default function KitchenScreen() {
           id: orderId,
           status: nextStatus,
         });
-        
+
         if (nextStatus === 'ready') {
-          const order = orders.find(o => o.id === orderId);
+          const order = orders.find((o) => o.id === orderId);
           if (order) {
             console.log(`✅ Order #${orderId} for Table ${order.tableNumber} is READY!`);
             await notifyOrderReady(orderId, order.tableNumber);
-            
+
             if (Platform.OS === 'web') {
               try {
-                const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const audioContext = new (window.AudioContext ||
+                  (window as any).webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 oscillator.connect(gainNode);
@@ -228,7 +247,7 @@ export default function KitchenScreen() {
             }
           }
         }
-        
+
         Alert.alert('Success', `Order updated to ${nextStatus}`);
       } catch (error) {
         console.error('Error updating order status:', error);
@@ -257,32 +276,33 @@ export default function KitchenScreen() {
     <View key={order.id} style={styles.orderCard}>
       <View style={styles.orderHeader}>
         <View style={styles.orderHeaderLeft}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
-            <Text style={styles.statusBadgeText}>
-              {order.status.toUpperCase()}
-            </Text>
+          <View
+            style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[order.status] }]}
+          >
+            <Text style={styles.statusBadgeText}>{order.status.toUpperCase()}</Text>
           </View>
           <View>
             <Text style={styles.orderNumber}>#{order.id}</Text>
-            <Text style={styles.tableNumber}>مێز / Table {order.tableNumber}</Text>
+            <Text style={styles.tableNumber}>Table {order.tableNumber}</Text>
           </View>
         </View>
         <View style={styles.orderHeaderRight}>
-          <Clock size={16} color={Colors.textSecondary} />
+          <Clock size={16} color="#8E8E93" />
           <Text style={styles.orderTime}>{formatTime(order.createdAt)}</Text>
         </View>
       </View>
 
       {order.waiterName && (
-        <Text style={styles.waiterName}>گارسۆن / Waiter: {order.waiterName}</Text>
+        <Text style={styles.waiterName}>Waiter: {order.waiterName}</Text>
       )}
 
       <TouchableOpacity
         style={styles.printButton}
         onPress={() => handlePrintKitchen(order)}
+        activeOpacity={0.7}
       >
-        <Printer size={16} color={Colors.primary} />
-        <Text style={styles.printButtonText}>چاپکردن / Print</Text>
+        <Printer size={16} color="#3d0101" />
+        <Text style={styles.printButtonText}>Print</Text>
       </TouchableOpacity>
 
       <View style={styles.orderItems}>
@@ -294,9 +314,7 @@ export default function KitchenScreen() {
             <View style={styles.orderItemInfo}>
               <Text style={styles.orderItemName}>{item.menuItem.name}</Text>
               <Text style={styles.orderItemKurdish}>{item.menuItem.nameKurdish}</Text>
-              {item.notes && (
-                <Text style={styles.orderItemNotes}>Note: {item.notes}</Text>
-              )}
+              {item.notes && <Text style={styles.orderItemNotes}>Note: {item.notes}</Text>}
             </View>
           </View>
         ))}
@@ -304,17 +322,19 @@ export default function KitchenScreen() {
 
       {getNextStatus(order.status) && (
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: getStatusColor(getNextStatus(order.status)!) }]}
+          style={[
+            styles.actionButton,
+            { backgroundColor: STATUS_COLORS[getNextStatus(order.status)!] },
+          ]}
           onPress={() => handleStatusUpdate(order.id, order.status)}
           disabled={updateOrderMutation.isPending}
+          activeOpacity={0.8}
         >
           {updateOrderMutation.isPending ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <>
-              <Text style={styles.actionButtonText}>
-                {getNextStatusLabel(order.status)}
-              </Text>
+              <Text style={styles.actionButtonText}>{getNextStatusLabel(order.status)}</Text>
               <ArrowRight size={20} color="#fff" />
             </>
           )}
@@ -326,13 +346,16 @@ export default function KitchenScreen() {
   if (ordersQuery.isLoading) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ 
-          title: `چێشتخانە / Kitchen`,
-          headerStyle: { backgroundColor: Colors.primary },
-          headerTintColor: '#fff',
-        }} />
+        <Stack.Screen
+          options={{
+            title: `Kitchen / چێشتخانە`,
+            headerStyle: { backgroundColor: '#FFFFFF' },
+            headerTintColor: '#1C1C1E',
+            headerShadowVisible: false,
+          }}
+        />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color="#3d0101" />
           <Text style={styles.loadingText}>Loading orders...</Text>
         </View>
       </View>
@@ -341,28 +364,28 @@ export default function KitchenScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: `چێشتخانە / Kitchen`,
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: '#fff',
-      }} />
+      <Stack.Screen
+        options={{
+          title: `Kitchen / چێشتخانە`,
+          headerStyle: { backgroundColor: '#FFFFFF' },
+          headerTintColor: '#1C1C1E',
+          headerShadowVisible: false,
+        }}
+      />
 
       <ScrollView style={styles.content}>
         {activeOrders.length === 0 ? (
           <View style={styles.emptyState}>
-            <ChefHat size={64} color={Colors.textLight} />
-            <Text style={styles.emptyStateTitle}>هیچ داواکاری چالاکی نییە</Text>
-            <Text style={styles.emptyStateText}>No Active Orders</Text>
-            <Text style={styles.emptyStateSubtext}>
-              داواکاری نوێ لێرە دەردەکەون / New orders will appear here
-            </Text>
+            <ChefHat size={64} color="#C7C7CC" />
+            <Text style={styles.emptyStateTitle}>No Active Orders</Text>
+            <Text style={styles.emptyStateText}>New orders will appear here</Text>
           </View>
         ) : (
           <View style={styles.columns}>
             <View style={styles.column}>
               <View style={styles.columnHeader}>
-                <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusNew }]} />
-                <Text style={styles.columnHeaderText}>داواکاری نوێ / Pending</Text>
+                <View style={[styles.columnHeaderDot, { backgroundColor: STATUS_COLORS.pending }]} />
+                <Text style={styles.columnHeaderText}>Pending</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{pendingOrders.length}</Text>
                 </View>
@@ -372,8 +395,10 @@ export default function KitchenScreen() {
 
             <View style={styles.column}>
               <View style={styles.columnHeader}>
-                <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusPreparing }]} />
-                <Text style={styles.columnHeaderText}>ئامادەکردن / Preparing</Text>
+                <View
+                  style={[styles.columnHeaderDot, { backgroundColor: STATUS_COLORS.preparing }]}
+                />
+                <Text style={styles.columnHeaderText}>Preparing</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{preparingOrders.length}</Text>
                 </View>
@@ -383,8 +408,8 @@ export default function KitchenScreen() {
 
             <View style={styles.column}>
               <View style={styles.columnHeader}>
-                <View style={[styles.columnHeaderDot, { backgroundColor: Colors.statusReady }]} />
-                <Text style={styles.columnHeaderText}>ئامادەیە / Ready</Text>
+                <View style={[styles.columnHeaderDot, { backgroundColor: STATUS_COLORS.ready }]} />
+                <Text style={styles.columnHeaderText}>Ready</Text>
                 <View style={styles.columnHeaderBadge}>
                   <Text style={styles.columnHeaderBadgeText}>{readyOrders.length}</Text>
                 </View>
@@ -401,7 +426,7 @@ export default function KitchenScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   content: {
     flex: 1,
@@ -414,7 +439,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
   },
   emptyState: {
     flex: 1,
@@ -425,20 +450,13 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginTop: 16,
   },
   emptyStateText: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: Colors.text,
+    fontSize: 14,
+    color: '#8E8E93',
     marginTop: 8,
-  },
-  emptyStateSubtext: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 4,
-    textAlign: 'center' as const,
   },
   columns: {
     padding: 16,
@@ -466,17 +484,20 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.06,
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       },
     }),
   },
@@ -488,11 +509,11 @@ const styles = StyleSheet.create({
   columnHeaderText: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     flex: 1,
   },
   columnHeaderBadge: {
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -502,23 +523,24 @@ const styles = StyleSheet.create({
   columnHeaderBadgeText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   orderCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       },
     }),
   },
@@ -552,20 +574,20 @@ const styles = StyleSheet.create({
   orderNumber: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   tableNumber: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginTop: 2,
   },
   orderTime: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
   },
   waiterName: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginBottom: 8,
   },
   printButton: {
@@ -574,16 +596,14 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: Colors.border,
     alignSelf: 'flex-start',
     marginBottom: 12,
   },
   printButtonText: {
     fontSize: 13,
-    color: Colors.text,
+    color: '#1C1C1E',
     fontWeight: '600' as const,
   },
   orderItems: {
@@ -594,14 +614,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     padding: 12,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 8,
   },
   quantityBadge: {
     width: 32,
     height: 32,
     borderRadius: 6,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#3d0101',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -616,16 +636,16 @@ const styles = StyleSheet.create({
   orderItemName: {
     fontSize: 15,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   orderItemKurdish: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginTop: 2,
   },
   orderItemNotes: {
     fontSize: 12,
-    color: Colors.warning,
+    color: '#F59E0B',
     marginTop: 4,
     fontStyle: 'italic' as const,
   },
@@ -636,6 +656,7 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
     borderRadius: 8,
+    minHeight: 44,
   },
   actionButtonText: {
     fontSize: 14,
