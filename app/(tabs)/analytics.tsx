@@ -4,10 +4,8 @@ import { Stack } from 'expo-router';
 import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-
 import { formatPrice } from '@/constants/currency';
 import { MenuCategory } from '@/types/restaurant';
-import PredictiveAnalytics from '@/components/PredictiveAnalytics';
 
 
 
@@ -93,9 +91,10 @@ export default function AnalyticsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: `${t('restaurantName')} - ${t('analytics')}`,
-        headerStyle: { backgroundColor: '#2563EB' },
+        title: 'Analytics',
+        headerStyle: { backgroundColor: '#0A84FF' },
         headerTintColor: '#fff',
+        headerShadowVisible: false,
       }} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -175,10 +174,6 @@ export default function AnalyticsScreen() {
               ))
             )}
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <PredictiveAnalytics />
         </View>
 
         <View style={styles.section}>
