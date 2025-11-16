@@ -11,6 +11,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TableStatus } from '@/types/restaurant';
 import { POSContainer, POSCard, POSButton } from '@/components/pos-ui';
 
+const Colors = {
+  primary: '#0A84FF',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#0A84FF',
+  border: '#E5E5EA',
+  textSecondary: '#8E8E93',
+  textLight: '#8E8E93',
+};
+
 const getResponsiveLayout = () => {
   const { width } = Dimensions.get('window');
   return {
