@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Colors } from '@/constants/colors';
+
 import { formatPrice } from '@/constants/currency';
 import { MenuCategory } from '@/types/restaurant';
 import PredictiveAnalytics from '@/components/PredictiveAnalytics';
@@ -94,7 +94,7 @@ export default function AnalyticsScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ 
         title: `${t('restaurantName')} - ${t('analytics')}`,
-        headerStyle: { backgroundColor: Colors.primary },
+        headerStyle: { backgroundColor: '#2563EB' },
         headerTintColor: '#fff',
       }} />
 
@@ -104,25 +104,25 @@ export default function AnalyticsScreen() {
             icon={DollarSign}
             label={t('totalRevenue')}
             value={formatPrice(analytics.totalRevenue)}
-            color={Colors.success}
+            color="#10B981"
           />
           <StatCard
             icon={ShoppingBag}
             label={t('totalOrders')}
             value={analytics.totalOrders.toString()}
-            color={Colors.info}
+            color="#3B82F6"
           />
           <StatCard
             icon={TrendingUp}
             label={t('avgOrderValue')}
             value={formatPrice(analytics.avgOrderValue)}
-            color={Colors.warning}
+            color="#F59E0B"
           />
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Award size={24} color={Colors.primary} />
+            <Award size={24} color="#2563EB" />
             <Text style={styles.sectionTitle}>{t('topSellingItems')}</Text>
           </View>
           <View style={styles.card}>
@@ -162,7 +162,7 @@ export default function AnalyticsScreen() {
                       <View 
                         style={[
                           styles.progressBar, 
-                          { width: `${percentage}%`, backgroundColor: Colors.primary }
+                          { width: `${percentage}%`, backgroundColor: '#2563EB' }
                         ]} 
                       />
                     </View>
@@ -190,7 +190,7 @@ export default function AnalyticsScreen() {
                   <View 
                     style={[
                       styles.statusDot, 
-                      { backgroundColor: Colors[`status${status.charAt(0).toUpperCase() + status.slice(1)}` as keyof typeof Colors] as string }
+                      { backgroundColor: '#3B82F6' }
                     ]} 
                   />
                   <Text style={styles.statusLabel}>
@@ -212,7 +212,7 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   content: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginBottom: 4,
     fontWeight: '600' as const,
     flexShrink: 1,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     flexShrink: 1,
   },
   section: {
@@ -305,12 +305,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 16,
     flexShrink: 1,
   },
   card: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     ...Platform.select({
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     textAlign: 'center' as const,
     paddingVertical: 20,
   },
@@ -336,14 +336,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E5EA',
     gap: 12,
   },
   topItemRank: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#2563EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -359,13 +359,13 @@ const styles = StyleSheet.create({
   topItemName: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 2,
     flexShrink: 1,
   },
   topItemNameKurdish: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
     flexShrink: 1,
   },
@@ -375,12 +375,12 @@ const styles = StyleSheet.create({
   topItemQuantity: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: '#2563EB',
     marginBottom: 2,
   },
   topItemRevenue: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   categoryRow: {
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E5EA',
     gap: 16,
   },
   categoryInfo: {
@@ -398,13 +398,13 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 8,
     flexShrink: 1,
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 4,
     overflow: 'hidden' as const,
   },
@@ -418,12 +418,12 @@ const styles = StyleSheet.create({
   categoryRevenue: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 2,
   },
   categoryPercentage: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   statusGrid: {
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   statusCard: {
     flex: 1,
     minWidth: 100,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -447,13 +447,13 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
     textTransform: 'capitalize' as const,
   },
   statusCount: {
     fontSize: 20,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
 });

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Share, Alert, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { Calendar, TrendingUp, TrendingDown, Download, FileText, BarChart3, DollarSign, ShoppingBag, Printer, TrendingDown as LossIcon, Percent } from 'lucide-react-native';
-import { Colors } from '@/constants/colors';
+
 import { formatPrice } from '@/constants/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { printDailyReport } from '@/lib/printer';
@@ -218,21 +218,21 @@ export default function ReportsScreen() {
   const StatCard = ({ icon: Icon, label, value, growth }: { icon: any; label: string; value: string; growth?: number }) => (
     <View style={styles.statCard}>
       <View style={styles.statHeader}>
-        <Icon size={20} color={Colors.primary} />
+        <Icon size={20} color="#2563EB" />
         <Text style={styles.statLabel}>{label}</Text>
       </View>
       <Text style={styles.statValue}>{value}</Text>
       {growth !== undefined && (
         <View style={styles.growthContainer}>
           {growth >= 0 ? (
-            <TrendingUp size={14} color={Colors.success} />
+            <TrendingUp size={14} color="#10B981" />
           ) : (
-            <TrendingDown size={14} color={Colors.error} />
+            <TrendingDown size={14} color="#EF4444" />
           )}
           <Text
             style={[
               styles.growthText,
-              { color: growth >= 0 ? Colors.success : Colors.error },
+              { color: growth >= 0 ? '#10B981' : '#EF4444' },
             ]}
           >
             {Math.abs(growth).toFixed(1)}%
@@ -247,14 +247,14 @@ export default function ReportsScreen() {
       <Stack.Screen
         options={{
           title: `${t('restaurantName')} - Reports`,
-          headerStyle: { backgroundColor: Colors.primary },
+          headerStyle: { backgroundColor: '#2563EB' },
           headerTintColor: '#fff',
         }}
       />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color="#2563EB" />
           <Text style={styles.loadingText}>Generating financial report...</Text>
         </View>
       ) : !reportData ? (
@@ -265,7 +265,7 @@ export default function ReportsScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Calendar size={24} color={Colors.primary} />
+            <Calendar size={24} color="#2563EB" />
             <Text style={styles.sectionTitle}>Select Period</Text>
           </View>
 
@@ -283,7 +283,7 @@ export default function ReportsScreen() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <BarChart3 size={24} color={Colors.primary} />
+            <BarChart3 size={24} color="#2563EB" />
             <Text style={styles.sectionTitle}>Summary</Text>
             <View style={styles.exportButtons}>
               <TouchableOpacity
@@ -291,7 +291,7 @@ export default function ReportsScreen() {
                 onPress={handlePrintReport}
                 activeOpacity={0.7}
               >
-                <Printer size={18} color={Colors.primary} />
+                <Printer size={18} color="#2563EB" />
                 <Text style={styles.exportButtonText}>Print</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -299,7 +299,7 @@ export default function ReportsScreen() {
                 onPress={() => exportReport('csv')}
                 activeOpacity={0.7}
               >
-                <Download size={18} color={Colors.primary} />
+                <Download size={18} color="#2563EB" />
                 <Text style={styles.exportButtonText}>CSV</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -307,7 +307,7 @@ export default function ReportsScreen() {
                 onPress={() => exportReport('pdf')}
                 activeOpacity={0.7}
               >
-                <FileText size={18} color={Colors.primary} />
+                <FileText size={18} color="#2563EB" />
                 <Text style={styles.exportButtonText}>PDF</Text>
               </TouchableOpacity>
             </View>
@@ -383,7 +383,7 @@ export default function ReportsScreen() {
                         styles.progressBar,
                         { 
                           width: `${cat.margin}%`, 
-                          backgroundColor: cat.margin > 50 ? Colors.success : cat.margin > 30 ? Colors.warning : Colors.error 
+                          backgroundColor: cat.margin > 50 ? '#10B981' : cat.margin > 30 ? '#F59E0B' : '#EF4444' 
                         },
                       ]}
                     />
@@ -433,7 +433,7 @@ export default function ReportsScreen() {
                         styles.chartBarFill,
                         {
                           height: maxProfit > 0 ? `${(day.profit / maxProfit) * 100}%` : '10%',
-                          backgroundColor: day.profit > 0 ? Colors.success : Colors.error,
+                          backgroundColor: day.profit > 0 ? '#10B981' : '#EF4444',
                         },
                       ]}
                     />
@@ -458,7 +458,7 @@ export default function ReportsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
   },
   content: {
     flex: 1,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     flex: 1,
   },
   periodScroll: {
@@ -498,18 +498,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   periodButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   periodButtonText: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   periodButtonTextActive: {
     color: '#fff',
@@ -524,15 +524,15 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5EA',
   },
   exportButtonText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: 150,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     ...Platform.select({
@@ -565,13 +565,13 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   statValue: {
     fontSize: 24,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 8,
   },
   growthContainer: {
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   card: {
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     ...Platform.select({
@@ -604,14 +604,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E5EA',
     gap: 12,
   },
   topItemRank: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#2563EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -626,25 +626,25 @@ const styles = StyleSheet.create({
   topItemName: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 2,
   },
   topItemQuantity: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   topItemRevenue: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   categoryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E5EA',
     gap: 16,
   },
   categoryInfo: {
@@ -653,12 +653,12 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 8,
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: Colors.backgroundGray,
+    backgroundColor: '#F5F5F7',
     borderRadius: 4,
     overflow: 'hidden' as const,
   },
@@ -672,12 +672,12 @@ const styles = StyleSheet.create({
   categoryRevenue: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
     marginBottom: 2,
   },
   categoryPercentage: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   peakHourRow: {
@@ -685,14 +685,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E5EA',
     gap: 12,
   },
   peakHourBadge: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.info,
+    backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -700,12 +700,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   peakHourRevenue: {
     fontSize: 16,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: '#1C1C1E',
   },
   chartContainer: {
     flexDirection: 'row',
@@ -728,13 +728,13 @@ const styles = StyleSheet.create({
   },
   chartBarLabel: {
     fontSize: 10,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
     marginTop: 8,
   },
   chartBarValue: {
     fontSize: 11,
-    color: Colors.text,
+    color: '#1C1C1E',
     fontWeight: '700' as const,
     marginTop: 2,
   },
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     marginTop: 16,
     fontWeight: '600' as const,
   },
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
   },
   topItemStats: {
@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
   },
   topItemProfit: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#8E8E93',
     fontWeight: '600' as const,
     marginTop: 2,
   },
