@@ -8,6 +8,7 @@ import { trpc } from '@/lib/trpc';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
 import { POSContainer, POSCard, POSButton, POSHeader, POSStatusBadge } from '@/components/pos-ui';
+import { Colors } from '@/constants/colors';
 
 type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
