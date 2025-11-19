@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { trpc } from "@/lib/trpc";
+import { createTrpcHttpLink, trpc, trpcTransformer } from "@/lib/trpc";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
@@ -16,8 +16,6 @@ import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, Noto
 import { PlayfairDisplay_400Regular, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold, PlayfairDisplay_900Black } from '@expo-google-fonts/playfair-display';
 import { CormorantGaramond_400Regular, CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
-import { httpBatchLink } from "@trpc/client";
-import superjson from "superjson";
 
 
 const queryClient = new QueryClient({
@@ -59,21 +57,8 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const [trpcClient] = useState(() =>
     trpc.createClient({
-      links: [
-        httpBatchLink({
-          url: "https://opsnzswjxzvywvqjvjvy.functions.supabase.co/tapse-backend",
-          headers: () => ({
-            "Content-Type": "application/json",
-          }),
-          transformer: superjson,
-          fetch(url, options) {
-            return fetch(url, {
-              ...options,
-              credentials: "omit",
-            });
-          },
-        }),
-      ],
+      transformer: trpcTransformer,
+      links: [createTrpcHttpLink()],
     })
   );
 
