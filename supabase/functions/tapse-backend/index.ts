@@ -1,64 +1,40 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { fetchRequestHandler } from "npm:@trpc/server@10.45.0/adapters/fetch";
-import { createContext } from "../_shared/trpc-context.ts";
-import { appRouter } from "./router.ts";
+import { createTRPCContext } from "./_shared/trpc-context.ts";
+import { appRouter } from "./_shared/trpc-router.ts";
+import { supabase } from "./_shared/supabase.ts";
+import { handleRequest } from "./router.ts";
 
-const corsHeaders: HeadersInit = {
+const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-trpc-source",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request): Promise<Response> => {
-  const url = new URL(req.url);
-  const { pathname } = url;
+const warmupContext = createTRPCContext(
+  new Request("https://tapse-backend.local/warmup", { headers: new Headers() }),
+).catch(() => null);
 
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { status: 200, headers: corsHeaders });
+console.log(
+  `[tapse-backend] Loaded ${Object.keys(appRouter._def.procedures).length} procedures and awaiting context warmup.`,
+);
+console.log(`[tapse-backend] Supabase client initialized: ${Boolean(supabase)}`);
+
+await warmupContext;
+
+Deno.serve(async (request: Request): Promise<Response> => {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
   }
 
-  if (pathname.endsWith("/health")) {
-    return new Response(
-      JSON.stringify({
-        status: "ok",
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+  const response = await handleRequest(request);
+  const headers = new Headers(response.headers);
+
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    headers.set(key, value);
   }
 
-  try {
-    const response = await fetchRequestHandler({
-      endpoint: "/tapse-backend",
-      req,
-      router: appRouter,
-      createContext,
-      onError({ error, path }) {
-        console.error(`[tRPC Error] ${path}:`, error);
-      },
-    });
-
-    const headers = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      headers.set(key, value);
-    });
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
-  } catch (error) {
-    console.error("[Supabase Function Error]", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
+  return new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
 });
