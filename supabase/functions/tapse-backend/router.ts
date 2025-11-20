@@ -34,6 +34,11 @@ export function handleRequest(request: Request): Promise<Response> {
     return Promise.resolve(healthResponse);
   }
 
+  // All TRPC calls require an Authorization header. When testing locally, pass the anon key:
+  //   curl -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  //        -H "Content-Type: application/json" \
+  //        --data '{"id":0,"method":"query","params":{"input":null,"path":"menu.getAll"}}' \
+  //        http://localhost:54321/functions/v1/tapse-backend
   return fetchRequestHandler({
     endpoint: TRPC_ENDPOINT,
     req: request,
@@ -41,3 +46,6 @@ export function handleRequest(request: Request): Promise<Response> {
     createContext: () => createTRPCContext(request),
   });
 }
+
+export { appRouter } from "./_shared/trpc-router.ts";
+export type { AppRouter } from "./_shared/trpc-router.ts";

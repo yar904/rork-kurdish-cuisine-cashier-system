@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpc } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -55,6 +55,9 @@ type Review = {
 
 export default function CustomerOrderScreen() {
   const { table } = useLocalSearchParams<{ table: string }>();
+  const parsedTableNumber =
+    typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
+  const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
   const { notifyServiceRequest } = useNotifications();
   const { width } = useWindowDimensions();
@@ -206,7 +209,7 @@ export default function CustomerOrderScreen() {
       
       try {
         console.log('[CustomerOrder] Attempting tRPC order submission...');
-        const trpcResult = await trpc.orders.create.mutate(payload);
+        const trpcResult = await trpcClient.orders.create.mutate(payload);
         console.log('[CustomerOrder] ✅ tRPC order submitted:', trpcResult);
         return trpcResult;
       } catch (trpcError: any) {
@@ -258,51 +261,8 @@ export default function CustomerOrderScreen() {
 
   const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
 
-  const callWaiterMutation = useMutation({
-    mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
-      console.log('[CustomerOrder] 📞 Calling waiter via Supabase directly');
-      const { data: result, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: data.tableNumber,
-          type: data.type,
-          message: data.message,
-          status: 'pending',
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('[CustomerOrder] ❌ Supabase error calling waiter:', error);
-        throw new Error(error.message || 'Failed to call waiter');
-      }
-      console.log('[CustomerOrder] ✅ Waiter called successfully:', result.id);
-      return result;
-    },
-  });
-
-  const requestBillMutation = useMutation({
-    mutationFn: async (data: { tableNumber: number; type: string; message: string }) => {
-      console.log('[CustomerOrder] 🧾 Requesting bill via Supabase directly');
-      const { data: result, error } = await supabase
-        .from('service_requests')
-        .insert({
-          table_number: data.tableNumber,
-          type: data.type,
-          message: data.message,
-          status: 'pending',
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('[CustomerOrder] ❌ Supabase error requesting bill:', error);
-        throw new Error(error.message || 'Failed to request bill');
-      }
-      console.log('[CustomerOrder] ✅ Bill requested successfully:', result.id);
-      return result;
-    },
-  });
+  const callWaiterMutation = trpc.serviceRequests.create.useMutation();
+  const requestBillMutation = trpc.serviceRequests.create.useMutation();
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -422,13 +382,13 @@ export default function CustomerOrderScreen() {
       return;
     }
 
-    if (!table) {
+    if (!hasValidTableNumber) {
       Alert.alert('Error', 'Table number not found');
       return;
     }
 
     const payload = {
-      tableNumber: parseInt(table),
+      tableNumber: parsedTableNumber,
       items: cart.map(item => ({
         menuItemId: item.menuItem.id,
         quantity: item.quantity,
@@ -500,7 +460,7 @@ export default function CustomerOrderScreen() {
   const handleCallWaiter = async () => {
     animateButton('waiter');
     
-    if (!table) {
+    if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
       return;
     }
@@ -515,14 +475,15 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      await callWaiterMutation.mutateAsync({
-        tableNumber: parseInt(table),
-        type: 'waiter',
-        message: 'Customer requesting assistance',
+      const waiterResult = await callWaiterMutation.mutateAsync({
+        tableNumber: parsedTableNumber,
+        requestType: 'waiter',
+        messageText: 'Customer requesting assistance',
       });
-      
+      console.log('[CustomerOrder] ✅ Waiter request created:', waiterResult?.data?.id);
+
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
-      notifyServiceRequest(parseInt(table), 'waiter');
+      notifyServiceRequest(parsedTableNumber, 'waiter');
       
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
@@ -534,7 +495,7 @@ export default function CustomerOrderScreen() {
   const handleRequestBill = async () => {
     animateButton('bill');
     
-    if (!table) {
+    if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
       return;
     }
@@ -549,14 +510,15 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      await requestBillMutation.mutateAsync({
-        tableNumber: parseInt(table),
-        type: 'bill',
-        message: 'Customer requesting bill',
+      const billResult = await requestBillMutation.mutateAsync({
+        tableNumber: parsedTableNumber,
+        requestType: 'bill',
+        messageText: 'Customer requesting bill',
       });
-      
+      console.log('[CustomerOrder] ✅ Bill request created:', billResult?.data?.id);
+
       setLastRequestTime(prev => ({ ...prev, bill: now }));
-      notifyServiceRequest(parseInt(table), 'bill');
+      notifyServiceRequest(parsedTableNumber, 'bill');
       
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
@@ -777,7 +739,7 @@ export default function CustomerOrderScreen() {
   }, [shouldAnimateEmptyOrder, chefFloatY, chefHatFloat, sparkleScale1, sparkleScale2, sparkleScale3, pulseScale, plateRotate]);
 
   // ✅ Now safe to have conditional returns - all hooks have been called
-  if (!table) {
+  if (!hasValidTableNumber) {
     console.log('[CustomerOrder] No table number provided');
     return (
       <View style={styles.loadingContainer}>
