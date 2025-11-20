@@ -2,6 +2,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
+import { supabase } from "./supabase";
 
 const normalizeUrl = (value?: string | null) =>
   value?.replace(/\/+$/, "") ?? undefined;
@@ -28,12 +29,26 @@ export const getTrpcBaseUrl = (): string => {
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
+const getAuthorizationHeader = async () => {
+  const { data } = await supabase.auth.getSession();
+  const token =
+    data.session?.access_token || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
 export const createTrpcHttpLink = (url = getTrpcBaseUrl()) =>
   httpBatchLink({
     url,
-    headers: () => ({
-      "Content-Type": "application/json",
-    }),
+    headers: getAuthorizationHeader,
     fetch(requestUrl, options) {
       return fetch(requestUrl, {
         ...options,

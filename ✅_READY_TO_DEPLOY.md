@@ -27,6 +27,35 @@
 
 ---
 
+## 🛠️ Supabase Edge Function Readiness
+
+- Local serve: `supabase functions serve tapse-backend --env-file supabase/functions/tapse-backend/.env`
+- Build & deploy: `supabase functions build tapse-backend && supabase functions deploy tapse-backend --project-ref opsqnzswjxzvywqjqvjy`
+- Health check (no auth required):
+
+```bash
+curl http://localhost:54321/functions/v1/tapse-backend/health
+```
+
+- TRPC menu.getAll with anon key:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{"id":0,"method":"query","params":{"path":"menu.getAll","input":null}}' \
+  http://localhost:54321/functions/v1/tapse-backend
+```
+
+### Smoke-test checklist
+- Open the public menu and verify categories/items load.
+- Place a test order from the QR flow; confirm a row appears in `orders` (and `order_items`).
+- Submit a bill/waiter request and confirm a row appears in `service_requests`.
+- View the new order in the cashier/waiter screens and move it through status updates.
+- Check admin reports for updated order counts/revenue.
+
+---
+
 ## 🚀 QUICK DEPLOY
 
 ### Choose Your Method:
@@ -111,9 +140,10 @@ CUSTOMERS & STAFF (Mobile/Desktop)
 NODE_VERSION=20
 NPM_FLAGS=--legacy-peer-deps
 NODE_ENV=production
-EXPO_PUBLIC_SUPABASE_URL=https://oqspnszwjxzyvwqjvjiy.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://opsqnzswjxzvywqjqvjy.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wc3FuenN3anh6dnl3cWpxdmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5MTM5MjUsImV4cCI6MjA3NjQ4OTkyNX0.j3GfMt1dypvBQvLzvyREclMcEJRQ1_hzq81blOmwW_k
-EXPO_PUBLIC_RORK_API_BASE_URL=https://kurdish-cuisine-cashier-system.rork.app
+EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL=https://opsqnzswjxzvywqjqvjy.functions.supabase.co
+EXPO_PUBLIC_RORK_API_BASE_URL=https://opsqnzswjxzvywqjqvjy.functions.supabase.co
 ```
 
 **Just copy & paste into Netlify!** 📋
