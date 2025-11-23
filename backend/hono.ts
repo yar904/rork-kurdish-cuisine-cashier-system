@@ -5,6 +5,7 @@ import { createContext } from "./trpc/create-context";
 
 const app = new Hono();
 
+// Global CORS for Supabase Edge Function usage
 app.use("*", async (c, next) => {
   c.header("Access-Control-Allow-Origin", "*");
   c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -12,7 +13,6 @@ app.use("*", async (c, next) => {
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, apikey, x-client-info, x-trpc-source, x-supabase-api-version",
   );
-  c.header("Access-Control-Allow-Credentials", "true");
 
   if (c.req.method === "OPTIONS") {
     return c.body(null, 204);
@@ -21,11 +21,13 @@ app.use("*", async (c, next) => {
   return next();
 });
 
+// Log all tRPC traffic for debugging
 app.use("/tapse-backend/trpc/*", async (c, next) => {
   console.log(`[Hono] tRPC request received: ${c.req.method} ${c.req.url}`);
   return next();
 });
 
+// tRPC server mount
 app.use(
   "/tapse-backend/trpc/*",
   trpcServer({
@@ -34,6 +36,7 @@ app.use(
   }),
 );
 
+// Health checks
 app.get("/tapse-backend/health", (c) =>
   c.json({
     status: "ok",
@@ -41,6 +44,7 @@ app.get("/tapse-backend/health", (c) =>
     supabaseUrl:
       process.env.EXPO_PUBLIC_SUPABASE_URL ||
       process.env.SUPABASE_URL ||
+      process.env.SUPABASE_PROJECT_URL ||
       null,
     timestamp: new Date().toISOString(),
   }),
@@ -51,12 +55,6 @@ app.get("/tapse-backend/trpc/health", (c) =>
     status: "ok",
     trpc: "/tapse-backend/trpc",
     timestamp: new Date().toISOString(),
-  }),
-);
-
-app.get("/api/health", (c) =>
-  c.json({
-    status: "ok",
   }),
 );
 

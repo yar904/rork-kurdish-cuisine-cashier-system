@@ -8,17 +8,15 @@ import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 import { supabase } from "./supabase";
 
-const FALLBACK_TRPC_URL =
+const TRPC_BASE_URL =
   "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
 
 console.log("[ENV] TRPC:", process.env.EXPO_PUBLIC_TRPC_URL);
 console.log("[ENV] Functions:", process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
 console.log("[ENV] Supabase URL:", process.env.EXPO_PUBLIC_SUPABASE_URL);
 
-export const getTrpcBaseUrl = (): string => {
-  const apiUrl = process.env.EXPO_PUBLIC_TRPC_URL?.replace(/\/$/, "");
-  return apiUrl || FALLBACK_TRPC_URL;
-};
+export const getTrpcBaseUrl = (): string =>
+  process.env.EXPO_PUBLIC_TRPC_URL?.replace(/\/$/, "") || TRPC_BASE_URL;
 
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
@@ -38,13 +36,13 @@ const getAuthorizationHeader = async () => {
   return headers;
 };
 
-export const createTrpcHttpLink = (url = getTrpcBaseUrl()) =>
+export const createTrpcHttpLink = () =>
   httpBatchLink({
-    url,
+    url: getTrpcBaseUrl(),
     headers: getAuthorizationHeader,
     onError({ error, meta }) {
       console.error("[tRPC link error]", {
-        url,
+        url: getTrpcBaseUrl(),
         path: meta?.path,
         type: meta?.type,
         error: error.message,
