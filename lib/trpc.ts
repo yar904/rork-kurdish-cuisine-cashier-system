@@ -31,51 +31,35 @@ const ensureTrpcEndpoint = (value?: string | null) => {
   return `${normalized}${TRPC_ENDPOINT_PATH}`;
 };
 
-const buildTrpcUrlCandidates = () => {
+const resolveSupabaseEdgeUrl = (): string => {
   const explicitUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_TRPC_URL);
-  const supabaseFunctionsUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
-  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
-  const derivedFunctionsUrl = supabaseUrl
-    ? ensureTrpcEndpoint(`${stripTrailingSlash(supabaseUrl)}/functions/v1`)
-    : null;
-
-  const unorderedCandidates = [explicitUrl, supabaseFunctionsUrl, derivedFunctionsUrl];
-  const uniqueCandidates: string[] = [];
-
-  unorderedCandidates.forEach((candidate) => {
-    if (candidate && !uniqueCandidates.includes(candidate)) {
-      uniqueCandidates.push(candidate);
-    }
-  });
-
-  return uniqueCandidates;
-};
-
-const trpcUrlCandidates = buildTrpcUrlCandidates();
-
-if (!trpcUrlCandidates.length) {
-  console.error("[tRPC] Missing EXPO_PUBLIC_TRPC_URL or fallback Supabase function URLs");
-  throw new Error(
-    "Missing EXPO_PUBLIC_TRPC_URL, EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL, or EXPO_PUBLIC_SUPABASE_URL. Please check your .env file.",
-  );
-}
-
-let activeUrlIndex = 0;
-let cachedTrpcUrl: string | null = trpcUrlCandidates[activeUrlIndex];
-const linkBaseUrl = trpcUrlCandidates[0];
-
-console.log("[tRPC] Endpoint candidates:", trpcUrlCandidates);
-
-// ---------- FINAL TRPC URL – ALWAYS USE THIS ----------
-export const getTrpcBaseUrl = () => {
-  if (cachedTrpcUrl) {
-    return cachedTrpcUrl;
+  if (explicitUrl) {
+    return explicitUrl;
   }
 
-  cachedTrpcUrl = trpcUrlCandidates[activeUrlIndex];
-  console.log("[tRPC] Using resolved URL:", cachedTrpcUrl);
-  return cachedTrpcUrl;
+  const supabaseFunctionsUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
+  if (supabaseFunctionsUrl) {
+    return supabaseFunctionsUrl;
+  }
+
+  const projectRef = process.env.EXPO_PUBLIC_SUPABASE_PROJECT_ID?.trim();
+  if (projectRef) {
+    const derivedUrl = ensureTrpcEndpoint(`https://${projectRef}.functions.supabase.co`);
+    if (derivedUrl) {
+      return derivedUrl;
+    }
+  }
+
+  throw new Error(
+    "Missing Supabase Edge Function URL. Please set EXPO_PUBLIC_TRPC_URL, EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL, or EXPO_PUBLIC_SUPABASE_PROJECT_ID.",
+  );
 };
+
+const linkBaseUrl = resolveSupabaseEdgeUrl();
+
+console.log("[tRPC] Using Supabase Edge URL:", linkBaseUrl);
+
+export const getTrpcBaseUrl = () => linkBaseUrl;
 
 const getAuthorizationHeader = async () => {
   try {
@@ -116,53 +100,21 @@ export const createTrpcHttpLink = () =>
     fetch(requestUrl, options) {
       const normalizedRequestUrl =
         typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
-      const requestSuffix = normalizedRequestUrl.startsWith(linkBaseUrl)
-        ? normalizedRequestUrl.slice(linkBaseUrl.length)
-        : "";
 
-      const tryFetch = async (baseUrl: string) => {
-        const finalUrl = requestSuffix ? `${baseUrl}${requestSuffix}` : normalizedRequestUrl;
-        console.log("[tRPC] Fetching:", finalUrl);
-        const finalOptions: RequestInit = {
-          ...(options ?? {}),
-          method: options?.method ?? "POST",
-          keepalive: true,
-          credentials: "omit",
-        };
-
-        return fetch(finalUrl, finalOptions);
+      const finalOptions: RequestInit = {
+        ...(options ?? {}),
+        method: "POST",
+        keepalive: true,
+        credentials: "omit",
       };
 
-      const runWithFallbacks = async () => {
-        let lastError: unknown = null;
+      console.log("[tRPC] Fetching:", normalizedRequestUrl);
 
-        for (let candidateIndex = activeUrlIndex; candidateIndex < trpcUrlCandidates.length; candidateIndex += 1) {
-          const candidate = trpcUrlCandidates[candidateIndex];
-
-          try {
-            const response = await tryFetch(candidate);
-
-            if (activeUrlIndex !== candidateIndex) {
-              console.warn(`[tRPC] Switched endpoint to ${candidate}`);
-            }
-
-            activeUrlIndex = candidateIndex;
-            cachedTrpcUrl = candidate;
-            return response;
-          } catch (error) {
-            lastError = error;
-            console.warn(`[tRPC] Request failed for ${candidate}:`, error);
-          }
-        }
-
-        throw lastError ?? new Error("Unknown network error");
-      };
-
-      return runWithFallbacks().catch((error: any) => {
+      return fetch(normalizedRequestUrl, finalOptions).catch((error: any) => {
         const errorMessage = error?.message || String(error);
         console.error("[tRPC fetch error]", {
           url: requestUrl,
-          method: options?.method ?? "POST",
+          method: "POST",
           body: options?.body,
           error: errorMessage,
           stack: error?.stack,
