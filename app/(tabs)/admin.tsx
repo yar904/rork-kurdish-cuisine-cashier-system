@@ -8,7 +8,7 @@ import { TableQRManagement } from '@/components/admin/TableQRManagement';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useClearNotification, useClearTableNotifications, useNotifications } from '@/contexts/NotificationContext';
 
 type AdminSection = 'menu' | 'inventory' | 'employees' | 'categories' | 'tables' | 'qr-codes' | null;
 
@@ -41,11 +41,13 @@ type TableInfo = {
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
-  const { data: notifications, isLoading: notificationsLoading, clear, clearTable } = useNotifications();
+  const notificationsQuery = useNotifications();
+  const clearNotification = useClearNotification();
+  const clearTableNotifications = useClearTableNotifications();
   const [clearingId, setClearingId] = useState<number | null>(null);
   const [clearingTable, setClearingTable] = useState<number | null>(null);
 
-  const getTimeSince = useCallback((date: Date | string) => {
+  const getTimeSince = useCallback((date: string) => {
     const now = Date.now();
     const diff = now - new Date(date).getTime();
     const minutes = Math.floor(diff / 60000);
@@ -58,24 +60,24 @@ export default function AdminDashboard() {
     async (id: number) => {
       setClearingId(id);
       try {
-        await clear(id);
+        await clearNotification(id);
       } finally {
         setClearingId(null);
       }
     },
-    [clear],
+    [clearNotification],
   );
 
   const handleClearTable = useCallback(
     async (tableNumber: number) => {
       setClearingTable(tableNumber);
       try {
-        await clearTable(tableNumber);
+        await clearTableNotifications(tableNumber);
       } finally {
         setClearingTable(null);
       }
     },
-    [clearTable],
+    [clearTableNotifications],
   );
 
   return (
@@ -189,10 +191,10 @@ export default function AdminDashboard() {
 
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            {notificationsLoading ? (
+            {notificationsQuery.isLoading ? (
               <ActivityIndicator color="#5C0000" />
-            ) : notifications && notifications.length > 0 ? (
-              notifications.map(notification => (
+            ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
+              notificationsQuery.data.map(notification => (
                 <View key={notification.id} style={styles.notificationRow}>
                   <Text style={styles.notificationText}>
                     Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}

@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatusType = 'new' | 'preparing' | 'ready' | 'served';
 
@@ -36,7 +36,7 @@ export default function OrderTrackingScreen() {
   const [progress] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
   const [showServiceModal, setShowServiceModal] = useState(false);
-  const [serviceRequestType, setServiceRequestType] = useState<'help' | 'other' | null>(null);
+  const [serviceRequestType, setServiceRequestType] = useState<'help' | 'bill' | 'other' | null>(null);
   const [serviceMessage, setServiceMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,9 +110,9 @@ export default function OrderTrackingScreen() {
     outputRange: ['0%', '100%'],
   });
 
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
 
-  const handleServiceRequest = useCallback((type: 'help' | 'other') => {
+  const handleServiceRequest = useCallback((type: 'help' | 'bill' | 'other') => {
     setServiceRequestType(type);
     setServiceMessage('');
     setShowServiceModal(true);
@@ -123,13 +123,25 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      const notificationType = serviceRequestType === 'help' ? 'help' : 'other';
+      const notificationType =
+        serviceRequestType === 'help'
+          ? 'call_waiter'
+          : serviceRequestType === 'bill'
+          ? 'request_bill'
+          : serviceRequestType;
 
-      await publish(parseInt(tableNumber, 10), notificationType);
+      await publishNotification({
+        table_number: parseInt(tableNumber, 10),
+        type: notificationType,
+      });
 
       Alert.alert(
         t('success'),
-        serviceRequestType === 'help' ? t('waiterNotified') : t('issueReported'),
+        serviceRequestType === 'help'
+          ? t('waiterNotified')
+          : serviceRequestType === 'bill'
+          ? t('billRequested')
+          : t('issueReported'),
         [{ text: 'OK' }]
       );
 
@@ -142,7 +154,7 @@ export default function OrderTrackingScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [publish, serviceRequestType, tableNumber, isSubmitting, t]);
+  }, [publishNotification, serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
 
   if (currentStatus === 'served') {
     return (
@@ -338,7 +350,7 @@ export default function OrderTrackingScreen() {
 
             <TouchableOpacity
               style={styles.supportButton}
-              onPress={() => handleServiceRequest('help')}
+              onPress={() => handleServiceRequest('bill')}
             >
               <View style={[styles.serviceButtonIcon, { backgroundColor: '#10B981' }]}>
                 <DollarSign size={24} color="#fff" />

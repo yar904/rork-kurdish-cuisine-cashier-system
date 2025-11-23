@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 type StatusKey = OrderStatus | 'waiting';
@@ -85,7 +85,7 @@ export default function TrackOrderPage() {
   const { tableNumber } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const tableNum = parseInt(String(tableNumber), 10);
 
@@ -98,15 +98,19 @@ export default function TrackOrderPage() {
   );
 
   const handleServiceRequest = async (
-    requestType: 'help' | 'other'
+    requestType: 'help' | 'bill' | 'other'
   ) => {
+    setIsSending(true);
     try {
-      await publish(tableNum, requestType);
+      await publishNotification({
+        table_number: tableNum,
+        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+      });
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
@@ -115,6 +119,8 @@ export default function TrackOrderPage() {
       } else {
         Alert.alert('Error', 'Failed to send request');
       }
+    } finally {
+      setIsSending(false);
     }
   };
 

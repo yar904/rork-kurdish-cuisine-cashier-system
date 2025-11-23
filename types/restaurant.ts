@@ -57,11 +57,11 @@ export interface StaffActivity {
   details?: string;
 }
 
-export type NotificationType = 'help' | 'other';
+export type NotificationType = 'help' | 'bill' | 'other';
 
 export interface TableNotification {
   id: number;
-  table_number: number;
+  tableNumber: number;
   type: NotificationType;
-  created_at: Date | string;
+  createdAt: Date;
 }

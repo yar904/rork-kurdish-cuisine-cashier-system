@@ -5,7 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import { ShoppingCart, Clock, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useClearNotification, useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 
@@ -20,9 +20,9 @@ export default function CashierDashboard() {
     refetchInterval: 5000,
   });
 
-  const { data: notifications, isLoading: notificationsLoading, clear, clearTable } = useNotifications();
+  const notificationsQuery = useNotifications();
+  const clearNotification = useClearNotification();
   const [clearingId, setClearingId] = useState<number | null>(null);
-  const [clearingTable, setClearingTable] = useState<number | null>(null);
 
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
@@ -82,18 +82,9 @@ export default function CashierDashboard() {
   const handleClearNotification = async (id: number) => {
     setClearingId(id);
     try {
-      await clear(id);
+      await clearNotification(id);
     } finally {
       setClearingId(null);
-    }
-  };
-
-  const handleClearTable = async (tableNumber: number) => {
-    setClearingTable(tableNumber);
-    try {
-      await clearTable(tableNumber);
-    } finally {
-      setClearingTable(null);
     }
   };
 
@@ -130,30 +121,21 @@ export default function CashierDashboard() {
 
         <View style={styles.notificationsCard}>
           <Text style={styles.notificationsTitle}>Notifications</Text>
-          {notificationsLoading ? (
+          {notificationsQuery.isLoading ? (
             <ActivityIndicator color="#5C0000" />
-          ) : notifications && notifications.length > 0 ? (
-            notifications.map((notification) => (
+          ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
+            notificationsQuery.data.map((notification) => (
               <View key={notification.id} style={styles.notificationRow}>
                 <Text style={styles.notificationText}>
                   Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
                 </Text>
-                <View style={styles.notificationActions}>
-                  <TouchableOpacity
-                    style={styles.clearButton}
-                    onPress={() => handleClearNotification(notification.id)}
-                    disabled={clearingId === notification.id}
-                  >
-                    <Text style={styles.clearButtonText}>Clear</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.clearButton}
-                    onPress={() => handleClearTable(notification.table_number)}
-                    disabled={clearingTable === notification.table_number}
-                  >
-                    <Text style={styles.clearButtonText}>Clear Table</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => handleClearNotification(notification.id)}
+                  disabled={clearingId === notification.id}
+                >
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </TouchableOpacity>
               </View>
             ))
           ) : (
@@ -421,10 +403,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 12,
-  },
-  notificationActions: {
-    flexDirection: 'row',
-    gap: 8,
   },
   notificationText: {
     flex: 1,

@@ -28,7 +28,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 import { trpc } from '@/lib/trpc';
 
@@ -58,9 +58,10 @@ export default function PublicMenuScreen() {
   const categoryScrollX = useRef(new Animated.Value(0)).current;
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [showNotificationToastVisible, setShowNotificationToastVisible] = useState(false);
-  const { publish: publishNotification } = useNotifications();
-  const notificationToastOpacity = useRef(new Animated.Value(0)).current;
+  const [showWaiterToast, setShowWaiterToast] = useState(false);
+  const [lastNotificationType, setLastNotificationType] = useState<'call_waiter' | 'request_bill' | null>(null);
+  const publishNotification = usePublishNotification();
+  const waiterToastOpacity = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
   const cardAnimations = useRef<Map<string, Animated.Value>>(new Map()).current;
@@ -315,29 +316,46 @@ export default function PublicMenuScreen() {
   };
 
   const showNotificationToast = useCallback(() => {
-    setShowNotificationToastVisible(true);
+    setShowWaiterToast(true);
     Animated.sequence([
-      Animated.timing(notificationToastOpacity, {
+      Animated.timing(waiterToastOpacity, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }),
       Animated.delay(2000),
-      Animated.timing(notificationToastOpacity, {
+      Animated.timing(waiterToastOpacity, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }),
-    ]).start(() => setShowNotificationToastVisible(false));
-  }, [notificationToastOpacity]);
+    ]).start(() => setShowWaiterToast(false));
+  }, [waiterToastOpacity]);
 
-  const handleNotifyStaff = () => {
+  const handleCallWaiter = () => {
     if (!selectedTable) {
       Alert.alert(t('error'), t('pleaseSelectTableFirst'));
       return;
     }
 
-    publishNotification(selectedTable, 'help')
+    setLastNotificationType('call_waiter');
+    publishNotification({ table_number: selectedTable, type: 'call_waiter' })
+      .then(() => {
+        showNotificationToast();
+      })
+      .catch(() => {
+        Alert.alert(t('error'), t('failedToSubmitRequest'));
+      });
+  };
+
+  const handleRequestBill = () => {
+    if (!selectedTable) {
+      Alert.alert(t('error'), t('pleaseSelectTableFirst'));
+      return;
+    }
+
+    setLastNotificationType('request_bill');
+    publishNotification({ table_number: selectedTable, type: 'request_bill' })
       .then(() => {
         showNotificationToast();
       })
@@ -1046,7 +1064,7 @@ export default function PublicMenuScreen() {
         </ScrollView>
       </View>
 
-      {showNotificationToastVisible && (
+      {showWaiterToast && (
         <Animated.View
           style={[
             styles.notificationToast,
@@ -1064,12 +1082,18 @@ export default function PublicMenuScreen() {
           ]}
         >
           <ChefHat size={20} color="#D4AF37" strokeWidth={2} />
-          <Text style={styles.notificationToastText}>
+          <Text style={styles.waiterToastText}>
             {language === 'en'
-              ? 'Staff has been notified 🍷'
+              ? (lastNotificationType === 'request_bill'
+                ? 'Bill request sent 💳'
+                : 'Waiter has been notified 🍷')
               : language === 'ku'
-              ? 'ستاف ئاگادار کرایەوە 🍷'
-              : 'تم إعلام الطاقم 🍷'}
+              ? (lastNotificationType === 'request_bill'
+                ? 'داواکاری حیساب نێردرا 💳'
+                : 'گارسۆن ئاگادار کرایەوە 🍷')
+              : (lastNotificationType === 'request_bill'
+                ? 'تم إرسال طلب الفاتورة 💳'
+                : 'تم إعلام النادل 🍷')}
           </Text>
         </Animated.View>
       )}

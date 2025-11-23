@@ -687,7 +687,7 @@ const ordersRouter = createTRPCRouter({
 export type NotificationRecord = {
   id: number;
   table_number: number;
-  type: "help" | "other";
+  type: string;
   created_at: string;
 };
 
@@ -696,7 +696,7 @@ const notificationsRouter = createTRPCRouter({
     .input(
       z.object({
         table_number: z.number(),
-        type: z.enum(["help", "other"]),
+        type: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -766,10 +766,10 @@ const notificationsRouter = createTRPCRouter({
       return { success: true };
     }),
   clearAll: publicProcedure.mutation(async () => {
-    const { error } = await supabase.from("notifications").delete();
+    const { error } = await supabase.from("notifications").delete().neq("id", -1);
 
     if (error) {
-      console.error("Error clearing notifications:", error);
+      console.error("[Notifications] Error clearing all notifications:", error);
       throw new Error("Failed to clear notifications");
     }
 

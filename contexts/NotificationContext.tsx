@@ -2,44 +2,37 @@ import { useCallback, useEffect, useMemo } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
-import type { NotificationType, TableNotification } from "@/types/restaurant";
+import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
+
+type PublishInput = { table_number: number; type: string };
 
 type NotificationContextValue = {
-  data: TableNotification[] | undefined;
-  isLoading: boolean;
-  publish: (tableNumber: number, type?: NotificationType) => Promise<TableNotification | null>;
-  clear: (id: number) => Promise<void>;
-  clearTable: (tableNumber: number) => Promise<void>;
-  clearAll: () => Promise<void>;
+  useNotifications: () => ReturnType<typeof trpc.notifications.list.useQuery>;
+  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
+  clearById: (id: number) => Promise<void>;
+  clearByTable: (tableNumber: number) => Promise<void>;
 };
 
-export const [NotificationProvider, useNotifications] = createContextHook<NotificationContextValue>(() => {
-  const utils = trpc.useUtils();
+export const [NotificationProvider, useNotificationsContext] = createContextHook<NotificationContextValue>(() => {
   const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
     refetchInterval: 7000,
   });
 
   const publishMutation = trpc.notifications.publish.useMutation({
     onSuccess: () => {
-      utils.notifications.list.invalidate();
+      notificationsQuery.refetch();
     },
   });
 
   const clearMutation = trpc.notifications.clearById.useMutation({
     onSuccess: () => {
-      utils.notifications.list.invalidate();
+      notificationsQuery.refetch();
     },
   });
 
   const clearTableMutation = trpc.notifications.clearByTable.useMutation({
     onSuccess: () => {
-      utils.notifications.list.invalidate();
-    },
-  });
-
-  const clearAllMutation = trpc.notifications.clearAll.useMutation({
-    onSuccess: () => {
-      utils.notifications.list.invalidate();
+      notificationsQuery.refetch();
     },
   });
 
@@ -50,7 +43,7 @@ export const [NotificationProvider, useNotifications] = createContextHook<Notifi
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
         () => {
-          utils.notifications.list.invalidate();
+          notificationsQuery.refetch();
         },
       )
       .subscribe();
@@ -58,46 +51,57 @@ export const [NotificationProvider, useNotifications] = createContextHook<Notifi
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [utils]);
+  }, [notificationsQuery]);
 
   const publish = useCallback(
-    async (tableNumber: number, type: NotificationType = "help") => {
-      const result = await publishMutation.mutateAsync({
-        table_number: tableNumber,
-        type,
-      });
+    async (input: PublishInput) => {
+      const result = await publishMutation.mutateAsync(input);
       return result ?? null;
     },
     [publishMutation],
   );
 
-  const clear = useCallback(
+  const clearById = useCallback(
     async (id: number) => {
       await clearMutation.mutateAsync({ id });
     },
     [clearMutation],
   );
 
-  const clearTable = useCallback(
+  const clearByTable = useCallback(
     async (tableNumber: number) => {
       await clearTableMutation.mutateAsync({ table_number: tableNumber });
     },
     [clearTableMutation],
   );
 
-  const clearAll = useCallback(async () => {
-    await clearAllMutation.mutateAsync();
-  }, [clearAllMutation]);
-
   return useMemo<NotificationContextValue>(
     () => ({
-      data: notificationsQuery.data,
-      isLoading: notificationsQuery.isLoading,
+      useNotifications: () => notificationsQuery,
       publish,
-      clear,
-      clearTable,
-      clearAll,
+      clearById,
+      clearByTable,
     }),
-    [notificationsQuery.data, notificationsQuery.isLoading, publish, clear, clearTable, clearAll],
+    [notificationsQuery, publish, clearById, clearByTable],
   );
 });
+
+export const useNotifications = () => {
+  const context = useNotificationsContext();
+  return context.useNotifications();
+};
+
+export const usePublishNotification = () => {
+  const context = useNotificationsContext();
+  return context.publish;
+};
+
+export const useClearNotification = () => {
+  const context = useNotificationsContext();
+  return context.clearById;
+};
+
+export const useClearTableNotifications = () => {
+  const context = useNotificationsContext();
+  return context.clearByTable;
+};

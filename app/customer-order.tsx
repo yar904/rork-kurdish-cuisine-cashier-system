@@ -23,11 +23,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpc, trpcClient } from '@/lib/trpc';
+import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 
@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -116,10 +116,22 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
+    type: 'assist' | 'bill' | null;
     message: string;
     visible: boolean;
   }>({ message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
+
+  const callWaiterMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'call_waiter' }),
+  });
+
+  const requestBillMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'request_bill' }),
+  });
+
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
   const chefHatFloat = useRef(new Animated.Value(0)).current;
@@ -256,6 +268,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
+  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -450,8 +463,34 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const notifyStaff = async () => {
-    animateButton('notify');
+  const handleCallWaiter = async () => {
+    animateButton('waiter');
+    
+    if (!hasValidTableNumber) {
+      showStatusMessage('❌ Table number not found');
+      return;
+    }
+
+    const now = Date.now();
+    const lastRequest = lastRequestTime.assist || 0;
+    if (now - lastRequest < 10000) {
+      showStatusMessage('⏳ Please wait 10 seconds before calling again');
+      return;
+    }
+
+    console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
+
+    try {
+      await publishNotification({ table_number: parsedTableNumber, type: 'call_waiter' });
+
+      setLastRequestTime(prev => ({ ...prev, waiter: now }));
+
+      showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
+    } catch (error: any) {
+      console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
+      showStatusMessage('❌ Request failed. Please try again or call a waiter manually.');
+    }
+  };
 
     if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
@@ -459,8 +498,11 @@ export default function CustomerOrderScreen() {
     }
 
     try {
-      await publish(parsedTableNumber, 'help');
-      showStatusMessage('✅ A team member has been notified.');
+      await publishNotification({ table_number: parsedTableNumber, type: 'request_bill' });
+
+      setLastRequestTime(prev => ({ ...prev, bill: now }));
+
+      showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
       showStatusMessage('❌ Request failed. Please try again.');

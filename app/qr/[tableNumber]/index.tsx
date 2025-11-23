@@ -14,11 +14,12 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ShoppingCart, X, HandHeart, Receipt } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
 import { QRSuccess } from '@/components/qr/QRSuccess';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface CartItem {
   menuItemId: string;
@@ -41,7 +42,7 @@ export default function QROrderingPage() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
   const addItemMutation = trpc.orders.addItem.useMutation();
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const categories = useMemo(() => {
     if (!menuQuery.data) return ['All'];
@@ -127,7 +128,7 @@ export default function QROrderingPage() {
     }
   };
 
-  const handleServiceRequest = async (requestType: 'help' | 'other' = 'help') => {
+  const handleServiceRequest = async (requestType: 'help' | 'bill') => {
     try {
       const tableNum = parseInt(String(tableNumber), 10);
       if (isNaN(tableNum)) {
@@ -135,12 +136,15 @@ export default function QROrderingPage() {
         return;
       }
 
-      await publish(tableNum, requestType);
+      await publishNotification({
+        table_number: tableNum,
+        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+      });
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
