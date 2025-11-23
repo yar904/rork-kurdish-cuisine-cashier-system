@@ -1,86 +1,116 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
-import { supabase } from "@/lib/supabase";
+import { useRealtime } from "@/contexts/RealtimeContext";
 import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-type NotificationType = "help" | "bill" | "other" | "call_waiter" | "request_bill" | "assist";
-type PublishInput = { table_number: number; type: NotificationType };
+export type NotificationType = "assist" | "bill" | "notify" | "call_waiter" | "request_bill";
 
-type NotificationContextValue = ReturnType<typeof trpc.notifications.list.useQuery> & {
-  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
-  list: () => Promise<NotificationRecord[]>;
-  clearById: (id: number) => Promise<void>;
+type PublishInput = {
+  tableNumber: number;
+  type?: NotificationType;
+};
+
+type NotificationItem = {
+  id: number;
+  tableNumber: number;
+  table_number: number;
+  type: NotificationType | string;
+  createdAt: string;
+  created_at: string;
+};
+
+type NotificationContextValue = {
+  notifications: NotificationItem[];
+  data: NotificationItem[];
+  isLoading: boolean;
+  isRefetching: boolean;
+  error: unknown;
+  publish: (input: PublishInput) => Promise<NotificationItem | null>;
+  list: () => Promise<NotificationItem[]>;
+  clear: (id: number) => Promise<void>;
   clearByTable: (tableNumber: number) => Promise<void>;
   clearAll: () => Promise<void>;
 };
 
+const mapNotificationRecord = (record: NotificationRecord): NotificationItem => ({
+  id: record.id,
+  tableNumber: record.table_number,
+  table_number: record.table_number,
+  type: record.type as NotificationType,
+  createdAt: record.created_at,
+  created_at: record.created_at,
+});
+
 export const [NotificationProvider, useNotificationsContext] =
   createContextHook<NotificationContextValue>(() => {
-    const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
-      refetchInterval: 7000,
-    });
-
+    const { subscribeToNotifications } = useRealtime();
     const utils = trpc.useUtils();
 
-    const publishMutation = trpc.notifications.publish.useMutation({
-      onSuccess: () => {
-        notificationsQuery.refetch();
-      },
-    });
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-    const clearMutation = trpc.notifications.clearById.useMutation({
-      onSuccess: () => {
-        notificationsQuery.refetch();
-      },
-    });
-
-    const clearTableMutation = trpc.notifications.clearByTable.useMutation({
-      onSuccess: () => {
-        notificationsQuery.refetch();
-      },
-    });
-
-    const clearAllMutation = trpc.notifications.clearAll.useMutation({
-      onSuccess: () => {
-        notificationsQuery.refetch();
-      },
-    });
+    const notificationsQuery = trpc.notifications.list.useQuery(undefined);
 
     useEffect(() => {
-      const channel = supabase
-        .channel("notifications-realtime")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "notifications" },
-          () => {
-            notificationsQuery.refetch();
-          },
-        )
-        .subscribe();
+      if (notificationsQuery.data) {
+        setNotifications(notificationsQuery.data.map(mapNotificationRecord));
+      }
+    }, [notificationsQuery.data]);
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }, [notificationsQuery]);
+    const publishMutation = trpc.notifications.publish.useMutation();
+    const clearMutation = trpc.notifications.clearById.useMutation();
+    const clearTableMutation = trpc.notifications.clearByTable.useMutation();
+    const clearAllMutation = trpc.notifications.clearAll.useMutation();
+
+    useEffect(() => {
+      return subscribeToNotifications((payload) => {
+        if (payload.eventType === "INSERT") {
+          const record = payload.new as NotificationRecord;
+          setNotifications((prev) => {
+            const mapped = mapNotificationRecord(record);
+            const next = [mapped, ...prev.filter((item) => item.id !== mapped.id)];
+            return next.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+          });
+          return;
+        }
+
+        if (payload.eventType === "DELETE") {
+          const record = payload.old as NotificationRecord;
+          setNotifications((prev) => prev.filter((item) => item.id !== record.id));
+        }
+      });
+    }, [subscribeToNotifications]);
 
     const publish = useCallback(
       async (input: PublishInput) => {
-        const result = await publishMutation.mutateAsync(input);
+        if (!input.tableNumber) {
+          return null;
+        }
+
+        const created = await publishMutation.mutateAsync({
+          table_number: input.tableNumber,
+          type: input.type ?? "notify",
+        });
+
+        const mapped = mapNotificationRecord(created);
+        setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
         await utils.notifications.list.invalidate();
-        return result ?? null;
+        return mapped;
       },
       [publishMutation, utils],
     );
 
     const list = useCallback(async () => {
-      const result = await utils.notifications.list.fetch();
-      return result ?? [];
+      const data = await utils.notifications.list.fetch();
+      const mapped = (data ?? []).map(mapNotificationRecord);
+      setNotifications(mapped);
+      return mapped;
     }, [utils]);
 
-    const clearById = useCallback(
+    const clear = useCallback(
       async (id: number) => {
         await clearMutation.mutateAsync({ id });
+        setNotifications((prev) => prev.filter((item) => item.id !== id));
         await utils.notifications.list.invalidate();
       },
       [clearMutation, utils],
@@ -89,6 +119,7 @@ export const [NotificationProvider, useNotificationsContext] =
     const clearByTable = useCallback(
       async (tableNumber: number) => {
         await clearTableMutation.mutateAsync({ table_number: tableNumber });
+        setNotifications((prev) => prev.filter((item) => item.tableNumber !== tableNumber));
         await utils.notifications.list.invalidate();
       },
       [clearTableMutation, utils],
@@ -96,19 +127,24 @@ export const [NotificationProvider, useNotificationsContext] =
 
     const clearAll = useCallback(async () => {
       await clearAllMutation.mutateAsync();
+      setNotifications([]);
       await utils.notifications.list.invalidate();
     }, [clearAllMutation, utils]);
 
     const value = useMemo<NotificationContextValue>(
       () => ({
-        ...notificationsQuery,
+        notifications,
+        data: notifications,
+        isLoading: notificationsQuery.isLoading,
+        isRefetching: notificationsQuery.isRefetching,
+        error: notificationsQuery.error,
         publish,
         list,
-        clearById,
+        clear,
         clearByTable,
         clearAll,
       }),
-      [notificationsQuery, publish, list, clearById, clearByTable, clearAll],
+      [notifications, notificationsQuery.isLoading, notificationsQuery.isRefetching, notificationsQuery.error, publish, list, clear, clearByTable, clearAll],
     );
 
     return value;
@@ -126,7 +162,7 @@ export const usePublishNotification = () => {
 
 export const useClearNotification = () => {
   const context = useNotificationsContext();
-  return context.clearById;
+  return context.clear;
 };
 
 export const useClearTableNotifications = () => {
