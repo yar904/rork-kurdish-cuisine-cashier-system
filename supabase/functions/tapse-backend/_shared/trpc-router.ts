@@ -765,6 +765,16 @@ const notificationsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  clearAll: publicProcedure.mutation(async () => {
+    const { error } = await supabase.from("notifications").delete().neq("id", -1);
+
+    if (error) {
+      console.error("[Notifications] Error clearing all notifications:", error);
+      throw new Error("Failed to clear notifications");
+    }
+
+    return { success: true };
+  }),
 });
 
 const customerHistoryRouter = createTRPCRouter({

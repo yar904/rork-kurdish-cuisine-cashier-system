@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpc, trpcClient } from '@/lib/trpc';
+import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const publishNotification = usePublishNotification();
+  const { notifyServiceRequest, publish } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -117,7 +117,7 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
-    type: 'waiter' | 'bill' | null;
+    type: 'assist' | 'bill' | null;
     message: string;
     visible: boolean;
   }>({ type: null, message: '', visible: false });
@@ -259,7 +259,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
+  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -463,7 +463,7 @@ export default function CustomerOrderScreen() {
     }
 
     const now = Date.now();
-    const lastRequest = lastRequestTime.waiter || 0;
+    const lastRequest = lastRequestTime.assist || 0;
     if (now - lastRequest < 10000) {
       showStatusMessage('⏳ Please wait 10 seconds before calling again');
       return;

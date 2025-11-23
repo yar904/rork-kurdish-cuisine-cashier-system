@@ -19,6 +19,7 @@ import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
 import { QRSuccess } from '@/components/qr/QRSuccess';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface CartItem {
   menuItemId: string;
@@ -141,9 +142,9 @@ export default function QROrderingPage() {
       });
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);

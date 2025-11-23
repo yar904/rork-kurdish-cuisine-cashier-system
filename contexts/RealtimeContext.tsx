@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+type RealtimePayload = RealtimePostgresChangesPayload<Record<string, any>>;
 
 type RealtimeContextType = {
   isConnected: boolean;
-  subscribeToOrders: (callback: (payload: any) => void) => () => void;
-  subscribeToServiceRequests: (callback: (payload: any) => void) => () => void;
-  subscribeToMenuItems: (callback: (payload: any) => void) => () => void;
+  subscribeToOrders: (callback: (payload: RealtimePayload) => void) => () => void;
+  subscribeToMenuItems: (callback: (payload: RealtimePayload) => void) => () => void;
+  subscribeToNotifications: (callback: (payload: RealtimePayload) => void) => () => void;
 };
 
 const RealtimeContext = createContext<RealtimeContextType | undefined>(undefined);
@@ -16,13 +18,13 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkConnection = async () => {
-      const { data, error } = await supabase.from('menu_items').select('count');
+      const { error } = await supabase.from('menu_items').select('count');
       setIsConnected(!error);
     };
     checkConnection();
   }, []);
 
-  const subscribeToOrders = (callback: (payload: any) => void) => {
+  const subscribeToOrders = (callback: (payload: RealtimePayload) => void) => {
     console.log('[Realtime] Subscribing to orders table');
     
     const channel: RealtimeChannel = supabase
@@ -47,32 +49,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const subscribeToServiceRequests = (callback: (payload: any) => void) => {
-    console.log('[Realtime] Subscribing to service_requests table');
-    
-    const channel: RealtimeChannel = supabase
-      .channel('service-requests-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'service_requests',
-        },
-        (payload) => {
-          console.log('[Realtime] Service request change:', payload);
-          callback(payload);
-        }
-      )
-      .subscribe();
 
-    return () => {
-      console.log('[Realtime] Unsubscribing from service requests');
-      channel.unsubscribe();
-    };
-  };
-
-  const subscribeToMenuItems = (callback: (payload: any) => void) => {
+  const subscribeToMenuItems = (callback: (payload: RealtimePayload) => void) => {
     console.log('[Realtime] Subscribing to menu_items table');
     
     const channel: RealtimeChannel = supabase
@@ -97,13 +75,50 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   };
 
+  const subscribeToNotifications = (callback: (payload: RealtimePayload) => void) => {
+    console.log('[Realtime] Subscribing to notifications table');
+
+    const channel: RealtimeChannel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+        },
+        (payload) => {
+          console.log('[Realtime] Notification INSERT:', payload);
+          callback(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+        },
+        (payload) => {
+          console.log('[Realtime] Notification DELETE:', payload);
+          callback(payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('[Realtime] Unsubscribing from notifications');
+      channel.unsubscribe();
+    };
+  };
+
   return (
     <RealtimeContext.Provider
       value={{
         isConnected,
         subscribeToOrders,
-        subscribeToServiceRequests,
         subscribeToMenuItems,
+        subscribeToNotifications,
       }}
     >
       {children}
