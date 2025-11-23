@@ -1,10 +1,10 @@
-EXPO_PUBLIC_SUPABASE_URL=https://oqspnszwyjzwvqvjvjyq.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://qspznswjzxyvvqjqvjvj.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL=https://oqspnszwyjzwvqvjvjyq.supabase.co/functions/v1
-EXPO_PUBLIC_TRPC_URL=https://oqspnszwyjzwvqvjvjyq.supabase.co/functions/v1/tapse-backend/trpc
-EXPO_PUBLIC_RORK_API_BASE_URL=https://oqspnszwyjzwvqvjvjyq.supabase.co/functions/v1/tapse-backend/trpc
+EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1
+EXPO_PUBLIC_TRPC_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1/tapse-backend/trpc
+EXPO_PUBLIC_RORK_API_BASE_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1/tapse-backend/trpc
 
-SUPABASE_PROJECT_URL=https://oqspnszwyjzwvqvjvjyq.supabase.co
+SUPABASE_PROJECT_URL=https://qspznswjzxyvvqjqvjvj.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 

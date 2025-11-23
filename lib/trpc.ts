@@ -5,10 +5,10 @@ import superjson from "superjson";
 import { supabase } from "./supabase";
 
 export const getTrpcBaseUrl = (): string => {
-  const envUrl = process.env.EXPO_PUBLIC_TRPC_URL;
-  if (envUrl) return envUrl;
+  const apiUrl = process.env.EXPO_PUBLIC_TRPC_URL;
+  if (apiUrl) return apiUrl;
 
-  return "https://oqspnszwyjzwvqvjvjyq.supabase.co/functions/v1/tapse-backend/trpc";
+  return "https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1/tapse-backend/trpc";
 };
 
 export const trpc = createTRPCReact<AppRouter>();

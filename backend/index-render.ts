@@ -12,17 +12,14 @@ const app = new Hono();
 app.use(
   "*",
   cors({
-    origin: [
-      "https://endearing-kheer-8f2632.netlify.app",
-      "http://localhost:3000",
-    ],
+    origin: ["https://tapse.netlify.app", "https://expo.dev", "http://localhost:3000"],
     credentials: true,
   })
 );
 
 // API
 app.use(
-  "/api/trpc/*",
+  "/tapse-backend/trpc/*",
   trpcServer({
     router: appRouter,
     createContext,

@@ -6,8 +6,8 @@ import { createContext } from "./trpc/create-context";
 
 const allowedOrigins = [
   "https://tapse.netlify.app",
+  "https://expo.dev",
   "http://localhost:3000",
-  "http://localhost:8081",
 ];
 
 const isAllowedOrigin = (origin?: string | null) => {
