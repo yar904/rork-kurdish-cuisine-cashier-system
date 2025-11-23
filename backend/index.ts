@@ -11,6 +11,5 @@ serve({
 });
 
 console.log(`✅ Server is running on http://localhost:${port}`);
-console.log(`📍 Health check: http://localhost:${port}/api/health`);
-console.log(`📍 Supabase test: http://localhost:${port}/api/test`);
-console.log(`📍 tRPC endpoint: http://localhost:${port}/api/trpc`);
+console.log(`📍 Health check: http://localhost:${port}/tapse-backend/health`);
+console.log(`📍 tRPC endpoint: http://localhost:${port}/tapse-backend/trpc`);

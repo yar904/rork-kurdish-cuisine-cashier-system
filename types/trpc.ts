@@ -1,3 +1,3 @@
-import type { appRouter } from "@/supabase/functions/tapse-backend/router";
+import type { appRouter } from "@/backend/trpc/app-router";
 
 export type AppRouter = typeof appRouter;

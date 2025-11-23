@@ -136,6 +136,7 @@ export function ImageUploader({
         .from(bucketName)
         .upload(filePath, fileData, {
           contentType: 'image/jpeg',
+          cacheControl: '3600',
           upsert: false,
         });
 

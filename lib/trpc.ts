@@ -1,48 +1,26 @@
 import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 import { supabase } from "./supabase";
-
-const normalizeUrl = (value?: string | null) =>
-  value?.replace(/\/+$/, "") ?? undefined;
-
-const buildEndpoint = (baseUrl: string) => `${baseUrl}/tapse-backend`;
-
-export const getTrpcBaseUrl = (): string => {
-  const envBaseUrl = normalizeUrl(process.env.EXPO_PUBLIC_RORK_API_BASE_URL);
-  if (envBaseUrl) {
-    return buildEndpoint(envBaseUrl);
-  }
-
-  const supabaseFunctionsUrl = normalizeUrl(
-    process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL,
-  );
-  if (supabaseFunctionsUrl) {
-    return buildEndpoint(supabaseFunctionsUrl);
-  }
-
-  // Local Supabase CLI default functions URL
-  return "http://localhost:54321/functions/v1/tapse-backend";
-};
+import type { AppRouter } from "@/types/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
+// ---------- FINAL TRPC URL – ALWAYS USE THIS ----------
+export const getTrpcBaseUrl = () =>
+  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
+
 const getAuthorizationHeader = async () => {
-  const { data } = await supabase.auth.getSession();
+  const session = await supabase.auth.getSession();
   const token =
-    data.session?.access_token || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+    session.data.session?.access_token ||
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-  const headers: Record<string, string> = {
+  return {
     "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : "",
   };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return headers;
 };
 
 export const createTrpcHttpLink = (url = getTrpcBaseUrl()) =>

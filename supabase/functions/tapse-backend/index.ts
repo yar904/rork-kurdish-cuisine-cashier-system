@@ -1,40 +1,60 @@
-import { createTRPCContext } from "./_shared/trpc-context.ts";
-import { appRouter } from "./_shared/trpc-router.ts";
-import { supabase } from "./_shared/supabase.ts";
-import { handleRequest } from "./router.ts";
+import { Hono } from "hono";
+import { trpcServer } from "@hono/trpc-server";
+import { appRouter } from "./trpc/app-router";
+import { createContext } from "./trpc/create-context";
+import { createClient } from "@supabase/supabase-js";
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const app = new Hono();
 
-const warmupContext = createTRPCContext(
-  new Request("https://tapse-backend.local/warmup", { headers: new Headers() }),
-).catch(() => null);
+// ---------- CORS ----------
+app.use("*", async (c, next) => {
+  c.header("Access-Control-Allow-Origin", "*");
+  c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  c.header("Access-Control-Allow-Headers", "*");
 
-console.log(
-  `[tapse-backend] Loaded ${Object.keys(appRouter._def.procedures).length} procedures and awaiting context warmup.`,
-);
-console.log(`[tapse-backend] Supabase client initialized: ${Boolean(supabase)}`);
-
-await warmupContext;
-
-Deno.serve(async (request: Request): Promise<Response> => {
-  if (request.method === "OPTIONS") {
-    return new Response("ok", { headers: CORS_HEADERS });
+  if (c.req.method === "OPTIONS") {
+    return c.text("", 204);
   }
 
-  const response = await handleRequest(request);
-  const headers = new Headers(response.headers);
-
-  for (const [key, value] of Object.entries(CORS_HEADERS)) {
-    headers.set(key, value);
-  }
-
-  return new Response(response.body, {
-    headers,
-    status: response.status,
-    statusText: response.statusText,
-  });
+  await next();
 });
+
+// ---------- Supabase Server Client ----------
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_ANON_KEY")!,
+);
+
+// ---------- Logging ----------
+app.use("/tapse-backend/trpc/*", async (c, next) => {
+  console.log("[TRPC] Request:", c.req.method, c.req.url);
+  await next();
+});
+
+// ---------- TRPC Server ----------
+app.use(
+  "/tapse-backend/trpc/*",
+  trpcServer({
+    router: appRouter,
+    createContext,
+  }),
+);
+
+// ---------- Health ----------
+app.get("/tapse-backend/health", (c) =>
+  c.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  }),
+);
+
+// ---------- Root ----------
+app.get("/", (c) =>
+  c.json({
+    status: "Backend running",
+    time: new Date().toISOString(),
+  }),
+);
+
+export default app;
+export const fetch = app.fetch;
