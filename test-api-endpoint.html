@@ -134,7 +134,7 @@
   </div>
 
   <script>
-    const API_BASE = 'https://tapse.netlify.app/.netlify/functions/api';
+    const API_BASE = 'https://oqspnszwyjzwvqvjvjyq.supabase.co/functions/v1/tapse-backend';
 
     function showResult(elementId, data, isSuccess) {
       const el = document.getElementById(elementId);
@@ -153,7 +153,7 @@
     async function testHealth() {
       showLoading('health-result');
       try {
-        const response = await fetch(`${API_BASE}/api/health`);
+        const response = await fetch(`${API_BASE}/health`);
         const data = await response.json();
         showResult('health-result', data, response.ok);
         
@@ -175,7 +175,7 @@
     async function testDatabase() {
       showLoading('db-result');
       try {
-        const response = await fetch(`${API_BASE}/api/test`);
+        const response = await fetch(`${API_BASE}/health`);
         const data = await response.json();
         showResult('db-result', data, response.ok);
       } catch (error) {
@@ -186,7 +186,7 @@
     async function testMenuQuery() {
       showLoading('menu-result');
       try {
-        const response = await fetch(`${API_BASE}/api/trpc/menu.getAll`, {
+        const response = await fetch(`${API_BASE}/trpc/menu.getAll`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -210,7 +210,7 @@
           total: 25000
         };
 
-        const response = await fetch(`${API_BASE}/api/trpc/orders.create`, {
+        const response = await fetch(`${API_BASE}/trpc/orders.create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

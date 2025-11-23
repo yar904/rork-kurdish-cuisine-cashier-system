@@ -3,12 +3,13 @@ import { createTRPCContext } from "./_shared/trpc-context.ts";
 import { appRouter } from "./_shared/trpc-router.ts";
 import { supabase } from "./_shared/supabase.ts";
 
-const TRPC_ENDPOINT = "/tapse-backend";
+const BASE_PATH = "/tapse-backend";
+const TRPC_ENDPOINT = `${BASE_PATH}/trpc`;
 
 function maybeHandleHealthCheck(request: Request): Response | null {
   const url = new URL(request.url);
 
-  if (request.method === "GET" && url.pathname === `${TRPC_ENDPOINT}/health`) {
+  if (request.method === "GET" && url.pathname === `${BASE_PATH}/health`) {
     return new Response(
       JSON.stringify({
         status: "ok",
@@ -38,7 +39,7 @@ export function handleRequest(request: Request): Promise<Response> {
   //   curl -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
   //        -H "Content-Type: application/json" \
   //        --data '{"id":0,"method":"query","params":{"input":null,"path":"menu.getAll"}}' \
-  //        http://localhost:54321/functions/v1/tapse-backend
+  //        http://localhost:54321/functions/v1/tapse-backend/trpc
   return fetchRequestHandler({
     endpoint: TRPC_ENDPOINT,
     req: request,
