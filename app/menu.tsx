@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ImageBackground } from 'react-native';
 import {
   View,
@@ -28,6 +28,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 import { trpc } from '@/lib/trpc';
 
@@ -58,6 +59,8 @@ export default function PublicMenuScreen() {
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
+  const [lastNotificationType, setLastNotificationType] = useState<'help' | 'other' | null>(null);
+  const { publish: publishNotification } = useNotifications();
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
@@ -312,27 +315,22 @@ export default function PublicMenuScreen() {
     });
   };
 
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: () => {
-      setShowWaiterToast(true);
-      Animated.sequence([
-        Animated.timing(waiterToastOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(2000),
-        Animated.timing(waiterToastOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => setShowWaiterToast(false));
-    },
-    onError: () => {
-      Alert.alert(t('error'), t('failedToSubmitRequest'));
-    },
-  });
+  const showNotificationToast = useCallback(() => {
+    setShowWaiterToast(true);
+    Animated.sequence([
+      Animated.timing(waiterToastOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(2000),
+      Animated.timing(waiterToastOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setShowWaiterToast(false));
+  }, [waiterToastOpacity]);
 
   const handleCallWaiter = () => {
     if (!selectedTable) {
@@ -340,11 +338,14 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    createServiceRequestMutation.mutate({
-      tableNumber: selectedTable,
-      requestType: 'waiter',
-      message: 'Customer requesting assistance',
-    });
+    setLastNotificationType('help');
+    publishNotification({ tableNumber: selectedTable, message: 'help' })
+      .then(() => {
+        showNotificationToast();
+      })
+      .catch(() => {
+        Alert.alert(t('error'), t('failedToSubmitRequest'));
+      });
   };
 
   const handleRequestBill = () => {
@@ -353,11 +354,7 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    createServiceRequestMutation.mutate({
-      tableNumber: selectedTable,
-      requestType: 'bill',
-      message: 'Customer requesting bill',
-    });
+    handleCallWaiter();
   };
 
   const onRefresh = async () => {
@@ -1061,7 +1058,7 @@ export default function PublicMenuScreen() {
       </View>
 
       {showWaiterToast && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.waiterToast,
             {
@@ -1079,17 +1076,11 @@ export default function PublicMenuScreen() {
         >
           <ChefHat size={20} color="#D4AF37" strokeWidth={2} />
           <Text style={styles.waiterToastText}>
-            {language === 'en' 
-              ? (createServiceRequestMutation.variables?.requestType === 'bill' 
-                ? 'Bill request sent 💳' 
-                : 'Waiter has been notified 🍷')
-              : language === 'ku' 
-              ? (createServiceRequestMutation.variables?.requestType === 'bill'
-                ? 'داواکاری حیساب نێردرا 💳'
-                : 'گارسۆن ئاگادار کرایەوە 🍷')
-              : (createServiceRequestMutation.variables?.requestType === 'bill'
-                ? 'تم إرسال طلب الفاتورة 💳'
-                : 'تم إعلام النادل 🍷')}
+            {language === 'en'
+              ? 'Waiter has been notified 🍷'
+              : language === 'ku'
+              ? 'گارسۆن ئاگادار کرایەوە 🍷'
+              : 'تم إعلام النادل 🍷'}
           </Text>
         </Animated.View>
       )}

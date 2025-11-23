@@ -5,6 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import { ShoppingCart, Clock, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 
@@ -18,6 +19,9 @@ export default function CashierDashboard() {
   const activeOrdersQuery = trpc.orders.getActive.useQuery(undefined, {
     refetchInterval: 5000,
   });
+
+  const { list: notificationsQuery, clear } = useNotifications();
+  const [clearingId, setClearingId] = useState<number | null>(null);
 
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
@@ -65,13 +69,22 @@ export default function CashierDashboard() {
     }
   };
 
-  const getTimeSince = (date: Date) => {
+  const getTimeSince = (date: Date | string) => {
     const now = new Date();
     const diff = now.getTime() - new Date(date).getTime();
     const minutes = Math.floor(diff / 60000);
     if (minutes < 1) return 'Just now';
     if (minutes === 1) return '1 min ago';
     return `${minutes} mins ago`;
+  };
+
+  const handleClearNotification = async (id: number) => {
+    setClearingId(id);
+    try {
+      await clear(id);
+    } finally {
+      setClearingId(null);
+    }
   };
 
   return (
@@ -105,8 +118,32 @@ export default function CashierDashboard() {
           </Text>
         </View>
 
+        <View style={styles.notificationsCard}>
+          <Text style={styles.notificationsTitle}>Notifications</Text>
+          {notificationsQuery.isLoading ? (
+            <ActivityIndicator color="#5C0000" />
+          ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
+            notificationsQuery.data.map((notification) => (
+              <View key={notification.id} style={styles.notificationRow}>
+                <Text style={styles.notificationText}>
+                  Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
+                </Text>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => handleClearNotification(notification.id)}
+                  disabled={clearingId === notification.id}
+                >
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.notificationText}>No notifications</Text>
+          )}
+        </View>
+
         <View style={styles.actionsRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push('/cashier/history' as any)}
             activeOpacity={0.8}
@@ -333,6 +370,54 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     marginTop: 4,
     textAlign: 'center',
+  },
+  notificationsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    gap: 12,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  notificationsTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+  },
+  notificationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  notificationText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#3A3A3A',
+  },
+  clearButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#5C0000',
+  },
+  clearButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600' as const,
   },
   actionsRow: {
     flexDirection: 'row',

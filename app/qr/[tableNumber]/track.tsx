@@ -23,6 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 type StatusKey = OrderStatus | 'waiting';
@@ -84,6 +85,7 @@ export default function TrackOrderPage() {
   const { tableNumber } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { publish } = useNotifications();
 
   const tableNum = parseInt(String(tableNumber), 10);
 
@@ -95,16 +97,13 @@ export default function TrackOrderPage() {
     }
   );
 
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation();
-
   const handleServiceRequest = async (
-    requestType: 'waiter' | 'bill' | 'assistance'
+    requestType: 'help' | 'other'
   ) => {
     try {
-      await createServiceRequestMutation.mutateAsync({
+      await publish({
         tableNumber: tableNum,
-        requestType,
-        messageText: '',
+        message: requestType,
       });
 
       if (Platform.OS === 'web') {
@@ -270,9 +269,8 @@ export default function TrackOrderPage() {
         <View style={[styles.actionButtons, { paddingBottom: insets.bottom + 20 }]}>
           <TouchableOpacity
             style={styles.serviceButton}
-            onPress={() => handleServiceRequest('waiter')}
+            onPress={() => handleServiceRequest('help')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
           >
             <HandHeart size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Call Waiter</Text>
@@ -280,19 +278,17 @@ export default function TrackOrderPage() {
 
           <TouchableOpacity
             style={styles.serviceButton}
-            onPress={() => handleServiceRequest('bill')}
+            onPress={() => handleServiceRequest('help')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
           >
             <Receipt size={20} color="#5C0000" />
-            <Text style={styles.serviceButtonText}>Request Bill</Text>
+            <Text style={styles.serviceButtonText}>Notify Staff</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.serviceButton}
-            onPress={() => handleServiceRequest('assistance')}
+            onPress={() => handleServiceRequest('other')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
           >
             <AlertCircle size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Report Issue</Text>

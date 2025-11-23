@@ -14,6 +14,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ShoppingCart, X, HandHeart, Receipt } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
@@ -40,7 +41,7 @@ export default function QROrderingPage() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
   const addItemMutation = trpc.orders.addItem.useMutation();
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation();
+  const { publish } = useNotifications();
 
   const categories = useMemo(() => {
     if (!menuQuery.data) return ['All'];
@@ -126,7 +127,7 @@ export default function QROrderingPage() {
     }
   };
 
-  const handleServiceRequest = async (requestType: 'waiter' | 'bill') => {
+  const handleServiceRequest = async (requestType: 'help' | 'other' = 'help') => {
     try {
       const tableNum = parseInt(String(tableNumber), 10);
       if (isNaN(tableNum)) {
@@ -134,10 +135,9 @@ export default function QROrderingPage() {
         return;
       }
 
-      await createServiceRequestMutation.mutateAsync({
+      await publish({
         tableNumber: tableNum,
-        requestType,
-        messageText: '',
+        message: requestType,
       });
 
       if (Platform.OS === 'web') {
@@ -215,7 +215,7 @@ export default function QROrderingPage() {
       <View style={[styles.floatingActions, { bottom: insets.bottom + 20 }]}>
         <TouchableOpacity
           style={styles.serviceButton}
-          onPress={() => handleServiceRequest('waiter')}
+          onPress={() => handleServiceRequest('help')}
           activeOpacity={0.8}
         >
           <HandHeart size={22} color="#5C0000" />
@@ -224,11 +224,11 @@ export default function QROrderingPage() {
 
         <TouchableOpacity
           style={styles.serviceButton}
-          onPress={() => handleServiceRequest('bill')}
+          onPress={() => handleServiceRequest('other')}
           activeOpacity={0.8}
         >
           <Receipt size={22} color="#5C0000" />
-          <Text style={styles.serviceButtonText}>Request Bill</Text>
+          <Text style={styles.serviceButtonText}>Notify Staff</Text>
         </TouchableOpacity>
 
         {cartCount > 0 && (

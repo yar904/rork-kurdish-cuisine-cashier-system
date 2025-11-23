@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const { notifyServiceRequest } = useNotifications();
+  const { publish } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -117,12 +117,10 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
-    type: 'waiter' | 'bill' | null;
     message: string;
     visible: boolean;
-  }>({ type: null, message: '', visible: false });
+  }>({ message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
-
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
   const chefHatFloat = useRef(new Animated.Value(0)).current;
@@ -259,10 +257,6 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
-
-  const callWaiterMutation = trpc.serviceRequests.create.useMutation();
-  const requestBillMutation = trpc.serviceRequests.create.useMutation();
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -457,73 +451,22 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const handleCallWaiter = async () => {
-    animateButton('waiter');
-    
+  const notifyStaff = async (buttonKey?: 'waiter' | 'bill') => {
+    if (buttonKey) {
+      animateButton(buttonKey);
+    }
+
     if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
       return;
     }
 
-    const now = Date.now();
-    const lastRequest = lastRequestTime.waiter || 0;
-    if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait 10 seconds before calling again');
-      return;
-    }
-
-    console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
-
     try {
-      const waiterResult = await callWaiterMutation.mutateAsync({
-        tableNumber: parsedTableNumber,
-        requestType: 'waiter',
-        messageText: 'Customer requesting assistance',
-      });
-      console.log('[CustomerOrder] ✅ Waiter request created:', waiterResult?.data?.id);
-
-      setLastRequestTime(prev => ({ ...prev, waiter: now }));
-      notifyServiceRequest(parsedTableNumber, 'waiter');
-      
-      showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
+      await publish({ tableNumber: parsedTableNumber });
+      showStatusMessage('✅ A team member has been notified.');
     } catch (error: any) {
-      console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
-      showStatusMessage('❌ Request failed. Please try again or call a waiter manually.');
-    }
-  };
-
-  const handleRequestBill = async () => {
-    animateButton('bill');
-    
-    if (!hasValidTableNumber) {
-      showStatusMessage('❌ Table number not found');
-      return;
-    }
-
-    const now = Date.now();
-    const lastRequest = lastRequestTime.bill || 0;
-    if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait 10 seconds before requesting again');
-      return;
-    }
-
-    console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
-
-    try {
-      const billResult = await requestBillMutation.mutateAsync({
-        tableNumber: parsedTableNumber,
-        requestType: 'bill',
-        messageText: 'Customer requesting bill',
-      });
-      console.log('[CustomerOrder] ✅ Bill request created:', billResult?.data?.id);
-
-      setLastRequestTime(prev => ({ ...prev, bill: now }));
-      notifyServiceRequest(parsedTableNumber, 'bill');
-      
-      showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
-    } catch (error: any) {
-      console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
-      showStatusMessage('❌ Request failed. Please try again or ask your waiter.');
+      console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
+      showStatusMessage('❌ Request failed. Please try again.');
     }
   };
 
@@ -533,7 +476,7 @@ export default function CustomerOrderScreen() {
   };
 
   const showStatusMessage = (message: string) => {
-    setRequestStatus({ type: null, message, visible: true });
+    setRequestStatus({ message, visible: true });
     
     Animated.sequence([
       Animated.timing(statusOpacity, {
@@ -548,7 +491,7 @@ export default function CustomerOrderScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setRequestStatus({ type: null, message: '', visible: false });
+      setRequestStatus({ message: '', visible: false });
     });
   };
 
@@ -1103,7 +1046,7 @@ export default function CustomerOrderScreen() {
 
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => notifyStaff('waiter')}
                 activeOpacity={0.7}
                 disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
@@ -1136,7 +1079,7 @@ export default function CustomerOrderScreen() {
 
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => notifyStaff('bill')}
                 activeOpacity={0.7}
                 disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
@@ -1173,7 +1116,7 @@ export default function CustomerOrderScreen() {
 
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => notifyStaff('waiter')}
                 activeOpacity={0.7}
                 disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
@@ -1206,7 +1149,7 @@ export default function CustomerOrderScreen() {
 
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => notifyStaff('bill')}
                 activeOpacity={0.7}
                 disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >

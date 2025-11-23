@@ -1,146 +1,92 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { Platform } from 'react-native';
-import createContextHook from '@nkzw/create-context-hook';
+import { useCallback, useEffect, useMemo } from "react";
+import createContextHook from "@nkzw/create-context-hook";
+import { trpc } from "@/lib/trpc";
+import { supabase } from "@/lib/supabase";
+import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-interface NotificationPermission {
-  granted: boolean;
-  denied: boolean;
-  prompt: boolean;
-}
+type PublishInput = { tableNumber: number; message?: string };
 
-export const [NotificationProvider, useNotifications] = createContextHook(() => {
-  const [permission, setPermission] = useState<NotificationPermission>({
-    granted: false,
-    denied: false,
-    prompt: true,
+type NotificationContextValue = {
+  list: ReturnType<typeof trpc.notifications.list.useQuery>;
+  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
+  clear: (id: number) => Promise<void>;
+  clearTable: (tableNumber: number) => Promise<void>;
+};
+
+export const [NotificationProvider, useNotificationsContext] = createContextHook<NotificationContextValue>(() => {
+  const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
+    refetchInterval: 7000,
   });
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+
+  const publishMutation = trpc.notifications.publish.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearMutation = trpc.notifications.clearById.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearTableMutation = trpc.notifications.clearByTable.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    
-    if ('Notification' in window) {
-      const current = Notification.permission;
-      setPermission({
-        granted: current === 'granted',
-        denied: current === 'denied',
-        prompt: current === 'default',
+    const channel = supabase
+      .channel("notifications-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        () => {
+          notificationsQuery.refetch();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [notificationsQuery]);
+
+  const publish = useCallback(
+    async ({ tableNumber, message }: PublishInput) => {
+      const result = await publishMutation.mutateAsync({
+        table_number: tableNumber,
+        type: message || "help",
       });
-    }
-  }, []);
+      return result ?? null;
+    },
+    [publishMutation],
+  );
 
-  const requestPermission = useCallback(async () => {
-    if (Platform.OS !== 'web') {
-      console.log('Push notifications are web-only in this implementation');
-      return false;
-    }
+  const clear = useCallback(
+    async (id: number) => {
+      await clearMutation.mutateAsync({ id });
+    },
+    [clearMutation],
+  );
 
-    if (!('Notification' in window)) {
-      console.warn('This browser does not support notifications');
-      return false;
-    }
+  const clearTable = useCallback(
+    async (tableNumber: number) => {
+      await clearTableMutation.mutateAsync({ table_number: tableNumber });
+    },
+    [clearTableMutation],
+  );
 
-    try {
-      const result = await Notification.requestPermission();
-      const granted = result === 'granted';
-      
-      setPermission({
-        granted,
-        denied: result === 'denied',
-        prompt: result === 'default',
-      });
-
-      if (granted && 'serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        
-        const existingSubscription = await registration.pushManager.getSubscription();
-        if (existingSubscription) {
-          setSubscription(existingSubscription);
-          console.log('Using existing push subscription');
-          return true;
-        }
-
-        console.log('Push notification permission granted');
-      }
-
-      return granted;
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return false;
-    }
-  }, []);
-
-  const showNotification = useCallback(async (
-    title: string,
-    options?: {
-      body?: string;
-      icon?: string;
-      tag?: string;
-      requireInteraction?: boolean;
-      url?: string;
-    }
-  ) => {
-    if (Platform.OS !== 'web') {
-      console.log('Web notifications not supported on native platforms');
-      return;
-    }
-
-    if (!permission.granted) {
-      console.warn('Notification permission not granted');
-      return;
-    }
-
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification(title, {
-        body: options?.body || '',
-        icon: options?.icon || '/assets/images/icon.png',
-        badge: '/assets/images/icon.png',
-        tag: options?.tag || 'default',
-        requireInteraction: options?.requireInteraction || false,
-        data: { url: options?.url },
-      });
-    }
-  }, [permission.granted]);
-
-  const notifyNewOrder = useCallback(async (orderId: string, tableNumber: number) => {
-    await showNotification('داواکاریی نوێ! / New Order! 🍽️', {
-      body: `داواکاریی نوێ بۆ میزی / New order received for Table ${tableNumber}`,
-      tag: `order-${orderId}`,
-      requireInteraction: true,
-      url: '/kitchen',
-    });
-  }, [showNotification]);
-
-  const notifyOrderReady = useCallback(async (orderId: string, tableNumber: number) => {
-    await showNotification('داواکاری ئامادەیە! / Order Ready! ✅', {
-      body: `داواکاری بۆ میزی ${tableNumber} ئامادەیە / Order for Table ${tableNumber} is ready to serve`,
-      tag: `order-ready-${orderId}`,
-      requireInteraction: true,
-      url: '/waiter',
-    });
-  }, [showNotification]);
-
-  const notifyServiceRequest = useCallback(async (
-    tableNumber: number,
-    requestType: string
-  ) => {
-    const requestTypeText = requestType === 'waiter' ? 'پێشخزمەتکار / waiter' : requestType === 'bill' ? 'حیساب / bill' : requestType;
-    await showNotification('داواکاری خزمەتگوزاری / Service Request 🔔', {
-      body: `میزی ${tableNumber} پێویستی / Table ${tableNumber} needs ${requestTypeText}`,
-      tag: `service-${tableNumber}`,
-      requireInteraction: true,
-      url: '/waiter',
-    });
-  }, [showNotification]);
-
-  return useMemo(() => ({
-    permission,
-    subscription,
-    requestPermission,
-    showNotification,
-    notifyNewOrder,
-    notifyOrderReady,
-    notifyServiceRequest,
-  }), [permission, subscription, requestPermission, showNotification, notifyNewOrder, notifyOrderReady, notifyServiceRequest]);
+  return useMemo<NotificationContextValue>(
+    () => ({
+      list: notificationsQuery,
+      publish,
+      clear,
+      clearTable,
+    }),
+    [notificationsQuery, publish, clear, clearTable],
+  );
 });
+
+export const useNotifications = () => useNotificationsContext();
