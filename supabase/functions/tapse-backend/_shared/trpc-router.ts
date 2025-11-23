@@ -684,19 +684,26 @@ const ordersRouter = createTRPCRouter({
   }),
 });
 
+export type NotificationRecord = {
+  id: number;
+  table_number: number;
+  type: string;
+  created_at: string;
+};
+
 const notificationsRouter = createTRPCRouter({
   publish: publicProcedure
     .input(
       z.object({
-        tableNumber: z.number(),
-        type: z.enum(["help", "bill", "other"]).optional().default("help"),
+        table_number: z.number(),
+        type: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
       const { data, error } = await supabase
         .from("notifications")
         .insert({
-          table_number: input.tableNumber,
+          table_number: input.table_number,
           type: input.type,
         })
         .select("id, table_number, type, created_at")
@@ -709,21 +716,29 @@ const notificationsRouter = createTRPCRouter({
 
       return data;
     }),
-  list: publicProcedure.query(async () => {
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("id, table_number, type, created_at")
-      .order("created_at", { ascending: false })
-      .limit(100);
+  list: publicProcedure
+    .input(z.object({ since: z.string().nullable().optional() }).optional())
+    .query(async ({ input }) => {
+      let query = supabase
+        .from("notifications")
+        .select("id, table_number, type, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-    if (error) {
-      console.error("Error fetching notifications:", error);
-      throw new Error("Failed to fetch notifications");
-    }
+      if (input?.since) {
+        query = query.gt("created_at", input.since);
+      }
 
-    return data ?? [];
-  }),
-  clear: publicProcedure
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+        throw new Error("Failed to fetch notifications");
+      }
+
+      return data ?? [];
+    }),
+  clearById: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const { error } = await supabase.from("notifications").delete().eq("id", input.id);
@@ -731,6 +746,21 @@ const notificationsRouter = createTRPCRouter({
       if (error) {
         console.error("Error clearing notification:", error);
         throw new Error("Failed to clear notification");
+      }
+
+      return { success: true };
+    }),
+  clearByTable: publicProcedure
+    .input(z.object({ table_number: z.number() }))
+    .mutation(async ({ input }) => {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("table_number", input.table_number);
+
+      if (error) {
+        console.error("Error clearing notifications for table:", error);
+        throw new Error("Failed to clear notifications for table");
       }
 
       return { success: true };

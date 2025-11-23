@@ -2,24 +2,37 @@ import { useCallback, useEffect, useMemo } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
+import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-type NotificationType = "help" | "bill" | "other";
+type PublishInput = { table_number: number; type: string };
 
 type NotificationContextValue = {
-  notify: (tableNumber: number, type?: NotificationType) => Promise<void>;
-  useNotificationsList: () => ReturnType<typeof trpc.notifications.list.useQuery>;
-  clear: (id: number) => Promise<void>;
+  useNotifications: () => ReturnType<typeof trpc.notifications.list.useQuery>;
+  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
+  clearById: (id: number) => Promise<void>;
+  clearByTable: (tableNumber: number) => Promise<void>;
 };
 
 export const [NotificationProvider, useNotificationsContext] = createContextHook<NotificationContextValue>(() => {
-  const listQuery = trpc.notifications.list.useQuery(undefined, {
-    refetchInterval: 3000,
+  const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
+    refetchInterval: 7000,
   });
 
-  const publishMutation = trpc.notifications.publish.useMutation();
-  const clearMutation = trpc.notifications.clear.useMutation({
+  const publishMutation = trpc.notifications.publish.useMutation({
     onSuccess: () => {
-      listQuery.refetch();
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearMutation = trpc.notifications.clearById.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearTableMutation = trpc.notifications.clearByTable.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
     },
   });
 
@@ -30,7 +43,7 @@ export const [NotificationProvider, useNotificationsContext] = createContextHook
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
         () => {
-          listQuery.refetch();
+          notificationsQuery.refetch();
         },
       )
       .subscribe();
@@ -38,35 +51,57 @@ export const [NotificationProvider, useNotificationsContext] = createContextHook
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [listQuery]);
+  }, [notificationsQuery]);
 
-  const notify = useCallback(
-    async (tableNumber: number, type: NotificationType = "help") => {
-      await publishMutation.mutateAsync({ tableNumber, type });
+  const publish = useCallback(
+    async (input: PublishInput) => {
+      const result = await publishMutation.mutateAsync(input);
+      return result ?? null;
     },
     [publishMutation],
   );
 
-  const clear = useCallback(
+  const clearById = useCallback(
     async (id: number) => {
       await clearMutation.mutateAsync({ id });
     },
     [clearMutation],
   );
 
+  const clearByTable = useCallback(
+    async (tableNumber: number) => {
+      await clearTableMutation.mutateAsync({ table_number: tableNumber });
+    },
+    [clearTableMutation],
+  );
+
   return useMemo<NotificationContextValue>(
     () => ({
-      notify,
-      useNotificationsList: () => listQuery,
-      clear,
+      useNotifications: () => notificationsQuery,
+      publish,
+      clearById,
+      clearByTable,
     }),
-    [notify, clear, listQuery],
+    [notificationsQuery, publish, clearById, clearByTable],
   );
 });
 
-export const useNotificationsList = () => {
+export const useNotifications = () => {
   const context = useNotificationsContext();
-  return context.useNotificationsList();
+  return context.useNotifications();
 };
 
-export const useNotifications = useNotificationsContext;
+export const usePublishNotification = () => {
+  const context = useNotificationsContext();
+  return context.publish;
+};
+
+export const useClearNotification = () => {
+  const context = useNotificationsContext();
+  return context.clearById;
+};
+
+export const useClearTableNotifications = () => {
+  const context = useNotificationsContext();
+  return context.clearByTable;
+};

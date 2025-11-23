@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatusType = 'new' | 'preparing' | 'ready' | 'served';
 
@@ -110,7 +110,7 @@ export default function OrderTrackingScreen() {
     outputRange: ['0%', '100%'],
   });
 
-  const { notify } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const handleServiceRequest = useCallback((type: 'help' | 'bill' | 'other') => {
     setServiceRequestType(type);
@@ -123,7 +123,17 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      await notify(parseInt(tableNumber), serviceRequestType);
+      const notificationType =
+        serviceRequestType === 'help'
+          ? 'call_waiter'
+          : serviceRequestType === 'bill'
+          ? 'request_bill'
+          : serviceRequestType;
+
+      await publishNotification({
+        table_number: parseInt(tableNumber, 10),
+        type: notificationType,
+      });
 
       Alert.alert(
         t('success'),
@@ -144,7 +154,7 @@ export default function OrderTrackingScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [serviceRequestType, tableNumber, serviceMessage, isSubmitting, t, notify]);
+  }, [publishNotification, serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
 
   if (currentStatus === 'served') {
     return (

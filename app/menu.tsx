@@ -28,7 +28,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 import { trpc } from '@/lib/trpc';
 
@@ -59,7 +59,7 @@ export default function PublicMenuScreen() {
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
-  const { notify } = useNotifications();
+  const publishNotification = usePublishNotification();
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
@@ -320,7 +320,7 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    notify(selectedTable, 'help')
+    publishNotification({ table_number: selectedTable, type: 'call_waiter' })
       .then(() => {
         setShowWaiterToast(true);
         Animated.sequence([
@@ -348,7 +348,7 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    notify(selectedTable, 'bill').catch(() => {
+    publishNotification({ table_number: selectedTable, type: 'request_bill' }).catch(() => {
       Alert.alert(t('error'), t('failedToSubmitRequest'));
     });
   };

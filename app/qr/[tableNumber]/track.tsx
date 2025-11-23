@@ -23,7 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 type StatusKey = OrderStatus | 'waiting';
@@ -85,7 +85,7 @@ export default function TrackOrderPage() {
   const { tableNumber } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { notify } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const tableNum = parseInt(String(tableNumber), 10);
 
@@ -101,7 +101,10 @@ export default function TrackOrderPage() {
     requestType: 'help' | 'bill' | 'other'
   ) => {
     try {
-      await notify(tableNum, requestType);
+      await publishNotification({
+        table_number: tableNum,
+        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+      });
 
       if (Platform.OS === 'web') {
         alert('Request sent successfully');

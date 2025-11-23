@@ -5,7 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import { ShoppingCart, Clock, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotificationsList } from '@/contexts/NotificationContext';
+import { useClearNotification, useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 
@@ -20,11 +20,9 @@ export default function CashierDashboard() {
     refetchInterval: 5000,
   });
 
-  const notificationsQuery = useNotificationsList();
-
-  const clearNotificationMutation = trpc.notifications.clear.useMutation({
-    onSuccess: () => notificationsQuery.refetch(),
-  });
+  const notificationsQuery = useNotifications();
+  const clearNotification = useClearNotification();
+  const [clearingId, setClearingId] = useState<number | null>(null);
 
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
@@ -81,6 +79,15 @@ export default function CashierDashboard() {
     return `${minutes} mins ago`;
   };
 
+  const handleClearNotification = async (id: number) => {
+    setClearingId(id);
+    try {
+      await clearNotification(id);
+    } finally {
+      setClearingId(null);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen
@@ -120,12 +127,12 @@ export default function CashierDashboard() {
             notificationsQuery.data.map((notification) => (
               <View key={notification.id} style={styles.notificationRow}>
                 <Text style={styles.notificationText}>
-                  Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at as any)}
+                  Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
                 </Text>
                 <TouchableOpacity
                   style={styles.clearButton}
-                  onPress={() => clearNotificationMutation.mutate({ id: notification.id })}
-                  disabled={clearNotificationMutation.isLoading}
+                  onPress={() => handleClearNotification(notification.id)}
+                  disabled={clearingId === notification.id}
                 >
                   <Text style={styles.clearButtonText}>Clear</Text>
                 </TouchableOpacity>

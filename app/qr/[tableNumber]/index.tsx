@@ -14,7 +14,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ShoppingCart, X, HandHeart, Receipt } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
@@ -41,7 +41,7 @@ export default function QROrderingPage() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
   const addItemMutation = trpc.orders.addItem.useMutation();
-  const { notify } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const categories = useMemo(() => {
     if (!menuQuery.data) return ['All'];
@@ -135,7 +135,10 @@ export default function QROrderingPage() {
         return;
       }
 
-      await notify(tableNum, requestType);
+      await publishNotification({
+        table_number: tableNum,
+        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+      });
 
       if (Platform.OS === 'web') {
         alert('Request sent successfully');
