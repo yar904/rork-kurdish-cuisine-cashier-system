@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   RefreshControl,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { Text } from '@/components/CustomText';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -23,6 +24,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
+type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
+type StatusKey = OrderStatus | 'waiting';
+
 interface StatusConfig {
   color: string;
   icon: React.ReactNode;
@@ -30,44 +34,51 @@ interface StatusConfig {
   message: string;
 }
 
-const STATUS_CONFIG: Record<string, StatusConfig> = {
-  no_order: {
+const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
+  waiting: {
     color: '#8E8E93',
     icon: <Clock size={60} color="#8E8E93" />,
-    title: 'No Active Order',
-    message: 'You don\'t have any active orders at this table.',
+    title: 'Waiting for order…',
+    message: 'We will update this page once your order is placed.',
   },
-  pending: {
-    color: '#3B82F6',
-    icon: <Clock size={60} color="#3B82F6" />,
+  new: {
+    color: '#2563EB',
+    icon: <Clock size={60} color="#2563EB" />,
     title: 'Order Received',
-    message: 'Your order has been received and will be prepared soon.',
+    message: 'Your order has been received and is being queued.',
   },
   preparing: {
-    color: '#F59E0B',
-    icon: <ChefHat size={60} color="#F59E0B" />,
-    title: 'Preparing Your Food',
-    message: 'Our kitchen is preparing your delicious meal.',
+    color: '#EA580C',
+    icon: <ChefHat size={60} color="#EA580C" />,
+    title: 'Preparing',
+    message: 'Our kitchen is preparing your meal.',
   },
   ready: {
-    color: '#10B981',
-    icon: <CheckCircle size={60} color="#10B981" />,
-    title: 'Ready for Pickup',
-    message: 'Your food is ready! We\'ll bring it to your table shortly.',
+    color: '#16A34A',
+    icon: <CheckCircle size={60} color="#16A34A" />,
+    title: 'Ready',
+    message: 'Your order is ready and on the way.',
   },
   served: {
-    color: '#8B5CF6',
-    icon: <CheckCircle size={60} color="#8B5CF6" />,
+    color: '#7C3AED',
+    icon: <CheckCircle size={60} color="#7C3AED" />,
     title: 'Served',
     message: 'Enjoy your meal!',
   },
   paid: {
     color: '#6B7280',
     icon: <DollarSign size={60} color="#6B7280" />,
-    title: 'Payment Completed',
-    message: 'Thank you for dining with us!',
+    title: 'Paid',
+    message: 'Payment completed. Thank you!',
   },
 };
+
+const TIMELINE_STEPS: { key: OrderStatus; label: string; color: string }[] = [
+  { key: 'new', label: 'Received', color: '#2563EB' },
+  { key: 'preparing', label: 'Preparing', color: '#EA580C' },
+  { key: 'ready', label: 'Ready', color: '#16A34A' },
+  { key: 'served', label: 'Served', color: '#7C3AED' },
+];
 
 export default function TrackOrderPage() {
   const { tableNumber } = useLocalSearchParams();
@@ -86,7 +97,9 @@ export default function TrackOrderPage() {
 
   const createServiceRequestMutation = trpc.serviceRequests.create.useMutation();
 
-  const handleServiceRequest = async (requestType: 'waiter' | 'bill') => {
+  const handleServiceRequest = async (
+    requestType: 'waiter' | 'bill' | 'assistance'
+  ) => {
     try {
       await createServiceRequestMutation.mutateAsync({
         tableNumber: tableNum,
@@ -113,19 +126,27 @@ export default function TrackOrderPage() {
     statusQuery.refetch();
   };
 
-  const currentStatus = statusQuery.data?.status || 'no_order';
+  const hasOrder = statusQuery.data?.hasOrder;
+
+  const currentStatus: StatusKey = useMemo(() => {
+    if (!hasOrder) return 'waiting';
+    return statusQuery.data?.status ?? 'new';
+  }, [hasOrder, statusQuery.data?.status]);
+
   const config = STATUS_CONFIG[currentStatus];
 
-  const getCompletedStatuses = () => {
-    const statuses = ['pending', 'preparing', 'ready', 'served'];
-    const currentIndex = statuses.indexOf(currentStatus);
-    return statuses.filter((_, index) => index <= currentIndex);
-  };
+  const completedStatuses = useMemo(() => {
+    if (currentStatus === 'waiting') return [];
+    if (currentStatus === 'paid') return TIMELINE_STEPS.map(step => step.key);
 
-  const completedStatuses = getCompletedStatuses();
+    const currentIndex = TIMELINE_STEPS.findIndex(step => step.key === currentStatus);
+    if (currentIndex === -1) return [];
+
+    return TIMELINE_STEPS.filter((_, index) => index <= currentIndex).map(step => step.key);
+  }, [currentStatus]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen
         options={{
           title: `Track Order - Table ${tableNumber}`,
@@ -156,54 +177,43 @@ export default function TrackOrderPage() {
           <>
             <View style={styles.statusCard}>
               <View style={styles.iconContainer}>{config.icon}</View>
-              <Text style={styles.statusTitle}>{config.title}</Text>
+              <Text style={[styles.statusTitle, { color: config.color }]}>{config.title}</Text>
               <Text style={styles.statusMessage}>{config.message}</Text>
 
-              {statusQuery.data?.orderId && (
+              {hasOrder && statusQuery.data?.created_at && (
                 <View style={styles.orderIdContainer}>
-                  <Text style={styles.orderIdLabel}>Order ID</Text>
+                  <Text style={styles.orderIdLabel}>Order Created</Text>
                   <Text style={styles.orderId}>
-                    {statusQuery.data.orderId.slice(0, 8).toUpperCase()}
+                    {new Date(statusQuery.data.created_at).toLocaleTimeString()}
                   </Text>
                 </View>
               )}
             </View>
 
-            {currentStatus !== 'no_order' && currentStatus !== 'paid' && (
+            {hasOrder && currentStatus !== 'paid' && (
               <View style={styles.timelineCard}>
                 <Text style={styles.timelineTitle}>Order Progress</Text>
 
                 <View style={styles.timeline}>
-                  <TimelineItem
-                    title="Received"
-                    completed={completedStatuses.includes('pending')}
-                    active={currentStatus === 'pending'}
-                  />
-                  <TimelineItem
-                    title="Preparing"
-                    completed={completedStatuses.includes('preparing')}
-                    active={currentStatus === 'preparing'}
-                  />
-                  <TimelineItem
-                    title="Ready"
-                    completed={completedStatuses.includes('ready')}
-                    active={currentStatus === 'ready'}
-                  />
-                  <TimelineItem
-                    title="Served"
-                    completed={completedStatuses.includes('served')}
-                    active={currentStatus === 'served'}
-                    isLast
-                  />
+                  {TIMELINE_STEPS.map((step, index) => (
+                    <TimelineItem
+                      key={step.key}
+                      title={step.label}
+                      color={step.color}
+                      completed={completedStatuses.includes(step.key)}
+                      active={currentStatus === step.key}
+                      isLast={index === TIMELINE_STEPS.length - 1}
+                    />
+                  ))}
                 </View>
               </View>
             )}
 
-            {statusQuery.data?.items && statusQuery.data.items.length > 0 && (
+            {hasOrder && statusQuery.data?.items && statusQuery.data.items.length > 0 && (
               <View style={styles.itemsCard}>
                 <Text style={styles.itemsTitle}>Your Order</Text>
                 {statusQuery.data.items.map((item, index) => (
-                  <View key={index} style={styles.orderItem}>
+                  <View key={`${item.name}-${index}`} style={styles.orderItem}>
                     <View style={styles.itemDetails}>
                       <Text style={styles.itemName}>{item.name}</Text>
                       <Text style={styles.itemQuantity}>×{item.quantity}</Text>
@@ -219,38 +229,44 @@ export default function TrackOrderPage() {
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Subtotal</Text>
                   <Text style={styles.summaryValue}>
-                    ${statusQuery.data.subtotal.toFixed(2)}
+                    ${(statusQuery.data.subtotal ?? 0).toFixed(2)}
                   </Text>
                 </View>
                 <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Tax</Text>
+                  <Text style={styles.summaryLabel}>Tax (10%)</Text>
                   <Text style={styles.summaryValue}>
-                    ${statusQuery.data.tax.toFixed(2)}
+                    ${(statusQuery.data.tax ?? 0).toFixed(2)}
                   </Text>
                 </View>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabelBold}>Total</Text>
                   <Text style={styles.summaryValueBold}>
-                    ${statusQuery.data.total.toFixed(2)}
+                    ${(statusQuery.data.total ?? 0).toFixed(2)}
                   </Text>
                 </View>
               </View>
             )}
 
-            {currentStatus === 'no_order' && (
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => router.back()}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.backButtonText}>Order Now</Text>
-              </TouchableOpacity>
+            {!hasOrder && (
+              <View style={styles.waitingCard}>
+                <Text style={styles.waitingTitle}>Waiting for order…</Text>
+                <Text style={styles.waitingMessage}>
+                  Once your order is placed, you will see live updates here.
+                </Text>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => router.back()}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.backButtonText}>Back to Menu</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </>
         )}
       </ScrollView>
 
-      {currentStatus !== 'no_order' && currentStatus !== 'paid' && (
+      {hasOrder && (
         <View style={[styles.actionButtons, { paddingBottom: insets.bottom + 20 }]}>
           <TouchableOpacity
             style={styles.serviceButton}
@@ -274,7 +290,7 @@ export default function TrackOrderPage() {
 
           <TouchableOpacity
             style={styles.serviceButton}
-            onPress={() => handleServiceRequest('waiter')}
+            onPress={() => handleServiceRequest('assistance')}
             activeOpacity={0.8}
             disabled={createServiceRequestMutation.isPending}
           >
@@ -283,7 +299,7 @@ export default function TrackOrderPage() {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -291,17 +307,19 @@ interface TimelineItemProps {
   title: string;
   completed: boolean;
   active: boolean;
+  color: string;
   isLast?: boolean;
 }
 
-function TimelineItem({ title, completed, active, isLast }: TimelineItemProps) {
+function TimelineItem({ title, completed, active, color, isLast }: TimelineItemProps) {
   return (
     <View style={styles.timelineItem}>
       <View style={styles.timelineLeft}>
         <View
           style={[
             styles.timelineDot,
-            completed && styles.timelineDotCompleted,
+            { borderColor: color },
+            completed && { backgroundColor: color },
             active && styles.timelineDotActive,
           ]}
         />
@@ -309,7 +327,7 @@ function TimelineItem({ title, completed, active, isLast }: TimelineItemProps) {
           <View
             style={[
               styles.timelineLine,
-              completed && styles.timelineLineCompleted,
+              completed && { backgroundColor: color },
             ]}
           />
         )}
@@ -319,6 +337,7 @@ function TimelineItem({ title, completed, active, isLast }: TimelineItemProps) {
           style={[
             styles.timelineText,
             (completed || active) && styles.timelineTextActive,
+            { color: completed || active ? '#3A3A3A' : '#8E8E93' },
           ]}
         >
           {title}
@@ -329,13 +348,13 @@ function TimelineItem({ title, completed, active, isLast }: TimelineItemProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#F6EEDD',
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 140,
+    paddingBottom: 160,
   },
   loadingContainer: {
     flex: 1,
@@ -350,16 +369,16 @@ const styles = StyleSheet.create({
   },
   statusCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 32,
+    borderRadius: 12,
+    padding: 28,
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
     marginBottom: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
@@ -371,24 +390,24 @@ const styles = StyleSheet.create({
     }),
   },
   iconContainer: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   statusTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: '#3A3A3A',
     textAlign: 'center',
   },
   statusMessage: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#8E8E93',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   orderIdContainer: {
     backgroundColor: '#F6EEDD',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 12,
     marginTop: 8,
     alignItems: 'center',
@@ -399,21 +418,21 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   orderId: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700' as const,
     color: '#5C0000',
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
   timelineCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 24,
     marginBottom: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
@@ -425,10 +444,10 @@ const styles = StyleSheet.create({
     }),
   },
   timelineTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
     color: '#3A3A3A',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   timeline: {
     gap: 0,
@@ -442,20 +461,15 @@ const styles = StyleSheet.create({
     width: 24,
   },
   timelineDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#E5E5EA',
     borderWidth: 3,
     borderColor: '#E5E5EA',
   },
-  timelineDotCompleted: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
-  },
   timelineDotActive: {
-    backgroundColor: '#5C0000',
-    borderColor: '#5C0000',
+    transform: [{ scale: 1.05 }],
   },
   timelineLine: {
     width: 3,
@@ -463,31 +477,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5EA',
     minHeight: 32,
   },
-  timelineLineCompleted: {
-    backgroundColor: '#10B981',
-  },
   timelineRight: {
     flex: 1,
     paddingVertical: 2,
+    justifyContent: 'center',
   },
   timelineText: {
     fontSize: 16,
     color: '#8E8E93',
   },
   timelineTextActive: {
-    color: '#3A3A3A',
     fontWeight: '600' as const,
   },
   itemsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 24,
     marginBottom: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
@@ -499,10 +510,10 @@ const styles = StyleSheet.create({
     }),
   },
   itemsTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
     color: '#3A3A3A',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   orderItem: {
     flexDirection: 'row',
@@ -536,42 +547,74 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#E5E5EA',
-    marginVertical: 16,
+    marginVertical: 12,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   summaryLabel: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#8E8E93',
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#3A3A3A',
   },
   summaryLabelBold: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700' as const,
     color: '#3A3A3A',
   },
   summaryValueBold: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '700' as const,
     color: '#5C0000',
   },
+  waitingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+    }),
+  },
+  waitingTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+  },
+  waitingMessage: {
+    fontSize: 15,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
   backButton: {
     backgroundColor: '#5C0000',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 4,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: '#FFFFFF',
   },
