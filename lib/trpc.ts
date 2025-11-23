@@ -8,19 +8,16 @@ import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 import { supabase } from "./supabase";
 
+const FALLBACK_TRPC_URL =
+  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
+
 console.log("[ENV] TRPC:", process.env.EXPO_PUBLIC_TRPC_URL);
 console.log("[ENV] Functions:", process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
 console.log("[ENV] Supabase URL:", process.env.EXPO_PUBLIC_SUPABASE_URL);
 
-const defaultFunctionsHost =
-  process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL?.replace(/\/$/, "") ||
-  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co";
-
 export const getTrpcBaseUrl = (): string => {
   const apiUrl = process.env.EXPO_PUBLIC_TRPC_URL?.replace(/\/$/, "");
-  if (apiUrl) return apiUrl;
-
-  return `${defaultFunctionsHost}/tapse-backend/trpc`;
+  return apiUrl || FALLBACK_TRPC_URL;
 };
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -28,8 +25,7 @@ export const trpcTransformer = superjson;
 
 const getAuthorizationHeader = async () => {
   const { data } = await supabase.auth.getSession();
-  const token =
-    data.session?.access_token || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  const token = data.session?.access_token || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

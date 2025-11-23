@@ -5,26 +5,14 @@ import { createContext } from "./trpc/create-context";
 
 const app = new Hono();
 
-const allowOrigin = (origin?: string) => {
-  if (!origin) return "*";
-  if (origin === "https://tapse.netlify.app") return origin;
-  if (/^https?:\/\/localhost:\d+/.test(origin)) return origin;
-  if (/^https:\/\/.*\.rork\.app$/.test(origin)) return origin;
-  if (origin.startsWith("exp://")) return "*";
-  return "*";
-};
-
 app.use("*", async (c, next) => {
-  const origin = allowOrigin(c.req.header("origin") ?? c.req.header("Origin"));
-
-  c.header("Access-Control-Allow-Origin", origin);
+  c.header("Access-Control-Allow-Origin", "*");
   c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   c.header(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, apikey, x-client-info, x-trpc-source, x-supabase-api-version"
+    "Content-Type, Authorization, apikey, x-client-info, x-trpc-source, x-supabase-api-version",
   );
   c.header("Access-Control-Allow-Credentials", "true");
-  c.header("Access-Control-Max-Age", "86400");
 
   if (c.req.method === "OPTIONS") {
     return c.body(null, 204);
@@ -33,8 +21,8 @@ app.use("*", async (c, next) => {
   return next();
 });
 
-app.use("*", async (c, next) => {
-  console.log(`[edge] ${c.req.method} ${c.req.path}`);
+app.use("/tapse-backend/trpc/*", async (c, next) => {
+  console.log(`[Hono] tRPC request received: ${c.req.method} ${c.req.url}`);
   return next();
 });
 
@@ -49,11 +37,19 @@ app.use(
 app.get("/tapse-backend/health", (c) =>
   c.json({
     status: "ok",
-    environment: process.env.NODE_ENV,
+    environment: process.env.NODE_ENV || "development",
     supabaseUrl:
-      process.env.SUPABASE_PROJECT_URL ||
       process.env.EXPO_PUBLIC_SUPABASE_URL ||
+      process.env.SUPABASE_URL ||
       null,
+    timestamp: new Date().toISOString(),
+  }),
+);
+
+app.get("/tapse-backend/trpc/health", (c) =>
+  c.json({
+    status: "ok",
+    trpc: "/tapse-backend/trpc",
     timestamp: new Date().toISOString(),
   }),
 );
@@ -63,8 +59,6 @@ app.get("/api/health", (c) =>
     status: "ok",
   }),
 );
-
-app.get("/api/test", (c) => c.text("ok"));
 
 export default app;
 export const fetch = app.fetch;
