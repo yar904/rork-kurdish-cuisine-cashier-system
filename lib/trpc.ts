@@ -4,28 +4,8 @@ import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 import { supabase } from "./supabase";
 
-const normalizeUrl = (value?: string | null) =>
-  value?.replace(/\/+$/, "") ?? undefined;
-
-const buildEndpoint = (baseUrl: string, path = "/api/trpc") =>
-  `${baseUrl}${path}`;
-
-export const getTrpcBaseUrl = (): string => {
-  const envBaseUrl = normalizeUrl(process.env.EXPO_PUBLIC_RORK_API_BASE_URL);
-  if (envBaseUrl) {
-    return buildEndpoint(envBaseUrl);
-  }
-
-  const supabaseFunctionsUrl = normalizeUrl(
-    process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL,
-  );
-  if (supabaseFunctionsUrl) {
-    return buildEndpoint(supabaseFunctionsUrl, "/tapse-backend");
-  }
-
-  // Local backend default URL
-  return "http://localhost:3000/api/trpc";
-};
+export const getTrpcBaseUrl = (): string =>
+  "https://oqspnszvjxwqvjvxalyj.functions.supabase.co/tapse-backend/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;

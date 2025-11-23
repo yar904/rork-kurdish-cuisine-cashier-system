@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
@@ -7,41 +6,30 @@ import { createClient } from "@supabase/supabase-js";
 
 const app = new Hono();
 
-app.use("*", cors({
-  origin: (origin) => {
-    const allowedOrigins = [
-      "https://kurdish-cuisine-cashier-system.rork.app",
-      "https://tapse.netlify.app",
-      "http://localhost:8081",
-      "http://localhost:3000",
-    ];
-    if (
-      !origin ||
-      origin.startsWith("exp://") ||
-      origin.endsWith(".rork.app") ||
-      origin.endsWith(".netlify.app") ||
-      origin.endsWith(".supabase.co") ||
-      allowedOrigins.includes(origin)
-    ) {
-      return origin || "*";
-    }
-    return null;
-  },
-  credentials: true,
-}));
+app.use("*", async (c, next) => {
+  c.header("Access-Control-Allow-Origin", "*");
+  c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  c.header("Access-Control-Allow-Headers", "*");
+
+  if (c.req.method === "OPTIONS") {
+    return c.text("", 204);
+  }
+
+  await next();
+});
 
 const supabase = createClient(
   process.env.SUPABASE_PROJECT_URL!,
   process.env.SUPABASE_ANON_KEY!,
 );
 
-app.use("/api/trpc/*", async (c, next) => {
+app.use("/tapse-backend/trpc/*", async (c, next) => {
   console.log("[Hono] tRPC request received:", c.req.method, c.req.url);
   await next();
 });
 
 app.use(
-  "/api/trpc/*",
+  "/tapse-backend/trpc/*",
   trpcServer({
     router: appRouter,
     createContext,
@@ -90,3 +78,4 @@ app.get("/api/test", async (c) => {
 });
 
 export default app;
+export const fetch = app.fetch;
