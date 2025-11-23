@@ -3,7 +3,7 @@
 // Expected final URL: https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend
 // Centralized here to avoid previous "Failed to fetch" issues caused by mismatched hosts/paths.
 import { createTRPCReact } from "@trpc/react-query";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCClient, httpLink } from "@trpc/client";
 import superjson from "superjson";
 import { supabase } from "./supabase";
 import type { AppRouter } from "@/types/trpc";
@@ -94,7 +94,7 @@ const getAuthorizationHeader = async () => {
 };
 
 export const createTrpcHttpLink = () =>
-  httpBatchLink({
+  httpLink({
     url: linkBaseUrl,
     headers: getAuthorizationHeader,
     fetch(requestUrl, options) {
