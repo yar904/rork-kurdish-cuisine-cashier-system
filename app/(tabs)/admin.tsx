@@ -1,1288 +1,1593 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Platform, Alert, Share, TextInput } from 'react-native';
-import { useState, useEffect, useRef } from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { formatPrice } from '@/constants/currency';
-import { Settings, QrCode, Printer, Users, Table as TableIcon, CheckCircle, XCircle, Clock, LogOut, Download, FileText, Shield, Eye, EyeOff, MenuSquare, Package, Briefcase, Bell } from 'lucide-react-native';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTables } from '@/contexts/TableContext';
-import { useRestaurant } from '@/contexts/RestaurantContext';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Platform, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
+import type { Database } from '@/types/database';
+import { Text } from '@/components/CustomText';
+import { Stack } from 'expo-router';
+import { Settings, MenuSquare, Users, Package, Briefcase, Table, X, Plus, Edit, Trash2, Search, QrCode } from 'lucide-react-native';
+import { TableQRManagement } from '@/components/admin/TableQRManagement';
+import { ImageUploader } from '@/components/admin/ImageUploader';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { trpc } from '@/lib/trpc';
 
-import { TableStatus } from '@/types/restaurant';
-import { POSContainer, POSCard, POSButton } from '@/components/pos-ui';
+type AdminSection = 'menu' | 'inventory' | 'employees' | 'categories' | 'tables' | 'qr-codes' | null;
 
-const Colors = {
-  primary: '#0A84FF',
-  success: '#10B981',
-  error: '#EF4444',
-  warning: '#F59E0B',
-  info: '#0A84FF',
-  border: '#E5E5EA',
-  textSecondary: '#8E8E93',
-  textLight: '#8E8E93',
-};
+export default function AdminDashboard() {
+  const insets = useSafeAreaInsets();
+  const [activeSection, setActiveSection] = useState<AdminSection>(null);
 
-const getResponsiveLayout = () => {
-  const { width } = Dimensions.get('window');
-  return {
-    isPhone: width < 768,
-    isTablet: width >= 768 && width < 1200,
-    isDesktop: width >= 1200,
-    width,
-  };
-};
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Stack.Screen
+        options={{
+          title: 'Admin Panel',
+          headerStyle: { backgroundColor: '#5C0000' },
+          headerTintColor: '#FFFFFF',
+          headerShadowVisible: false,
+        }}
+      />
 
-export default function AdminScreen() {
-  const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
-  const router = useRouter();
-  const { logout, user } = useAuth();
-  const [showPasswords, setShowPasswords] = useState(false);
+      {activeSection === null ? (
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Settings size={32} color="#5C0000" />
+            <Text style={styles.headerTitle}>Admin Panel</Text>
+            <Text style={styles.headerSubtitle}>Manage system and settings</Text>
+          </View>
 
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }: { window: { width: number; height: number; scale: number; fontScale: number } }) => {
-      setDimensions(window);
-    });
-    return () => subscription?.remove();
-  }, []);
-  const { t } = useLanguage();
-  const { tables, updateTableStatus } = useTables();
-  const { orders } = useRestaurant();
-  const [selectedTable, setSelectedTable] = useState<number | null>(null);
-  const previousOrderCount = useRef(orders.length);
-  const [newOrdersCount, setNewOrdersCount] = useState(0);
+          <View style={styles.cardsGrid}>
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('menu')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#5C000015' }]}>
+                  <MenuSquare size={24} color="#5C0000" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Menu Items</Text>
+              <Text style={styles.cardDescription}>Add, edit, or remove menu items</Text>
+            </TouchableOpacity>
 
-  useEffect(() => {
-    const newOrders = orders.filter(o => o.status === 'new');
-    if (orders.length > previousOrderCount.current) {
-      const diff = orders.length - previousOrderCount.current;
-      setNewOrdersCount(prev => prev + diff);
-      
-      setTimeout(() => {
-        setNewOrdersCount(0);
-      }, 5000);
-    }
-    previousOrderCount.current = orders.length;
-  }, [orders]);
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('employees')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#10B98115' }]}>
+                  <Users size={24} color="#10B981" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Employees</Text>
+              <Text style={styles.cardDescription}>Manage staff and permissions</Text>
+            </TouchableOpacity>
 
-  const getTableStatusColor = (status: TableStatus) => {
-    switch (status) {
-      case 'available': return '#10B981';
-      case 'occupied': return '#EF4444';
-      case 'reserved': return '#F59E0B';
-      case 'needs-cleaning': return '#0A84FF';
-      default: return '#8E8E93';
-    }
-  };
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('inventory')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#F59E0B15' }]}>
+                  <Package size={24} color="#F59E0B" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Inventory</Text>
+              <Text style={styles.cardDescription}>Track stock levels & suppliers</Text>
+            </TouchableOpacity>
 
-  const getTableStatusIcon = (status: TableStatus) => {
-    switch (status) {
-      case 'available': return CheckCircle;
-      case 'occupied': return Users;
-      case 'reserved': return Clock;
-      case 'needs-cleaning': return XCircle;
-      default: return TableIcon;
-    }
-  };
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('categories')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#C6A66715' }]}>
+                  <Briefcase size={24} color="#C6A667" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Categories</Text>
+              <Text style={styles.cardDescription}>Organize menu categories</Text>
+            </TouchableOpacity>
 
-  const handleGenerateQR = async (tableNumber: number) => {
-    const menuUrl = `${window.location.origin}/menu?table=${tableNumber}`;
-    const qrMessage = `QR Code for Table ${tableNumber}:\n${menuUrl}\n\nCustomers can scan this to view the menu.`;
-    
-    try {
-      await Share.share({
-        message: qrMessage,
-        title: `Table ${tableNumber} QR Code`,
-      });
-    } catch (error) {
-      console.log('Share error:', error);
-    }
-  };
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('qr-codes')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#8B5CF615' }]}>
+                  <QrCode size={24} color="#8B5CF6" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Table QR Codes</Text>
+              <Text style={styles.cardDescription}>Generate QR codes for tables</Text>
+            </TouchableOpacity>
 
-  const handlePrintOrders = (tableNumber: number) => {
-    const tableOrders = orders.filter(o => o.tableNumber === tableNumber);
-    if (tableOrders.length === 0) {
-      Alert.alert(t('noOrders'), 'No orders for this table');
-      return;
-    }
+            <TouchableOpacity 
+              style={styles.card} 
+              activeOpacity={0.8}
+              onPress={() => setActiveSection('tables')}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: '#3B82F615' }]}>
+                  <Table size={24} color="#3B82F6" />
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Table Layout</Text>
+              <Text style={styles.cardDescription}>Manage tables and capacity</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      ) : activeSection === 'menu' ? (
+        <MenuManagement onBack={() => setActiveSection(null)} />
+      ) : activeSection === 'employees' ? (
+        <EmployeesManagement onBack={() => setActiveSection(null)} />
+      ) : activeSection === 'inventory' ? (
+        <InventoryManagement onBack={() => setActiveSection(null)} />
+      ) : activeSection === 'categories' ? (
+        <CategoriesManagement onBack={() => setActiveSection(null)} />
+      ) : activeSection === 'tables' ? (
+        <TablesManagement onBack={() => setActiveSection(null)} />
+      ) : activeSection === 'qr-codes' ? (
+        <TableQRManagement onBack={() => setActiveSection(null)} />
+      ) : null}
+    </View>
+  );
+}
 
-    let receipt = `\n${'='.repeat(40)}\n`;
-    receipt += `   ${t('restaurantName').toUpperCase()}\n`;
-    receipt += `${'='.repeat(40)}\n\n`;
-    receipt += `Table: ${tableNumber}\n`;
-    receipt += `Date: ${new Date().toLocaleDateString()}\n`;
-    receipt += `Time: ${new Date().toLocaleTimeString()}\n`;
-    receipt += `${'-'.repeat(40)}\n\n`;
+function MenuManagement({ onBack }: { onBack: () => void }) {
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
-    tableOrders.forEach((order, idx) => {
-      receipt += `Order #${idx + 1} - ${order.id}\n`;
-      receipt += `Status: ${order.status}\n`;
-      receipt += `Waiter: ${order.waiterName || 'N/A'}\n\n`;
-      
-      order.items.forEach(item => {
-        receipt += `${item.quantity}x ${item.menuItem.name}\n`;
-        receipt += `   ${formatPrice(item.menuItem.price)} each\n`;
-        receipt += `   Subtotal: ${formatPrice(item.menuItem.price * item.quantity)}\n`;
-        if (item.notes) {
-          receipt += `   Note: ${item.notes}\n`;
-        }
-      });
-      receipt += `\nOrder Total: ${formatPrice(order.total)}\n`;
-      receipt += `${'-'.repeat(40)}\n\n`;
-    });
+  const { data: menuItems, isLoading, refetch } = trpc.menu.getAll.useQuery();
+  const deleteMutation = trpc.menu.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      Alert.alert('Success', 'Menu item deleted successfully');
+    },
+  });
 
-    const grandTotal = tableOrders.reduce((sum, o) => sum + o.total, 0);
-    receipt += `\nGRAND TOTAL: ${formatPrice(grandTotal)}\n`;
-    receipt += `${'='.repeat(40)}\n\n`;
-    receipt += `Thank you for dining with us!\n`;
-    receipt += `شكراً لزيارتكم - سوپاس\n\n`;
+  const filteredItems = menuItems?.filter((item: Database['public']['Tables']['menu_items']['Row']) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
-    Alert.alert('Receipt', receipt, [
-      { text: 'Close', style: 'cancel' },
-      { 
-        text: 'Share',
-        onPress: async () => {
-          try {
-            await Share.share({ message: receipt });
-          } catch (error) {
-            console.log('Share error:', error);
-          }
-        }
-      }
-    ]);
-  };
-
-  const handleTableStatusChange = (tableNumber: number) => {
-    const table = tables.find(t => t.number === tableNumber);
-    if (!table) return;
-
-    const statusOptions: TableStatus[] = ['available', 'occupied', 'reserved', 'needs-cleaning'];
-    const currentIndex = statusOptions.indexOf(table.status);
-    const nextStatus = statusOptions[(currentIndex + 1) % statusOptions.length];
-    
-    updateTableStatus(tableNumber, nextStatus);
-  };
-
-  const handleLogout = () => {
+  const handleDelete = (id: string, name: string) => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      'Delete Item',
+      `Are you sure you want to delete "${name}"?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
+        { 
+          text: 'Delete', 
           style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/landing');
-          },
-        },
+          onPress: () => deleteMutation.mutate({ id })
+        }
       ]
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: user.role === 'admin' ? 'Admin' : 'Manager',
-        headerStyle: { backgroundColor: '#0A84FF' },
-        headerTintColor: '#fff',
-        headerShadowVisible: false,
-        headerRight: () => (
-          <View style={styles.headerRight}>
-            {newOrdersCount > 0 && (
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{newOrdersCount} New</Text>
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <X size={24} color="#5C0000" />
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Menu Management</Text>
+        <TouchableOpacity 
+          onPress={() => setShowAddModal(true)}
+          style={styles.addButton}
+        >
+          <Plus size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <Search size={20} color="#8E8E93" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search menu items..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#8E8E93"
+        />
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+        </View>
+      ) : filteredItems.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>
+            {searchQuery ? 'No items match your search' : 'No menu items yet'}
+          </Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.listContainer}>
+          {filteredItems.map((item: Database['public']['Tables']['menu_items']['Row']) => (
+            <View key={item.id} style={styles.listItem}>
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{item.name}</Text>
+                <Text style={styles.listItemSubtitle}>{item.category} • ${item.price}</Text>
+                <View style={[styles.badge, item.available ? styles.badgeAvailable : styles.badgeUnavailable]}>
+                  <Text style={styles.badgeText}>
+                    {item.available ? 'Available' : 'Unavailable'}
+                  </Text>
+                </View>
               </View>
-            )}
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-              activeOpacity={0.7}
-            >
-              <LogOut size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ),
-      }} />
-
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {newOrdersCount > 0 && (
-          <View style={styles.newOrderAlert}>
-            <Text style={styles.newOrderAlertText}>
-              {newOrdersCount} new {newOrdersCount === 1 ? 'order' : 'orders'} received!
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <TableIcon size={24} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>Table Management</Text>
-          </View>
-
-          <View style={styles.tableGrid}>
-            {tables.map(table => {
-              const StatusIcon = getTableStatusIcon(table.status);
-              const tableOrders = orders.filter(o => o.tableNumber === table.number && o.status !== 'paid');
-              
-              return (
-                <TouchableOpacity
-                  key={table.number}
-                  style={[
-                    styles.tableCard,
-                    selectedTable === table.number && styles.tableCardSelected,
-                    dimensions.width >= 768 && styles.tableCardTablet,
-                  ]}
-                  onPress={() => setSelectedTable(selectedTable === table.number ? null : table.number)}
-                  onLongPress={() => handleTableStatusChange(table.number)}
+              <View style={styles.listItemActions}>
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => setEditingItem(item)}
                 >
-                  <View style={[styles.tableStatus, { backgroundColor: getTableStatusColor(table.status) }]}>
-                    <StatusIcon size={16} color="#fff" />
-                  </View>
-                  
-                  <View style={styles.tableInfo}>
-                    <Text style={styles.tableNumber}>Table {table.number}</Text>
-                    <Text style={styles.tableCapacity}>Seats: {table.capacity}</Text>
-                    <Text style={[styles.tableStatusText, { color: getTableStatusColor(table.status) }]}>
-                      {table.status.replace('-', ' ').toUpperCase()}
-                    </Text>
-                    {tableOrders.length > 0 && (
-                      <Text style={styles.tableOrders}>
-                        {tableOrders.length} active {tableOrders.length === 1 ? 'order' : 'orders'}
-                      </Text>
-                    )}
-                  </View>
-
-                  {selectedTable === table.number && (
-                    <View style={styles.tableActions}>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => handleGenerateQR(table.number)}
-                      >
-                        <QrCode size={20} color={Colors.primary} />
-                        <Text style={styles.actionButtonText}>QR Code</Text>
-                      </TouchableOpacity>
-                      
-                      {tableOrders.length > 0 && (
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => handlePrintOrders(table.number)}
-                        >
-                          <Printer size={20} color={Colors.primary} />
-                          <Text style={styles.actionButtonText}>Receipt</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
+                  <Edit size={20} color="#5C0000" />
                 </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Settings size={24} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-          </View>
-
-          <View style={styles.quickActions}>
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => {
-                tables.forEach(t => {
-                  if (t.status === 'needs-cleaning') {
-                    updateTableStatus(t.number, 'available');
-                  }
-                });
-                Alert.alert('Success', 'All tables marked as cleaned');
-              }}
-            >
-              <CheckCircle size={32} color={Colors.success} />
-              <Text style={styles.quickActionTitle}>Clean All Tables</Text>
-              <Text style={styles.quickActionSubtitle}>
-                {tables.filter(t => t.status === 'needs-cleaning').length} tables need cleaning
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => {
-                const qrList = tables.map(t => 
-                  `Table ${t.number}: ${window.location.origin}/menu?table=${t.number}`
-                ).join('\n\n');
-                
-                Alert.alert('All QR Codes', qrList, [
-                  { text: 'Close', style: 'cancel' },
-                  {
-                    text: 'Share All',
-                    onPress: async () => {
-                      try {
-                        await Share.share({ message: qrList });
-                      } catch (error) {
-                        console.log('Share error:', error);
-                      }
-                    }
-                  }
-                ]);
-              }}
-            >
-              <QrCode size={32} color={Colors.info} />
-              <Text style={styles.quickActionTitle}>Generate All QR Codes</Text>
-              <Text style={styles.quickActionSubtitle}>For all {tables.length} tables</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.legend}>
-          <Text style={styles.legendTitle}>Table Status Legend:</Text>
-          <View style={styles.legendItems}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.success }]} />
-              <Text style={styles.legendText}>Available</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.error }]} />
-              <Text style={styles.legendText}>Occupied</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.warning }]} />
-              <Text style={styles.legendText}>Reserved</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.info }]} />
-              <Text style={styles.legendText}>Needs Cleaning</Text>
-            </View>
-          </View>
-          <Text style={styles.legendHint}>Long press on table to change status</Text>
-        </View>
-
-        {user.role === 'admin' && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Settings size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Management</Text>
-            </View>
-
-            <View style={styles.managementGrid}>
-              <TouchableOpacity
-                style={styles.managementCard}
-                onPress={() => router.push('/menu-management')}
-                activeOpacity={0.7}
-              >
-                <MenuSquare size={40} color={Colors.primary} />
-                <Text style={styles.managementCardTitle}>Menu Items</Text>
-                <Text style={styles.managementCardSubtitle}>
-                  Add, edit, or remove menu items
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.managementCard}
-                onPress={() => router.push('/employees')}
-                activeOpacity={0.7}
-              >
-                <Users size={40} color="#10b981" />
-                <Text style={styles.managementCardTitle}>Employees</Text>
-                <Text style={styles.managementCardSubtitle}>
-                  Manage staff, shifts & clock records
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.managementCard}
-                onPress={() => router.push('/inventory')}
-                activeOpacity={0.7}
-              >
-                <Package size={40} color="#f59e0b" />
-                <Text style={styles.managementCardTitle}>Inventory</Text>
-                <Text style={styles.managementCardSubtitle}>
-                  Track stock levels & suppliers
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.managementCard}
-                onPress={() => router.push('/table-qr-codes')}
-                activeOpacity={0.7}
-              >
-                <QrCode size={40} color="#8b5cf6" />
-                <Text style={styles.managementCardTitle}>QR Self-Order</Text>
-                <Text style={styles.managementCardSubtitle}>
-                  Customers order from their table
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.managementCard}
-                onPress={() => router.push('/service-requests-admin')}
-                activeOpacity={0.7}
-              >
-                <Bell size={40} color="#ef4444" />
-                <Text style={styles.managementCardTitle}>Service Requests</Text>
-                <Text style={styles.managementCardSubtitle}>
-                  Handle waiter calls & bill requests
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {user.role === 'admin' && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Shield size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Access Credentials</Text>
-            </View>
-
-            <View style={styles.credentialsContainer}>
-              <View style={styles.credentialCard}>
-                <View style={styles.credentialHeader}>
-                  <Shield size={20} color={Colors.warning} />
-                  <Text style={styles.credentialRole}>Super Admin Access</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowPasswords(!showPasswords)}
-                    style={styles.eyeButton}
-                  >
-                    {showPasswords ? <EyeOff size={18} color={Colors.textSecondary} /> : <Eye size={18} color={Colors.textSecondary} />}
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.credentialContent}>
-                  <Text style={styles.credentialLabel}>Password:</Text>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      value="farman12"
-                      secureTextEntry={!showPasswords}
-                      editable={false}
-                      selectTextOnFocus
-                    />
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (Platform.OS === 'web') {
-                          navigator.clipboard.writeText('farman12');
-                          Alert.alert('Copied', 'Admin password copied to clipboard');
-                        } else {
-                          Alert.alert('Admin Password', 'farman12');
-                        }
-                      }}
-                      style={styles.copyButton}
-                    >
-                      <Text style={styles.copyButtonText}>Copy</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <Text style={styles.credentialDescription}>
-                  Full access to all features, reports, and system settings
-                </Text>
-              </View>
-
-              <View style={styles.credentialCard}>
-                <View style={styles.credentialHeader}>
-                  <Shield size={20} color={Colors.success} />
-                  <Text style={styles.credentialRole}>Manager Access</Text>
-                </View>
-                <View style={styles.credentialContent}>
-                  <Text style={styles.credentialLabel}>Password:</Text>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      value="manager99"
-                      secureTextEntry={!showPasswords}
-                      editable={false}
-                      selectTextOnFocus
-                    />
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (Platform.OS === 'web') {
-                          navigator.clipboard.writeText('manager99');
-                          Alert.alert('Copied', 'Manager password copied to clipboard');
-                        } else {
-                          Alert.alert('Manager Password', 'manager99');
-                        }
-                      }}
-                      style={styles.copyButton}
-                    >
-                      <Text style={styles.copyButtonText}>Copy</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <Text style={styles.credentialDescription}>
-                  Access to Table Management, Reports & QR Codes
-                </Text>
-              </View>
-
-              <View style={styles.credentialCard}>
-                <View style={styles.credentialHeader}>
-                  <Users size={20} color={Colors.info} />
-                  <Text style={styles.credentialRole}>Staff Access</Text>
-                </View>
-                <View style={styles.credentialContent}>
-                  <Text style={styles.credentialLabel}>Password:</Text>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordInput}
-                      value="123tapse"
-                      secureTextEntry={!showPasswords}
-                      editable={false}
-                      selectTextOnFocus
-                    />
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (Platform.OS === 'web') {
-                          navigator.clipboard.writeText('123tapse');
-                          Alert.alert('Copied', 'Staff password copied to clipboard');
-                        } else {
-                          Alert.alert('Staff Password', '123tapse');
-                        }
-                      }}
-                      style={styles.copyButton}
-                    >
-                      <Text style={styles.copyButtonText}>Copy</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <Text style={styles.credentialDescription}>
-                  Access to Kitchen, Cashier, Waiter, and Analytics
-                </Text>
-              </View>
-
-              <View style={styles.currentUserBadge}>
-                <Text style={styles.currentUserText}>
-                  <Text style={styles.currentUserText}>
-  Currently logged in as: <Text style={styles.currentUserRole}>{user.role === 'admin' ? 'Super Admin' : 'Restaurant Manager'}</Text>
-</Text>
-                </Text>
-                <TouchableOpacity
-                  style={styles.logoutButtonInline}
-                  onPress={handleLogout}
-                  activeOpacity={0.7}
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => handleDelete(item.id, item.name)}
                 >
-                  <LogOut size={18} color="#fff" />
-                  <Text style={styles.logoutButtonInlineText}>Logout</Text>
+                  <Trash2 size={20} color="#DC2626" />
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-        )}
+          ))}
+        </ScrollView>
+      )}
 
-        {user.role === 'manager' && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Shield size={24} color={Colors.primary} />
-              <Text style={styles.sectionTitle}>Your Access Level</Text>
-            </View>
-
-            <View style={styles.credentialsContainer}>
-              <View style={styles.managerInfoCard}>
-                <Shield size={40} color={Colors.success} />
-                <Text style={styles.managerInfoTitle}>Restaurant Manager</Text>
-                <Text style={styles.managerInfoDescription}>
-                  You have access to table management, QR code generation, order receipts, and reports.
-                </Text>
-                <View style={styles.managerPermissions}>
-                  <View style={styles.permissionItem}>
-                    <CheckCircle size={16} color={Colors.success} />
-                    <Text style={styles.permissionText}>Table Management</Text>
-                  </View>
-                  <View style={styles.permissionItem}>
-                    <CheckCircle size={16} color={Colors.success} />
-                    <Text style={styles.permissionText}>QR Code Generation</Text>
-                  </View>
-                  <View style={styles.permissionItem}>
-                    <CheckCircle size={16} color={Colors.success} />
-                    <Text style={styles.permissionText}>Reports & Analytics</Text>
-                  </View>
-                  <View style={styles.permissionItem}>
-                    <CheckCircle size={16} color={Colors.success} />
-                    <Text style={styles.permissionText}>Export Data</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.currentUserBadge}>
-                <Text style={styles.currentUserText}>
-                  Currently logged in as: <Text style={styles.currentUserRole}>Restaurant Manager</Text>
-                </Text>
-                <TouchableOpacity
-                  style={styles.logoutButtonInline}
-                  onPress={handleLogout}
-                  activeOpacity={0.7}
-                >
-                  <LogOut size={18} color="#fff" />
-                  <Text style={styles.logoutButtonInlineText}>Logout</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <FileText size={24} color={Colors.primary} />
-            <Text style={styles.sectionTitle}>Export & Reports</Text>
-          </View>
-
-          <View style={[styles.exportGrid, dimensions.width >= 768 && styles.exportGridTablet]}>
-            <TouchableOpacity
-              style={styles.exportCard}
-              onPress={() => {
-                router.push('/(tabs)/reports');
-              }}
-              activeOpacity={0.7}
-            >
-              <FileText size={32} color={Colors.primary} />
-              <Text style={styles.exportCardTitle}>View Reports</Text>
-              <Text style={styles.exportCardSubtitle}>Detailed analytics & insights</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.exportCard}
-              onPress={async () => {
-                const today = new Date();
-                const report = `DAILY REPORT - ${today.toLocaleDateString()}\n${'='.repeat(50)}\n\nTotal Orders: ${orders.length}\nActive Orders: ${orders.filter(o => o.status !== 'paid').length}\nCompleted Orders: ${orders.filter(o => o.status === 'paid').length}\n\nRevenue Summary:\nTotal: ${formatPrice(orders.reduce((sum, o) => sum + o.total, 0))}\nPaid: ${formatPrice(orders.filter(o => o.status === 'paid').reduce((sum, o) => sum + o.total, 0))}\n\nTable Status:\nAvailable: ${tables.filter(t => t.status === 'available').length}\nOccupied: ${tables.filter(t => t.status === 'occupied').length}\nReserved: ${tables.filter(t => t.status === 'reserved').length}\nNeed Cleaning: ${tables.filter(t => t.status === 'needs-cleaning').length}\n\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString()}`;
-                
-                try {
-                  await Share.share({ message: report, title: `Daily Report - ${today.toLocaleDateString()}` });
-                } catch (error) {
-                  Alert.alert('Error', 'Failed to export report');
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <Download size={32} color={Colors.success} />
-              <Text style={styles.exportCardTitle}>Export Daily Report</Text>
-              <Text style={styles.exportCardSubtitle}>Download today's summary</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.exportCard}
-              onPress={async () => {
-                const report = `TABLE QR CODES\n${'='.repeat(50)}\n\n` + tables.map(t => 
-                  `Table ${t.number}\nCapacity: ${t.capacity} seats\nQR: ${typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/menu?table=${t.number}\n`
-                ).join('\n') + `\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString()}`;
-                
-                try {
-                  await Share.share({ message: report, title: 'Table QR Codes' });
-                } catch (error) {
-                  Alert.alert('Error', 'Failed to export QR codes');
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <QrCode size={32} color={Colors.info} />
-              <Text style={styles.exportCardTitle}>Export QR Codes</Text>
-              <Text style={styles.exportCardSubtitle}>All tables QR list</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.exportCard}
-              onPress={async () => {
-                const allOrders = orders.map((order, idx) => {
-                  const items = order.items.map(item => 
-                    `${item.quantity}x ${item.menuItem.name} - ${formatPrice(item.menuItem.price * item.quantity)}`
-                  ).join('\n  ');
-                  return `Order #${idx + 1} (${order.id})\nTable: ${order.tableNumber}\nStatus: ${order.status}\nTotal: ${formatPrice(order.total)}\nItems:\n  ${items}\n`;
-                }).join('\n' + '-'.repeat(50) + '\n');
-                
-                const report = `ALL ORDERS\n${'='.repeat(50)}\n${allOrders}\n${'='.repeat(50)}\nTotal Orders: ${orders.length}\nGrand Total: ${formatPrice(orders.reduce((sum, o) => sum + o.total, 0))}\n\nGenerated: ${new Date().toLocaleString()}`;
-                
-                try {
-                  await Share.share({ message: report, title: 'All Orders Report' });
-                } catch (error) {
-                  Alert.alert('Error', 'Failed to export orders');
-                }
-              }}
-              activeOpacity={0.7}
-            >
-              <Printer size={32} color={Colors.warning} />
-              <Text style={styles.exportCardTitle}>Export All Orders</Text>
-              <Text style={styles.exportCardSubtitle}>Complete orders list</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+      {(showAddModal || editingItem) && (
+        <MenuItemModal
+          item={editingItem}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingItem(null);
+          }}
+          onSuccess={() => {
+            setShowAddModal(false);
+            setEditingItem(null);
+            refetch();
+          }}
+        />
+      )}
     </View>
+  );
+}
+
+function MenuItemModal({ item, onClose, onSuccess }: { item: Database['public']['Tables']['menu_items']['Row'] | null; onClose: () => void; onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    name: item?.name || '',
+    name_kurdish: item?.name_kurdish || '',
+    name_arabic: item?.name_arabic || '',
+    category: item?.category || '',
+    price: item?.price?.toString() || '',
+    cost: item?.cost?.toString() || '0',
+    description: item?.description || '',
+    description_kurdish: item?.description_kurdish || '',
+    description_arabic: item?.description_arabic || '',
+    image: item?.image || '',
+    available: item?.available ?? true,
+  });
+
+  const createMutation = trpc.menu.create.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Menu item created successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const updateMutation = trpc.menu.update.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Menu item updated successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.category || !formData.price) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    const data = {
+      name: formData.name,
+      nameKurdish: formData.name_kurdish,
+      nameArabic: formData.name_arabic,
+      category: formData.category,
+      price: parseFloat(formData.price),
+      description: formData.description,
+      descriptionKurdish: formData.description_kurdish,
+      descriptionArabic: formData.description_arabic,
+      image: formData.image || null,
+      available: formData.available,
+    };
+
+    if (item) {
+      updateMutation.mutate({ id: item.id, ...data });
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {item ? 'Edit Menu Item' : 'Add Menu Item'}
+            </Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#3A3A3A" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalForm}>
+            <Text style={styles.label}>Name (English) *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={(text: string) => setFormData({ ...formData, name: text })}
+              placeholder="Pizza Margherita"
+            />
+
+            <Text style={styles.label}>Category *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.category}
+              onChangeText={(text: string) => setFormData({ ...formData, category: text })}
+              placeholder="Main Course"
+            />
+
+            <Text style={styles.label}>Price *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.price}
+              onChangeText={(text: string) => setFormData({ ...formData, price: text })}
+              placeholder="12.99"
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.label}>Cost</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.cost}
+              onChangeText={(text: string) => setFormData({ ...formData, cost: text })}
+              placeholder="5.00"
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.label}>Description (English)</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.description}
+              onChangeText={(text: string) => setFormData({ ...formData, description: text })}
+              placeholder="Description..."
+              multiline
+              numberOfLines={3}
+            />
+
+            <Text style={styles.label}>Menu Image</Text>
+            <ImageUploader
+              value={formData.image}
+              onChange={(url: string) => setFormData({ ...formData, image: url })}
+              bucketName="menu-images"
+              folderPath="items"
+            />
+          </ScrollView>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={onClose}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonPrimaryText}>
+                  {item ? 'Update' : 'Create'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function EmployeesManagement({ onBack }: { onBack: () => void }) {
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [editingEmployee, setEditingEmployee] = useState<any>(null);
+
+  const { data: employees, isLoading, refetch } = trpc.employees.getAll.useQuery();
+  const deleteMutation = trpc.employees.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      Alert.alert('Success', 'Employee deleted successfully');
+    },
+  });
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      'Delete Employee',
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteMutation.mutate({ id })
+        }
+      ]
+    );
+  };
+
+  return (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <X size={24} color="#5C0000" />
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Employees</Text>
+        <TouchableOpacity 
+          onPress={() => setShowAddModal(true)}
+          style={styles.addButton}
+        >
+          <Plus size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+        </View>
+      ) : !employees || employees.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No employees yet</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.listContainer}>
+          {employees.map((employee: Database['public']['Tables']['employees']['Row']) => (
+            <View key={employee.id} style={styles.listItem}>
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{employee.name}</Text>
+                <Text style={styles.listItemSubtitle}>
+                  {employee.role} • ${employee.hourly_rate}/hr
+                </Text>
+                <View style={[
+                  styles.badge, 
+                  employee.status === 'active' ? styles.badgeAvailable : styles.badgeUnavailable
+                ]}>
+                  <Text style={styles.badgeText}>{employee.status}</Text>
+                </View>
+              </View>
+              <View style={styles.listItemActions}>
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => setEditingEmployee(employee)}
+                >
+                  <Edit size={20} color="#5C0000" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => handleDelete(employee.id, employee.name)}
+                >
+                  <Trash2 size={20} color="#DC2626" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {(showAddModal || editingEmployee) && (
+        <EmployeeModal
+          employee={editingEmployee}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingEmployee(null);
+          }}
+          onSuccess={() => {
+            setShowAddModal(false);
+            setEditingEmployee(null);
+            refetch();
+          }}
+        />
+      )}
+    </View>
+  );
+}
+
+function EmployeeModal({ employee, onClose, onSuccess }: { employee: Database['public']['Tables']['employees']['Row'] | null; onClose: () => void; onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    name: employee?.name || '',
+    role: employee?.role || 'waiter',
+    phone: employee?.phone || '',
+    email: employee?.email || '',
+    hourly_rate: employee?.hourly_rate?.toString() || '',
+    status: employee?.status || 'active',
+  });
+
+  const createMutation = trpc.employees.create.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Employee created successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const updateMutation = trpc.employees.update.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Employee updated successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.role || !formData.hourly_rate) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    const data = {
+      name: formData.name,
+      role: formData.role,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined,
+      hourlyRate: parseFloat(formData.hourly_rate),
+    };
+
+    if (employee) {
+      updateMutation.mutate({ id: employee.id, ...data });
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {employee ? 'Edit Employee' : 'Add Employee'}
+            </Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#3A3A3A" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalForm}>
+            <Text style={styles.label}>Name *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={(text: string) => setFormData({ ...formData, name: text })}
+              placeholder="John Doe"
+            />
+
+            <Text style={styles.label}>Role *</Text>
+            <View style={styles.roleButtons}>
+              {['waiter', 'chef', 'manager', 'cashier'].map(role => (
+                <TouchableOpacity
+                  key={role}
+                  style={[
+                    styles.roleButton,
+                    formData.role === role && styles.roleButtonActive
+                  ]}
+                  onPress={() => setFormData({ ...formData, role })}
+                >
+                  <Text style={[
+                    styles.roleButtonText,
+                    formData.role === role && styles.roleButtonTextActive
+                  ]}>
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.label}>Hourly Rate *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.hourly_rate}
+              onChangeText={(text: string) => setFormData({ ...formData, hourly_rate: text })}
+              placeholder="15.00"
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.label}>Phone</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.phone}
+              onChangeText={(text: string) => setFormData({ ...formData, phone: text })}
+              placeholder="+1234567890"
+              keyboardType="phone-pad"
+            />
+
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.email}
+              onChangeText={(text: string) => setFormData({ ...formData, email: text })}
+              placeholder="john@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </ScrollView>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={onClose}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonPrimaryText}>
+                  {employee ? 'Update' : 'Create'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function InventoryManagement({ onBack }: { onBack: () => void }) {
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [showAdjustModal, setShowAdjustModal] = useState<boolean>(false);
+
+  const { data: inventory, isLoading, refetch } = trpc.inventory.getAll.useQuery();
+
+  return (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <X size={24} color="#5C0000" />
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Inventory</Text>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+        </View>
+      ) : !inventory || inventory.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No inventory items yet</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.listContainer}>
+          {inventory.map((item: Database['public']['Tables']['inventory_items']['Row']) => (
+            <View key={item.id} style={styles.listItem}>
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{item.name}</Text>
+                <Text style={styles.listItemSubtitle}>
+                  {item.category} • {item.current_stock} {item.unit}
+                </Text>
+                {item.current_stock <= item.minimum_stock && (
+                  <View style={[styles.badge, styles.badgeWarning]}>
+                    <Text style={styles.badgeText}>Low Stock</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity 
+                style={styles.adjustButton}
+                onPress={() => {
+                  setSelectedItem(item);
+                  setShowAdjustModal(true);
+                }}
+              >
+                <Text style={styles.adjustButtonText}>Adjust</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {showAdjustModal && selectedItem && (
+        <AdjustStockModal
+          item={selectedItem}
+          onClose={() => {
+            setShowAdjustModal(false);
+            setSelectedItem(null);
+          }}
+          onSuccess={() => {
+            setShowAdjustModal(false);
+            setSelectedItem(null);
+            refetch();
+          }}
+        />
+      )}
+    </View>
+  );
+}
+
+function CategoriesManagement({ onBack }: { onBack: () => void }) {
+  const [editingCategory, setEditingCategory] = useState<{ name: string; itemCount: number } | null>(null);
+
+  const { data: menuItems, isLoading, refetch } = trpc.menu.getAll.useQuery();
+
+  const categories = menuItems 
+    ? Array.from(new Set(menuItems.map((item: any) => item.category))).map(categoryName => ({
+        name: categoryName,
+        itemCount: menuItems.filter((item: any) => item.category === categoryName).length
+      }))
+    : [];
+
+  const handleDelete = (name: string, itemCount: number) => {
+    if (itemCount > 0) {
+      Alert.alert(
+        'Cannot Delete',
+        `Category "${name}" contains ${itemCount} menu items. Please reassign or delete those items first.`
+      );
+      return;
+    }
+
+    Alert.alert('Info', 'Categories are automatically managed based on menu items.');
+  };
+
+  return (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <X size={24} color="#5C0000" />
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+        </View>
+      ) : categories.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No categories yet</Text>
+          <Text style={styles.emptySubtext}>Categories are automatically created when you add menu items</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.listContainer}>
+          {categories.map((category) => (
+            <View key={category.name} style={styles.listItem}>
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{category.name}</Text>
+                <Text style={styles.listItemSubtitle}>
+                  {category.itemCount} item{category.itemCount !== 1 ? 's' : ''}
+                </Text>
+              </View>
+              <View style={styles.listItemActions}>
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => setEditingCategory(category)}
+                >
+                  <Edit size={20} color="#5C0000" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.iconButton}
+                  onPress={() => handleDelete(category.name, category.itemCount)}
+                >
+                  <Trash2 size={20} color="#DC2626" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {editingCategory && (
+        <CategoryModal
+          category={editingCategory}
+          onClose={() => setEditingCategory(null)}
+          onSuccess={() => {
+            setEditingCategory(null);
+            refetch();
+          }}
+        />
+      )}
+    </View>
+  );
+}
+
+function CategoryModal({ category, onClose, onSuccess }: { category: { name: string; itemCount: number }; onClose: () => void; onSuccess: () => void }) {
+  const [newName, setNewName] = useState<string>(category.name);
+
+  const handleSubmit = () => {
+    if (!newName.trim()) {
+      Alert.alert('Error', 'Please enter a category name');
+      return;
+    }
+
+    if (newName === category.name) {
+      onClose();
+      return;
+    }
+
+    Alert.alert('Not Implemented', 'Category rename is not yet implemented. Please update category via menu items.');
+    onClose();
+  };
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Edit Category</Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#3A3A3A" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalForm}>
+            <Text style={styles.itemInfo}>{category.name}</Text>
+            <Text style={styles.itemCurrentStock}>
+              {category.itemCount} item{category.itemCount !== 1 ? 's' : ''} in this category
+            </Text>
+
+            <Text style={styles.label}>New Category Name *</Text>
+            <TextInput
+              style={styles.input}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Category name"
+            />
+          </View>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={onClose}
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.buttonPrimaryText}>Update</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function TablesManagement({ onBack }: { onBack: () => void }) {
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+
+  const { data: tables, isLoading, refetch } = trpc.tables.getAll.useQuery();
+  const deleteMutation = trpc.tables.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      Alert.alert('Success', 'Table deleted successfully');
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleDelete = (tableNumber: number, status: string) => {
+    if (status === 'occupied') {
+      Alert.alert(
+        'Cannot Delete',
+        `Table ${tableNumber} is currently occupied. Please complete the order first.`
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Delete Table',
+      `Are you sure you want to delete Table ${tableNumber}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteMutation.mutate({ number: tableNumber })
+        }
+      ]
+    );
+  };
+
+  return (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <X size={24} color="#5C0000" />
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Table Layout</Text>
+        <TouchableOpacity 
+          onPress={() => setShowAddModal(true)}
+          style={styles.addButton}
+        >
+          <Plus size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+        </View>
+      ) : !tables || tables.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No tables yet</Text>
+          <Text style={styles.emptySubtext}>Add your first table to get started</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.listContainer}>
+          {tables.map((table: Database['public']['Tables']['tables']['Row']) => (
+            <View key={table.number} style={styles.listItem}>
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>Table {table.number}</Text>
+                <Text style={styles.listItemSubtitle}>
+                  Capacity: {table.capacity} • {table.status}
+                </Text>
+                <View style={[
+                  styles.badge,
+                  table.status === 'available' ? styles.badgeAvailable : 
+                  table.status === 'occupied' ? styles.badgeUnavailable :
+                  styles.badgeWarning
+                ]}>
+                  <Text style={styles.badgeText}>{table.status}</Text>
+                </View>
+              </View>
+              <TouchableOpacity 
+                style={styles.iconButton}
+                onPress={() => handleDelete(table.number, table.status)}
+              >
+                <Trash2 size={20} color="#DC2626" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {showAddModal && (
+        <TableModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            refetch();
+          }}
+        />
+      )}
+    </View>
+  );
+}
+
+function TableModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [tableNumber, setTableNumber] = useState<string>('');
+  const [capacity, setCapacity] = useState<string>('4');
+
+  const createMutation = trpc.tables.create.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Table created successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!tableNumber || !capacity) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    const num = parseInt(tableNumber);
+    const cap = parseInt(capacity);
+
+    if (isNaN(num) || num <= 0) {
+      Alert.alert('Error', 'Please enter a valid table number');
+      return;
+    }
+
+    if (isNaN(cap) || cap <= 0) {
+      Alert.alert('Error', 'Please enter a valid capacity');
+      return;
+    }
+
+    createMutation.mutate({
+      number: num,
+      capacity: cap,
+      status: 'available',
+    });
+  };
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Add Table</Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#3A3A3A" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalForm}>
+            <Text style={styles.label}>Table Number *</Text>
+            <TextInput
+              style={styles.input}
+              value={tableNumber}
+              onChangeText={setTableNumber}
+              placeholder="1"
+              keyboardType="number-pad"
+            />
+
+            <Text style={styles.label}>Capacity *</Text>
+            <TextInput
+              style={styles.input}
+              value={capacity}
+              onChangeText={setCapacity}
+              placeholder="4"
+              keyboardType="number-pad"
+            />
+          </View>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={onClose}
+              disabled={createMutation.isPending}
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSubmit}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonPrimaryText}>Create</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function AdjustStockModal({ item, onClose, onSuccess }: { item: Database['public']['Tables']['inventory_items']['Row']; onClose: () => void; onSuccess: () => void }) {
+  const [adjustType, setAdjustType] = useState<'add' | 'reduce'>('add');
+  const [quantity, setQuantity] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
+
+  const adjustMutation = trpc.inventory.adjustStock.useMutation({
+    onSuccess: () => {
+      Alert.alert('Success', 'Stock adjusted successfully');
+      onSuccess();
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!quantity || parseFloat(quantity) <= 0) {
+      Alert.alert('Error', 'Please enter a valid quantity');
+      return;
+    }
+
+    const amount = parseFloat(quantity);
+    const changeAmount = adjustType === 'add' ? amount : -amount;
+
+    adjustMutation.mutate({
+      inventoryItemId: item.id,
+      quantity: changeAmount,
+      movementType: adjustType === 'add' ? 'purchase' : 'adjustment',
+      notes: notes || (adjustType === 'add' ? 'Stock added' : 'Stock removed'),
+    });
+  };
+
+  return (
+    <Modal visible transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Adjust Stock</Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#3A3A3A" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalForm}>
+            <Text style={styles.itemInfo}>{item.name}</Text>
+            <Text style={styles.itemCurrentStock}>
+              Current: {item.current_stock} {item.unit}
+            </Text>
+
+            <View style={styles.adjustTypeContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.adjustTypeButton,
+                  adjustType === 'add' && styles.adjustTypeButtonActive
+                ]}
+                onPress={() => setAdjustType('add')}
+              >
+                <Text style={[
+                  styles.adjustTypeText,
+                  adjustType === 'add' && styles.adjustTypeTextActive
+                ]}>
+                  Add Stock
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.adjustTypeButton,
+                  adjustType === 'reduce' && styles.adjustTypeButtonActive
+                ]}
+                onPress={() => setAdjustType('reduce')}
+              >
+                <Text style={[
+                  styles.adjustTypeText,
+                  adjustType === 'reduce' && styles.adjustTypeTextActive
+                ]}>
+                  Reduce Stock
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.label}>Quantity *</Text>
+            <TextInput
+              style={styles.input}
+              value={quantity}
+              onChangeText={setQuantity}
+              placeholder="Enter quantity"
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.label}>Notes</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Reason for adjustment..."
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={onClose}
+              disabled={adjustMutation.isPending}
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSubmit}
+              disabled={adjustMutation.isPending}
+            >
+              {adjustMutation.isPending ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonPrimaryText}>Submit</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+    backgroundColor: '#F6EEDD',
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: 20,
     ...Platform.select({
       web: {
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
+        maxWidth: 1200,
+        alignSelf: 'center',
         width: '100%',
       },
     }),
   },
-  section: {
+  header: {
+    alignItems: 'center',
     marginBottom: 32,
+    paddingVertical: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginBottom: 24,
+  },
+  card: {
+    flex: 1,
+    minWidth: 280,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      },
+    }),
+  },
+  cardHeader: {
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+    marginBottom: 8,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: '#8E8E93',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  cardBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#5C0000',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  cardBadgeText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#FFFFFF',
+  },
+  sectionContainer: {
+    flex: 1,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  backButton: {
+    padding: 8,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: '#1C1C1E',
-  },
-  tableGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'flex-start',
-  },
-  tableCard: {
-    flexBasis: '47%',
-    minWidth: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#E5E5EA',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  tableCardTablet: {
-    minWidth: 200,
-    flexBasis: '30%',
-  },
-  tableCardSelected: {
-    borderColor: Colors.primary,
-    borderWidth: 3,
-  },
-  tableStatus: {
-    position: 'absolute' as const,
-    top: 12,
-    right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tableInfo: {
-    gap: 4,
-  },
-  tableNumber: {
-    fontSize: 20,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-  },
-  tableCapacity: {
-    fontSize: 14,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-  },
-  tableStatusText: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    marginTop: 4,
-  },
-  tableOrders: {
-    fontSize: 12,
-    color: '#0A84FF',
-    fontWeight: '600' as const,
-    marginTop: 4,
-  },
-  tableActions: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
-  actionButton: {
+    color: '#3A3A3A',
     flex: 1,
-    flexDirection: 'row',
+    textAlign: 'center',
+  },
+  addButton: {
+    backgroundColor: '#5C0000',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    padding: 10,
-    backgroundColor: '#F5F5F7',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
-  actionButtonText: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-  },
-  quickActions: {
-    flexDirection: 'column',
-    gap: 16,
-    ...Platform.select({
-      web: {
-        flexDirection: 'row',
-      },
-    }),
-  },
-  quickActionCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
+  searchContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  quickActionTitle: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-    textAlign: 'center' as const,
-  },
-  quickActionSubtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
-    textAlign: 'center' as const,
-  },
-  legend: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 16,
-  },
-  legendTitle: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
+    margin: 20,
     marginBottom: 12,
-  },
-  legendItems: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  legendText: {
-    fontSize: 14,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-  },
-  legendHint: {
-    fontSize: 12,
-    color: Colors.textLight,
-    fontStyle: 'italic' as const,
-    marginTop: 12,
-  },
-  headerBadge: {
-    backgroundColor: Colors.error,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginRight: 16,
-  },
-  headerBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700' as const,
-  },
-  newOrderAlert: {
-    backgroundColor: Colors.success,
-    padding: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.success,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-  newOrderAlertText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700' as const,
-    textAlign: 'center' as const,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginRight: 16,
-  },
-  logoutButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  userInfoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  userInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  userRole: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-  },
-  userSubtext: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-  },
-  logoutButtonCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: '#F5F5F7',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  logoutButtonText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: Colors.error,
-  },
-  credentialsContainer: {
-    gap: 16,
-  },
-  credentialCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: '#E5E5EA',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  credentialHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  credentialRole: {
-    fontSize: 18,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    flex: 1,
-  },
-  eyeButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: '#F5F5F7',
-  },
-  credentialContent: {
-    marginBottom: 12,
-  },
-  credentialLabel: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#8E8E93',
-    marginBottom: 8,
-  },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  passwordInput: {
-    flex: 1,
-    backgroundColor: '#F5F5F7',
-    borderRadius: 8,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
+    color: '#3A3A3A',
   },
-  copyButton: {
-    backgroundColor: '#0A84FF',
-    paddingVertical: 12,
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  listContainer: {
+    flex: 1,
     paddingHorizontal: 20,
-    borderRadius: 8,
   },
-  copyButtonText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
-  credentialDescription: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontStyle: 'italic' as const,
-    lineHeight: 18,
-  },
-  currentUserBadge: {
+  listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#0A84FF',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-  },
-  currentUserText: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: '#fff',
-  },
-  currentUserRole: {
-    fontWeight: '800' as const,
-    fontSize: 16,
-  },
-  logoutButtonInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 8,
-  },
-  logoutButtonInlineText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
-  managerInfoCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    gap: 16,
-    borderWidth: 2,
-    borderColor: Colors.success,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.success,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 12,
   },
-  managerInfoTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    textAlign: 'center' as const,
+  listItemContent: {
+    flex: 1,
   },
-  managerInfoDescription: {
-    fontSize: 15,
+  listItemTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#3A3A3A',
+    marginBottom: 4,
+  },
+  listItemSubtitle: {
+    fontSize: 14,
     color: '#8E8E93',
-    textAlign: 'center' as const,
-    lineHeight: 22,
     marginBottom: 8,
   },
-  managerPermissions: {
+  listItemActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeAvailable: {
+    backgroundColor: '#10B98115',
+  },
+  badgeUnavailable: {
+    backgroundColor: '#DC262615',
+  },
+  badgeWarning: {
+    backgroundColor: '#F59E0B15',
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#3A3A3A',
+  },
+  adjustButton: {
+    backgroundColor: '#5C0000',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  adjustButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600' as const,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     width: '100%',
+    maxWidth: 500,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+  },
+  modalForm: {
+    padding: 20,
+    maxHeight: 400,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#3A3A3A',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  input: {
+    backgroundColor: '#F6EEDD',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#3A3A3A',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    flexDirection: 'row',
     gap: 12,
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonPrimary: {
+    backgroundColor: '#5C0000',
+  },
+  buttonPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600' as const,
+  },
+  buttonSecondary: {
+    backgroundColor: '#E5E5E5',
+  },
+  buttonSecondaryText: {
+    color: '#3A3A3A',
+    fontSize: 16,
+    fontWeight: '600' as const,
+  },
+  roleButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 8,
   },
-  permissionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  roleButton: {
+    paddingHorizontal: 16,
     paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#F6EEDD',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
   },
-  permissionText: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: '#1C1C1E',
+  roleButtonActive: {
+    backgroundColor: '#5C0000',
+    borderColor: '#5C0000',
   },
-  exportGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+  roleButtonText: {
+    fontSize: 14,
+    color: '#3A3A3A',
+    fontWeight: '500' as const,
   },
-  exportGridTablet: {
-    gap: 20,
+  roleButtonTextActive: {
+    color: '#FFFFFF',
   },
-  exportCard: {
-    flexBasis: '47%',
-    minWidth: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 2,
-    borderColor: '#E5E5EA',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        minWidth: 200,
-        flexBasis: '48%',
-      },
-    }),
-  },
-  exportCardTitle: {
-    fontSize: 16,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    textAlign: 'center' as const,
-  },
-  exportCardSubtitle: {
-    fontSize: 13,
-    color: '#8E8E93',
-    textAlign: 'center' as const,
-    fontWeight: '600' as const,
-  },
-  menuManagementCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    gap: 16,
-    borderWidth: 3,
-    borderColor: Colors.primary,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.25,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 10,
-      },
-    }),
-  },
-  menuManagementTitle: {
-    fontSize: 22,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    textAlign: 'center' as const,
-  },
-  menuManagementSubtitle: {
-    fontSize: 15,
-    color: '#8E8E93',
-    textAlign: 'center' as const,
-    lineHeight: 22,
-  },
-  managementGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  managementCard: {
-    flexBasis: '47%',
-    minWidth: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 2,
-    borderColor: '#E5E5EA',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-  managementCardTitle: {
+  itemInfo: {
     fontSize: 18,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    textAlign: 'center' as const,
-  },
-  managementCardSubtitle: {
-    fontSize: 13,
-    color: '#8E8E93',
-    textAlign: 'center' as const,
     fontWeight: '600' as const,
+    color: '#3A3A3A',
+    marginBottom: 4,
+  },
+  itemCurrentStock: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 16,
+  },
+  adjustTypeContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  adjustTypeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#F6EEDD',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    alignItems: 'center',
+  },
+  adjustTypeButtonActive: {
+    backgroundColor: '#5C0000',
+    borderColor: '#5C0000',
+  },
+  adjustTypeText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#3A3A3A',
+  },
+  adjustTypeTextActive: {
+    color: '#FFFFFF',
   },
 });

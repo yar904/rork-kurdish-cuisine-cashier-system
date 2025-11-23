@@ -11,6 +11,8 @@ import tablesUpdateStatusRoute from "./routes/tables/updateStatus/route";
 import ordersCreateRoute from "./routes/orders/create/route";
 import ordersGetAllRoute from "./routes/orders/getAll/route";
 import ordersUpdateStatusRoute from "./routes/orders/updateStatus/route";
+import { getActiveOrdersProcedure } from "./routes/orders/getActive/route";
+import { getPaidHistoryProcedure } from "./routes/orders/getPaidHistory/route";
 import { createServiceRequestProcedure } from "./routes/service-requests/create/route";
 import { getAllServiceRequestsProcedure } from "./routes/service-requests/getAll/route";
 import { updateServiceRequestStatusProcedure } from "./routes/service-requests/updateStatus/route";
@@ -41,6 +43,27 @@ import { adjustStockProcedure } from "./routes/inventory/adjustStock/route";
 import { getStockMovementsProcedure } from "./routes/inventory/getMovements/route";
 import { getAllSuppliersProcedure } from "./routes/suppliers/getAll/route";
 import { createSupplierProcedure } from "./routes/suppliers/create/route";
+import { salesDailyProcedure } from "./routes/reports/sales-daily/route";
+import { salesWeeklyProcedure } from "./routes/reports/sales-weekly/route";
+import { salesMonthlyProcedure } from "./routes/reports/sales-monthly/route";
+import { itemSalesSummaryProcedure } from "./routes/reports/item-sales-summary/route";
+import { activeTablesProcedure } from "./routes/reports/active-tables/route";
+import { salesSummaryProcedure } from "./routes/reports/sales-summary/route";
+import { getNewOrdersProcedure } from "./routes/kitchen/getNew/route";
+import { getInProgressOrdersProcedure } from "./routes/kitchen/getInProgress/route";
+import { getCompletedOrdersProcedure } from "./routes/kitchen/getCompleted/route";
+import { getWaiterRequestsProcedure } from "./routes/waiter/getRequests/route";
+import { completeRequestProcedure } from "./routes/waiter/completeRequest/route";
+import { getOrderByTableProcedure } from "./routes/orders/getByTable/route";
+import { addItemProcedure } from "./routes/orders/addItem/route";
+import { updateItemQtyProcedure } from "./routes/orders/updateItemQty/route";
+import { getCustomerStatusProcedure } from "./routes/orders/getCustomerStatus/route";
+import getAllCategoriesRoute from "./routes/categories/getAll/route";
+import createCategoryRoute from "./routes/categories/create/route";
+import updateCategoryRoute from "./routes/categories/update/route";
+import deleteCategoryRoute from "./routes/categories/delete/route";
+import createTableRoute from "./routes/tables/create/route";
+import deleteTableRoute from "./routes/tables/delete/route";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -56,12 +79,26 @@ export const appRouter = createTRPCRouter({
   }),
   tables: createTRPCRouter({
     getAll: tablesGetAllRoute,
+    create: createTableRoute,
+    delete: deleteTableRoute,
     updateStatus: tablesUpdateStatusRoute,
+  }),
+  categories: createTRPCRouter({
+    getAll: getAllCategoriesRoute,
+    create: createCategoryRoute,
+    update: updateCategoryRoute,
+    delete: deleteCategoryRoute,
   }),
   orders: createTRPCRouter({
     create: ordersCreateRoute,
     getAll: ordersGetAllRoute,
+    getActive: getActiveOrdersProcedure,
+    getPaidHistory: getPaidHistoryProcedure,
+    getByTable: getOrderByTableProcedure,
+    addItem: addItemProcedure,
+    updateItemQty: updateItemQtyProcedure,
     updateStatus: ordersUpdateStatusRoute,
+    getCustomerStatus: getCustomerStatusProcedure,
   }),
   serviceRequests: createTRPCRouter({
     create: createServiceRequestProcedure,
@@ -82,6 +119,12 @@ export const appRouter = createTRPCRouter({
     comparison: reportsComparisonProcedure,
     financial: reportsFinancialProcedure,
     employeePerformance: reportsEmployeePerformanceProcedure,
+    salesDaily: salesDailyProcedure,
+    salesWeekly: salesWeeklyProcedure,
+    salesMonthly: salesMonthlyProcedure,
+    itemSalesSummary: itemSalesSummaryProcedure,
+    activeTables: activeTablesProcedure,
+    salesSummary: salesSummaryProcedure,
   }),
   employees: createTRPCRouter({
     getAll: getAllEmployeesProcedure,
@@ -106,6 +149,15 @@ export const appRouter = createTRPCRouter({
   suppliers: createTRPCRouter({
     getAll: getAllSuppliersProcedure,
     create: createSupplierProcedure,
+  }),
+  kitchen: createTRPCRouter({
+    getNew: getNewOrdersProcedure,
+    getInProgress: getInProgressOrdersProcedure,
+    getCompleted: getCompletedOrdersProcedure,
+  }),
+  waiter: createTRPCRouter({
+    getRequests: getWaiterRequestsProcedure,
+    completeRequest: completeRequestProcedure,
   }),
 });
 

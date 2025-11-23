@@ -496,7 +496,62 @@ export interface Database {
       };
     };
     Views: {
-      [_ in never]: never;
+      v_sales_daily: {
+        Row: {
+          sale_date: string;
+          total_sales: number;
+          order_count: number;
+          avg_order_value: number;
+        };
+      };
+      v_sales_weekly: {
+        Row: {
+          week_start: string;
+          week_end: string;
+          total_sales: number;
+          order_count: number;
+          avg_order_value: number;
+        };
+      };
+      v_sales_monthly: {
+        Row: {
+          month: string;
+          year: number;
+          total_sales: number;
+          order_count: number;
+          avg_order_value: number;
+        };
+      };
+      v_item_sales_summary: {
+        Row: {
+          item_id: string;
+          item_name: string;
+          category: string;
+          total_quantity: number;
+          total_revenue: number;
+          order_count: number;
+        };
+      };
+      v_active_tables: {
+        Row: {
+          table_number: number;
+          status: string;
+          capacity: number;
+          current_order_id: string | null;
+          order_total: number | null;
+          order_status: string | null;
+          waiter_name: string | null;
+        };
+      };
+      v_sales_summary: {
+        Row: {
+          total_revenue: number;
+          total_orders: number;
+          avg_order_value: number;
+          paid_orders: number;
+          pending_orders: number;
+        };
+      };
     };
     Functions: {
       [_ in never]: never;

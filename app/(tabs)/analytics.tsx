@@ -1,205 +1,223 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, useWindowDimensions, Platform } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
-import { TrendingUp, DollarSign, ShoppingBag, Award } from 'lucide-react-native';
-import { useRestaurant } from '@/contexts/RestaurantContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { formatPrice } from '@/constants/currency';
-import { MenuCategory } from '@/types/restaurant';
+import { TrendingUp, Award, Clock, DollarSign } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { trpc } from '@/lib/trpc';
 
-
-
-export default function AnalyticsScreen() {
-  const { orders } = useRestaurant();
-  const { t, tc } = useLanguage();
-  const { width } = useWindowDimensions();
+export default function AnalyticsDashboard() {
+  const insets = useSafeAreaInsets();
   
-  const isPhone = width < 768;
-  const isTablet = width >= 768 && width < 1200;
-  const isDesktop = width >= 1200;
+  const { data: salesSummary, isLoading: loadingSummary } = trpc.reports.salesSummary.useQuery();
+  const { data: dailySales, isLoading: loadingDaily } = trpc.reports.salesDaily.useQuery();
+  const { data: itemSales, isLoading: loadingItems } = trpc.reports.itemSalesSummary.useQuery();
 
-  const analytics = useMemo(() => {
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalOrders = orders.length;
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const isLoading = loadingSummary || loadingDaily || loadingItems;
 
-    const itemSales: Record<string, { name: string, nameKurdish: string, quantity: number, revenue: number }> = {};
-    const categoryRevenue: Record<MenuCategory, number> = {} as Record<MenuCategory, number>;
-    const statusCounts: Record<string, number> = {
-      new: 0,
-      preparing: 0,
-      ready: 0,
-      served: 0,
-      paid: 0,
-    };
-
-    orders.forEach(order => {
-      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
-
-      order.items.forEach(item => {
-        const itemId = item.menuItem.id;
-        if (!itemSales[itemId]) {
-          itemSales[itemId] = {
-            name: item.menuItem.name,
-            nameKurdish: item.menuItem.nameKurdish,
-            quantity: 0,
-            revenue: 0,
-          };
-        }
-        itemSales[itemId].quantity += item.quantity;
-        itemSales[itemId].revenue += item.menuItem.price * item.quantity;
-
-        const category = item.menuItem.category;
-        categoryRevenue[category] = (categoryRevenue[category] || 0) + (item.menuItem.price * item.quantity);
-      });
-    });
-
-    const topItems = Object.entries(itemSales)
-      .sort((a, b) => b[1].quantity - a[1].quantity)
-      .slice(0, 10);
-
-    const categoryData = Object.entries(categoryRevenue)
-      .sort((a, b) => b[1] - a[1])
-      .map(([category, revenue]) => ({
-        category: category as MenuCategory,
-        revenue,
-        percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0,
-      }));
-
-    return {
-      totalRevenue,
-      totalOrders,
-      avgOrderValue,
-      topItems,
-      categoryData,
-      statusCounts,
-    };
-  }, [orders]);
-
-  const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) => (
-    <View style={[styles.statCard, !isPhone && styles.statCardTablet]}>
-      <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
-        <Icon size={!isPhone ? 28 : 24} color={color} />
-      </View>
-      <View style={styles.statContent}>
-        <Text style={[styles.statLabel, !isPhone && styles.statLabelLarge]}>{label}</Text>
-        <Text style={[styles.statValue, !isPhone && styles.statValueLarge]}>{value}</Text>
-      </View>
-    </View>
-  );
+  const todaySales = dailySales?.[0];
+  const topItems = itemSales?.sort((a: any, b: any) => b.total_revenue - a.total_revenue).slice(0, 5) || [];
+  
+  const categoryTotals = itemSales?.reduce((acc: any, item: any) => {
+    acc[item.category] = (acc[item.category] || 0) + item.total_revenue;
+    return acc;
+  }, {}) || {};
+  
+  const categories = Object.entries(categoryTotals)
+    .sort(([, a]: any, [, b]: any) => b - a)
+    .slice(0, 5);
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ 
-        title: 'Analytics',
-        headerStyle: { backgroundColor: '#0A84FF' },
-        headerTintColor: '#fff',
-        headerShadowVisible: false,
-      }} />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Stack.Screen
+        options={{
+          title: 'Analytics',
+          headerStyle: { backgroundColor: '#5C0000' },
+          headerTintColor: '#FFFFFF',
+          headerShadowVisible: false,
+        }}
+      />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.statsGrid}>
-          <StatCard
-            icon={DollarSign}
-            label={t('totalRevenue')}
-            value={formatPrice(analytics.totalRevenue)}
-            color="#10B981"
-          />
-          <StatCard
-            icon={ShoppingBag}
-            label={t('totalOrders')}
-            value={analytics.totalOrders.toString()}
-            color="#3B82F6"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label={t('avgOrderValue')}
-            value={formatPrice(analytics.avgOrderValue)}
-            color="#F59E0B"
-          />
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#5C0000" />
+          <Text style={styles.loadingText}>Loading analytics...</Text>
         </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Award size={24} color="#2563EB" />
-            <Text style={styles.sectionTitle}>{t('topSellingItems')}</Text>
+      ) : (
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <TrendingUp size={32} color="#5C0000" />
+            <Text style={styles.headerTitle}>Business Analytics</Text>
+            <Text style={styles.headerSubtitle}>Key metrics and trends</Text>
           </View>
-          <View style={styles.card}>
-            {analytics.topItems.length === 0 ? (
-              <Text style={styles.emptyText}>{t('noOrders')}</Text>
-            ) : (
-              analytics.topItems.map(([itemId, data], index) => (
-                <View key={itemId} style={styles.topItemRow}>
-                  <View style={styles.topItemRank}>
-                    <Text style={styles.topItemRankText}>{index + 1}</Text>
-                  </View>
-                  <View style={styles.topItemInfo}>
-                    <Text style={styles.topItemName}>{data.name}</Text>
-                    <Text style={styles.topItemNameKurdish}>{data.nameKurdish}</Text>
-                  </View>
-                  <View style={styles.topItemStats}>
-                    <Text style={styles.topItemQuantity}>{data.quantity}x</Text>
-                    <Text style={styles.topItemRevenue}>{formatPrice(data.revenue)}</Text>
-                  </View>
-                </View>
-              ))
-            )}
-          </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('revenueByCategory')}</Text>
-          <View style={styles.card}>
-            {analytics.categoryData.length === 0 ? (
-              <Text style={styles.emptyText}>{t('noOrders')}</Text>
-            ) : (
-              analytics.categoryData.map(({ category, revenue, percentage }) => (
-                <View key={category} style={styles.categoryRow}>
-                  <View style={styles.categoryInfo}>
-                    <Text style={styles.categoryName}>{tc(category)}</Text>
-                    <View style={styles.progressBarContainer}>
-                      <View 
-                        style={[
-                          styles.progressBar, 
-                          { width: `${percentage}%`, backgroundColor: '#2563EB' }
-                        ]} 
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.categoryStats}>
-                    <Text style={styles.categoryRevenue}>{formatPrice(revenue)}</Text>
-                    <Text style={styles.categoryPercentage}>{percentage.toFixed(1)}%</Text>
-                  </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Today's Performance</Text>
+            <View style={styles.kpiGrid}>
+              <View style={styles.kpiCard}>
+                <View style={[styles.kpiIcon, { backgroundColor: '#5C000015' }]}>
+                  <DollarSign size={24} color="#5C0000" />
                 </View>
-              ))
-            )}
-          </View>
-        </View>
+                <Text style={styles.kpiLabel}>Total Revenue</Text>
+                <Text style={styles.kpiValue}>
+                  ${todaySales?.total_sales?.toFixed(2) || '0.00'}
+                </Text>
+              </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('ordersByStatus')}</Text>
-          <View style={styles.card}>
-            <View style={styles.statusGrid}>
-              {Object.entries(analytics.statusCounts).map(([status, count]) => (
-                <View key={status} style={styles.statusCard}>
-                  <View 
-                    style={[
-                      styles.statusDot, 
-                      { backgroundColor: '#3B82F6' }
-                    ]} 
-                  />
-                  <Text style={styles.statusLabel}>
-                    {t(status as keyof typeof t)}
-                  </Text>
-                  <Text style={styles.statusCount}>{count}</Text>
+              <View style={styles.kpiCard}>
+                <View style={[styles.kpiIcon, { backgroundColor: '#10B98115' }]}>
+                  <Clock size={24} color="#10B981" />
                 </View>
-              ))}
+                <Text style={styles.kpiLabel}>Total Orders</Text>
+                <Text style={styles.kpiValue}>{todaySales?.order_count || 0}</Text>
+              </View>
+
+              <View style={styles.kpiCard}>
+                <View style={[styles.kpiIcon, { backgroundColor: '#C6A66715' }]}>
+                  <Award size={24} color="#C6A667" />
+                </View>
+                <Text style={styles.kpiLabel}>Avg Order Value</Text>
+                <Text style={styles.kpiValue}>
+                  ${todaySales?.avg_order_value?.toFixed(2) || '0.00'}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Overall Statistics</Text>
+            {salesSummary && (
+              <View style={styles.statsGrid}>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>
+                    ${salesSummary.total_revenue.toFixed(2)}
+                  </Text>
+                  <Text style={styles.statLabel}>Total Revenue</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{salesSummary.total_orders}</Text>
+                  <Text style={styles.statLabel}>Total Orders</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{salesSummary.paid_orders}</Text>
+                  <Text style={styles.statLabel}>Paid Orders</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{salesSummary.pending_orders}</Text>
+                  <Text style={styles.statLabel}>Pending Orders</Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Top 5 Selling Items</Text>
+            {topItems.length === 0 ? (
+              <Text style={styles.emptyText}>No item data available</Text>
+            ) : (
+              <View style={styles.chartContainer}>
+                {topItems.map((item: any, idx: number) => {
+                  const maxRevenue = topItems[0].total_revenue;
+                  const percentage = (item.total_revenue / maxRevenue) * 100;
+                  
+                  return (
+                    <View key={item.item_id} style={styles.barItem}>
+                      <View style={styles.barInfo}>
+                        <Text style={styles.barRank}>#{idx + 1}</Text>
+                        <View style={styles.barDetails}>
+                          <Text style={styles.barLabel}>{item.item_name}</Text>
+                          <Text style={styles.barSubLabel}>
+                            {item.total_quantity} sold • ${item.total_revenue.toFixed(2)}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.barTrack}>
+                        <View 
+                          style={[
+                            styles.barFill,
+                            { width: `${percentage}%` }
+                          ]} 
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Top 5 Categories</Text>
+            {categories.length === 0 ? (
+              <Text style={styles.emptyText}>No category data available</Text>
+            ) : (
+              <View style={styles.chartContainer}>
+                {categories.map(([category, revenue]: any, idx: number) => {
+                  const maxRevenue = categories[0][1];
+                  const percentage = (revenue / maxRevenue) * 100;
+                  
+                  return (
+                    <View key={category} style={styles.barItem}>
+                      <View style={styles.barInfo}>
+                        <Text style={styles.barRank}>#{idx + 1}</Text>
+                        <View style={styles.barDetails}>
+                          <Text style={styles.barLabel}>{category}</Text>
+                          <Text style={styles.barSubLabel}>
+                            ${revenue.toFixed(2)}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.barTrack}>
+                        <View 
+                          style={[
+                            styles.barFill,
+                            { width: `${percentage}%`, backgroundColor: '#C6A667' }
+                          ]} 
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Sales Trend (Last 7 Days)</Text>
+            {!dailySales || dailySales.length === 0 ? (
+              <Text style={styles.emptyText}>No sales data available</Text>
+            ) : (
+              <View style={styles.trendContainer}>
+                {dailySales.map((day: any, idx: number) => {
+                  const maxSales = Math.max(...dailySales.map((d: any) => d.total_sales));
+                  const height = maxSales > 0 ? (day.total_sales / maxSales) * 100 : 0;
+                  
+                  return (
+                    <View key={idx} style={styles.trendBar}>
+                      <View style={styles.trendBarContainer}>
+                        <View 
+                          style={[
+                            styles.trendBarFill,
+                            { height: `${height}%` }
+                          ]} 
+                        />
+                      </View>
+                      <Text style={styles.trendLabel}>
+                        {new Date(day.sale_date).toLocaleDateString('en-US', { weekday: 'short' })}
+                      </Text>
+                      <Text style={styles.trendValue}>${day.total_sales.toFixed(0)}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -207,248 +225,216 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F7',
+    backgroundColor: '#F6EEDD',
   },
   content: {
     flex: 1,
   },
-  statsGrid: {
-    flexDirection: 'column' as const,
-    padding: 16,
-    gap: 16,
+  contentContainer: {
+    padding: 20,
     ...Platform.select({
       web: {
-        flexDirection: 'row' as const,
-        flexWrap: 'wrap' as const,
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
+        maxWidth: 1200,
+        alignSelf: 'center',
         width: '100%',
       },
     }),
   },
-  statCard: {
+  centerContainer: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
     alignItems: 'center',
-    gap: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  statCardTablet: {
-    minWidth: 220,
-    maxWidth: 450,
-  },
-  statLabelLarge: {
-    fontSize: 14,
-  },
-  statValueLarge: {
-    fontSize: 26,
-  },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
     justifyContent: 'center',
-    alignItems: 'center',
+    padding: 40,
   },
-  statContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  statLabel: {
-    fontSize: 13,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
     color: '#8E8E93',
-    marginBottom: 4,
-    fontWeight: '600' as const,
-    flexShrink: 1,
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    flexShrink: 1,
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+    paddingVertical: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-    ...Platform.select({
-      web: {
-        maxWidth: 1600,
-        alignSelf: 'center' as const,
-        width: '100%',
-      },
-    }),
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
+    fontWeight: '700' as const,
+    color: '#3A3A3A',
     marginBottom: 16,
-    flexShrink: 1,
   },
-  card: {
+  kpiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  kpiCard: {
+    flex: 1,
+    minWidth: 150,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
       },
     }),
+  },
+  kpiIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  kpiLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  kpiValue: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#5C0000',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 120,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#5C0000',
+    marginBottom: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    textAlign: 'center',
   },
   emptyText: {
     fontSize: 16,
     color: '#8E8E93',
-    textAlign: 'center' as const,
+    textAlign: 'center',
     paddingVertical: 20,
   },
-  topItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    gap: 12,
-  },
-  topItemRank: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#2563EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topItemRankText: {
-    fontSize: 14,
-    fontWeight: '800' as const,
-    color: '#FFFFFF',
-  },
-  topItemInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  topItemName: {
-    fontSize: 15,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-    marginBottom: 2,
-    flexShrink: 1,
-  },
-  topItemNameKurdish: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-    flexShrink: 1,
-  },
-  topItemStats: {
-    alignItems: 'flex-end',
-  },
-  topItemQuantity: {
-    fontSize: 15,
-    fontWeight: '700' as const,
-    color: '#2563EB',
-    marginBottom: 2,
-  },
-  topItemRevenue: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    gap: 16,
-  },
-  categoryInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  categoryName: {
-    fontSize: 15,
-    fontWeight: '700' as const,
-    color: '#1C1C1E',
-    marginBottom: 8,
-    flexShrink: 1,
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: '#F5F5F7',
-    borderRadius: 4,
-    overflow: 'hidden' as const,
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  categoryStats: {
-    alignItems: 'flex-end',
-  },
-  categoryRevenue: {
-    fontSize: 16,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
-    marginBottom: 2,
-  },
-  categoryPercentage: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-  },
-  statusGrid: {
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
-    gap: 12,
-  },
-  statusCard: {
-    flex: 1,
-    minWidth: 100,
-    backgroundColor: '#F5F5F7',
+  chartContainer: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    gap: 8,
+    padding: 20,
   },
-  statusDot: {
-    width: 12,
+  barItem: {
+    marginBottom: 20,
+  },
+  barInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 12,
+  },
+  barRank: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#5C0000',
+    minWidth: 32,
+  },
+  barDetails: {
+    flex: 1,
+  },
+  barLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#3A3A3A',
+    marginBottom: 4,
+  },
+  barSubLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  barTrack: {
     height: 12,
+    backgroundColor: '#F6EEDD',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    backgroundColor: '#5C0000',
     borderRadius: 6,
   },
-  statusLabel: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '600' as const,
-    textTransform: 'capitalize' as const,
+  trendContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    height: 200,
   },
-  statusCount: {
-    fontSize: 20,
-    fontWeight: '800' as const,
-    color: '#1C1C1E',
+  trendBar: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: '100%',
+  },
+  trendBarContainer: {
+    flex: 1,
+    width: 32,
+    justifyContent: 'flex-end',
+    marginBottom: 8,
+  },
+  trendBarFill: {
+    width: '100%',
+    backgroundColor: '#5C0000',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    minHeight: 4,
+  },
+  trendLabel: {
+    fontSize: 12,
+    color: '#3A3A3A',
+    fontWeight: '600' as const,
+    marginTop: 8,
+  },
+  trendValue: {
+    fontSize: 10,
+    color: '#8E8E93',
+    marginTop: 4,
   },
 });

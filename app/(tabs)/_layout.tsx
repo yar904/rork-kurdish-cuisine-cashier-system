@@ -34,7 +34,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#FFFFFF',
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.7)',
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabBarItem,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.select({ ios: 90, default: 70 }) as number,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#5C0000',
     borderTopWidth: 0,
     paddingBottom: Platform.select({ ios: 26, default: 12 }) as number,
     paddingTop: 12,
@@ -115,14 +115,14 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 8,
+        elevation: 10,
       },
       web: {
-        boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 -2px 12px rgba(92, 0, 0, 0.3)',
       },
     }),
   },

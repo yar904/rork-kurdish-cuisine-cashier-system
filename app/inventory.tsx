@@ -11,13 +11,21 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { Package, AlertTriangle, Plus } from 'lucide-react-native';
+import { Package, AlertTriangle, Plus, TrendingUp, TrendingDown, History, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 
 export default function InventoryScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showLowStock, setShowLowStock] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [adjustmentData, setAdjustmentData] = useState({
+    quantity: '',
+    movementType: 'purchase' as 'purchase' | 'waste' | 'adjustment' | 'order',
+    notes: '',
+  });
   const [newItem, setNewItem] = useState({
     name: '',
     category: '',
@@ -29,6 +37,10 @@ export default function InventoryScreen() {
 
   const inventoryQuery = trpc.inventory.getAll.useQuery();
   const lowStockQuery = trpc.inventory.getLowStock.useQuery();
+  const movementsQuery = trpc.inventory.getMovements.useQuery(
+    { inventoryItemId: selectedItem?.id },
+    { enabled: !!selectedItem && showHistoryModal }
+  );
 
   const createMutation = trpc.inventory.create.useMutation({
     onSuccess: () => {
@@ -37,6 +49,20 @@ export default function InventoryScreen() {
       setShowAddModal(false);
       setNewItem({ name: '', category: '', unit: '', currentStock: '', minimumStock: '', costPerUnit: '' });
       Alert.alert('Success', 'Inventory item added');
+    },
+    onError: (error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const adjustStockMutation = trpc.inventory.adjustStock.useMutation({
+    onSuccess: () => {
+      inventoryQuery.refetch();
+      lowStockQuery.refetch();
+      movementsQuery.refetch();
+      setShowAdjustModal(false);
+      setAdjustmentData({ quantity: '', movementType: 'purchase', notes: '' });
+      Alert.alert('Success', 'Stock adjusted successfully');
     },
     onError: (error) => {
       Alert.alert('Error', error.message);
@@ -59,11 +85,47 @@ export default function InventoryScreen() {
     });
   };
 
+  const handleAdjustStock = (isAddition: boolean) => {
+    if (!adjustmentData.quantity || parseFloat(adjustmentData.quantity) <= 0) {
+      Alert.alert('Error', 'Please enter a valid quantity');
+      return;
+    }
+
+    const quantity = isAddition ? parseFloat(adjustmentData.quantity) : -parseFloat(adjustmentData.quantity);
+
+    adjustStockMutation.mutate({
+      inventoryItemId: selectedItem.id,
+      quantity,
+      movementType: adjustmentData.movementType,
+      notes: adjustmentData.notes || undefined,
+    });
+  };
+
+  const openAdjustModal = (item: any) => {
+    setSelectedItem(item);
+    setShowAdjustModal(true);
+  };
+
+  const openHistoryModal = (item: any) => {
+    setSelectedItem(item);
+    setShowHistoryModal(true);
+  };
+
   const displayItems = showLowStock ? lowStockQuery.data : inventoryQuery.data;
 
   if (inventoryQuery.isLoading) {
     return (
       <View style={styles.loadingContainer}>
+        <Stack.Screen
+          options={{
+            title: 'Inventory Management',
+            headerStyle: { backgroundColor: Colors.primary },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: '700' as const,
+            },
+          }}
+        />
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -162,10 +224,193 @@ export default function InventoryScreen() {
                   ]}
                 />
               </View>
+
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => openAdjustModal(item)}
+                  activeOpacity={0.7}
+                >
+                  <TrendingUp size={16} color={Colors.primary} />
+                  <Text style={styles.actionButtonText}>Adjust Stock</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => openHistoryModal(item)}
+                  activeOpacity={0.7}
+                >
+                  <History size={16} color="#8E8E93" />
+                  <Text style={styles.actionButtonText}>History</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           );
         })}
       </ScrollView>
+
+      <Modal
+        visible={showAdjustModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowAdjustModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Adjust Stock</Text>
+              <TouchableOpacity onPress={() => setShowAdjustModal(false)}>
+                <X size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedItem && (
+              <View style={styles.selectedItemInfo}>
+                <Text style={styles.selectedItemName}>{selectedItem.name}</Text>
+                <Text style={styles.selectedItemStock}>
+                  Current: {selectedItem.current_stock} {selectedItem.unit}
+                </Text>
+              </View>
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Quantity"
+              value={adjustmentData.quantity}
+              onChangeText={(text: string) => setAdjustmentData({ ...adjustmentData, quantity: text })}
+              keyboardType="decimal-pad"
+            />
+
+            <View style={styles.reasonSelector}>
+              <Text style={styles.reasonLabel}>Reason:</Text>
+              <View style={styles.reasonButtons}>
+                {['purchase', 'waste', 'adjustment', 'order'].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.reasonButton,
+                      adjustmentData.movementType === type && styles.reasonButtonActive,
+                    ]}
+                    onPress={() => setAdjustmentData({ ...adjustmentData, movementType: type as any })}
+                  >
+                    <Text
+                      style={[
+                        styles.reasonButtonText,
+                        adjustmentData.movementType === type && styles.reasonButtonTextActive,
+                      ]}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Notes (optional)"
+              value={adjustmentData.notes}
+              onChangeText={(text: string) => setAdjustmentData({ ...adjustmentData, notes: text })}
+              multiline
+              numberOfLines={3}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.addStockButton]}
+                onPress={() => handleAdjustStock(true)}
+                disabled={adjustStockMutation.isPending}
+              >
+                {adjustStockMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <TrendingUp size={18} color="#fff" />
+                    <Text style={styles.addStockButtonText}>Add Stock</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.reduceStockButton]}
+                onPress={() => handleAdjustStock(false)}
+                disabled={adjustStockMutation.isPending}
+              >
+                {adjustStockMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <TrendingDown size={18} color="#fff" />
+                    <Text style={styles.reduceStockButtonText}>Reduce Stock</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showHistoryModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowHistoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.historyModalContent]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Stock History</Text>
+              <TouchableOpacity onPress={() => setShowHistoryModal(false)}>
+                <X size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedItem && (
+              <View style={styles.selectedItemInfo}>
+                <Text style={styles.selectedItemName}>{selectedItem.name}</Text>
+                <Text style={styles.selectedItemStock}>
+                  Current: {selectedItem.current_stock} {selectedItem.unit}
+                </Text>
+              </View>
+            )}
+
+            <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
+              {movementsQuery.isLoading ? (
+                <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 20 }} />
+              ) : movementsQuery.data && movementsQuery.data.length > 0 ? (
+                movementsQuery.data.map((movement: any) => {
+                  const isPositive = movement.quantity > 0;
+                  return (
+                    <View key={movement.id} style={styles.historyItem}>
+                      <View style={styles.historyHeader}>
+                        <View style={[styles.historyBadge, { backgroundColor: isPositive ? '#22c55e20' : '#ef444420' }]}>
+                          {isPositive ? (
+                            <TrendingUp size={16} color="#22c55e" />
+                          ) : (
+                            <TrendingDown size={16} color="#ef4444" />
+                          )}
+                          <Text style={[styles.historyQuantity, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
+                            {isPositive ? '+' : ''}{movement.quantity}
+                          </Text>
+                        </View>
+                        <Text style={styles.historyType}>{movement.movement_type}</Text>
+                      </View>
+                      {movement.notes && (
+                        <Text style={styles.historyNotes}>{movement.notes}</Text>
+                      )}
+                      <Text style={styles.historyDate}>
+                        {new Date(movement.created_at).toLocaleString()}
+                      </Text>
+                    </View>
+                  );
+                })
+              ) : (
+                <Text style={styles.emptyText}>No movement history yet</Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={showAddModal}
@@ -175,7 +420,12 @@ export default function InventoryScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Inventory Item</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Inventory Item</Text>
+              <TouchableOpacity onPress={() => setShowAddModal(false)}>
+                <X size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
 
             <TextInput
               style={styles.input}
@@ -386,6 +636,167 @@ const styles = StyleSheet.create({
   progressBar: {
     height: '100%',
     borderRadius: 3,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: Colors.text,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  selectedItemInfo: {
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  selectedItemName: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  selectedItemStock: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  reasonSelector: {
+    marginBottom: 16,
+  },
+  reasonLabel: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  reasonButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  reasonButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    backgroundColor: Colors.backgroundGray,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  reasonButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  reasonButtonText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
+  },
+  reasonButtonTextActive: {
+    color: '#fff',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  addStockButton: {
+    backgroundColor: '#22c55e',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  addStockButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700' as const,
+  },
+  reduceStockButton: {
+    backgroundColor: '#ef4444',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  reduceStockButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700' as const,
+  },
+  historyModalContent: {
+    maxHeight: '80%',
+  },
+  historyList: {
+    maxHeight: 400,
+  },
+  historyItem: {
+    backgroundColor: Colors.backgroundGray,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  historyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+  },
+  historyQuantity: {
+    fontSize: 16,
+    fontWeight: '800' as const,
+  },
+  historyType: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase' as const,
+  },
+  historyNotes: {
+    fontSize: 14,
+    color: Colors.text,
+    marginBottom: 6,
+    fontStyle: 'italic' as const,
+  },
+  historyDate: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  emptyText: {
+    textAlign: 'center' as const,
+    color: Colors.textSecondary,
+    fontSize: 14,
+    marginTop: 20,
   },
   modalOverlay: {
     flex: 1,
