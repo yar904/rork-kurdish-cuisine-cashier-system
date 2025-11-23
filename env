@@ -1,11 +1,11 @@
-EXPO_PUBLIC_SUPABASE_URL=https://qspznswjzxyvvqjqvjvj.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1
-EXPO_PUBLIC_TRPC_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1/tapse-backend/trpc
-EXPO_PUBLIC_RORK_API_BASE_URL=https://qspznswjzxyvvqjqvjvj.supabase.co/functions/v1/tapse-backend/trpc
+EXPO_PUBLIC_SUPABASE_URL=https://oqspnszwjxzyvwqjvjiy.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xc3FuenN3anh6dnl3cWpxdmp5aSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzYwOTEzOTI1LCJleHAiOjIwNzY0ODk5MjV9.j3GfMt1dypvBQvLzvyREclMcEJRQ1_hzq81blOmwW_k
+EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL=https://oqspnszwjxzyvwqjvjiy.supabase.co/functions/v1
+EXPO_PUBLIC_TRPC_URL=https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc
+EXPO_PUBLIC_RORK_API_BASE_URL=https://tapse.netlify.app
 
-SUPABASE_PROJECT_URL=https://qspznswjzxyvvqjqvjvj.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_PROJECT_URL=https://oqspnszwjxzyvwqjvjiy.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xc3FuenN3anh6dnl3cWpxdmp5aSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzYwOTEzOTI1LCJleHAiOjIwNzY0ODk5MjV9.j3GfMt1dypvBQvLzvyREclMcEJRQ1_hzq81blOmwW_k
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
 DATABASE_URL=postgresql://postgres.opspnezswjxzvywqjqvjy:Farman12Tapse@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
