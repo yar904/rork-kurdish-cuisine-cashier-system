@@ -12,14 +12,15 @@ console.log("[ENV] TRPC:", process.env.EXPO_PUBLIC_TRPC_URL);
 console.log("[ENV] Functions:", process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
 console.log("[ENV] Supabase URL:", process.env.EXPO_PUBLIC_SUPABASE_URL);
 
-const FALLBACK_TRPC_URL =
-  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
+const defaultFunctionsHost =
+  process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL?.replace(/\/$/, "") ||
+  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co";
 
 export const getTrpcBaseUrl = (): string => {
-  const apiUrl = process.env.EXPO_PUBLIC_TRPC_URL;
-  if (apiUrl) return apiUrl.replace(/\/$/, "");
+  const apiUrl = process.env.EXPO_PUBLIC_TRPC_URL?.replace(/\/$/, "");
+  if (apiUrl) return apiUrl;
 
-  return FALLBACK_TRPC_URL;
+  return `${defaultFunctionsHost}/tapse-backend/trpc`;
 };
 
 export const trpc = createTRPCReact<AppRouter>();
