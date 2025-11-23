@@ -11,6 +11,32 @@ import { trpc } from '@/lib/trpc';
 
 type AdminSection = 'menu' | 'inventory' | 'employees' | 'categories' | 'tables' | 'qr-codes' | null;
 
+type MenuItem = {
+  id: string;
+  name: string;
+  nameKurdish: string;
+  nameArabic: string;
+  category: string;
+  price: number;
+  description: string;
+  descriptionKurdish: string;
+  descriptionArabic: string;
+  image: string | null;
+  available: boolean;
+  cost?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type TableInfo = {
+  number: number;
+  status: string;
+  capacity: number;
+  currentOrderId: string | null;
+  reservedFor: string | null;
+  lastCleaned?: Date;
+};
+
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
