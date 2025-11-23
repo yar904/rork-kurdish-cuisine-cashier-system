@@ -194,10 +194,10 @@ export default function AdminDashboard() {
             {notificationsQuery.isLoading ? (
               <ActivityIndicator color="#5C0000" />
             ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-              notificationsQuery.data.map((notification) => (
+              notificationsQuery.data.map(notification => (
                 <View key={notification.id} style={styles.notificationRow}>
                   <Text style={styles.notificationText}>
-                    Table {notification.tableNumber} — {notification.type} — {getTimeSince(notification.createdAt)}
+                    Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
                   </Text>
                   <View style={styles.notificationActions}>
                     <TouchableOpacity
@@ -209,8 +209,8 @@ export default function AdminDashboard() {
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.clearTableButton}
-                      onPress={() => handleClearTable(notification.tableNumber)}
-                      disabled={clearingTable === notification.tableNumber}
+                      onPress={() => handleClearTable(notification.table_number)}
+                      disabled={clearingTable === notification.table_number}
                     >
                       <Text style={styles.clearButtonText}>Clear Table</Text>
                     </TouchableOpacity>

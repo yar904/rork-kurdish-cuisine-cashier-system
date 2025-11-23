@@ -27,7 +27,7 @@ import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 
@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -269,7 +269,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
+  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -482,7 +482,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      await callWaiterMutation.mutateAsync(parsedTableNumber);
+      await publishNotification({ table_number: parsedTableNumber, type: 'call_waiter' });
 
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
 
@@ -511,7 +511,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      await requestBillMutation.mutateAsync(parsedTableNumber);
+      await publishNotification({ table_number: parsedTableNumber, type: 'request_bill' });
 
       setLastRequestTime(prev => ({ ...prev, bill: now }));
 

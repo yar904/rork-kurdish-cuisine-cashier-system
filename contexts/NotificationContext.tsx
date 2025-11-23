@@ -1,158 +1,94 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
-import { useRealtime } from "@/contexts/RealtimeContext";
+import { supabase } from "@/lib/supabase";
 import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-export type NotificationType = "assist" | "bill" | "notify" | "call_waiter" | "request_bill";
-
-type PublishInput = {
-  tableNumber: number;
-  type?: NotificationType;
-};
-
-type NotificationItem = {
-  id: number;
-  tableNumber: number;
-  table_number: number;
-  type: NotificationType | string;
-  createdAt: string;
-  created_at: string;
-};
+type PublishInput = { table_number: number; type: string };
 
 type NotificationContextValue = {
-  notifications: NotificationItem[];
-  data: NotificationItem[];
-  isLoading: boolean;
-  isRefetching: boolean;
-  error: unknown;
-  publish: (input: PublishInput) => Promise<NotificationItem | null>;
-  list: () => Promise<NotificationItem[]>;
-  clear: (id: number) => Promise<void>;
+  useNotifications: () => ReturnType<typeof trpc.notifications.list.useQuery>;
+  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
+  clearById: (id: number) => Promise<void>;
   clearByTable: (tableNumber: number) => Promise<void>;
-  clearAll: () => Promise<void>;
 };
 
-const mapNotificationRecord = (record: NotificationRecord): NotificationItem => ({
-  id: record.id,
-  tableNumber: record.table_number,
-  table_number: record.table_number,
-  type: record.type as NotificationType,
-  createdAt: record.created_at,
-  created_at: record.created_at,
-});
-
-export const [NotificationProvider, useNotificationsContext] =
-  createContextHook<NotificationContextValue>(() => {
-    const { subscribeToNotifications } = useRealtime();
-    const utils = trpc.useUtils();
-
-    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-
-    const notificationsQuery = trpc.notifications.list.useQuery(undefined);
-
-    useEffect(() => {
-      if (notificationsQuery.data) {
-        setNotifications(notificationsQuery.data.map(mapNotificationRecord));
-      }
-    }, [notificationsQuery.data]);
-
-    const publishMutation = trpc.notifications.publish.useMutation();
-    const clearMutation = trpc.notifications.clearById.useMutation();
-    const clearTableMutation = trpc.notifications.clearByTable.useMutation();
-    const clearAllMutation = trpc.notifications.clearAll.useMutation();
-
-    useEffect(() => {
-      return subscribeToNotifications((payload) => {
-        if (payload.eventType === "INSERT") {
-          const record = payload.new as NotificationRecord;
-          setNotifications((prev) => {
-            const mapped = mapNotificationRecord(record);
-            const next = [mapped, ...prev.filter((item) => item.id !== mapped.id)];
-            return next.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-          });
-          return;
-        }
-
-        if (payload.eventType === "DELETE") {
-          const record = payload.old as NotificationRecord;
-          setNotifications((prev) => prev.filter((item) => item.id !== record.id));
-        }
-      });
-    }, [subscribeToNotifications]);
-
-    const publish = useCallback(
-      async (input: PublishInput) => {
-        if (!input.tableNumber) {
-          return null;
-        }
-
-        const created = await publishMutation.mutateAsync({
-          table_number: input.tableNumber,
-          type: input.type ?? "notify",
-        });
-
-        const mapped = mapNotificationRecord(created);
-        setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
-        await utils.notifications.list.invalidate();
-        return mapped;
-      },
-      [publishMutation, utils],
-    );
-
-    const list = useCallback(async () => {
-      const data = await utils.notifications.list.fetch();
-      const mapped = (data ?? []).map(mapNotificationRecord);
-      setNotifications(mapped);
-      return mapped;
-    }, [utils]);
-
-    const clear = useCallback(
-      async (id: number) => {
-        await clearMutation.mutateAsync({ id });
-        setNotifications((prev) => prev.filter((item) => item.id !== id));
-        await utils.notifications.list.invalidate();
-      },
-      [clearMutation, utils],
-    );
-
-    const clearByTable = useCallback(
-      async (tableNumber: number) => {
-        await clearTableMutation.mutateAsync({ table_number: tableNumber });
-        setNotifications((prev) => prev.filter((item) => item.tableNumber !== tableNumber));
-        await utils.notifications.list.invalidate();
-      },
-      [clearTableMutation, utils],
-    );
-
-    const clearAll = useCallback(async () => {
-      await clearAllMutation.mutateAsync();
-      setNotifications([]);
-      await utils.notifications.list.invalidate();
-    }, [clearAllMutation, utils]);
-
-    const value = useMemo<NotificationContextValue>(
-      () => ({
-        notifications,
-        data: notifications,
-        isLoading: notificationsQuery.isLoading,
-        isRefetching: notificationsQuery.isRefetching,
-        error: notificationsQuery.error,
-        publish,
-        list,
-        clear,
-        clearByTable,
-        clearAll,
-      }),
-      [notifications, notificationsQuery.isLoading, notificationsQuery.isRefetching, notificationsQuery.error, publish, list, clear, clearByTable, clearAll],
-    );
-
-    return value;
+export const [NotificationProvider, useNotificationsContext] = createContextHook<NotificationContextValue>(() => {
+  const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
+    refetchInterval: 7000,
   });
+
+  const publishMutation = trpc.notifications.publish.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearMutation = trpc.notifications.clearById.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  const clearTableMutation = trpc.notifications.clearByTable.useMutation({
+    onSuccess: () => {
+      notificationsQuery.refetch();
+    },
+  });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("notifications-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        () => {
+          notificationsQuery.refetch();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [notificationsQuery]);
+
+  const publish = useCallback(
+    async (input: PublishInput) => {
+      const result = await publishMutation.mutateAsync(input);
+      return result ?? null;
+    },
+    [publishMutation],
+  );
+
+  const clearById = useCallback(
+    async (id: number) => {
+      await clearMutation.mutateAsync({ id });
+    },
+    [clearMutation],
+  );
+
+  const clearByTable = useCallback(
+    async (tableNumber: number) => {
+      await clearTableMutation.mutateAsync({ table_number: tableNumber });
+    },
+    [clearTableMutation],
+  );
+
+  return useMemo<NotificationContextValue>(
+    () => ({
+      useNotifications: () => notificationsQuery,
+      publish,
+      clearById,
+      clearByTable,
+    }),
+    [notificationsQuery, publish, clearById, clearByTable],
+  );
+});
 
 export const useNotifications = () => {
   const context = useNotificationsContext();
-  return context;
+  return context.useNotifications();
 };
 
 export const usePublishNotification = () => {
@@ -162,15 +98,10 @@ export const usePublishNotification = () => {
 
 export const useClearNotification = () => {
   const context = useNotificationsContext();
-  return context.clear;
+  return context.clearById;
 };
 
 export const useClearTableNotifications = () => {
   const context = useNotificationsContext();
   return context.clearByTable;
-};
-
-export const useClearAllNotifications = () => {
-  const context = useNotificationsContext();
-  return context.clearAll;
 };

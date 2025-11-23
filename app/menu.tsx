@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ImageBackground } from 'react-native';
 import {
   View,
@@ -59,6 +59,7 @@ export default function PublicMenuScreen() {
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
+  const [lastNotificationType, setLastNotificationType] = useState<'call_waiter' | 'request_bill' | null>(null);
   const publishNotification = usePublishNotification();
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
@@ -314,28 +315,33 @@ export default function PublicMenuScreen() {
     });
   };
 
+  const showNotificationToast = useCallback(() => {
+    setShowWaiterToast(true);
+    Animated.sequence([
+      Animated.timing(waiterToastOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(2000),
+      Animated.timing(waiterToastOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setShowWaiterToast(false));
+  }, [waiterToastOpacity]);
+
   const handleCallWaiter = () => {
     if (!selectedTable) {
       Alert.alert(t('error'), t('pleaseSelectTableFirst'));
       return;
     }
 
+    setLastNotificationType('call_waiter');
     publishNotification({ table_number: selectedTable, type: 'call_waiter' })
       .then(() => {
-        setShowWaiterToast(true);
-        Animated.sequence([
-          Animated.timing(waiterToastOpacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.delay(2000),
-          Animated.timing(waiterToastOpacity, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => setShowWaiterToast(false));
+        showNotificationToast();
       })
       .catch(() => {
         Alert.alert(t('error'), t('failedToSubmitRequest'));
@@ -348,9 +354,14 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    publishNotification({ table_number: selectedTable, type: 'request_bill' }).catch(() => {
-      Alert.alert(t('error'), t('failedToSubmitRequest'));
-    });
+    setLastNotificationType('request_bill');
+    publishNotification({ table_number: selectedTable, type: 'request_bill' })
+      .then(() => {
+        showNotificationToast();
+      })
+      .catch(() => {
+        Alert.alert(t('error'), t('failedToSubmitRequest'));
+      });
   };
 
   const onRefresh = async () => {
@@ -1054,7 +1065,7 @@ export default function PublicMenuScreen() {
       </View>
 
       {showWaiterToast && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.waiterToast,
             {
@@ -1072,15 +1083,15 @@ export default function PublicMenuScreen() {
         >
           <ChefHat size={20} color="#D4AF37" strokeWidth={2} />
           <Text style={styles.waiterToastText}>
-            {language === 'en' 
-              ? (createServiceRequestMutation.variables?.requestType === 'bill' 
-                ? 'Bill request sent 💳' 
+            {language === 'en'
+              ? (lastNotificationType === 'request_bill'
+                ? 'Bill request sent 💳'
                 : 'Waiter has been notified 🍷')
-              : language === 'ku' 
-              ? (createServiceRequestMutation.variables?.requestType === 'bill'
+              : language === 'ku'
+              ? (lastNotificationType === 'request_bill'
                 ? 'داواکاری حیساب نێردرا 💳'
                 : 'گارسۆن ئاگادار کرایەوە 🍷')
-              : (createServiceRequestMutation.variables?.requestType === 'bill'
+              : (lastNotificationType === 'request_bill'
                 ? 'تم إرسال طلب الفاتورة 💳'
                 : 'تم إعلام النادل 🍷')}
           </Text>
