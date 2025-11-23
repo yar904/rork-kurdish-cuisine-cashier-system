@@ -4,42 +4,37 @@ import { trpc } from "@/lib/trpc";
 import { useRealtime } from "@/contexts/RealtimeContext";
 import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-export type NotificationType = "assist" | "bill" | "notify" | "call_waiter" | "request_bill";
+export type NotificationType = "assist" | "notify";
+
+export type TableNotification = {
+  id: number;
+  tableNumber: number;
+  type: NotificationType;
+  createdAt: string;
+};
 
 type PublishInput = {
   tableNumber: number;
   type?: NotificationType;
 };
 
-type NotificationItem = {
-  id: number;
-  tableNumber: number;
-  table_number: number;
-  type: NotificationType | string;
-  createdAt: string;
-  created_at: string;
-};
-
 type NotificationContextValue = {
-  notifications: NotificationItem[];
-  data: NotificationItem[];
+  notifications: TableNotification[];
   isLoading: boolean;
   isRefetching: boolean;
   error: unknown;
-  publish: (input: PublishInput) => Promise<NotificationItem | null>;
-  list: () => Promise<NotificationItem[]>;
+  publish: (input: PublishInput) => Promise<TableNotification | null>;
+  list: () => Promise<TableNotification[]>;
   clear: (id: number) => Promise<void>;
   clearByTable: (tableNumber: number) => Promise<void>;
   clearAll: () => Promise<void>;
 };
 
-const mapNotificationRecord = (record: NotificationRecord): NotificationItem => ({
+const mapNotificationRecord = (record: NotificationRecord): TableNotification => ({
   id: record.id,
   tableNumber: record.table_number,
-  table_number: record.table_number,
-  type: record.type as NotificationType,
+  type: record.type,
   createdAt: record.created_at,
-  created_at: record.created_at,
 });
 
 export const [NotificationProvider, useNotificationsContext] =
@@ -47,18 +42,18 @@ export const [NotificationProvider, useNotificationsContext] =
     const { subscribeToNotifications } = useRealtime();
     const utils = trpc.useUtils();
 
-    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+    const [notifications, setNotifications] = useState<TableNotification[]>([]);
 
     const notificationsQuery = trpc.notifications.list.useQuery(undefined);
 
     useEffect(() => {
       if (notificationsQuery.data) {
-        setNotifications(notificationsQuery.data.map(mapNotificationRecord));
+        setNotifications(notificationsQuery.data);
       }
     }, [notificationsQuery.data]);
 
     const publishMutation = trpc.notifications.publish.useMutation();
-    const clearMutation = trpc.notifications.clearById.useMutation();
+    const clearMutation = trpc.notifications.clear.useMutation();
     const clearTableMutation = trpc.notifications.clearByTable.useMutation();
     const clearAllMutation = trpc.notifications.clearAll.useMutation();
 
@@ -88,11 +83,11 @@ export const [NotificationProvider, useNotificationsContext] =
         }
 
         const created = await publishMutation.mutateAsync({
-          table_number: input.tableNumber,
+          tableNumber: input.tableNumber,
           type: input.type ?? "notify",
         });
 
-        const mapped = mapNotificationRecord(created);
+        const mapped = mapNotificationRecord(created as NotificationRecord);
         setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
         await utils.notifications.list.invalidate();
         return mapped;
@@ -102,7 +97,7 @@ export const [NotificationProvider, useNotificationsContext] =
 
     const list = useCallback(async () => {
       const data = await utils.notifications.list.fetch();
-      const mapped = (data ?? []).map(mapNotificationRecord);
+      const mapped = data ?? [];
       setNotifications(mapped);
       return mapped;
     }, [utils]);
@@ -118,7 +113,7 @@ export const [NotificationProvider, useNotificationsContext] =
 
     const clearByTable = useCallback(
       async (tableNumber: number) => {
-        await clearTableMutation.mutateAsync({ table_number: tableNumber });
+        await clearTableMutation.mutateAsync({ tableNumber });
         setNotifications((prev) => prev.filter((item) => item.tableNumber !== tableNumber));
         await utils.notifications.list.invalidate();
       },
@@ -134,7 +129,6 @@ export const [NotificationProvider, useNotificationsContext] =
     const value = useMemo<NotificationContextValue>(
       () => ({
         notifications,
-        data: notifications,
         isLoading: notificationsQuery.isLoading,
         isRefetching: notificationsQuery.isRefetching,
         error: notificationsQuery.error,

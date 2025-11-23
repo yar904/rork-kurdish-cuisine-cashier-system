@@ -103,8 +103,8 @@ export default function TrackOrderPage() {
     setIsSending(true);
     try {
       await publishNotification({
-        table_number: tableNum,
-        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+        tableNumber: tableNum,
+        type: requestType === 'help' ? 'assist' : 'notify',
       });
 
       if (Platform.OS === 'web') {

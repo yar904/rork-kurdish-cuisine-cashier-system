@@ -123,11 +123,11 @@ export default function CashierDashboard() {
           <Text style={styles.notificationsTitle}>Notifications</Text>
           {notificationsQuery.isLoading ? (
             <ActivityIndicator color="#5C0000" />
-          ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-            notificationsQuery.data.map((notification) => (
+          ) : notificationsQuery.notifications && notificationsQuery.notifications.length > 0 ? (
+            notificationsQuery.notifications.map((notification) => (
               <View key={notification.id} style={styles.notificationRow}>
                 <Text style={styles.notificationText}>
-                  Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
+                  Table {notification.tableNumber} — {notification.type} — {getTimeSince(notification.createdAt)}
                 </Text>
                 <TouchableOpacity
                   style={styles.clearButton}
