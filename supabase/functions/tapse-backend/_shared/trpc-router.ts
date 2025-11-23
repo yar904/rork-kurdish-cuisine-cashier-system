@@ -684,85 +684,79 @@ const ordersRouter = createTRPCRouter({
   }),
 });
 
-const serviceRequestsRouter = createTRPCRouter({
-  create: publicProcedure
+const mapNotificationRow = (row: {
+  id: number;
+  table_number: number;
+  type: string;
+  created_at: string;
+}) => ({
+  id: row.id,
+  tableNumber: row.table_number,
+  type: row.type,
+  createdAt: row.created_at ?? new Date().toISOString(),
+});
+
+const notificationsRouter = createTRPCRouter({
+  publish: publicProcedure
     .input(
       z.object({
-        tableNumber: z.number(),
-        requestType: z.enum(["waiter", "bill", "assistance"]),
-        messageText: z.string().optional(),
+        tableNumber: z.number().int().nonnegative(),
+        type: z.enum(["assist", "bill", "notify"]),
       }),
     )
     .mutation(async ({ input }) => {
       const { data, error } = await supabase
-        .from("service_requests")
+        .from("notifications")
         .insert({
           table_number: input.tableNumber,
-          request_type: input.requestType,
-          status: "pending",
-          message: input.messageText || "",
+          type: input.type,
           created_at: new Date().toISOString(),
         })
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating service request:", error);
-        throw new Error("Failed to send service request");
+      if (error || !data) {
+        console.error("[Notifications] Error creating notification:", error);
+        throw new Error("Failed to create notification");
       }
 
-      return { success: true, message: "Request sent successfully", data };
+      return mapNotificationRow(data as any);
     }),
-  getAll: publicProcedure.query(async () => {
+  list: publicProcedure.query(async () => {
     const { data, error } = await supabase
-      .from("service_requests")
+      .from("notifications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching service requests:", error);
-      throw new Error("Failed to fetch service requests");
+      console.error("[Notifications] Error fetching notifications:", error);
+      throw new Error("Failed to fetch notifications");
     }
 
-    return (data ?? []).map((req) => ({
-      id: req.id,
-      tableNumber: req.table_number,
-      requestType: req.request_type as "waiter" | "bill" | "wrong-order" | "assistance",
-      status: req.status as "pending" | "in-progress" | "resolved",
-      message: req.message || undefined,
-      createdAt: new Date(req.created_at),
-      resolvedAt: req.resolved_at ? new Date(req.resolved_at) : undefined,
-      resolvedBy: req.resolved_by || undefined,
-    }));
+    return (data ?? []).map((row) => mapNotificationRow(row as any));
   }),
-  updateStatus: publicProcedure
-    .input(
-      z.object({
-        requestId: z.string(),
-        status: z.enum(["pending", "in-progress", "resolved"]),
-        resolvedBy: z.string().optional(),
-      }),
-    )
+  clear: publicProcedure
+    .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ input }) => {
-      const updateData: Record<string, unknown> = { status: input.status };
-
-      if (input.status === "resolved") {
-        updateData.resolved_at = new Date().toISOString();
-        updateData.resolved_by = input.resolvedBy || null;
-      }
-
-      const { error } = await supabase
-        .from("service_requests")
-        .update(updateData)
-        .eq("id", input.requestId);
+      const { error } = await supabase.from("notifications").delete().eq("id", input.id);
 
       if (error) {
-        console.error("Error updating service request:", error);
-        throw new Error("Failed to update service request");
+        console.error("[Notifications] Error clearing notification:", error);
+        throw new Error("Failed to clear notification");
       }
 
       return { success: true };
     }),
+  clearAll: publicProcedure.mutation(async () => {
+    const { error } = await supabase.from("notifications").delete().neq("id", -1);
+
+    if (error) {
+      console.error("[Notifications] Error clearing all notifications:", error);
+      throw new Error("Failed to clear notifications");
+    }
+
+    return { success: true };
+  }),
 });
 
 const customerHistoryRouter = createTRPCRouter({
@@ -1973,7 +1967,7 @@ export const appRouter = createTRPCRouter({
   menu: menuRouter,
   tables: tablesRouter,
   orders: ordersRouter,
-  serviceRequests: serviceRequestsRouter,
+  notifications: notificationsRouter,
   customerHistory: customerHistoryRouter,
   ratings: ratingsRouter,
   reports: reportsRouter,

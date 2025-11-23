@@ -7,7 +7,6 @@ type RealtimePayload = RealtimePostgresChangesPayload<Record<string, any>>;
 type RealtimeContextType = {
   isConnected: boolean;
   subscribeToOrders: (callback: (payload: RealtimePayload) => void) => () => void;
-  subscribeToServiceRequests: (callback: (payload: RealtimePayload) => void) => () => void;
   subscribeToMenuItems: (callback: (payload: RealtimePayload) => void) => () => void;
   subscribeToNotifications: (callback: (payload: RealtimePayload) => void) => () => void;
 };
@@ -50,30 +49,6 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const subscribeToServiceRequests = (callback: (payload: RealtimePayload) => void) => {
-    console.log('[Realtime] Subscribing to service_requests table');
-    
-    const channel: RealtimeChannel = supabase
-      .channel('service-requests-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'service_requests',
-        },
-        (payload) => {
-          console.log('[Realtime] Service request change:', payload);
-          callback(payload);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('[Realtime] Unsubscribing from service requests');
-      channel.unsubscribe();
-    };
-  };
 
   const subscribeToMenuItems = (callback: (payload: RealtimePayload) => void) => {
     console.log('[Realtime] Subscribing to menu_items table');
@@ -142,7 +117,6 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       value={{
         isConnected,
         subscribeToOrders,
-        subscribeToServiceRequests,
         subscribeToMenuItems,
         subscribeToNotifications,
       }}
