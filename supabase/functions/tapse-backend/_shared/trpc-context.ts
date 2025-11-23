@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { supabase } from "./supabase.ts";
 
 export interface AuthenticatedUser {
@@ -12,32 +11,44 @@ export interface TRPCContext {
   request: Request;
 }
 
-const getBearerToken = (req: Request): string => {
+const getBearerToken = (req: Request): string | null => {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
 
   if (!authHeader?.toLowerCase().startsWith("bearer ")) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "Missing authorization header" });
+    return null;
   }
 
   const token = authHeader.split(" ")[1];
   if (!token) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid authorization header" });
+    return null;
   }
 
   return token;
 };
 
 export async function createTRPCContext(req: Request): Promise<TRPCContext> {
+  console.log("[tRPC Context] Creating context for request:", req.method, req.url);
+  
   const token = getBearerToken(req);
-  const { data, error } = await supabase.auth.getUser(token);
+  let user: AuthenticatedUser | null = null;
 
-  if (error) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: error.message });
+  if (token) {
+    console.log("[tRPC Context] Token found, attempting to authenticate");
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error) {
+      console.warn("[tRPC Context] Auth error (non-blocking):", error.message);
+    } else if (data.user) {
+      user = { id: data.user.id, email: data.user.email };
+      console.log("[tRPC Context] User authenticated:", user.id);
+    }
+  } else {
+    console.log("[tRPC Context] No token provided, proceeding as anonymous");
   }
 
   return {
     supabase,
-    user: data.user ? { id: data.user.id, email: data.user.email } : null,
+    user,
     request: req,
   };
 }

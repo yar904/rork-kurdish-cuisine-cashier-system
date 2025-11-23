@@ -1,60 +1,50 @@
-import { Hono } from "hono";
-import { trpcServer } from "@hono/trpc-server";
-import { appRouter } from "./trpc/app-router";
-import { createContext } from "./trpc/create-context";
-import { createClient } from "@supabase/supabase-js";
+import { handleRequest } from "./router.ts";
 
-const app = new Hono();
+Deno.serve(async (req: Request) => {
+  const url = new URL(req.url);
+  
+  console.log("[Supabase Function] Incoming request:", req.method, url.pathname);
+  console.log("[Supabase Function] Headers:", Object.fromEntries(req.headers.entries()));
 
-// ---------- CORS ----------
-app.use("*", async (c, next) => {
-  c.header("Access-Control-Allow-Origin", "*");
-  c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  c.header("Access-Control-Allow-Headers", "*");
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "*",
+  };
 
-  if (c.req.method === "OPTIONS") {
-    return c.text("", 204);
+  if (req.method === "OPTIONS") {
+    console.log("[Supabase Function] Handling CORS preflight");
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  await next();
+  try {
+    const response = await handleRequest(req);
+    
+    const headers = new Headers(response.headers);
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      headers.set(key, value);
+    });
+
+    console.log("[Supabase Function] Response status:", response.status);
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  } catch (error) {
+    console.error("[Supabase Function] Error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+  }
 });
-
-// ---------- Supabase Server Client ----------
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_ANON_KEY")!,
-);
-
-// ---------- Logging ----------
-app.use("/tapse-backend/trpc/*", async (c, next) => {
-  console.log("[TRPC] Request:", c.req.method, c.req.url);
-  await next();
-});
-
-// ---------- TRPC Server ----------
-app.use(
-  "/tapse-backend/trpc/*",
-  trpcServer({
-    router: appRouter,
-    createContext,
-  }),
-);
-
-// ---------- Health ----------
-app.get("/tapse-backend/health", (c) =>
-  c.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-  }),
-);
-
-// ---------- Root ----------
-app.get("/", (c) =>
-  c.json({
-    status: "Backend running",
-    time: new Date().toISOString(),
-  }),
-);
-
-export default app;
-export const fetch = app.fetch;

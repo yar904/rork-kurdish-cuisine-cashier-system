@@ -434,6 +434,254 @@ const ordersRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  addItem: publicProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        menuItemId: z.string(),
+        quantity: z.number().min(1),
+        notes: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { data, error } = await supabase
+        .from("order_items")
+        .insert({
+          order_id: input.orderId,
+          menu_item_id: input.menuItemId,
+          quantity: input.quantity,
+          notes: input.notes || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error adding item to order:", error);
+        throw new Error("Failed to add item to order");
+      }
+
+      const { data: orderItems } = await supabase
+        .from("order_items")
+        .select("*, menu_items(price)")
+        .eq("order_id", input.orderId);
+
+      let newTotal = 0;
+      (orderItems ?? []).forEach((item) => {
+        const menuItem = (item as any).menu_items;
+        if (menuItem) {
+          newTotal += menuItem.price * item.quantity;
+        }
+      });
+
+      await supabase
+        .from("orders")
+        .update({ total: newTotal, updated_at: new Date().toISOString() })
+        .eq("id", input.orderId);
+
+      return { success: true, item: data };
+    }),
+  updateItemQty: publicProcedure
+    .input(
+      z.object({
+        orderItemId: z.string(),
+        quantity: z.number().min(0),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      if (input.quantity === 0) {
+        const { error } = await supabase
+          .from("order_items")
+          .delete()
+          .eq("id", input.orderItemId);
+
+        if (error) {
+          console.error("Error removing order item:", error);
+          throw new Error("Failed to remove item");
+        }
+      } else {
+        const { error } = await supabase
+          .from("order_items")
+          .update({ quantity: input.quantity })
+          .eq("id", input.orderItemId);
+
+        if (error) {
+          console.error("Error updating item quantity:", error);
+          throw new Error("Failed to update quantity");
+        }
+      }
+
+      return { success: true };
+    }),
+  getByTable: publicProcedure
+    .input(z.object({ tableNumber: z.number() }))
+    .query(async ({ input }) => {
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select(
+          `
+          *,
+          order_items (
+            id,
+            menu_item_id,
+            quantity,
+            notes
+          )
+        `,
+        )
+        .eq("table_number", input.tableNumber)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching orders by table:", error);
+        throw new Error("Failed to fetch orders");
+      }
+
+      const { data: menuItems } = await supabase.from("menu_items").select("*");
+
+      return (orders ?? []).map((order) => ({
+        id: order.id,
+        tableNumber: order.table_number,
+        status: order.status,
+        waiterName: order.waiter_name,
+        total: order.total,
+        splitInfo: order.split_info,
+        createdAt: new Date(order.created_at),
+        updatedAt: new Date(order.updated_at),
+        items: ((order.order_items as unknown[]) ?? []).map((item) => {
+          const menuItem = (menuItems ?? []).find((mi) => mi.id === (item as any).menu_item_id);
+          return {
+            menuItem: menuItem
+              ? {
+                  id: menuItem.id,
+                  name: menuItem.name,
+                  nameKurdish: menuItem.name_kurdish || menuItem.name,
+                  nameArabic: menuItem.name_arabic || menuItem.name,
+                  category: menuItem.category,
+                  price: menuItem.price,
+                  cost: menuItem.cost,
+                  description: menuItem.description || "",
+                  descriptionKurdish: menuItem.description || "",
+                  descriptionArabic: menuItem.description || "",
+                  image: menuItem.image,
+                  available: menuItem.available,
+                }
+              : null,
+            quantity: (item as any).quantity,
+            notes: (item as any).notes,
+          };
+        }),
+      }));
+    }),
+  getCustomerStatus: publicProcedure
+    .input(z.object({ tableNumber: z.number() }))
+    .query(async ({ input }) => {
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select(
+          `
+          *,
+          order_items (
+            id,
+            menu_item_id,
+            quantity,
+            notes
+          )
+        `,
+        )
+        .eq("table_number", input.tableNumber)
+        .not("status", "eq", "paid")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Error fetching customer order status:", error);
+        throw new Error("Failed to fetch order status");
+      }
+
+      if (!orders || orders.length === 0) {
+        return { status: "no_order" as const };
+      }
+
+      const order = orders[0];
+      const { data: menuItems } = await supabase.from("menu_items").select("*");
+
+      const items = ((order.order_items as unknown[]) ?? []).map((item) => {
+        const menuItem = (menuItems ?? []).find((mi) => mi.id === (item as any).menu_item_id);
+        return {
+          name: menuItem?.name || "Unknown",
+          nameKurdish: menuItem?.name_kurdish || menuItem?.name || "Unknown",
+          quantity: (item as any).quantity,
+        };
+      });
+
+      return {
+        orderId: order.id,
+        status: order.status as "new" | "preparing" | "ready" | "served" | "paid",
+        items,
+        subtotal: order.total,
+        tax: 0,
+        total: order.total,
+        createdAt: new Date(order.created_at).toISOString(),
+      };
+    }),
+  getActive: publicProcedure.query(async () => {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select(
+        `
+        *,
+        order_items (
+          id,
+          menu_item_id,
+          quantity,
+          notes
+        )
+      `,
+      )
+      .in("status", ["new", "preparing", "ready", "served"])
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching active orders:", error);
+      throw new Error("Failed to fetch active orders");
+    }
+
+    const { data: menuItems } = await supabase.from("menu_items").select("*");
+
+    return (orders ?? []).map((order) => ({
+      id: order.id,
+      tableNumber: order.table_number,
+      status: order.status,
+      waiterName: order.waiter_name,
+      total: order.total,
+      splitInfo: order.split_info,
+      createdAt: new Date(order.created_at),
+      updatedAt: new Date(order.updated_at),
+      items: ((order.order_items as unknown[]) ?? []).map((item) => {
+        const menuItem = (menuItems ?? []).find((mi) => mi.id === (item as any).menu_item_id);
+        return {
+          menuItem: menuItem
+            ? {
+                id: menuItem.id,
+                name: menuItem.name,
+                nameKurdish: menuItem.name_kurdish || menuItem.name,
+                nameArabic: menuItem.name_arabic || menuItem.name,
+                category: menuItem.category,
+                price: menuItem.price,
+                cost: menuItem.cost,
+                description: menuItem.description || "",
+                descriptionKurdish: menuItem.description || "",
+                descriptionArabic: menuItem.description || "",
+                image: menuItem.image,
+                available: menuItem.available,
+              }
+            : null,
+          quantity: (item as any).quantity,
+          notes: (item as any).notes,
+        };
+      }),
+    }));
+  }),
 });
 
 const serviceRequestsRouter = createTRPCRouter({

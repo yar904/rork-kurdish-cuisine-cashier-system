@@ -25,14 +25,24 @@ export const getTrpcBaseUrl = () => {
 
 const getAuthorizationHeader = async () => {
   const session = await supabase.auth.getSession();
-  const token =
-    session.data.session?.access_token ||
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  const token = session.data.session?.access_token;
+  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-  return {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
   };
+
+  if (token) {
+    console.log("[tRPC Auth] Using user access token");
+    headers["Authorization"] = `Bearer ${token}`;
+  } else if (anonKey) {
+    console.log("[tRPC Auth] Using anon key");
+    headers["Authorization"] = `Bearer ${anonKey}`;
+  } else {
+    console.warn("[tRPC Auth] No authentication available");
+  }
+
+  return headers;
 };
 
 export const createTrpcHttpLink = () =>
