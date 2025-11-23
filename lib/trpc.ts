@@ -1,6 +1,6 @@
 // tRPC client configuration
 // Uses EXPO_PUBLIC_TRPC_URL (preferred) to reach the Supabase Edge Function endpoint.
-// Expected final URL: https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc
+// Expected final URL: https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend
 // Centralized here to avoid previous "Failed to fetch" issues caused by mismatched hosts/paths.
 import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
@@ -11,7 +11,7 @@ import type { AppRouter } from "@/types/trpc";
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
-const TRPC_ENDPOINT_PATH = "/tapse-backend/trpc";
+const TRPC_ENDPOINT_PATH = "/tapse-backend";
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
 
 const ensureTrpcEndpoint = (value?: string | null) => {
@@ -86,6 +86,7 @@ const getAuthorizationHeader = async () => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
+      "x-client": "tapse-pos",
     };
 
     if (token) {
@@ -122,10 +123,14 @@ export const createTrpcHttpLink = () =>
       const tryFetch = async (baseUrl: string) => {
         const finalUrl = requestSuffix ? `${baseUrl}${requestSuffix}` : normalizedRequestUrl;
         console.log("[tRPC] Fetching:", finalUrl);
-        return fetch(finalUrl, {
-          ...options,
-          credentials: "omit" as const,
-        });
+        const finalOptions: RequestInit = {
+          ...(options ?? {}),
+          method: options?.method ?? "POST",
+          keepalive: true,
+          credentials: "omit",
+        };
+
+        return fetch(finalUrl, finalOptions);
       };
 
       const runWithFallbacks = async () => {
