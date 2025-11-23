@@ -41,11 +41,11 @@ type TableInfo = {
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
-  const { list: notificationsQuery, clear, clearTable } = useNotifications();
+  const { data: notifications, isLoading: notificationsLoading, clear, clearTable } = useNotifications();
   const [clearingId, setClearingId] = useState<number | null>(null);
   const [clearingTable, setClearingTable] = useState<number | null>(null);
 
-  const getTimeSince = useCallback((date: string) => {
+  const getTimeSince = useCallback((date: Date | string) => {
     const now = Date.now();
     const diff = now - new Date(date).getTime();
     const minutes = Math.floor(diff / 60000);
@@ -189,10 +189,10 @@ export default function AdminDashboard() {
 
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            {notificationsQuery.isLoading ? (
+            {notificationsLoading ? (
               <ActivityIndicator color="#5C0000" />
-            ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-              notificationsQuery.data.map(notification => (
+            ) : notifications && notifications.length > 0 ? (
+              notifications.map(notification => (
                 <View key={notification.id} style={styles.notificationRow}>
                   <Text style={styles.notificationText}>
                     Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}

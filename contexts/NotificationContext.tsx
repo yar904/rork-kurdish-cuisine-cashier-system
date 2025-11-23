@@ -2,37 +2,44 @@ import { useCallback, useEffect, useMemo } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
-import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
-
-type PublishInput = { tableNumber: number; message?: string };
+import type { NotificationType, TableNotification } from "@/types/restaurant";
 
 type NotificationContextValue = {
-  list: ReturnType<typeof trpc.notifications.list.useQuery>;
-  publish: (input: PublishInput) => Promise<NotificationRecord | null>;
+  data: TableNotification[] | undefined;
+  isLoading: boolean;
+  publish: (tableNumber: number, type?: NotificationType) => Promise<TableNotification | null>;
   clear: (id: number) => Promise<void>;
   clearTable: (tableNumber: number) => Promise<void>;
+  clearAll: () => Promise<void>;
 };
 
-export const [NotificationProvider, useNotificationsContext] = createContextHook<NotificationContextValue>(() => {
+export const [NotificationProvider, useNotifications] = createContextHook<NotificationContextValue>(() => {
+  const utils = trpc.useUtils();
   const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
     refetchInterval: 7000,
   });
 
   const publishMutation = trpc.notifications.publish.useMutation({
     onSuccess: () => {
-      notificationsQuery.refetch();
+      utils.notifications.list.invalidate();
     },
   });
 
   const clearMutation = trpc.notifications.clearById.useMutation({
     onSuccess: () => {
-      notificationsQuery.refetch();
+      utils.notifications.list.invalidate();
     },
   });
 
   const clearTableMutation = trpc.notifications.clearByTable.useMutation({
     onSuccess: () => {
-      notificationsQuery.refetch();
+      utils.notifications.list.invalidate();
+    },
+  });
+
+  const clearAllMutation = trpc.notifications.clearAll.useMutation({
+    onSuccess: () => {
+      utils.notifications.list.invalidate();
     },
   });
 
@@ -43,7 +50,7 @@ export const [NotificationProvider, useNotificationsContext] = createContextHook
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
         () => {
-          notificationsQuery.refetch();
+          utils.notifications.list.invalidate();
         },
       )
       .subscribe();
@@ -51,13 +58,13 @@ export const [NotificationProvider, useNotificationsContext] = createContextHook
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [notificationsQuery]);
+  }, [utils]);
 
   const publish = useCallback(
-    async ({ tableNumber, message }: PublishInput) => {
+    async (tableNumber: number, type: NotificationType = "help") => {
       const result = await publishMutation.mutateAsync({
         table_number: tableNumber,
-        type: message || "help",
+        type,
       });
       return result ?? null;
     },
@@ -78,15 +85,19 @@ export const [NotificationProvider, useNotificationsContext] = createContextHook
     [clearTableMutation],
   );
 
+  const clearAll = useCallback(async () => {
+    await clearAllMutation.mutateAsync();
+  }, [clearAllMutation]);
+
   return useMemo<NotificationContextValue>(
     () => ({
-      list: notificationsQuery,
+      data: notificationsQuery.data,
+      isLoading: notificationsQuery.isLoading,
       publish,
       clear,
       clearTable,
+      clearAll,
     }),
-    [notificationsQuery, publish, clear, clearTable],
+    [notificationsQuery.data, notificationsQuery.isLoading, publish, clear, clearTable, clearAll],
   );
 });
-
-export const useNotifications = () => useNotificationsContext();

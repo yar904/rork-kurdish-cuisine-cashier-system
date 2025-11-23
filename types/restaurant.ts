@@ -61,7 +61,7 @@ export type NotificationType = 'help' | 'other';
 
 export interface TableNotification {
   id: number;
-  tableNumber: number;
+  table_number: number;
   type: NotificationType;
-  createdAt: Date;
+  created_at: Date | string;
 }

@@ -135,10 +135,7 @@ export default function QROrderingPage() {
         return;
       }
 
-      await publish({
-        tableNumber: tableNum,
-        message: requestType,
-      });
+      await publish(tableNum, requestType);
 
       if (Platform.OS === 'web') {
         alert('Request sent successfully');

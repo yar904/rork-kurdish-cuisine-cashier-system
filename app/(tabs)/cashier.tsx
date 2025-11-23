@@ -20,8 +20,9 @@ export default function CashierDashboard() {
     refetchInterval: 5000,
   });
 
-  const { list: notificationsQuery, clear } = useNotifications();
+  const { data: notifications, isLoading: notificationsLoading, clear, clearTable } = useNotifications();
   const [clearingId, setClearingId] = useState<number | null>(null);
+  const [clearingTable, setClearingTable] = useState<number | null>(null);
 
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
@@ -87,6 +88,15 @@ export default function CashierDashboard() {
     }
   };
 
+  const handleClearTable = async (tableNumber: number) => {
+    setClearingTable(tableNumber);
+    try {
+      await clearTable(tableNumber);
+    } finally {
+      setClearingTable(null);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen
@@ -120,21 +130,30 @@ export default function CashierDashboard() {
 
         <View style={styles.notificationsCard}>
           <Text style={styles.notificationsTitle}>Notifications</Text>
-          {notificationsQuery.isLoading ? (
+          {notificationsLoading ? (
             <ActivityIndicator color="#5C0000" />
-          ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-            notificationsQuery.data.map((notification) => (
+          ) : notifications && notifications.length > 0 ? (
+            notifications.map((notification) => (
               <View key={notification.id} style={styles.notificationRow}>
                 <Text style={styles.notificationText}>
                   Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
                 </Text>
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={() => handleClearNotification(notification.id)}
-                  disabled={clearingId === notification.id}
-                >
-                  <Text style={styles.clearButtonText}>Clear</Text>
-                </TouchableOpacity>
+                <View style={styles.notificationActions}>
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={() => handleClearNotification(notification.id)}
+                    disabled={clearingId === notification.id}
+                  >
+                    <Text style={styles.clearButtonText}>Clear</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={() => handleClearTable(notification.table_number)}
+                    disabled={clearingTable === notification.table_number}
+                  >
+                    <Text style={styles.clearButtonText}>Clear Table</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))
           ) : (
@@ -402,6 +421,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 12,
+  },
+  notificationActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
   notificationText: {
     flex: 1,

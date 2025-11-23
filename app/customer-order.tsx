@@ -17,7 +17,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Plus, Minus, Send, Star, Bell, ChevronRight, Globe, Utensils, Receipt, X, ChefHat, Grid3x3, List, Eye } from 'lucide-react-native';
+import { Plus, Minus, Send, Star, ChevronRight, Globe, Utensils, X, ChefHat, Grid3x3, List, Eye } from 'lucide-react-native';
 import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -111,9 +111,8 @@ export default function CustomerOrderScreen() {
   
   const [buttonScales] = useState({
     reviews: new Animated.Value(1),
-    waiter: new Animated.Value(1),
+    notify: new Animated.Value(1),
     order: new Animated.Value(1),
-    bill: new Animated.Value(1),
   });
 
   const [requestStatus, setRequestStatus] = useState<{
@@ -451,10 +450,8 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const notifyStaff = async (buttonKey?: 'waiter' | 'bill') => {
-    if (buttonKey) {
-      animateButton(buttonKey);
-    }
+  const notifyStaff = async () => {
+    animateButton('notify');
 
     if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
@@ -462,7 +459,7 @@ export default function CustomerOrderScreen() {
     }
 
     try {
-      await publish({ tableNumber: parsedTableNumber });
+      await publish(parsedTableNumber, 'help');
       showStatusMessage('✅ A team member has been notified.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
@@ -1044,23 +1041,16 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={() => notifyStaff('waiter')}
+                onPress={notifyStaff}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.notify }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{'Notify\nstaff'}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1077,25 +1067,6 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={styles.actionButton}
-                onPress={() => notifyStaff('bill')}
-                activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
-              >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
-                    </>
-                  )}
-                </Animated.View>
-              </TouchableOpacity>
             </View>
           </GlassView>
         ) : (
@@ -1114,23 +1085,16 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={() => notifyStaff('waiter')}
+                onPress={notifyStaff}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.notify }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{'Notify\nstaff'}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1147,25 +1111,6 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={styles.actionButton}
-                onPress={() => notifyStaff('bill')}
-                activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
-              >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
-                    </>
-                  )}
-                </Animated.View>
-              </TouchableOpacity>
             </View>
           </View>
         )}

@@ -123,12 +123,9 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      const notificationMessage = serviceMessage || serviceRequestType;
+      const notificationType = serviceRequestType === 'help' ? 'help' : 'other';
 
-      await publish({
-        tableNumber: parseInt(tableNumber, 10),
-        message: notificationMessage,
-      });
+      await publish(parseInt(tableNumber, 10), notificationType);
 
       Alert.alert(
         t('success'),
@@ -145,7 +142,7 @@ export default function OrderTrackingScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [publish, serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
+  }, [publish, serviceRequestType, tableNumber, isSubmitting, t]);
 
   if (currentStatus === 'served') {
     return (

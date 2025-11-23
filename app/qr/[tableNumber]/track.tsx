@@ -101,10 +101,7 @@ export default function TrackOrderPage() {
     requestType: 'help' | 'other'
   ) => {
     try {
-      await publish({
-        tableNumber: tableNum,
-        message: requestType,
-      });
+      await publish(tableNum, requestType);
 
       if (Platform.OS === 'web') {
         alert('Request sent successfully');
