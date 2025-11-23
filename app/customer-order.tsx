@@ -27,7 +27,7 @@ import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { usePublishNotification } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 
@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const { notifyServiceRequest, publish } = useNotifications();
+  const { publish } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -122,6 +122,16 @@ export default function CustomerOrderScreen() {
     visible: boolean;
   }>({ type: null, message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
+
+  const callWaiterMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'call_waiter' }),
+  });
+
+  const requestBillMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'request_bill' }),
+  });
 
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
@@ -472,7 +482,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      await publishNotification({ table_number: parsedTableNumber, type: 'call_waiter' });
+      await callWaiterMutation.mutateAsync(parsedTableNumber);
 
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
 
@@ -501,7 +511,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      await publishNotification({ table_number: parsedTableNumber, type: 'request_bill' });
+      await requestBillMutation.mutateAsync(parsedTableNumber);
 
       setLastRequestTime(prev => ({ ...prev, bill: now }));
 
