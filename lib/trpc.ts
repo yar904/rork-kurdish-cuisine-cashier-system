@@ -12,8 +12,16 @@ export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
 // ---------- FINAL TRPC URL – ALWAYS USE THIS ----------
-export const getTrpcBaseUrl = () =>
-  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
+export const getTrpcBaseUrl = () => {
+  const functionUrl = process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL;
+  if (!functionUrl) {
+    console.error("[tRPC] Missing EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL environment variable");
+    throw new Error("Missing EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL environment variable. Please check your .env file.");
+  }
+  const url = `${functionUrl}/tapse-backend/trpc`;
+  console.log("[tRPC] Using URL:", url);
+  return url;
+};
 
 const getAuthorizationHeader = async () => {
   const session = await supabase.auth.getSession();
@@ -31,31 +39,25 @@ export const createTrpcHttpLink = () =>
   httpBatchLink({
     url: getTrpcBaseUrl(),
     headers: getAuthorizationHeader,
-    onError({ error, meta }) {
-      console.error("[tRPC link error]", {
-        url: getTrpcBaseUrl(),
-        path: meta?.path,
-        type: meta?.type,
-        error: error.message,
-      });
-    },
+    transformer: trpcTransformer,
     fetch(requestUrl, options) {
+      console.log("[tRPC] Fetching:", requestUrl);
       return fetch(requestUrl, {
         ...options,
         credentials: "omit",
-      }).catch((error) => {
+      }).catch((error: any) => {
         console.error("[tRPC fetch error]", {
           url: requestUrl,
           method: options?.method ?? "POST",
           body: options?.body,
-          error,
+          error: error?.message || error,
+          stack: error?.stack,
         });
-        throw error;
+        throw new Error(`tRPC fetch failed: ${error?.message || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL is set correctly.`);
       });
     },
   });
 
 export const trpcClient = createTRPCClient<AppRouter>({
-  transformer: trpcTransformer,
   links: [createTrpcHttpLink()],
 });
