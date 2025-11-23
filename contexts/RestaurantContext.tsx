@@ -5,7 +5,6 @@ import createContextHook from '@nkzw/create-context-hook';
 import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 
 import { useTables } from '@/contexts/TableContext';
-import { useNotifications } from '@/contexts/NotificationContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
 import { trpc, trpcClient } from '@/lib/trpc';
 
@@ -27,7 +26,6 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
   const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation();
   
   const { assignOrderToTable, clearTable } = useTables();
-  const { notifyNewOrder, notifyOrderReady } = useNotifications();
   const { subscribeToOrders } = useRealtime();
   
   const menuData = useMemo(() => menuQuery.data || [], [menuQuery.data]);
@@ -140,7 +138,6 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
         if (order.status === 'ready') {
           setReadyNotification(order.id);
           playSound('ready');
-          notifyOrderReady(order.id, order.tableNumber);
           console.log(`Order ${order.id} is now READY for Table ${order.tableNumber}!`);
           
           setTimeout(() => {
@@ -153,7 +150,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       
       previousOrderStatuses.current[order.id] = order.status;
     });
-  }, [orders, playSound, notifyOrderReady]);
+  }, [orders, playSound]);
 
   const addItemToCurrentOrder = useCallback((itemId: string, quantity: number = 1, notes?: string) => {
     const menuItem = menuData.find(item => item.id === itemId);
@@ -232,8 +229,6 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       setOrders(prev => [newOrder, ...prev]);
       assignOrderToTable(selectedTable, newOrder.id);
       
-      await notifyNewOrder(result.orderId, selectedTable);
-      
       try {
         await trpcClient.customerHistory.save.mutate({
           tableNumber: selectedTable,
@@ -257,7 +252,7 @@ export const [RestaurantProvider, useRestaurant] = createContextHook(() => {
       console.error('Error submitting order:', error);
       throw error;
     }
-  }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable, notifyNewOrder]);
+  }, [currentOrder, selectedTable, calculateTotal, assignOrderToTable]);
 
   const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
     setOrders(prev => prev.map(order => {

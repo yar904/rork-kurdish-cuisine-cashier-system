@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Platform, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
 import type { Database } from '@/types/database';
 import { Text } from '@/components/CustomText';
@@ -8,6 +8,7 @@ import { TableQRManagement } from '@/components/admin/TableQRManagement';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { useClearNotification, useClearTableNotifications, useNotifications } from '@/contexts/NotificationContext';
 
 type AdminSection = 'menu' | 'inventory' | 'employees' | 'categories' | 'tables' | 'qr-codes' | null;
 
@@ -40,6 +41,44 @@ type TableInfo = {
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
+  const notificationsQuery = useNotifications();
+  const clearNotification = useClearNotification();
+  const clearTableNotifications = useClearTableNotifications();
+  const [clearingId, setClearingId] = useState<number | null>(null);
+  const [clearingTable, setClearingTable] = useState<number | null>(null);
+
+  const getTimeSince = useCallback((date: string) => {
+    const now = Date.now();
+    const diff = now - new Date(date).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes === 1) return '1 min ago';
+    return `${minutes} mins ago`;
+  }, []);
+
+  const handleClear = useCallback(
+    async (id: number) => {
+      setClearingId(id);
+      try {
+        await clearNotification(id);
+      } finally {
+        setClearingId(null);
+      }
+    },
+    [clearNotification],
+  );
+
+  const handleClearTable = useCallback(
+    async (tableNumber: number) => {
+      setClearingTable(tableNumber);
+      try {
+        await clearTableNotifications(tableNumber);
+      } finally {
+        setClearingTable(null);
+      }
+    },
+    [clearTableNotifications],
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -65,8 +104,8 @@ export default function AdminDashboard() {
           </View>
 
           <View style={styles.cardsGrid}>
-            <TouchableOpacity 
-              style={styles.card} 
+            <TouchableOpacity
+              style={styles.card}
               activeOpacity={0.8}
               onPress={() => setActiveSection('menu')}
             >
@@ -148,6 +187,39 @@ export default function AdminDashboard() {
               <Text style={styles.cardTitle}>Table Layout</Text>
               <Text style={styles.cardDescription}>Manage tables and capacity</Text>
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.notificationsCard}>
+            <Text style={styles.sectionTitle}>Notifications</Text>
+            {notificationsQuery.isLoading ? (
+              <ActivityIndicator color="#5C0000" />
+            ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
+              notificationsQuery.data.map(notification => (
+                <View key={notification.id} style={styles.notificationRow}>
+                  <Text style={styles.notificationText}>
+                    Table {notification.table_number} — {notification.type} — {getTimeSince(notification.created_at)}
+                  </Text>
+                  <View style={styles.notificationActions}>
+                    <TouchableOpacity
+                      style={styles.clearButton}
+                      onPress={() => handleClear(notification.id)}
+                      disabled={clearingId === notification.id}
+                    >
+                      <Text style={styles.clearButtonText}>Clear</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.clearTableButton}
+                      onPress={() => handleClearTable(notification.table_number)}
+                      disabled={clearingTable === notification.table_number}
+                    >
+                      <Text style={styles.clearButtonText}>Clear Table</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.notificationText}>No notifications</Text>
+            )}
           </View>
         </ScrollView>
       ) : activeSection === 'menu' ? (
@@ -1330,6 +1402,56 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     lineHeight: 20,
     marginBottom: 16,
+  },
+  notificationsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+      },
+    }),
+  },
+  notificationRow: {
+    paddingVertical: 10,
+    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1,
+    gap: 8,
+  },
+  notificationText: {
+    color: '#1F2937',
+    fontSize: 14,
+  },
+  notificationActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  clearButton: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  clearTableButton: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    color: '#5C0000',
+    fontWeight: '600',
   },
   cardBadge: {
     alignSelf: 'flex-start',
