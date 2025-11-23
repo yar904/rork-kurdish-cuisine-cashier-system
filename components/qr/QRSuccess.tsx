@@ -34,6 +34,8 @@ export function QRSuccess({ tableNumber, orderId }: QRSuccessProps) {
           style={styles.primaryButton}
           onPress={() => router.push(`/qr/${tableNumber}/track`)}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          testID="track-order-button"
         >
           <Text style={styles.primaryButtonText}>Track My Order</Text>
         </TouchableOpacity>
