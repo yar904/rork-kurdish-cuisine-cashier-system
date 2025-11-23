@@ -1,36 +1,35 @@
-import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
-import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from '../../backend/trpc/app-router';
-import { createContext } from '../../backend/trpc/create-context';
+import { Handler, HandlerEvent } from '@netlify/functions';
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-  console.log('[Netlify Function] Request:', event.httpMethod, event.path);
-  console.log('[Netlify Function] Headers:', event.headers);
-  console.log('[Netlify Function] Body:', event.body);
+const TRPC_TARGET =
+  process.env.EXPO_PUBLIC_TRPC_URL ||
+  'https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc';
 
-  const allowedOrigins = [
-    'https://kurdish-cuisine-cashier-system.rork.app',
-    'https://tapse.netlify.app',
-    'http://localhost:8081',
-    'http://localhost:3000',
-  ];
+const allowedOrigins = [
+  'https://tapse.netlify.app',
+  'http://localhost:3000',
+  'https://oqspnszwjxzyvwqjvjiy.supabase.co',
+  'https://oqspnszwjxzyvwqjvjiy.functions.supabase.co',
+];
 
-  const origin = event.headers.origin || event.headers.Origin || '';
-  const isAllowedOrigin = 
-    !origin ||
-    origin.startsWith('exp://') ||
-    origin.endsWith('.rork.app') ||
-    origin.endsWith('.netlify.app') ||
-    origin.endsWith('.supabase.co') ||
-    allowedOrigins.includes(origin);
+const resolveOrigin = (origin?: string) => {
+  if (!origin) return allowedOrigins[0];
+  if (origin.startsWith('exp://')) return origin;
+  if (/^https?:\/\/localhost:\d+$/.test(origin)) return origin;
+  if (/^https:\/\/.*\.rork\.app$/.test(origin)) return origin;
+  if (allowedOrigins.includes(origin)) return origin;
+  return allowedOrigins[0];
+};
+
+export const handler: Handler = async (event: HandlerEvent) => {
+  const origin = resolveOrigin(event.headers.origin || event.headers.Origin);
 
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
       headers: {
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
+        'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Credentials': 'true',
       },
       body: '',
@@ -42,12 +41,11 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
-        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': origin,
       },
       body: JSON.stringify({
-        status: '✅ Rork backend is running (Netlify)',
-        version: '1.0.0',
+        ok: true,
+        trpc: TRPC_TARGET,
         timestamp: new Date().toISOString(),
       }),
     };
@@ -58,76 +56,59 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
-        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': origin,
       },
       body: JSON.stringify({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
+        ok: true,
         environment: process.env.NODE_ENV || 'production',
+        trpc: TRPC_TARGET,
       }),
     };
   }
 
-  let trcpPath = event.path.replace('/.netlify/functions/api', '');
-  if (!trcpPath.startsWith('/trpc')) {
-    console.log('[Netlify Function] Invalid tRPC path:', event.path);
+  const trpcPath = event.path.replace('/.netlify/functions/api', '');
+  if (!trpcPath.startsWith('/trpc')) {
     return {
       statusCode: 404,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
-        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': origin,
       },
       body: JSON.stringify({ error: 'Not found' }),
     };
   }
 
-  const url = new URL(event.rawUrl || `https://tapse.netlify.app${event.path}`);
-  const request = new Request(url, {
-    method: event.httpMethod,
-    headers: new Headers(event.headers as Record<string, string>),
-    body: event.body || undefined,
-  });
-
-  console.log('[Netlify Function] Forwarding to tRPC handler, path:', trcpPath);
+  const targetUrl = `${TRPC_TARGET}${trpcPath.replace(/^\/trpc/, '')}`;
 
   try {
-    const response = await fetchRequestHandler({
-      endpoint: '/.netlify/functions/api/trpc',
-      req: request,
-      router: appRouter,
-      createContext: () => createContext({ req: request, resHeaders: new Headers() }),
+    const response = await fetch(targetUrl, {
+      method: event.httpMethod,
+      headers: event.headers as Record<string, string>,
+      body: event.body || undefined,
     });
 
-    const responseBody = await response.text();
-    console.log('[Netlify Function] tRPC response status:', response.status);
-    console.log('[Netlify Function] tRPC response body:', responseBody);
+    const body = await response.text();
 
     return {
       statusCode: response.status,
       headers: {
         'Content-Type': response.headers.get('Content-Type') || 'application/json',
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
-        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': origin,
       },
-      body: responseBody,
+      body,
     };
   } catch (error) {
-    console.error('[Netlify Function] Error:', error);
+    console.error('[Netlify proxy] Error forwarding to Supabase function', error);
     return {
-      statusCode: 500,
+      statusCode: 502,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': isAllowedOrigin ? (origin || '*') : 'null',
-        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': origin,
       },
       body: JSON.stringify({
-        error: 'Internal server error',
+        ok: false,
         message: error instanceof Error ? error.message : String(error),
       }),
     };
   }
 };
-
-export { handler };
