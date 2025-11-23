@@ -8,6 +8,10 @@ import type { AppRouter } from "@/types/trpc";
 import superjson from "superjson";
 import { supabase } from "./supabase";
 
+console.log("[ENV] TRPC:", process.env.EXPO_PUBLIC_TRPC_URL);
+console.log("[ENV] Functions:", process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
+console.log("[ENV] Supabase URL:", process.env.EXPO_PUBLIC_SUPABASE_URL);
+
 const FALLBACK_TRPC_URL =
   "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc";
 

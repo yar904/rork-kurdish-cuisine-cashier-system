@@ -7,6 +7,7 @@ const allowList = [
   "https://tapse.netlify.app",
   "http://localhost:3000",
   "https://oqspnszwjxzyvwqjvjiy.supabase.co",
+  "https://oqspnszwjxzyvwqjvjiy.functions.supabase.co",
 ];
 
 const isAllowedOrigin = (origin?: string | null) => {
@@ -62,7 +63,7 @@ app.use(
 
 app.get("/tapse-backend/health", (c) =>
   c.json({
-    status: "ok",
+    ok: true,
     environment: process.env.NODE_ENV,
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   }),

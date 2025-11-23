@@ -6,11 +6,39 @@ import { getTrpcBaseUrl, trpc } from "@/lib/trpc";
 
 export default function DebugHealthScreen() {
   const baseUrl = getTrpcBaseUrl();
+  const healthUrl = React.useMemo(
+    () => baseUrl.replace(/\/trpc$/, "/health"),
+    [baseUrl],
+  );
+  const [healthStatus, setHealthStatus] = React.useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [healthData, setHealthData] = React.useState<unknown>(null);
+  const [healthError, setHealthError] = React.useState<string | null>(null);
   const healthQuery = trpc.menu.getAll.useQuery(undefined, {
     retry: 0,
   });
 
+  const fetchHealth = React.useCallback(async () => {
+    setHealthStatus("loading");
+    setHealthError(null);
+    try {
+      const response = await fetch(healthUrl, { method: "GET" });
+      const json = await response.json();
+      setHealthData(json);
+      setHealthStatus("success");
+    } catch (error) {
+      setHealthStatus("error");
+      setHealthError(error instanceof Error ? error.message : String(error));
+    }
+  }, [healthUrl]);
+
+  React.useEffect(() => {
+    fetchHealth();
+  }, [fetchHealth]);
+
   const statusLabel = healthQuery.isSuccess ? "✅ TRPC OK" : healthQuery.isLoading ? "…" : "❌ TRPC ERROR";
+  const trpcError = healthQuery.error as unknown as { message?: string; cause?: unknown } | null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -28,11 +56,22 @@ export default function DebugHealthScreen() {
           <Text style={styles.mono}>{baseUrl}</Text>
         </View>
 
+        <Text style={styles.subheading}>Health Endpoint</Text>
+        <View style={styles.card}>
+          <Text style={styles.mono}>{healthUrl}</Text>
+          <Text style={styles.status}>{healthStatus === "success" ? "✅ HEALTH OK" : healthStatus === "error" ? "❌ HEALTH ERROR" : "…"}</Text>
+          {healthError && <Text style={styles.errorText}>{healthError}</Text>}
+          {healthStatus === "success" && (
+            <Text style={styles.mono} numberOfLines={6} ellipsizeMode="tail">{JSON.stringify(healthData, null, 2)}</Text>
+          )}
+        </View>
+
         <Text style={styles.subheading}>Status</Text>
         <View style={styles.card}>
           <Text style={[styles.status, healthQuery.isSuccess ? styles.ok : styles.error]}>{statusLabel}</Text>
-          {healthQuery.error && (
-            <Text style={styles.errorText}>{String(healthQuery.error)}</Text>
+          {trpcError?.message && <Text style={styles.errorText}>{trpcError.message}</Text>}
+          {trpcError?.cause && (
+            <Text style={styles.errorText}>{String(trpcError.cause)}</Text>
           )}
           {healthQuery.data && (
             <Text style={styles.mono} numberOfLines={6} ellipsizeMode="tail">
@@ -41,7 +80,13 @@ export default function DebugHealthScreen() {
           )}
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={() => healthQuery.refetch()}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            healthQuery.refetch();
+            fetchHealth();
+          }}
+        >
           <Text style={styles.buttonText}>Retry</Text>
         </TouchableOpacity>
       </ScrollView>
