@@ -1,51 +1,55 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 
-const allowedOrigins = [
+const allowList = [
   "https://tapse.netlify.app",
-  "https://expo.dev",
   "http://localhost:3000",
-  "http://localhost:8081",
+  "https://oqspnszwjxzyvwqjvjiy.supabase.co",
 ];
 
 const isAllowedOrigin = (origin?: string | null) => {
   if (!origin) return false;
-  if (allowedOrigins.includes(origin)) return true;
-  if (origin.startsWith("expo://")) return true;
+  if (allowList.includes(origin)) return true;
+  if (origin.startsWith("exp://")) return true;
+  if (/^https?:\/\/localhost:\d+$/.test(origin)) return true;
   if (/^https:\/\/.*\.rork\.app$/.test(origin)) return true;
   return false;
 };
 
 const resolveOrigin = (origin?: string | null) => {
   if (isAllowedOrigin(origin)) return origin as string;
-  return "*";
+  return allowList[0];
 };
 
 const app = new Hono();
 
-app.use(
-  "*",
-  cors({
-    origin: (origin) => resolveOrigin(origin),
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["*"],
-  }),
-);
-
 app.use("*", async (c, next) => {
   const origin = resolveOrigin(c.req.header("Origin"));
+
   c.header("Access-Control-Allow-Origin", origin);
+  c.header("Vary", "Origin");
   c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  c.header("Access-Control-Allow-Headers", "*");
+  c.header(
+    "Access-Control-Allow-Headers",
+    "authorization, content-type, x-trpc-source, x-client-info, apikey, x-supabase-api-version",
+  );
+  c.header("Access-Control-Max-Age", "86400");
 
   if (c.req.method === "OPTIONS") {
-    return c.text("", 200);
+    return c.body(null, 204);
   }
 
-  await next();
+  return next();
+});
+
+app.use("/tapse-backend/trpc/*", async (c, next) => {
+  if (c.req.method === "OPTIONS") {
+    return c.body(null, 204);
+  }
+
+  return next();
 });
 
 app.use(
@@ -57,10 +61,12 @@ app.use(
 );
 
 app.get("/tapse-backend/health", (c) =>
-  c.json({ status: "ok", timestamp: new Date().toISOString() }),
+  c.json({
+    status: "ok",
+    environment: process.env.NODE_ENV,
+    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+  }),
 );
-
-app.get("/", (c) => c.text("Tapse backend is running"));
 
 export default app;
 export const fetch = app.fetch;
