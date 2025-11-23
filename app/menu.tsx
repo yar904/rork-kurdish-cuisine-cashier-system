@@ -320,7 +320,7 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    publishNotification({ table_number: selectedTable, type: 'call_waiter' })
+    publishNotification({ tableNumber: selectedTable, type: 'assist' })
       .then(() => {
         setShowWaiterToast(true);
         Animated.sequence([
@@ -348,7 +348,7 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    publishNotification({ table_number: selectedTable, type: 'request_bill' }).catch(() => {
+    publishNotification({ tableNumber: selectedTable, type: 'notify' }).catch(() => {
       Alert.alert(t('error'), t('failedToSubmitRequest'));
     });
   };
