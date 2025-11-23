@@ -11,8 +11,60 @@ import type { AppRouter } from "@/types/trpc";
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
-const stripTrailingSlash = (value: string) => value.replace(/\/+$|$/, "");
-let cachedTrpcUrl: string | null = null;
+const TRPC_ENDPOINT_PATH = "/tapse-backend/trpc";
+const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+const ensureTrpcEndpoint = (value?: string | null) => {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = stripTrailingSlash(value.trim());
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.endsWith(TRPC_ENDPOINT_PATH)) {
+    return normalized;
+  }
+
+  return `${normalized}${TRPC_ENDPOINT_PATH}`;
+};
+
+const buildTrpcUrlCandidates = () => {
+  const explicitUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_TRPC_URL);
+  const supabaseFunctionsUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
+  const derivedFunctionsUrl = supabaseUrl
+    ? ensureTrpcEndpoint(`${stripTrailingSlash(supabaseUrl)}/functions/v1`)
+    : null;
+
+  const unorderedCandidates = [explicitUrl, supabaseFunctionsUrl, derivedFunctionsUrl];
+  const uniqueCandidates: string[] = [];
+
+  unorderedCandidates.forEach((candidate) => {
+    if (candidate && !uniqueCandidates.includes(candidate)) {
+      uniqueCandidates.push(candidate);
+    }
+  });
+
+  return uniqueCandidates;
+};
+
+const trpcUrlCandidates = buildTrpcUrlCandidates();
+
+if (!trpcUrlCandidates.length) {
+  console.error("[tRPC] Missing EXPO_PUBLIC_TRPC_URL or fallback Supabase function URLs");
+  throw new Error(
+    "Missing EXPO_PUBLIC_TRPC_URL, EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL, or EXPO_PUBLIC_SUPABASE_URL. Please check your .env file.",
+  );
+}
+
+let activeUrlIndex = 0;
+let cachedTrpcUrl: string | null = trpcUrlCandidates[activeUrlIndex];
+const linkBaseUrl = trpcUrlCandidates[0];
+
+console.log("[tRPC] Endpoint candidates:", trpcUrlCandidates);
 
 // ---------- FINAL TRPC URL – ALWAYS USE THIS ----------
 export const getTrpcBaseUrl = () => {
@@ -20,23 +72,8 @@ export const getTrpcBaseUrl = () => {
     return cachedTrpcUrl;
   }
 
-  const explicitUrl = process.env.EXPO_PUBLIC_TRPC_URL?.trim();
-  if (explicitUrl) {
-    cachedTrpcUrl = stripTrailingSlash(explicitUrl);
-    console.log("[tRPC] Using explicit URL:", cachedTrpcUrl);
-    return cachedTrpcUrl;
-  }
-
-  const functionUrl = process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL?.trim();
-  if (!functionUrl) {
-    console.error("[tRPC] Missing EXPO_PUBLIC_TRPC_URL or EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL environment variable");
-    throw new Error(
-      "Missing EXPO_PUBLIC_TRPC_URL (preferred) or EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL environment variable. Please check your .env file.",
-    );
-  }
-
-  cachedTrpcUrl = `${stripTrailingSlash(functionUrl)}/tapse-backend/trpc`;
-  console.log("[tRPC] Using derived URL:", cachedTrpcUrl);
+  cachedTrpcUrl = trpcUrlCandidates[activeUrlIndex];
+  console.log("[tRPC] Using resolved URL:", cachedTrpcUrl);
   return cachedTrpcUrl;
 };
 
@@ -73,23 +110,60 @@ const getAuthorizationHeader = async () => {
 
 export const createTrpcHttpLink = () =>
   httpBatchLink({
-    url: getTrpcBaseUrl(),
+    url: linkBaseUrl,
     headers: getAuthorizationHeader,
     fetch(requestUrl, options) {
-      console.log("[tRPC] Fetching:", requestUrl);
-      return fetch(requestUrl, {
-        ...options,
-        credentials: "omit",
-      }).catch((error: any) => {
+      const normalizedRequestUrl =
+        typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
+      const requestSuffix = normalizedRequestUrl.startsWith(linkBaseUrl)
+        ? normalizedRequestUrl.slice(linkBaseUrl.length)
+        : "";
+
+      const tryFetch = async (baseUrl: string) => {
+        const finalUrl = requestSuffix ? `${baseUrl}${requestSuffix}` : normalizedRequestUrl;
+        console.log("[tRPC] Fetching:", finalUrl);
+        return fetch(finalUrl, {
+          ...options,
+          credentials: "omit" as const,
+        });
+      };
+
+      const runWithFallbacks = async () => {
+        let lastError: unknown = null;
+
+        for (let candidateIndex = activeUrlIndex; candidateIndex < trpcUrlCandidates.length; candidateIndex += 1) {
+          const candidate = trpcUrlCandidates[candidateIndex];
+
+          try {
+            const response = await tryFetch(candidate);
+
+            if (activeUrlIndex !== candidateIndex) {
+              console.warn(`[tRPC] Switched endpoint to ${candidate}`);
+            }
+
+            activeUrlIndex = candidateIndex;
+            cachedTrpcUrl = candidate;
+            return response;
+          } catch (error) {
+            lastError = error;
+            console.warn(`[tRPC] Request failed for ${candidate}:`, error);
+          }
+        }
+
+        throw lastError ?? new Error("Unknown network error");
+      };
+
+      return runWithFallbacks().catch((error: any) => {
+        const errorMessage = error?.message || String(error);
         console.error("[tRPC fetch error]", {
           url: requestUrl,
           method: options?.method ?? "POST",
           body: options?.body,
-          error: error?.message || error,
+          error: errorMessage,
           stack: error?.stack,
         });
         throw new Error(
-          `tRPC fetch failed: ${error?.message || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_TRPC_URL is set correctly.`,
+          `tRPC fetch failed: ${errorMessage || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_TRPC_URL is set correctly.`,
         );
       });
     },
