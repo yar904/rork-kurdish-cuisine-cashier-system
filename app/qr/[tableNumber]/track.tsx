@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
 type StatusKey = OrderStatus | 'waiting';
@@ -95,22 +96,30 @@ export default function TrackOrderPage() {
     }
   );
 
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation();
+  const { publish } = useNotifications();
+  const [isSending, setIsSending] = useState(false);
 
   const handleServiceRequest = async (
     requestType: 'waiter' | 'bill' | 'assistance'
   ) => {
+    setIsSending(true);
     try {
-      await createServiceRequestMutation.mutateAsync({
-        tableNumber: tableNum,
-        requestType,
-        messageText: '',
-      });
+      const notificationType =
+        requestType === 'waiter' ? 'assist' : requestType === 'bill' ? 'bill' : 'notify';
+
+      await publish(tableNum, notificationType);
+
+      const successMessage =
+        requestType === 'waiter'
+          ? 'Waiter notified successfully'
+          : requestType === 'bill'
+            ? 'Bill request sent successfully'
+            : 'Assistance request sent';
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
@@ -119,6 +128,8 @@ export default function TrackOrderPage() {
       } else {
         Alert.alert('Error', 'Failed to send request');
       }
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -272,7 +283,7 @@ export default function TrackOrderPage() {
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('waiter')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
+            disabled={isSending}
           >
             <HandHeart size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Call Waiter</Text>
@@ -282,7 +293,7 @@ export default function TrackOrderPage() {
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('bill')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
+            disabled={isSending}
           >
             <Receipt size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Request Bill</Text>
@@ -292,7 +303,7 @@ export default function TrackOrderPage() {
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('assistance')}
             activeOpacity={0.8}
-            disabled={createServiceRequestMutation.isPending}
+            disabled={isSending}
           >
             <AlertCircle size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Report Issue</Text>

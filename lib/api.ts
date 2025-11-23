@@ -29,14 +29,6 @@ export const apiRatings = {
   getAllStats: () => trpcClient.ratings.getAllStats.query(),
 };
 
-// Service Requests
-export const apiService = {
-  create: (data: any) => trpcClient.serviceRequests.create.mutate(data),
-  getAll: () => trpcClient.serviceRequests.getAll.query(),
-  updateStatus: (data: any) =>
-    trpcClient.serviceRequests.updateStatus.mutate(data),
-};
-
 // Employees
 export const apiEmployees = {
   getAll: () => trpcClient.employees.getAll.query(),

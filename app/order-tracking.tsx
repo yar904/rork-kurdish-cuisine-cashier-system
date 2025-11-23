@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
-import { trpcClient } from '@/lib/trpc';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatusType = 'new' | 'preparing' | 'ready' | 'served';
 
@@ -37,6 +37,7 @@ export default function OrderTrackingScreen() {
   const [pulseAnim] = useState(new Animated.Value(1));
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [serviceRequestType, setServiceRequestType] = useState<'waiter' | 'bill' | 'wrong-order' | null>(null);
+  const { publish } = useNotifications();
   const [serviceMessage, setServiceMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -121,11 +122,15 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      await trpcClient.serviceRequests.create.mutate({
-        tableNumber: parseInt(tableNumber),
-        requestType: serviceRequestType,
-        message: serviceMessage || undefined,
-      });
+      const parsedTable = Number.parseInt(tableNumber, 10);
+      if (!Number.isFinite(parsedTable)) {
+        throw new Error('Invalid table number');
+      }
+
+      const notificationType =
+        serviceRequestType === 'waiter' ? 'assist' : serviceRequestType === 'bill' ? 'bill' : 'notify';
+
+      await publish(parsedTable, notificationType);
 
       Alert.alert(
         t('success'),
@@ -146,7 +151,7 @@ export default function OrderTrackingScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
+  }, [serviceRequestType, tableNumber, isSubmitting, t, publish]);
 
   if (currentStatus === 'served') {
     return (

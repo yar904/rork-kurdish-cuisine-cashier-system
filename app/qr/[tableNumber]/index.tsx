@@ -18,6 +18,7 @@ import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
 import { QRSuccess } from '@/components/qr/QRSuccess';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface CartItem {
   menuItemId: string;
@@ -40,7 +41,7 @@ export default function QROrderingPage() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
   const addItemMutation = trpc.orders.addItem.useMutation();
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation();
+  const { publish } = useNotifications();
 
   const categories = useMemo(() => {
     if (!menuQuery.data) return ['All'];
@@ -134,16 +135,15 @@ export default function QROrderingPage() {
         return;
       }
 
-      await createServiceRequestMutation.mutateAsync({
-        tableNumber: tableNum,
-        requestType,
-        messageText: '',
-      });
+      const notificationType = requestType === 'waiter' ? 'assist' : 'bill';
+      await publish(tableNum, notificationType);
+
+      const successMessage = requestType === 'waiter' ? 'Waiter notified successfully' : 'Bill request sent successfully';
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
