@@ -84,6 +84,10 @@ export default function EnvCheckScreen() {
     runTests();
   }, []);
 
+  useEffect(() => {
+    console.log("[EnvCheckScreen] Pending diagnostics paused per request");
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Stack.Screen options={{ title: "Environment & Connection Check" }} />
