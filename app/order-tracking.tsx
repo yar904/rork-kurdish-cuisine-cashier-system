@@ -355,7 +355,7 @@ export default function OrderTrackingScreen() {
               <View style={[styles.serviceButtonIcon, { backgroundColor: '#10B981' }]}>
                 <DollarSign size={24} color="#fff" />
               </View>
-              <Text style={styles.serviceButtonLabel}>{t('requestBill') || 'Request Bill'}</Text>
+              <Text style={styles.serviceButtonLabel}>{t('callWaiter') || 'Call Waiter'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -404,8 +404,6 @@ export default function OrderTrackingScreen() {
               <Text style={styles.modalTitle}>
                 {serviceRequestType === 'help'
                   ? t('callWaiter') || 'Call Waiter'
-                  : serviceRequestType === 'bill'
-                  ? t('requestBill') || 'Request Bill'
                   : t('reportIssue') || 'Report Issue'}
               </Text>
               <TouchableOpacity onPress={() => setShowServiceModal(false)}>

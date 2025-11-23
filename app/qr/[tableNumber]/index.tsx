@@ -225,11 +225,11 @@ export default function QROrderingPage() {
 
         <TouchableOpacity
           style={styles.serviceButton}
-          onPress={() => handleServiceRequest('bill')}
+          onPress={() => handleServiceRequest('other')}
           activeOpacity={0.8}
         >
           <Receipt size={22} color="#5C0000" />
-          <Text style={styles.serviceButtonText}>Request Bill</Text>
+          <Text style={styles.serviceButtonText}>Notify Staff</Text>
         </TouchableOpacity>
 
         {cartCount > 0 && (

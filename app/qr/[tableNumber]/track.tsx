@@ -281,11 +281,11 @@ export default function TrackOrderPage() {
 
           <TouchableOpacity
             style={styles.serviceButton}
-            onPress={() => handleServiceRequest('bill')}
+            onPress={() => handleServiceRequest('help')}
             activeOpacity={0.8}
           >
             <Receipt size={20} color="#5C0000" />
-            <Text style={styles.serviceButtonText}>Request Bill</Text>
+            <Text style={styles.serviceButtonText}>Notify Staff</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

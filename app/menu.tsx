@@ -18,7 +18,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
+import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon } from 'lucide-react-native';
 import Svg, { Path, Circle, Ellipse, Defs, Pattern, Rect, G } from 'react-native-svg';
 
 import { MENU_ITEMS } from '@/constants/menu';
@@ -1056,12 +1056,12 @@ export default function PublicMenuScreen() {
       {showWaiterToast && (
         <Animated.View 
           style={[
-            styles.waiterToast,
+            styles.notificationToast,
             {
-              opacity: waiterToastOpacity,
+              opacity: notificationToastOpacity,
               transform: [
                 {
-                  translateY: waiterToastOpacity.interpolate({
+                  translateY: notificationToastOpacity.interpolate({
                     inputRange: [0, 1],
                     outputRange: [-20, 0],
                   }),
@@ -1171,14 +1171,14 @@ export default function PublicMenuScreen() {
 
         <TouchableOpacity
           style={styles.fabButton}
-          onPress={handleCallWaiter}
+          onPress={handleNotifyStaff}
           activeOpacity={0.7}
         >
           <Animated.View style={styles.fabIconContainer}>
             <ChefHat size={22} color="#FFFFFF" strokeWidth={2} />
           </Animated.View>
           <Text style={styles.fabLabel}>
-            {language === 'en' ? 'Call Waiter' : language === 'ku' ? 'بانگهێشتی گارسۆن' : 'اتصل بالنادل'}
+            {language === 'en' ? 'Notify Staff' : language === 'ku' ? 'ئاگاداری ستاف' : 'إشعار الطاقم'}
           </Text>
         </TouchableOpacity>
 
@@ -1200,18 +1200,6 @@ export default function PublicMenuScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={handleRequestBill}
-          activeOpacity={0.7}
-        >
-          <Animated.View style={styles.fabIconContainer}>
-            <Receipt size={22} color="#FFFFFF" strokeWidth={2} />
-          </Animated.View>
-          <Text style={styles.fabLabel}>
-            {language === 'en' ? 'Request Bill' : language === 'ku' ? 'داواکردنی حیساب' : 'طلب الفاتورة'}
-          </Text>
-        </TouchableOpacity>
       </Animated.View>
     </ImageBackground>
   );
@@ -1745,7 +1733,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D4AF37',
     opacity: 0.4,
   },
-  waiterToast: {
+  notificationToast: {
     position: 'absolute' as const,
     top: Platform.select({ ios: 120, android: 110, default: 115 }),
     left: 20,
@@ -1775,7 +1763,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  waiterToastText: {
+  notificationToastText: {
     fontFamily: 'NotoNaskhArabic_600SemiBold',
     fontSize: 15,
     fontWeight: '600' as const,
