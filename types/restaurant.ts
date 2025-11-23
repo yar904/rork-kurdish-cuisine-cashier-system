@@ -57,3 +57,11 @@ export interface StaffActivity {
   details?: string;
 }
 
+export type NotificationType = 'help' | 'bill' | 'other';
+
+export interface TableNotification {
+  id: number;
+  tableNumber: number;
+  type: NotificationType;
+  createdAt: Date;
+}

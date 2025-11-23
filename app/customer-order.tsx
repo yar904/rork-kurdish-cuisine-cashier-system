@@ -27,7 +27,7 @@ import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 
@@ -261,24 +261,6 @@ export default function CustomerOrderScreen() {
 
   const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
 
-  const callWaiterMutation = useMutation({
-    mutationFn: async () => {
-      if (!hasValidTableNumber) {
-        throw new Error('Table number not found');
-      }
-      return publish(parsedTableNumber, 'assist');
-    },
-  });
-
-  const requestBillMutation = useMutation({
-    mutationFn: async () => {
-      if (!hasValidTableNumber) {
-        throw new Error('Table number not found');
-      }
-      return publish(parsedTableNumber, 'bill');
-    },
-  });
-
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
     return ['all', ...Array.from(cats)];
@@ -490,12 +472,10 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      const waiterResult = await callWaiterMutation.mutateAsync();
-      console.log('[CustomerOrder] ✅ Waiter notification created:', waiterResult?.id);
+      await publishNotification({ table_number: parsedTableNumber, type: 'call_waiter' });
 
-      setLastRequestTime(prev => ({ ...prev, assist: now }));
-      notifyServiceRequest(parsedTableNumber, 'assist');
-      
+      setLastRequestTime(prev => ({ ...prev, waiter: now }));
+
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
@@ -521,12 +501,10 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      const billResult = await requestBillMutation.mutateAsync();
-      console.log('[CustomerOrder] ✅ Bill notification created:', billResult?.id);
+      await publishNotification({ table_number: parsedTableNumber, type: 'request_bill' });
 
       setLastRequestTime(prev => ({ ...prev, bill: now }));
-      notifyServiceRequest(parsedTableNumber, 'bill');
-      
+
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);

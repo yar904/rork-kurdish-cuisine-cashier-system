@@ -168,7 +168,7 @@ Open your frontend app and check Network tab:
 │  │  • menu.*                                 │ │
 │  │  • orders.*                               │ │
 │  │  • tables.*                               │ │
-│  │  • serviceRequests.*                      │ │
+│  │  • notifications.*                        │ │
 │  │  • ratings.*                              │ │
 │  │  • reports.*                              │ │
 │  │  • customerHistory.*                      │ │

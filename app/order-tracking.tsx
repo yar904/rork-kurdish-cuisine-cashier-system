@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { Colors } from '@/constants/colors';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatusType = 'new' | 'preparing' | 'ready' | 'served';
 
@@ -36,8 +36,7 @@ export default function OrderTrackingScreen() {
   const [progress] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
   const [showServiceModal, setShowServiceModal] = useState(false);
-  const [serviceRequestType, setServiceRequestType] = useState<'waiter' | 'bill' | 'wrong-order' | null>(null);
-  const { publish } = useNotifications();
+  const [serviceRequestType, setServiceRequestType] = useState<'help' | 'bill' | 'other' | null>(null);
   const [serviceMessage, setServiceMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -111,7 +110,9 @@ export default function OrderTrackingScreen() {
     outputRange: ['0%', '100%'],
   });
 
-  const handleServiceRequest = useCallback((type: 'waiter' | 'bill' | 'wrong-order') => {
+  const publishNotification = usePublishNotification();
+
+  const handleServiceRequest = useCallback((type: 'help' | 'bill' | 'other') => {
     setServiceRequestType(type);
     setServiceMessage('');
     setShowServiceModal(true);
@@ -122,19 +123,21 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      const parsedTable = Number.parseInt(tableNumber, 10);
-      if (!Number.isFinite(parsedTable)) {
-        throw new Error('Invalid table number');
-      }
-
       const notificationType =
-        serviceRequestType === 'waiter' ? 'assist' : serviceRequestType === 'bill' ? 'bill' : 'notify';
+        serviceRequestType === 'help'
+          ? 'call_waiter'
+          : serviceRequestType === 'bill'
+          ? 'request_bill'
+          : serviceRequestType;
 
-      await publish(parsedTable, notificationType);
+      await publishNotification({
+        table_number: parseInt(tableNumber, 10),
+        type: notificationType,
+      });
 
       Alert.alert(
         t('success'),
-        serviceRequestType === 'waiter'
+        serviceRequestType === 'help'
           ? t('waiterNotified')
           : serviceRequestType === 'bill'
           ? t('billRequested')
@@ -151,7 +154,7 @@ export default function OrderTrackingScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [serviceRequestType, tableNumber, isSubmitting, t, publish]);
+  }, [publishNotification, serviceRequestType, tableNumber, serviceMessage, isSubmitting, t]);
 
   if (currentStatus === 'served') {
     return (
@@ -331,13 +334,13 @@ export default function OrderTrackingScreen() {
           {stages.map((stage, index) => renderStage(stage, index))}
         </View>
 
-        <View style={styles.serviceRequestsCard}>
-          <Text style={styles.serviceRequestsTitle}>{t('needHelp') || 'Need Help?'}</Text>
-          
-          <View style={styles.serviceButtons}>
+        <View style={styles.supportCard}>
+          <Text style={styles.supportTitle}>{t('needHelp') || 'Need Help?'}</Text>
+
+          <View style={styles.supportButtons}>
             <TouchableOpacity
-              style={styles.serviceButton}
-              onPress={() => handleServiceRequest('waiter')}
+              style={styles.supportButton}
+              onPress={() => handleServiceRequest('help')}
             >
               <View style={[styles.serviceButtonIcon, { backgroundColor: Colors.gold }]}>
                 <User size={24} color={Colors.primary} />
@@ -346,7 +349,7 @@ export default function OrderTrackingScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.serviceButton}
+              style={styles.supportButton}
               onPress={() => handleServiceRequest('bill')}
             >
               <View style={[styles.serviceButtonIcon, { backgroundColor: '#10B981' }]}>
@@ -356,8 +359,8 @@ export default function OrderTrackingScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.serviceButton}
-              onPress={() => handleServiceRequest('wrong-order')}
+              style={styles.supportButton}
+              onPress={() => handleServiceRequest('other')}
             >
               <View style={[styles.serviceButtonIcon, { backgroundColor: '#EF4444' }]}>
                 <AlertCircle size={24} color="#fff" />
@@ -399,7 +402,7 @@ export default function OrderTrackingScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {serviceRequestType === 'waiter'
+                {serviceRequestType === 'help'
                   ? t('callWaiter') || 'Call Waiter'
                   : serviceRequestType === 'bill'
                   ? t('requestBill') || 'Request Bill'
@@ -417,7 +420,7 @@ export default function OrderTrackingScreen() {
               <TextInput
                 style={styles.modalInput}
                 placeholder={
-                  serviceRequestType === 'wrong-order'
+                  serviceRequestType === 'other'
                     ? t('describeIssue') || 'Describe the issue...'
                     : t('additionalNotes') || 'Additional notes...'
                 }
@@ -855,7 +858,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     letterSpacing: 0.5,
   },
-  serviceRequestsCard: {
+  supportCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
@@ -877,19 +880,19 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  serviceRequestsTitle: {
+  supportTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
     color: '#1A1A1A',
     marginBottom: 16,
     textAlign: 'center' as const,
   },
-  serviceButtons: {
+  supportButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
   },
-  serviceButton: {
+  supportButton: {
     flex: 1,
     alignItems: 'center',
     gap: 8,

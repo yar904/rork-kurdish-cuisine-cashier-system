@@ -684,65 +684,83 @@ const ordersRouter = createTRPCRouter({
   }),
 });
 
-const mapNotificationRow = (row: {
+export type NotificationRecord = {
   id: number;
   table_number: number;
   type: string;
   created_at: string;
-}) => ({
-  id: row.id,
-  tableNumber: row.table_number,
-  type: row.type,
-  createdAt: row.created_at ?? new Date().toISOString(),
-});
+};
 
 const notificationsRouter = createTRPCRouter({
   publish: publicProcedure
     .input(
       z.object({
-        tableNumber: z.number().int().nonnegative(),
-        type: z.enum(["assist", "bill", "notify"]),
+        table_number: z.number(),
+        type: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
       const { data, error } = await supabase
         .from("notifications")
         .insert({
-          table_number: input.tableNumber,
+          table_number: input.table_number,
           type: input.type,
-          created_at: new Date().toISOString(),
         })
-        .select()
+        .select("id, table_number, type, created_at")
         .single();
 
-      if (error || !data) {
-        console.error("[Notifications] Error creating notification:", error);
-        throw new Error("Failed to create notification");
+      if (error) {
+        console.error("Error publishing notification:", error);
+        throw new Error("Failed to publish notification");
       }
 
-      return mapNotificationRow(data as any);
+      return data;
     }),
-  list: publicProcedure.query(async () => {
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .order("created_at", { ascending: false });
+  list: publicProcedure
+    .input(z.object({ since: z.string().nullable().optional() }).optional())
+    .query(async ({ input }) => {
+      let query = supabase
+        .from("notifications")
+        .select("id, table_number, type, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-    if (error) {
-      console.error("[Notifications] Error fetching notifications:", error);
-      throw new Error("Failed to fetch notifications");
-    }
+      if (input?.since) {
+        query = query.gt("created_at", input.since);
+      }
 
-    return (data ?? []).map((row) => mapNotificationRow(row as any));
-  }),
-  clear: publicProcedure
-    .input(z.object({ id: z.number().int().positive() }))
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+        throw new Error("Failed to fetch notifications");
+      }
+
+      return data ?? [];
+    }),
+  clearById: publicProcedure
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const { error } = await supabase.from("notifications").delete().eq("id", input.id);
 
       if (error) {
-        console.error("[Notifications] Error clearing notification:", error);
+        console.error("Error clearing notification:", error);
         throw new Error("Failed to clear notification");
+      }
+
+      return { success: true };
+    }),
+  clearByTable: publicProcedure
+    .input(z.object({ table_number: z.number() }))
+    .mutation(async ({ input }) => {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("table_number", input.table_number);
+
+      if (error) {
+        console.error("Error clearing notifications for table:", error);
+        throw new Error("Failed to clear notifications for table");
       }
 
       return { success: true };

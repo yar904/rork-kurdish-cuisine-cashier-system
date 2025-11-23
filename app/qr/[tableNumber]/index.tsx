@@ -14,6 +14,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ShoppingCart, X, HandHeart, Receipt } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
+import { usePublishNotification } from '@/contexts/NotificationContext';
 import { MenuGrid } from '@/components/qr/MenuGrid';
 import { CategoryTabs } from '@/components/qr/CategoryTabs';
 import { Cart } from '@/components/qr/Cart';
@@ -41,7 +42,7 @@ export default function QROrderingPage() {
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
   const addItemMutation = trpc.orders.addItem.useMutation();
-  const { publish } = useNotifications();
+  const publishNotification = usePublishNotification();
 
   const categories = useMemo(() => {
     if (!menuQuery.data) return ['All'];
@@ -127,7 +128,7 @@ export default function QROrderingPage() {
     }
   };
 
-  const handleServiceRequest = async (requestType: 'waiter' | 'bill') => {
+  const handleServiceRequest = async (requestType: 'help' | 'bill') => {
     try {
       const tableNum = parseInt(String(tableNumber), 10);
       if (isNaN(tableNum)) {
@@ -135,10 +136,10 @@ export default function QROrderingPage() {
         return;
       }
 
-      const notificationType = requestType === 'waiter' ? 'assist' : 'bill';
-      await publish(tableNum, notificationType);
-
-      const successMessage = requestType === 'waiter' ? 'Waiter notified successfully' : 'Bill request sent successfully';
+      await publishNotification({
+        table_number: tableNum,
+        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+      });
 
       if (Platform.OS === 'web') {
         alert(successMessage);
@@ -215,7 +216,7 @@ export default function QROrderingPage() {
       <View style={[styles.floatingActions, { bottom: insets.bottom + 20 }]}>
         <TouchableOpacity
           style={styles.serviceButton}
-          onPress={() => handleServiceRequest('waiter')}
+          onPress={() => handleServiceRequest('help')}
           activeOpacity={0.8}
         >
           <HandHeart size={22} color="#5C0000" />
