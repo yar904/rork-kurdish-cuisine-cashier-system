@@ -27,7 +27,7 @@ import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { usePublishNotification } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/constants/i18n';
 
@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const publishNotification = usePublishNotification();
+  const { publish } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -125,12 +125,12 @@ export default function CustomerOrderScreen() {
 
   const callWaiterMutation = useMutation({
     mutationFn: async (tableNumber: number) =>
-      publish({ table_number: tableNumber, type: 'call_waiter' }),
+      publish({ tableNumber, type: 'assist' }),
   });
 
   const requestBillMutation = useMutation({
     mutationFn: async (tableNumber: number) =>
-      publish({ table_number: tableNumber, type: 'request_bill' }),
+      publish({ tableNumber, type: 'bill' }),
   });
 
   const [orderModalVisible, setOrderModalVisible] = useState(false);
@@ -269,7 +269,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
+  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -482,9 +482,9 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      await publishNotification({ table_number: parsedTableNumber, type: 'call_waiter' });
+      await callWaiterMutation.mutateAsync(parsedTableNumber);
 
-      setLastRequestTime(prev => ({ ...prev, waiter: now }));
+      setLastRequestTime(prev => ({ ...prev, assist: now }));
 
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
@@ -511,7 +511,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      await publishNotification({ table_number: parsedTableNumber, type: 'request_bill' });
+      await requestBillMutation.mutateAsync(parsedTableNumber);
 
       setLastRequestTime(prev => ({ ...prev, bill: now }));
 

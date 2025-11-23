@@ -6,8 +6,9 @@ type RealtimePayload = RealtimePostgresChangesPayload<Record<string, any>>;
 
 type RealtimeContextType = {
   isConnected: boolean;
-  subscribeToOrders: (callback: (payload: any) => void) => () => void;
-  subscribeToMenuItems: (callback: (payload: any) => void) => () => void;
+  subscribeToOrders: (callback: (payload: RealtimePayload) => void) => () => void;
+  subscribeToMenuItems: (callback: (payload: RealtimePayload) => void) => () => void;
+  subscribeToNotifications: (callback: (payload: RealtimePayload) => void) => () => void;
 };
 
 const RealtimeContext = createContext<RealtimeContextType | undefined>(undefined);
@@ -48,9 +49,35 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const subscribeToMenuItems = (callback: (payload: any) => void) => {
+
+  const subscribeToMenuItems = (callback: (payload: RealtimePayload) => void) => {
     console.log('[Realtime] Subscribing to menu_items table');
     
+    const channel: RealtimeChannel = supabase
+      .channel('menu-items-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'menu_items',
+        },
+        (payload) => {
+          console.log('[Realtime] Menu item change:', payload);
+          callback(payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('[Realtime] Unsubscribing from menu items');
+      channel.unsubscribe();
+    };
+  };
+
+  const subscribeToNotifications = (callback: (payload: RealtimePayload) => void) => {
+    console.log('[Realtime] Subscribing to notifications table');
+
     const channel: RealtimeChannel = supabase
       .channel('notifications-changes')
       .on(
