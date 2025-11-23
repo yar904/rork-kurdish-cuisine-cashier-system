@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -100,6 +100,7 @@ export default function TrackOrderPage() {
   const handleServiceRequest = async (
     requestType: 'help' | 'bill' | 'other'
   ) => {
+    setIsSending(true);
     try {
       await publishNotification({
         table_number: tableNum,
@@ -107,9 +108,9 @@ export default function TrackOrderPage() {
       });
 
       if (Platform.OS === 'web') {
-        alert('Request sent successfully');
+        alert(successMessage);
       } else {
-        Alert.alert('Success', 'Request sent successfully');
+        Alert.alert('Success', successMessage);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
@@ -118,6 +119,8 @@ export default function TrackOrderPage() {
       } else {
         Alert.alert('Error', 'Failed to send request');
       }
+    } finally {
+      setIsSending(false);
     }
   };
 

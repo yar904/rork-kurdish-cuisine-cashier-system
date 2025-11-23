@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpc, trpcClient } from '@/lib/trpc';
+import { trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -117,11 +117,21 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
-    type: 'waiter' | 'bill' | null;
+    type: 'assist' | 'bill' | null;
     message: string;
     visible: boolean;
   }>({ type: null, message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
+
+  const callWaiterMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'call_waiter' }),
+  });
+
+  const requestBillMutation = useMutation({
+    mutationFn: async (tableNumber: number) =>
+      publish({ table_number: tableNumber, type: 'request_bill' }),
+  });
 
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
@@ -463,7 +473,7 @@ export default function CustomerOrderScreen() {
     }
 
     const now = Date.now();
-    const lastRequest = lastRequestTime.waiter || 0;
+    const lastRequest = lastRequestTime.assist || 0;
     if (now - lastRequest < 10000) {
       showStatusMessage('⏳ Please wait 10 seconds before calling again');
       return;
