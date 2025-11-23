@@ -57,16 +57,11 @@ export interface StaffActivity {
   details?: string;
 }
 
-export type ServiceRequestType = 'waiter' | 'bill' | 'wrong-order';
-export type ServiceRequestStatus = 'pending' | 'in-progress' | 'resolved';
+export type NotificationType = 'help' | 'bill' | 'other';
 
-export interface TableServiceRequest {
-  id: string;
+export interface TableNotification {
+  id: number;
   tableNumber: number;
-  requestType: ServiceRequestType;
-  status: ServiceRequestStatus;
-  message?: string;
+  type: NotificationType;
   createdAt: Date;
-  resolvedAt?: Date;
-  resolvedBy?: string;
 }

@@ -59,7 +59,7 @@ export default function CustomerOrderScreen() {
     typeof table === 'string' ? Number.parseInt(table, 10) : Number.NaN;
   const hasValidTableNumber = Number.isFinite(parsedTableNumber);
   const router = useRouter();
-  const { notifyServiceRequest } = useNotifications();
+  const { notify } = useNotifications();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const { language, tc } = useLanguage();
@@ -260,9 +260,6 @@ export default function CustomerOrderScreen() {
   });
 
   const [lastRequestTime, setLastRequestTime] = useState<{ waiter?: number; bill?: number }>({});
-
-  const callWaiterMutation = trpc.serviceRequests.create.useMutation();
-  const requestBillMutation = trpc.serviceRequests.create.useMutation();
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -475,16 +472,10 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      const waiterResult = await callWaiterMutation.mutateAsync({
-        tableNumber: parsedTableNumber,
-        requestType: 'waiter',
-        messageText: 'Customer requesting assistance',
-      });
-      console.log('[CustomerOrder] ✅ Waiter request created:', waiterResult?.data?.id);
+      await notify(parsedTableNumber, 'help');
 
       setLastRequestTime(prev => ({ ...prev, waiter: now }));
-      notifyServiceRequest(parsedTableNumber, 'waiter');
-      
+
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
@@ -510,16 +501,10 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      const billResult = await requestBillMutation.mutateAsync({
-        tableNumber: parsedTableNumber,
-        requestType: 'bill',
-        messageText: 'Customer requesting bill',
-      });
-      console.log('[CustomerOrder] ✅ Bill request created:', billResult?.data?.id);
+      await notify(parsedTableNumber, 'bill');
 
       setLastRequestTime(prev => ({ ...prev, bill: now }));
-      notifyServiceRequest(parsedTableNumber, 'bill');
-      
+
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);

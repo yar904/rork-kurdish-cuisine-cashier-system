@@ -28,6 +28,7 @@ import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
 import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 import { trpc } from '@/lib/trpc';
 
@@ -58,6 +59,7 @@ export default function PublicMenuScreen() {
   const fabSlideAnimation = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showWaiterToast, setShowWaiterToast] = useState(false);
+  const { notify } = useNotifications();
   const waiterToastOpacity = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
@@ -312,39 +314,32 @@ export default function PublicMenuScreen() {
     });
   };
 
-  const createServiceRequestMutation = trpc.serviceRequests.create.useMutation({
-    onSuccess: () => {
-      setShowWaiterToast(true);
-      Animated.sequence([
-        Animated.timing(waiterToastOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(2000),
-        Animated.timing(waiterToastOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => setShowWaiterToast(false));
-    },
-    onError: () => {
-      Alert.alert(t('error'), t('failedToSubmitRequest'));
-    },
-  });
-
   const handleCallWaiter = () => {
     if (!selectedTable) {
       Alert.alert(t('error'), t('pleaseSelectTableFirst'));
       return;
     }
 
-    createServiceRequestMutation.mutate({
-      tableNumber: selectedTable,
-      requestType: 'waiter',
-      message: 'Customer requesting assistance',
-    });
+    notify(selectedTable, 'help')
+      .then(() => {
+        setShowWaiterToast(true);
+        Animated.sequence([
+          Animated.timing(waiterToastOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.delay(2000),
+          Animated.timing(waiterToastOpacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => setShowWaiterToast(false));
+      })
+      .catch(() => {
+        Alert.alert(t('error'), t('failedToSubmitRequest'));
+      });
   };
 
   const handleRequestBill = () => {
@@ -353,10 +348,8 @@ export default function PublicMenuScreen() {
       return;
     }
 
-    createServiceRequestMutation.mutate({
-      tableNumber: selectedTable,
-      requestType: 'bill',
-      message: 'Customer requesting bill',
+    notify(selectedTable, 'bill').catch(() => {
+      Alert.alert(t('error'), t('failedToSubmitRequest'));
     });
   };
 
