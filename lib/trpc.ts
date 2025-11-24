@@ -33,6 +33,7 @@ const getAuthorizationHeader = async () => {
     "Content-Type": "application/json",
     Accept: "application/json",
     "x-client": "tapse-pos",
+    apikey: anonKey,
     Authorization: `Bearer ${anonKey}`,
   };
 };
@@ -57,49 +58,75 @@ const logTrpcError = (payload: Record<string, unknown>) => {
   console.error("[tRPC fetch error]", JSON.stringify(payload, null, 2));
 };
 
+const MAX_TRPC_RETRIES = 2;
+const RETRY_DELAY_MS = 600;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const shouldRetry = (status: number) => status === 429 || status >= 500;
+
 export const createTrpcHttpLink = () =>
   httpLink({
     url: resolvedTrpcUrl,
     headers: getAuthorizationHeader,
     async fetch(requestUrl, options) {
       const targetUrl = typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
-      console.log("[tRPC] Fetching:", targetUrl);
 
-      try {
-        const response = await fetch(requestUrl, options);
+      const attemptFetch = async (attempt: number): Promise<Response> => {
+        console.log(`[tRPC] Fetching attempt ${attempt}:`, targetUrl);
 
-        if (!response.ok) {
-          const bodyText = await response.text().catch(() => undefined);
-          const errorDetails = {
+        try {
+          const response = await fetch(targetUrl, options);
+
+          if (!response.ok) {
+            const bodyText = await response.text().catch(() => undefined);
+            const errorDetails = {
+              url: targetUrl,
+              baseUrl: resolvedTrpcUrl,
+              status: response.status,
+              statusText: response.statusText,
+              method: options?.method ?? "POST",
+              body: options?.body,
+              responseBody: bodyText,
+              attempt,
+            };
+            logTrpcError(errorDetails);
+
+            if (attempt <= MAX_TRPC_RETRIES && shouldRetry(response.status)) {
+              await delay(RETRY_DELAY_MS * attempt);
+              return attemptFetch(attempt + 1);
+            }
+
+            throw new Error(
+              `tRPC fetch failed (${response.status} ${response.statusText}). Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+            );
+          }
+
+          return response;
+        } catch (error: unknown) {
+          const errorMessage = stringifyError(error);
+          logTrpcError({
             url: targetUrl,
             baseUrl: resolvedTrpcUrl,
-            status: response.status,
-            statusText: response.statusText,
             method: options?.method ?? "POST",
             body: options?.body,
-            responseBody: bodyText,
-          };
-          logTrpcError(errorDetails);
+            error: errorMessage,
+            stack: error instanceof Error ? error.stack : undefined,
+            attempt,
+          });
+
+          if (attempt <= MAX_TRPC_RETRIES) {
+            await delay(RETRY_DELAY_MS * attempt);
+            return attemptFetch(attempt + 1);
+          }
+
           throw new Error(
-            `tRPC fetch failed (${response.status} ${response.statusText}). Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+            `tRPC fetch failed: ${errorMessage}. Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
           );
         }
+      };
 
-        return response;
-      } catch (error: unknown) {
-        const errorMessage = stringifyError(error);
-        logTrpcError({
-          url: targetUrl,
-          baseUrl: resolvedTrpcUrl,
-          method: options?.method ?? "POST",
-          body: options?.body,
-          error: errorMessage,
-          stack: error instanceof Error ? error.stack : undefined,
-        });
-        throw new Error(
-          `tRPC fetch failed: ${errorMessage}. Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
-        );
-      }
+      return attemptFetch(1);
     },
   });
 
