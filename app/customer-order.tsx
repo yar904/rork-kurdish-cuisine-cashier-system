@@ -23,9 +23,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpcClient } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
-import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -117,7 +116,7 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
-    type: 'assist' | 'bill' | null;
+    type: 'assist' | 'notify' | null;
     message: string;
     visible: boolean;
   }>({ type: null, message: '', visible: false });
@@ -132,34 +131,12 @@ export default function CustomerOrderScreen() {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const plateRotate = useRef(new Animated.Value(0)).current;
 
-  const menuQuery = useQuery({
-    queryKey: ['menu-items'],
-    queryFn: async () => {
-      console.log('[CustomerOrder] Fetching menu items from Supabase');
-      try {
-        const { data, error } = await supabase
-          .from('menu_items')
-          .select('*')
-          .eq('available', true)
-          .order('category', { ascending: true });
-        
-        if (error) {
-          console.warn('[CustomerOrder] Could not fetch menu from database, using fallback data:', error.message);
-          return MENU_ITEMS;
-        }
-        console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
-        return data && data.length > 0 ? data : MENU_ITEMS;
-      } catch (err) {
-        console.error('[CustomerOrder] Error fetching menu:', err);
-        return MENU_ITEMS;
-      }
-    },
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
     retry: false,
   });
-  
-  const menuData = menuQuery.data || MENU_ITEMS;
+
+  const menuData = menuQuery.data || [];
   
   const ratingsStatsQuery = useQuery({
     queryKey: ['ratings-stats'],
@@ -259,7 +236,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
+  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; notify?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -490,21 +467,23 @@ export default function CustomerOrderScreen() {
     }
 
     const now = Date.now();
-    const lastRequest = lastRequestTime.bill || 0;
+    const lastRequest = lastRequestTime[type] || 0;
     if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait 10 seconds before requesting again');
+      showStatusMessage('⏳ Please wait 10 seconds before sending again');
       return;
     }
 
-    console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
+    console.log('[CustomerOrder] 🚨 Sending notification for table:', table, 'type:', type);
 
     try {
       await publish({ tableNumber: parsedTableNumber, type: 'bill' });
       setLastRequestTime(prev => ({ ...prev, bill: now }));
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
-      console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
-      showStatusMessage('❌ Request failed. Please try again or ask your waiter.');
+      console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
+      showStatusMessage('❌ Request failed. Please try again or inform staff.');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -1082,9 +1061,9 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
@@ -1095,7 +1074,7 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.actionButton, styles.actionButtonPrimary]}
                 onPress={handleViewOrder}
                 activeOpacity={0.7}
@@ -1108,9 +1087,9 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
@@ -1138,9 +1117,9 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
@@ -1164,9 +1143,9 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
@@ -1276,13 +1255,13 @@ export default function CustomerOrderScreen() {
       </Modal>
 
       {requestStatus.visible && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.statusToast,
             { opacity: statusOpacity }
           ]}
         >
-          <Text style={styles.statusToastText}>{requestStatus.message}</Text>
+          <Text style={styles.statusToastText}>{successMessage || requestStatus.message}</Text>
         </Animated.View>
       )}
 

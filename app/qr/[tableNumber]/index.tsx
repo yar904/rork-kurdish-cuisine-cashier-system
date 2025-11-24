@@ -38,6 +38,8 @@ export default function QROrderingPage() {
   const [cartModalVisible, setCartModalVisible] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState<string>('');
+  const [isSending, setIsSending] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
@@ -130,9 +132,12 @@ export default function QROrderingPage() {
 
   const handleServiceRequest = async (requestType: 'help' | 'bill') => {
     try {
+      setIsSending(true);
+      setSuccessMessage('');
       const tableNum = parseInt(String(tableNumber), 10);
       if (isNaN(tableNum)) {
         console.error('Invalid table number');
+        setIsSending(false);
         return;
       }
 
@@ -141,10 +146,13 @@ export default function QROrderingPage() {
         type: requestType === 'help' ? 'assist' : 'notify',
       });
 
+      const confirmation = 'Request sent! Our team will assist you shortly.';
+      setSuccessMessage(confirmation);
+
       if (Platform.OS === 'web') {
-        alert(successMessage);
+        alert(confirmation);
       } else {
-        Alert.alert('Success', successMessage);
+        Alert.alert('Success', confirmation);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
@@ -153,6 +161,8 @@ export default function QROrderingPage() {
       } else {
         Alert.alert('Error', 'Failed to send request');
       }
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -217,20 +227,24 @@ export default function QROrderingPage() {
         <TouchableOpacity
           style={styles.serviceButton}
           onPress={() => handleServiceRequest('help')}
+          disabled={isSending}
           activeOpacity={0.8}
         >
           <HandHeart size={22} color="#5C0000" />
-          <Text style={styles.serviceButtonText}>Call Waiter</Text>
+          <Text style={styles.serviceButtonText}>Notify Staff</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.serviceButton}
           onPress={() => handleServiceRequest('bill')}
+          disabled={isSending}
           activeOpacity={0.8}
         >
           <Receipt size={22} color="#5C0000" />
-          <Text style={styles.serviceButtonText}>Request Bill</Text>
+          <Text style={styles.serviceButtonText}>Notify Team</Text>
         </TouchableOpacity>
+
+        {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
         {cartCount > 0 && (
           <TouchableOpacity
@@ -342,6 +356,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#5C0000',
+  },
+  successText: {
+    width: '100%',
+    textAlign: 'center',
+    color: '#0A7B34',
+    marginTop: 8,
+    fontWeight: '600' as const,
   },
   cartButton: {
     flexDirection: 'row',

@@ -20,6 +20,34 @@ const exampleRouter = createTRPCRouter({
     })),
 });
 
+type MenuItemRow = {
+  id: string;
+  name: string;
+  name_kurdish: string;
+  name_arabic: string;
+  category: string;
+  price: number;
+  description: string;
+  description_kurdish: string;
+  description_arabic: string;
+  image: string | null;
+  available: boolean;
+};
+
+const mapMenuItem = (item: MenuItemRow) => ({
+  id: item.id,
+  name: item.name,
+  nameKurdish: item.name_kurdish,
+  nameArabic: item.name_arabic,
+  category: item.category,
+  price: item.price,
+  description: item.description,
+  descriptionKurdish: item.description_kurdish,
+  descriptionArabic: item.description_arabic,
+  image: item.image,
+  available: item.available,
+});
+
 const menuRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
     const { data, error } = await supabase
@@ -32,19 +60,7 @@ const menuRouter = createTRPCRouter({
       throw new Error("Failed to fetch menu items");
     }
 
-    return (data ?? []).map((item) => ({
-      id: item.id,
-      name: item.name,
-      nameKurdish: item.name_kurdish,
-      nameArabic: item.name_arabic,
-      category: item.category,
-      price: item.price,
-      description: item.description,
-      descriptionKurdish: item.description_kurdish,
-      descriptionArabic: item.description_arabic,
-      image: item.image,
-      available: item.available,
-    }));
+    return (data ?? []).map((item) => mapMenuItem(item as MenuItemRow));
   }),
   create: publicProcedure
     .input(
@@ -89,7 +105,7 @@ const menuRouter = createTRPCRouter({
         throw new Error("Failed to create menu item");
       }
 
-      return data;
+      return mapMenuItem(data as MenuItemRow);
     }),
   update: publicProcedure
     .input(
@@ -154,7 +170,7 @@ const menuRouter = createTRPCRouter({
         throw new Error("Failed to update menu item");
       }
 
-      return data;
+      return mapMenuItem(data as MenuItemRow);
     }),
   delete: publicProcedure
     .input(z.object({ id: z.string().min(1, "ID is required") }))
@@ -684,7 +700,7 @@ const ordersRouter = createTRPCRouter({
   }),
 });
 
-export type NotificationRecord = {
+type NotificationRow = {
   id: number;
   table_number: number;
   type: "assist" | "bill" | "notify";

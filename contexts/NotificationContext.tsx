@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpc";
 import { useRealtime } from "@/contexts/RealtimeContext";
-import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { Notification } from "@/types/restaurant";
 
 export type NotificationType = "assist" | "bill" | "notify";
 
@@ -58,11 +59,11 @@ export const [NotificationProvider, useNotificationsContext] =
     const clearAllMutation = trpc.notifications.clearAll.useMutation();
 
     useEffect(() => {
-      return subscribeToNotifications((payload) => {
+      return subscribeToNotifications((payload: RealtimePostgresChangesPayload<NotificationRow>) => {
         if (payload.eventType === "INSERT") {
-          const record = payload.new as NotificationRecord;
+          const record = payload.new as NotificationRow;
           setNotifications((prev) => {
-            const mapped = mapNotificationRecord(record);
+            const mapped = mapNotificationRow(record);
             const next = [mapped, ...prev.filter((item) => item.id !== mapped.id)];
             return next.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
           });
@@ -70,7 +71,7 @@ export const [NotificationProvider, useNotificationsContext] =
         }
 
         if (payload.eventType === "DELETE") {
-          const record = payload.old as NotificationRecord;
+          const record = payload.old as NotificationRow;
           setNotifications((prev) => prev.filter((item) => item.id !== record.id));
         }
       });
@@ -90,7 +91,7 @@ export const [NotificationProvider, useNotificationsContext] =
         const mapped = mapNotificationRecord(created as NotificationRecord);
         setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
         await utils.notifications.list.invalidate();
-        return mapped;
+        return created;
       },
       [publishMutation, utils],
     );
