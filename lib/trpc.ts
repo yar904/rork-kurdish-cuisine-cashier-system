@@ -58,6 +58,30 @@ const logTrpcError = (payload: Record<string, unknown>) => {
   console.error("[tRPC fetch error]", JSON.stringify(payload, null, 2));
 };
 
+const parseOfflineMessage = (status: number, bodyText?: string) => {
+  if (status !== 503 || !bodyText) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText);
+    if (typeof parsed === "object" && parsed && "error" in parsed) {
+      const errorValue = (parsed as Record<string, unknown>).error;
+      if (errorValue === "offline") {
+        return typeof parsed.message === "string"
+          ? parsed.message
+          : "You appear to be offline. Check your connection and try again.";
+      }
+    }
+  } catch {
+    if (bodyText.toLowerCase().includes("offline")) {
+      return "You appear to be offline. Check your connection and try again.";
+    }
+  }
+
+  return undefined;
+};
+
 const MAX_TRPC_RETRIES = 2;
 const RETRY_DELAY_MS = 600;
 
@@ -80,6 +104,7 @@ export const createTrpcHttpLink = () =>
 
           if (!response.ok) {
             const bodyText = await response.text().catch(() => undefined);
+            const offlineMessage = parseOfflineMessage(response.status, bodyText);
             const errorDetails = {
               url: targetUrl,
               baseUrl: resolvedTrpcUrl,
@@ -91,6 +116,10 @@ export const createTrpcHttpLink = () =>
               attempt,
             };
             logTrpcError(errorDetails);
+
+            if (offlineMessage) {
+              throw new Error(offlineMessage);
+            }
 
             if (attempt <= MAX_TRPC_RETRIES && shouldRetry(response.status)) {
               await delay(RETRY_DELAY_MS * attempt);
