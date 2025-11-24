@@ -1,11 +1,10 @@
 // tRPC client configuration
 // Uses EXPO_PUBLIC_TRPC_URL (preferred) to reach the Supabase Edge Function endpoint.
-// Expected final URL: https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend
+// Expected final URL: https://<project>.supabase.co/functions/v1/tapse-backend
 // Centralized here to avoid previous "Failed to fetch" issues caused by mismatched hosts/paths.
 import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpLink } from "@trpc/client";
 import superjson from "superjson";
-import { supabase } from "./supabase";
 import type { AppRouter } from "@/types/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -52,10 +51,21 @@ const readEnv = (key: string) => {
   return undefined;
 };
 
-const buildTrpcEndpoint = (
-  value?: string | null,
-  options?: { injectDefaultFunction?: boolean },
-) => {
+const ensureFunctionPath = (value: string) => {
+  let normalized = stripTrailingSlash(value);
+
+  if (!/\/functions\/v1(\/|$)/.test(normalized)) {
+    normalized = appendPathSegment(normalized, "functions/v1");
+  }
+
+  if (!new RegExp(`/${DEFAULT_FUNCTION_NAME}(?:/|$)`).test(normalized)) {
+    normalized = appendPathSegment(normalized, DEFAULT_FUNCTION_NAME);
+  }
+
+  return sanitizeUrl(normalized);
+};
+
+const buildTrpcEndpoint = (value?: string | null) => {
   if (!value) {
     return null;
   }
@@ -65,15 +75,8 @@ const buildTrpcEndpoint = (
     return null;
   }
 
-  let normalized = sanitizeUrl(trimmed);
-
-  if (options?.injectDefaultFunction) {
-    normalized = appendPathSegment(normalized, DEFAULT_FUNCTION_NAME);
-  }
-
-  normalized = sanitizeUrl(ensureTrpcSuffix(normalized));
-
-  return normalized;
+  const withFunctionPath = ensureFunctionPath(trimmed);
+  return sanitizeUrl(ensureTrpcSuffix(withFunctionPath));
 };
 
 const resolveSupabaseEdgeUrl = (): string => {
@@ -82,18 +85,14 @@ const resolveSupabaseEdgeUrl = (): string => {
     return explicitUrl;
   }
 
-  const supabaseFunctionsUrl = buildTrpcEndpoint(readEnv("EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL"), {
-    injectDefaultFunction: true,
-  });
+  const supabaseFunctionsUrl = buildTrpcEndpoint(readEnv("EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL"));
   if (supabaseFunctionsUrl) {
     return supabaseFunctionsUrl;
   }
 
   const projectRef = readEnv("EXPO_PUBLIC_SUPABASE_PROJECT_ID")?.trim();
   if (projectRef) {
-    const derivedUrl = buildTrpcEndpoint(`https://${projectRef}.functions.supabase.co`, {
-      injectDefaultFunction: true,
-    });
+    const derivedUrl = buildTrpcEndpoint(`https://${projectRef}.supabase.co`);
     if (derivedUrl) {
       return derivedUrl;
     }
@@ -112,34 +111,34 @@ export const getTrpcBaseUrl = () => linkBaseUrl;
 
 const getAuthorizationHeader = async () => {
   try {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session?.access_token;
-    const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+    const anonKey = readEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY")?.trim();
 
-    const headers: Record<string, string> = {
+    if (!anonKey) {
+      throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY; cannot authenticate Supabase Edge requests.");
+    }
+
+    return {
       "Content-Type": "application/json",
       Accept: "application/json",
       "x-client": "tapse-pos",
+      Authorization: `Bearer ${anonKey}`,
     };
-
-    if (token) {
-      console.log("[tRPC Auth] Using user access token");
-      headers.Authorization = `Bearer ${token}`;
-      return headers;
-    }
-
-    if (anonKey) {
-      console.log("[tRPC Auth] Using anon key fallback");
-      headers.Authorization = `Bearer ${anonKey}`;
-      return headers;
-    }
-
-    console.warn("[tRPC Auth] Missing Supabase credentials; requests will be anonymous");
-    return headers;
   } catch (error) {
     console.error("[tRPC Auth] Failed to resolve authorization header", error);
     throw error instanceof Error ? error : new Error(String(error));
   }
+};
+
+const prependBaseUrl = (requestUrl: string) => {
+  if (/^https?:\/\//i.test(requestUrl)) {
+    return requestUrl;
+  }
+
+  if (requestUrl.startsWith("?")) {
+    return `${linkBaseUrl}${requestUrl}`;
+  }
+
+  return sanitizeUrl(`${linkBaseUrl}/${requestUrl.replace(/^\/+/g, "")}`);
 };
 
 export const createTrpcHttpLink = () =>
@@ -149,6 +148,7 @@ export const createTrpcHttpLink = () =>
     fetch(requestUrl, options) {
       const normalizedRequestUrl =
         typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
+      const targetUrl = prependBaseUrl(normalizedRequestUrl);
 
       const finalOptions: RequestInit = {
         ...(options ?? {}),
@@ -157,12 +157,12 @@ export const createTrpcHttpLink = () =>
         credentials: "omit",
       };
 
-      console.log("[tRPC] Fetching:", normalizedRequestUrl);
+      console.log("[tRPC] Fetching:", targetUrl);
 
-      return fetch(normalizedRequestUrl, finalOptions).catch((error: any) => {
+      return fetch(targetUrl, finalOptions).catch((error: any) => {
         const errorMessage = error?.message || String(error);
         console.error("[tRPC fetch error]", {
-          url: normalizedRequestUrl,
+          url: targetUrl,
           baseUrl: linkBaseUrl,
           method: "POST",
           body: options?.body,
