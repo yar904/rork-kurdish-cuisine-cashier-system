@@ -1,6 +1,6 @@
 // tRPC client configuration
 // Uses EXPO_PUBLIC_TRPC_URL (preferred) to reach the Supabase Edge Function endpoint.
-// Expected final URL: https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend
+// Expected final URL: https://opsqnzswjxzvywqjqvjy.functions.supabase.co/tapse-backend
 // Centralized here to avoid previous "Failed to fetch" issues caused by mismatched hosts/paths.
 import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpLink } from "@trpc/client";

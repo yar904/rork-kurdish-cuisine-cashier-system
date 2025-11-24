@@ -123,15 +123,15 @@ export default function OrderTrackingScreen() {
 
     setIsSubmitting(true);
     try {
-      const notificationType =
+      const notificationType: 'assist' | 'notify' =
         serviceRequestType === 'help'
-          ? 'call_waiter'
+          ? 'assist'
           : serviceRequestType === 'bill'
-          ? 'request_bill'
-          : serviceRequestType;
+          ? 'notify'
+          : 'notify';
 
       await publishNotification({
-        table_number: parseInt(tableNumber, 10),
+        tableNumber: parseInt(tableNumber, 10),
         type: notificationType,
       });
 
