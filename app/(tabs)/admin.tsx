@@ -41,7 +41,7 @@ type TableInfo = {
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
-  const notificationsQuery = useNotifications();
+  const { notifications, isLoading: notificationsLoading } = useNotifications();
   const clearNotification = useClearNotification();
   const clearTableNotifications = useClearTableNotifications();
   const [clearingId, setClearingId] = useState<number | null>(null);
@@ -191,10 +191,10 @@ export default function AdminDashboard() {
 
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            {notificationsQuery.isLoading ? (
+            {notificationsLoading ? (
               <ActivityIndicator color="#5C0000" />
-            ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-              notificationsQuery.data.map((notification) => (
+            ) : notifications.length > 0 ? (
+              notifications.map((notification) => (
                 <View key={notification.id} style={styles.notificationRow}>
                   <Text style={styles.notificationText}>
                     Table {notification.tableNumber} — {notification.type} — {getTimeSince(notification.createdAt)}
@@ -847,11 +847,18 @@ function CategoriesManagement({ onBack }: { onBack: () => void }) {
 
   const { data: menuItems, isLoading, refetch } = trpc.menu.getAll.useQuery();
 
-  const categories = menuItems 
-    ? Array.from(new Set(menuItems.map((item: any) => item.category))).map(categoryName => ({
-        name: categoryName,
-        itemCount: menuItems.filter((item: any) => item.category === categoryName).length
-      }))
+  const categories: { name: string; itemCount: number }[] = menuItems
+    ? menuItems
+        .reduce<string[]>((unique: string[], item: Database['public']['Tables']['menu_items']['Row']) => {
+          if (typeof item?.category === 'string' && item.category.length > 0 && !unique.includes(item.category)) {
+            unique.push(item.category);
+          }
+          return unique;
+        }, [])
+        .map((categoryName: string) => ({
+          name: categoryName,
+          itemCount: menuItems.filter((item: Database['public']['Tables']['menu_items']['Row']) => item.category === categoryName).length,
+        }))
     : [];
 
   const handleDelete = (name: string, itemCount: number) => {

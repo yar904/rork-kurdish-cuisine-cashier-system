@@ -122,9 +122,6 @@ export default function CustomerOrderScreen() {
   }>({ type: null, message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
 
-  const [isSending, setIsSending] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
   const chefHatFloat = useRef(new Animated.Value(0)).current;
@@ -225,7 +222,7 @@ export default function CustomerOrderScreen() {
       
       Alert.alert(
         t.orderSubmitted || 'Order Submitted!',
-        t.orderSentToKitchen || 'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
+        'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
       );
     },
     onError: (error: any) => {
@@ -434,10 +431,36 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const handleNotification = async (type: 'assist' | 'notify') => {
-    const buttonKey = type === 'assist' ? 'waiter' : 'bill';
-    animateButton(buttonKey);
+  const handleCallWaiter = async () => {
+    animateButton('waiter');
+    
+    if (!hasValidTableNumber) {
+      showStatusMessage('❌ Table number not found');
+      return;
+    }
 
+    const now = Date.now();
+    const lastRequest = lastRequestTime.assist || 0;
+    if (now - lastRequest < 10000) {
+      showStatusMessage('⏳ Please wait 10 seconds before calling again');
+      return;
+    }
+
+    console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
+
+    try {
+      await publish({ tableNumber: parsedTableNumber, type: 'assist' });
+      setLastRequestTime(prev => ({ ...prev, assist: now }));
+      showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
+    } catch (error: any) {
+      console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
+      showStatusMessage('❌ Request failed. Please try again or call a waiter manually.');
+    }
+  };
+
+  const handleRequestBill = async () => {
+    animateButton('bill');
+    
     if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
       return;
@@ -453,12 +476,9 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🚨 Sending notification for table:', table, 'type:', type);
 
     try {
-      setIsSending(true);
-      setSuccessMessage('');
-      await publish({ tableNumber: parsedTableNumber, type });
-      setLastRequestTime(prev => ({ ...prev, [type]: now }));
-      setSuccessMessage('✅ Request sent! Our team will assist you shortly.');
-      showStatusMessage('✅ Request sent! Our team will assist you shortly.');
+      await publish({ tableNumber: parsedTableNumber, type: 'bill' });
+      setLastRequestTime(prev => ({ ...prev, bill: now }));
+      showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
       showStatusMessage('❌ Request failed. Please try again or inform staff.');
@@ -1045,19 +1065,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
-                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}> 
-                  {isSending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{'Notify Staff'.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1078,19 +1091,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
-                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>\
-                  {isSending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{'Notify Team'.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
             </View>
@@ -1115,19 +1121,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
-                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>\
-                  {isSending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{'Notify Staff'.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1148,19 +1147,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
-                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}> 
-                  {isSending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{'Notify Team'.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
             </View>

@@ -1,128 +1,193 @@
-// tRPC client configuration
-// Uses EXPO_PUBLIC_TRPC_URL (preferred) to reach the Supabase Edge Function endpoint.
-// Expected final URL: https://opsqnzswjxzvywqjqvjy.functions.supabase.co/tapse-backend
-// Centralized here to avoid previous "Failed to fetch" issues caused by mismatched hosts/paths.
 import { createTRPCReact } from "@trpc/react-query";
 import { createTRPCClient, httpLink } from "@trpc/client";
 import superjson from "superjson";
-import { supabase } from "./supabase";
 import type { AppRouter } from "@/types/trpc";
 
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
-const TRPC_ENDPOINT_PATH = "/tapse-backend";
-const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+const normalizeSupabaseFunctionsUrl = (rawUrl: string) => {
+  try {
+    const parsed = new URL(rawUrl);
+    const hostnameParts = parsed.hostname.split(".");
+    const projectId = hostnameParts[0];
+    const isRestFunctionsPath = parsed.pathname.startsWith("/functions/v1/");
 
-const ensureTrpcEndpoint = (value?: string | null) => {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = stripTrailingSlash(value.trim());
-  if (!normalized) {
-    return null;
-  }
-
-  if (normalized.endsWith(TRPC_ENDPOINT_PATH)) {
-    return normalized;
-  }
-
-  return `${normalized}${TRPC_ENDPOINT_PATH}`;
-};
-
-const resolveSupabaseEdgeUrl = (): string => {
-  const explicitUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_TRPC_URL);
-  if (explicitUrl) {
-    return explicitUrl;
-  }
-
-  const supabaseFunctionsUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
-  if (supabaseFunctionsUrl) {
-    return supabaseFunctionsUrl;
-  }
-
-  const projectRef = process.env.EXPO_PUBLIC_SUPABASE_PROJECT_ID?.trim();
-  if (projectRef) {
-    const derivedUrl = ensureTrpcEndpoint(`https://${projectRef}.functions.supabase.co`);
-    if (derivedUrl) {
-      return derivedUrl;
+    if (!projectId || !isRestFunctionsPath) {
+      return rawUrl;
     }
-  }
 
-  throw new Error(
-    "Missing Supabase Edge Function URL. Please set EXPO_PUBLIC_TRPC_URL, EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL, or EXPO_PUBLIC_SUPABASE_PROJECT_ID.",
-  );
+    const sanitizedPath = parsed.pathname.replace("/functions/v1", "");
+    const rebuiltUrl = `https://${projectId}.functions.supabase.co${sanitizedPath}`;
+
+    if (rawUrl !== rebuiltUrl) {
+      console.warn("[tRPC] Normalized Supabase Functions URL", { rawUrl, rebuiltUrl });
+    }
+
+    return rebuiltUrl;
+  } catch (error) {
+    console.warn("[tRPC] Failed to normalize URL", rawUrl, error);
+    return rawUrl;
+  }
 };
 
-const linkBaseUrl = resolveSupabaseEdgeUrl();
+const resolveTrpcUrl = () => {
+  const envUrl = process.env?.EXPO_PUBLIC_TRPC_URL;
 
-console.log("[tRPC] Using Supabase Edge URL:", linkBaseUrl);
+  if (!envUrl) {
+    throw new Error("EXPO_PUBLIC_TRPC_URL is required for tRPC connectivity.");
+  }
 
-export const getTrpcBaseUrl = () => linkBaseUrl;
+  const normalizedUrl = normalizeSupabaseFunctionsUrl(envUrl);
+  return normalizedUrl.endsWith("/trpc") ? normalizedUrl : `${normalizedUrl}/trpc`;
+};
+
+const resolvedTrpcUrl = resolveTrpcUrl();
+
+console.log("[tRPC] Using Supabase Edge URL:", resolvedTrpcUrl);
+
+export const getTrpcBaseUrl = () => resolvedTrpcUrl;
 
 const getAuthorizationHeader = async () => {
-  try {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session?.access_token;
-    const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  const anonKey = process.env?.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "x-client": "tapse-pos",
-    };
-
-    if (token) {
-      console.log("[tRPC Auth] Using user access token");
-      headers.Authorization = `Bearer ${token}`;
-      return headers;
-    }
-
-    if (anonKey) {
-      console.log("[tRPC Auth] Using anon key fallback");
-      headers.Authorization = `Bearer ${anonKey}`;
-      return headers;
-    }
-
-    console.warn("[tRPC Auth] Missing Supabase credentials; requests will be anonymous");
-    return headers;
-  } catch (error) {
-    console.error("[tRPC Auth] Failed to resolve authorization header", error);
-    throw error instanceof Error ? error : new Error(String(error));
+  if (!anonKey) {
+    throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY; cannot authenticate Supabase Edge requests.");
   }
+
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "x-client": "tapse-pos",
+    apikey: anonKey,
+    Authorization: `Bearer ${anonKey}`,
+  };
 };
+
+const stringifyError = (value: unknown) => {
+  if (value instanceof Error) {
+    return value.message;
+  }
+
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  return String(value);
+};
+
+const logTrpcError = (payload: Record<string, unknown>) => {
+  console.error("[tRPC fetch error]", JSON.stringify(payload, null, 2));
+};
+
+const parseOfflineMessage = (status: number, bodyText?: string) => {
+  if (status !== 503 || !bodyText) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText);
+    if (typeof parsed === "object" && parsed && "error" in parsed) {
+      const errorValue = (parsed as Record<string, unknown>).error;
+      if (errorValue === "offline") {
+        return typeof parsed.message === "string"
+          ? parsed.message
+          : "You appear to be offline. Check your connection and try again.";
+      }
+    }
+  } catch {
+    if (bodyText.toLowerCase().includes("offline")) {
+      return "You appear to be offline. Check your connection and try again.";
+    }
+  }
+
+  return undefined;
+};
+
+const MAX_TRPC_RETRIES = 2;
+const RETRY_DELAY_MS = 600;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const shouldRetry = (status: number) => status === 429 || status >= 500;
 
 export const createTrpcHttpLink = () =>
   httpLink({
-    url: linkBaseUrl,
+    url: resolvedTrpcUrl,
     headers: getAuthorizationHeader,
-    fetch(requestUrl, options) {
-      const normalizedRequestUrl =
-        typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
-
-      const finalOptions: RequestInit = {
+    async fetch(requestUrl, options) {
+      const targetUrl = typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
+      const buildFetchOptions = (): RequestInit => ({
         ...(options ?? {}),
         method: "POST",
-        keepalive: true,
-        credentials: "omit",
+        cache: "no-store",
+      });
+
+      const attemptFetch = async (attempt: number): Promise<Response> => {
+        console.log(`[tRPC] Fetching attempt ${attempt}:`, targetUrl);
+        const fetchOptions = buildFetchOptions();
+
+        try {
+          const response = await fetch(targetUrl, fetchOptions);
+
+          if (!response.ok) {
+            const bodyText = await response.text().catch(() => undefined);
+            const offlineMessage = parseOfflineMessage(response.status, bodyText);
+            const errorDetails = {
+              url: targetUrl,
+              baseUrl: resolvedTrpcUrl,
+              status: response.status,
+              statusText: response.statusText,
+              method: fetchOptions.method ?? "POST",
+              body: fetchOptions.body,
+              responseBody: bodyText,
+              attempt,
+            };
+            logTrpcError(errorDetails);
+
+            if (offlineMessage) {
+              throw new Error(offlineMessage);
+            }
+
+            if (attempt <= MAX_TRPC_RETRIES && shouldRetry(response.status)) {
+              await delay(RETRY_DELAY_MS * attempt);
+              return attemptFetch(attempt + 1);
+            }
+
+            throw new Error(
+              `tRPC fetch failed (${response.status} ${response.statusText}). Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+            );
+          }
+
+          return response;
+        } catch (error: unknown) {
+          const errorMessage = stringifyError(error);
+          logTrpcError({
+            url: targetUrl,
+            baseUrl: resolvedTrpcUrl,
+            method: fetchOptions.method ?? "POST",
+            body: fetchOptions.body,
+            error: errorMessage,
+            stack: error instanceof Error ? error.stack : undefined,
+            attempt,
+          });
+
+          if (attempt <= MAX_TRPC_RETRIES) {
+            await delay(RETRY_DELAY_MS * attempt);
+            return attemptFetch(attempt + 1);
+          }
+
+          throw new Error(
+            `tRPC fetch failed: ${errorMessage}. Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+          );
+        }
       };
 
-      console.log("[tRPC] Fetching:", normalizedRequestUrl);
-
-      return fetch(normalizedRequestUrl, finalOptions).catch((error: any) => {
-        const errorMessage = error?.message || String(error);
-        console.error("[tRPC fetch error]", {
-          url: requestUrl,
-          method: "POST",
-          body: options?.body,
-          error: errorMessage,
-          stack: error?.stack,
-        });
-        throw new Error(
-          `tRPC fetch failed: ${errorMessage || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_TRPC_URL is set correctly.`,
-        );
-      });
+      return attemptFetch(1);
     },
   });
 

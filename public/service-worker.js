@@ -47,8 +47,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (event.request.url.includes('supabase.co')) {
+    return;
+  }
+
   if (event.request.url.includes('/api/') || 
-      event.request.url.includes('supabase.co') ||
       event.request.url.includes('openai.com') ||
       event.request.url.includes('toolkit.rork.com')) {
     event.respondWith(
