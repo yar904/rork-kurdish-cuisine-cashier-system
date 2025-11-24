@@ -51,28 +51,65 @@ const getAuthorizationHeader = async () => {
   };
 };
 
+const stringifyError = (value: unknown) => {
+  if (value instanceof Error) {
+    return value.message;
+  }
+
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  return String(value);
+};
+
 export const createTrpcHttpLink = () =>
   httpLink({
     url: resolvedTrpcUrl,
     headers: getAuthorizationHeader,
-    fetch(requestUrl, options) {
+    async fetch(requestUrl, options) {
       const targetUrl = typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
       console.log("[tRPC] Fetching:", targetUrl);
 
-      return fetch(requestUrl, options).catch((error: any) => {
-        const errorMessage = error?.message || String(error);
+      try {
+        const response = await fetch(requestUrl, options);
+
+        if (!response.ok) {
+          const bodyText = await response.text().catch(() => undefined);
+          const errorDetails = {
+            url: targetUrl,
+            baseUrl: resolvedTrpcUrl,
+            status: response.status,
+            statusText: response.statusText,
+            method: options?.method ?? "POST",
+            body: options?.body,
+            responseBody: bodyText,
+          };
+          console.error("[tRPC fetch error]", errorDetails);
+          throw new Error(
+            `tRPC fetch failed (${response.status} ${response.statusText}). Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+          );
+        }
+
+        return response;
+      } catch (error: unknown) {
+        const errorMessage = stringifyError(error);
         console.error("[tRPC fetch error]", {
           url: targetUrl,
           baseUrl: resolvedTrpcUrl,
           method: options?.method ?? "POST",
           body: options?.body,
           error: errorMessage,
-          stack: error?.stack,
+          stack: error instanceof Error ? error.stack : undefined,
         });
         throw new Error(
-          `tRPC fetch failed: ${errorMessage || "Unknown error"}. Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
+          `tRPC fetch failed: ${errorMessage}. Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
         );
-      });
+      }
     },
   });
 
