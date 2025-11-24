@@ -6,6 +6,31 @@ import type { AppRouter } from "@/types/trpc";
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
+const normalizeSupabaseFunctionsUrl = (rawUrl: string) => {
+  try {
+    const parsed = new URL(rawUrl);
+    const hostnameParts = parsed.hostname.split(".");
+    const projectId = hostnameParts[0];
+    const isRestFunctionsPath = parsed.pathname.startsWith("/functions/v1/");
+
+    if (!projectId || !isRestFunctionsPath) {
+      return rawUrl;
+    }
+
+    const sanitizedPath = parsed.pathname.replace("/functions/v1", "");
+    const rebuiltUrl = `https://${projectId}.functions.supabase.co${sanitizedPath}`;
+
+    if (rawUrl !== rebuiltUrl) {
+      console.warn("[tRPC] Normalized Supabase Functions URL", { rawUrl, rebuiltUrl });
+    }
+
+    return rebuiltUrl;
+  } catch (error) {
+    console.warn("[tRPC] Failed to normalize URL", rawUrl, error);
+    return rawUrl;
+  }
+};
+
 const resolveTrpcUrl = () => {
   const envUrl = process.env?.EXPO_PUBLIC_TRPC_URL;
 
@@ -13,7 +38,8 @@ const resolveTrpcUrl = () => {
     throw new Error("EXPO_PUBLIC_TRPC_URL is required for tRPC connectivity.");
   }
 
-  return envUrl.endsWith("/trpc") ? envUrl : `${envUrl}/trpc`;
+  const normalizedUrl = normalizeSupabaseFunctionsUrl(envUrl);
+  return normalizedUrl.endsWith("/trpc") ? normalizedUrl : `${normalizedUrl}/trpc`;
 };
 
 const resolvedTrpcUrl = resolveTrpcUrl();
