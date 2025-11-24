@@ -141,7 +141,7 @@ const buildInsights = (
       id: "legacy-path",
       title: "tRPC URL still points to /functions/v1",
       description:
-        "Supabase Edge Functions expect requests on the *.functions.supabase.co domain. Remove /functions/v1 from EXPO_PUBLIC_TRPC_URL and use the dedicated functions subdomain ending with /tapse-backend/trpc.",
+        "Supabase Edge Functions expect requests on the *.functions.supabase.co domain. Remove /functions/v1 from EXPO_PUBLIC_TRPC_URL and update every Netlify deploy context (Production, Deploy Previews, Branch deploys, Local CLI) so they all use the functions subdomain ending with /tapse-backend/trpc.",
       severity: "warning",
     });
   }
