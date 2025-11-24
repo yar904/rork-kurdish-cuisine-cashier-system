@@ -11,7 +11,8 @@ import type { AppRouter } from "@/types/trpc";
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
-const TRPC_ENDPOINT_PATH = "/tapse-backend";
+const DEFAULT_FUNCTION_NAME = "tapse-backend";
+const TRPC_SUFFIX = "/trpc";
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
 const collapseDoubleSlashes = (value: string) => {
   if (!value) {
@@ -26,6 +27,19 @@ const collapseDoubleSlashes = (value: string) => {
   const sanitizedPath = rest.join("://").replace(/\/{2,}/g, "/");
   return `${protocol}://${sanitizedPath}`;
 };
+const removeDuplicateEdgeSegments = (value: string) =>
+  value.replace(/\/functions\/v1\/functions(?=\/|$)/g, "/functions/v1");
+const sanitizeUrl = (value: string) => collapseDoubleSlashes(removeDuplicateEdgeSegments(value));
+const appendPathSegment = (base: string, segment: string) =>
+  sanitizeUrl(`${stripTrailingSlash(base)}/${segment.replace(/^\/+/, "")}`);
+const ensureTrpcSuffix = (value: string) => {
+  const sanitized = stripTrailingSlash(value);
+  if (sanitized.endsWith(TRPC_SUFFIX)) {
+    return sanitized;
+  }
+
+  return `${sanitized}${TRPC_SUFFIX}`;
+};
 const readEnv = (key: string) => {
   if (typeof process !== "undefined" && process.env) {
     return process.env[key];
@@ -38,7 +52,10 @@ const readEnv = (key: string) => {
   return undefined;
 };
 
-const ensureTrpcEndpoint = (value?: string | null) => {
+const buildTrpcEndpoint = (
+  value?: string | null,
+  options?: { injectDefaultFunction?: boolean },
+) => {
   if (!value) {
     return null;
   }
@@ -48,33 +65,35 @@ const ensureTrpcEndpoint = (value?: string | null) => {
     return null;
   }
 
-  const normalizedBase = collapseDoubleSlashes(stripTrailingSlash(trimmed));
+  let normalized = sanitizeUrl(trimmed);
 
-  if (!normalizedBase) {
-    return null;
+  if (options?.injectDefaultFunction) {
+    normalized = appendPathSegment(normalized, DEFAULT_FUNCTION_NAME);
   }
 
-  if (normalizedBase.endsWith(TRPC_ENDPOINT_PATH)) {
-    return normalizedBase;
-  }
+  normalized = sanitizeUrl(ensureTrpcSuffix(normalized));
 
-  return collapseDoubleSlashes(`${normalizedBase}${TRPC_ENDPOINT_PATH}`);
+  return normalized;
 };
 
 const resolveSupabaseEdgeUrl = (): string => {
-  const explicitUrl = ensureTrpcEndpoint(readEnv("EXPO_PUBLIC_TRPC_URL"));
+  const explicitUrl = buildTrpcEndpoint(readEnv("EXPO_PUBLIC_TRPC_URL"));
   if (explicitUrl) {
     return explicitUrl;
   }
 
-  const supabaseFunctionsUrl = ensureTrpcEndpoint(readEnv("EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL"));
+  const supabaseFunctionsUrl = buildTrpcEndpoint(readEnv("EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL"), {
+    injectDefaultFunction: true,
+  });
   if (supabaseFunctionsUrl) {
     return supabaseFunctionsUrl;
   }
 
   const projectRef = readEnv("EXPO_PUBLIC_SUPABASE_PROJECT_ID")?.trim();
   if (projectRef) {
-    const derivedUrl = ensureTrpcEndpoint(`https://${projectRef}.functions.supabase.co`);
+    const derivedUrl = buildTrpcEndpoint(`https://${projectRef}.functions.supabase.co`, {
+      injectDefaultFunction: true,
+    });
     if (derivedUrl) {
       return derivedUrl;
     }
