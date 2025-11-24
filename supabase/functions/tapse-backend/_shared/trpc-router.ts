@@ -703,18 +703,11 @@ const ordersRouter = createTRPCRouter({
 type NotificationRow = {
   id: number;
   table_number: number;
-  type: "assist" | "notify";
+  type: "assist" | "bill" | "notify";
   created_at: string;
 };
 
-export type Notification = {
-  id: number;
-  tableNumber: number;
-  type: "assist" | "notify";
-  createdAt: string;
-};
-
-const mapNotification = (record: NotificationRow): Notification => ({
+const mapNotification = (record: NotificationRecord) => ({
   id: record.id,
   tableNumber: record.table_number,
   type: record.type,
@@ -726,7 +719,7 @@ const notificationsRouter = createTRPCRouter({
     .input(
       z.object({
         tableNumber: z.number(),
-        type: z.enum(["assist", "notify"]),
+        type: z.enum(["assist", "bill", "notify"]),
       }),
     )
     .mutation(async ({ input }) => {
@@ -744,7 +737,7 @@ const notificationsRouter = createTRPCRouter({
         throw new Error("Failed to publish notification");
       }
 
-      return mapNotification(data as NotificationRow);
+      return mapNotification(data as NotificationRecord);
     }),
   list: publicProcedure.query(async () => {
     const { data, error } = await supabase
@@ -757,7 +750,7 @@ const notificationsRouter = createTRPCRouter({
       throw new Error("Failed to fetch notifications");
     }
 
-    return (data ?? []).map((record) => mapNotification(record as NotificationRow));
+    return (data ?? []).map((record) => mapNotification(record as NotificationRecord));
   }),
   clear: publicProcedure
     .input(z.object({ id: z.number() }))

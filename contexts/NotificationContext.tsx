@@ -5,13 +5,18 @@ import { useRealtime } from "@/contexts/RealtimeContext";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { Notification } from "@/types/restaurant";
 
-export type NotificationType = "assist" | "notify";
+export type NotificationType = "assist" | "bill" | "notify";
 
-export type TableNotification = Notification;
+export type TableNotification = {
+  id: number;
+  tableNumber: number;
+  type: NotificationType;
+  createdAt: string;
+};
 
 type PublishInput = {
   tableNumber: number;
-  type: NotificationType;
+  type?: NotificationType;
 };
 
 type NotificationContextValue = {
@@ -26,14 +31,7 @@ type NotificationContextValue = {
   clearAll: () => Promise<void>;
 };
 
-type NotificationRow = {
-  id: number;
-  table_number: number;
-  type: NotificationType;
-  created_at: string;
-};
-
-const mapNotificationRow = (record: NotificationRow): TableNotification => ({
+const mapNotificationRecord = (record: NotificationRecord): TableNotification => ({
   id: record.id,
   tableNumber: record.table_number,
   type: record.type,
@@ -87,10 +85,11 @@ export const [NotificationProvider, useNotificationsContext] =
 
         const created = await publishMutation.mutateAsync({
           tableNumber: input.tableNumber,
-          type: input.type,
+          type: input.type ?? "notify",
         });
 
-        setNotifications((prev) => [created, ...prev.filter((item) => item.id !== created.id)]);
+        const mapped = mapNotificationRecord(created as NotificationRecord);
+        setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
         await utils.notifications.list.invalidate();
         return created;
       },
