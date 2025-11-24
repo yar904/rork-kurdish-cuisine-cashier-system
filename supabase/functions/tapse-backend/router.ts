@@ -39,7 +39,7 @@ export function handleRequest(request: Request): Promise<Response> {
   //   curl -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
   //        -H "Content-Type: application/json" \
   //        --data '{"id":0,"method":"query","params":{"input":null,"path":"menu.getAll"}}' \
-  //        https://oqspnszwjxzyvwqjvjiy.functions.supabase.co/tapse-backend/trpc
+  //        https://opsqnzswjxzvywqjqvjy.functions.supabase.co/tapse-backend/trpc
   return fetchRequestHandler({
     endpoint: TRPC_ENDPOINT,
     req: request,
