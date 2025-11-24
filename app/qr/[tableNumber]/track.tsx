@@ -86,6 +86,8 @@ export default function TrackOrderPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const publishNotification = usePublishNotification();
+  const [isSending, setIsSending] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const tableNum = parseInt(String(tableNumber), 10);
 
@@ -103,14 +105,17 @@ export default function TrackOrderPage() {
     setIsSending(true);
     try {
       await publishNotification({
-        table_number: tableNum,
-        type: requestType === 'help' ? 'call_waiter' : 'request_bill',
+        tableNumber: tableNum,
+        type: requestType === 'help' ? 'assist' : 'notify',
       });
 
+      const confirmation = 'Request sent! Our team will assist you shortly.';
+      setSuccessMessage(confirmation);
+
       if (Platform.OS === 'web') {
-        alert(successMessage);
+        alert(confirmation);
       } else {
-        Alert.alert('Success', successMessage);
+        Alert.alert('Success', confirmation);
       }
     } catch (error) {
       console.error('Failed to send service request:', error);
@@ -273,29 +278,34 @@ export default function TrackOrderPage() {
           <TouchableOpacity
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('help')}
+            disabled={isSending}
             activeOpacity={0.8}
           >
             <HandHeart size={20} color="#5C0000" />
-            <Text style={styles.serviceButtonText}>Call Waiter</Text>
+            <Text style={styles.serviceButtonText}>Notify Staff</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('bill')}
+            disabled={isSending}
             activeOpacity={0.8}
           >
             <Receipt size={20} color="#5C0000" />
-            <Text style={styles.serviceButtonText}>Request Bill</Text>
+            <Text style={styles.serviceButtonText}>Notify Team</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.serviceButton}
             onPress={() => handleServiceRequest('other')}
             activeOpacity={0.8}
+            disabled={isSending}
           >
             <AlertCircle size={20} color="#5C0000" />
             <Text style={styles.serviceButtonText}>Report Issue</Text>
           </TouchableOpacity>
+
+          {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
         </View>
       )}
     </SafeAreaView>
@@ -663,5 +673,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#5C0000',
+  },
+  successText: {
+    width: '100%',
+    textAlign: 'center',
+    color: '#0A7B34',
+    marginTop: 12,
+    fontWeight: '600' as const,
   },
 });

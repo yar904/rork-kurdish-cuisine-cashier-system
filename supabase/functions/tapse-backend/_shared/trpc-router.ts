@@ -20,6 +20,34 @@ const exampleRouter = createTRPCRouter({
     })),
 });
 
+type MenuItemRow = {
+  id: string;
+  name: string;
+  name_kurdish: string;
+  name_arabic: string;
+  category: string;
+  price: number;
+  description: string;
+  description_kurdish: string;
+  description_arabic: string;
+  image: string | null;
+  available: boolean;
+};
+
+const mapMenuItem = (item: MenuItemRow) => ({
+  id: item.id,
+  name: item.name,
+  nameKurdish: item.name_kurdish,
+  nameArabic: item.name_arabic,
+  category: item.category,
+  price: item.price,
+  description: item.description,
+  descriptionKurdish: item.description_kurdish,
+  descriptionArabic: item.description_arabic,
+  image: item.image,
+  available: item.available,
+});
+
 const menuRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
     const { data, error } = await supabase
@@ -32,19 +60,7 @@ const menuRouter = createTRPCRouter({
       throw new Error("Failed to fetch menu items");
     }
 
-    return (data ?? []).map((item) => ({
-      id: item.id,
-      name: item.name,
-      nameKurdish: item.name_kurdish,
-      nameArabic: item.name_arabic,
-      category: item.category,
-      price: item.price,
-      description: item.description,
-      descriptionKurdish: item.description_kurdish,
-      descriptionArabic: item.description_arabic,
-      image: item.image,
-      available: item.available,
-    }));
+    return (data ?? []).map((item) => mapMenuItem(item as MenuItemRow));
   }),
   create: publicProcedure
     .input(
@@ -89,7 +105,7 @@ const menuRouter = createTRPCRouter({
         throw new Error("Failed to create menu item");
       }
 
-      return data;
+      return mapMenuItem(data as MenuItemRow);
     }),
   update: publicProcedure
     .input(
@@ -154,7 +170,7 @@ const menuRouter = createTRPCRouter({
         throw new Error("Failed to update menu item");
       }
 
-      return data;
+      return mapMenuItem(data as MenuItemRow);
     }),
   delete: publicProcedure
     .input(z.object({ id: z.string().min(1, "ID is required") }))
@@ -684,61 +700,66 @@ const ordersRouter = createTRPCRouter({
   }),
 });
 
-export type NotificationRecord = {
+type NotificationRow = {
   id: number;
   table_number: number;
-  type: string;
+  type: "assist" | "notify";
   created_at: string;
 };
+
+export type Notification = {
+  id: number;
+  tableNumber: number;
+  type: "assist" | "notify";
+  createdAt: string;
+};
+
+const mapNotification = (record: NotificationRow): Notification => ({
+  id: record.id,
+  tableNumber: record.table_number,
+  type: record.type,
+  createdAt: record.created_at,
+});
 
 const notificationsRouter = createTRPCRouter({
   publish: publicProcedure
     .input(
       z.object({
-        table_number: z.number(),
-        type: z.string(),
+        tableNumber: z.number(),
+        type: z.enum(["assist", "notify"]),
       }),
     )
     .mutation(async ({ input }) => {
       const { data, error } = await supabase
         .from("notifications")
         .insert({
-          table_number: input.table_number,
+          table_number: input.tableNumber,
           type: input.type,
         })
         .select("id, table_number, type, created_at")
         .single();
 
-      if (error) {
+      if (error || !data) {
         console.error("Error publishing notification:", error);
         throw new Error("Failed to publish notification");
       }
 
-      return data;
+      return mapNotification(data as NotificationRow);
     }),
-  list: publicProcedure
-    .input(z.object({ since: z.string().nullable().optional() }).optional())
-    .query(async ({ input }) => {
-      let query = supabase
-        .from("notifications")
-        .select("id, table_number, type, created_at")
-        .order("created_at", { ascending: false })
-        .limit(50);
+  list: publicProcedure.query(async () => {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("id, table_number, type, created_at")
+      .order("created_at", { ascending: false });
 
-      if (input?.since) {
-        query = query.gt("created_at", input.since);
-      }
+    if (error) {
+      console.error("Error fetching notifications:", error);
+      throw new Error("Failed to fetch notifications");
+    }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching notifications:", error);
-        throw new Error("Failed to fetch notifications");
-      }
-
-      return data ?? [];
-    }),
-  clearById: publicProcedure
+    return (data ?? []).map((record) => mapNotification(record as NotificationRow));
+  }),
+  clear: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const { error } = await supabase.from("notifications").delete().eq("id", input.id);
@@ -751,12 +772,12 @@ const notificationsRouter = createTRPCRouter({
       return { success: true };
     }),
   clearByTable: publicProcedure
-    .input(z.object({ table_number: z.number() }))
+    .input(z.object({ tableNumber: z.number() }))
     .mutation(async ({ input }) => {
       const { error } = await supabase
         .from("notifications")
         .delete()
-        .eq("table_number", input.table_number);
+        .eq("table_number", input.tableNumber);
 
       if (error) {
         console.error("Error clearing notifications for table:", error);

@@ -8,6 +8,7 @@ type RealtimeContextType = {
   isConnected: boolean;
   subscribeToOrders: (callback: (payload: RealtimePayload) => void) => () => void;
   subscribeToMenuItems: (callback: (payload: RealtimePayload) => void) => () => void;
+  subscribeToOrderTracking: (callback: (payload: RealtimePayload) => void) => () => void;
   subscribeToNotifications: (callback: (payload: RealtimePayload) => void) => () => void;
 };
 
@@ -75,6 +76,31 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   };
 
+  const subscribeToOrderTracking = (callback: (payload: RealtimePayload) => void) => {
+    console.log('[Realtime] Subscribing to order_tracking table');
+
+    const channel: RealtimeChannel = supabase
+      .channel('order-tracking-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'order_tracking',
+        },
+        (payload) => {
+          console.log('[Realtime] Order tracking change:', payload);
+          callback(payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('[Realtime] Unsubscribing from order tracking');
+      channel.unsubscribe();
+    };
+  };
+
   const subscribeToNotifications = (callback: (payload: RealtimePayload) => void) => {
     console.log('[Realtime] Subscribing to notifications table');
 
@@ -118,6 +144,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
         isConnected,
         subscribeToOrders,
         subscribeToMenuItems,
+        subscribeToOrderTracking,
         subscribeToNotifications,
       }}
     >

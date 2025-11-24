@@ -23,9 +23,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpcClient } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpc';
 import { supabase } from '@/lib/supabase';
-import { CATEGORY_NAMES, MENU_ITEMS } from '@/constants/menu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -117,21 +116,14 @@ export default function CustomerOrderScreen() {
   });
 
   const [requestStatus, setRequestStatus] = useState<{
-    type: 'assist' | 'bill' | null;
+    type: 'assist' | 'notify' | null;
     message: string;
     visible: boolean;
   }>({ type: null, message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
 
-  const callWaiterMutation = useMutation({
-    mutationFn: async (tableNumber: number) =>
-      publish({ tableNumber, type: 'assist' }),
-  });
-
-  const requestBillMutation = useMutation({
-    mutationFn: async (tableNumber: number) =>
-      publish({ tableNumber, type: 'bill' }),
-  });
+  const [isSending, setIsSending] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
@@ -142,34 +134,12 @@ export default function CustomerOrderScreen() {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const plateRotate = useRef(new Animated.Value(0)).current;
 
-  const menuQuery = useQuery({
-    queryKey: ['menu-items'],
-    queryFn: async () => {
-      console.log('[CustomerOrder] Fetching menu items from Supabase');
-      try {
-        const { data, error } = await supabase
-          .from('menu_items')
-          .select('*')
-          .eq('available', true)
-          .order('category', { ascending: true });
-        
-        if (error) {
-          console.warn('[CustomerOrder] Could not fetch menu from database, using fallback data:', error.message);
-          return MENU_ITEMS;
-        }
-        console.log('[CustomerOrder] ✅ Menu items loaded:', data?.length);
-        return data && data.length > 0 ? data : MENU_ITEMS;
-      } catch (err) {
-        console.error('[CustomerOrder] Error fetching menu:', err);
-        return MENU_ITEMS;
-      }
-    },
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
     retry: false,
   });
-  
-  const menuData = menuQuery.data || MENU_ITEMS;
+
+  const menuData = menuQuery.data || [];
   
   const ratingsStatsQuery = useQuery({
     queryKey: ['ratings-stats'],
@@ -269,7 +239,7 @@ export default function CustomerOrderScreen() {
     },
   });
 
-  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; bill?: number }>({});
+  const [lastRequestTime, setLastRequestTime] = useState<{ assist?: number; notify?: number }>({});
 
   const categories = useMemo(() => {
     const cats = new Set(menuData?.map(item => item.category) || []);
@@ -464,61 +434,36 @@ export default function CustomerOrderScreen() {
     ]).start();
   };
 
-  const handleCallWaiter = async () => {
-    animateButton('waiter');
-    
+  const handleNotification = async (type: 'assist' | 'notify') => {
+    const buttonKey = type === 'assist' ? 'waiter' : 'bill';
+    animateButton(buttonKey);
+
     if (!hasValidTableNumber) {
       showStatusMessage('❌ Table number not found');
       return;
     }
 
     const now = Date.now();
-    const lastRequest = lastRequestTime.assist || 0;
+    const lastRequest = lastRequestTime[type] || 0;
     if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait 10 seconds before calling again');
+      showStatusMessage('⏳ Please wait 10 seconds before sending again');
       return;
     }
 
-    console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
+    console.log('[CustomerOrder] 🚨 Sending notification for table:', table, 'type:', type);
 
     try {
-      await callWaiterMutation.mutateAsync(parsedTableNumber);
-
-      setLastRequestTime(prev => ({ ...prev, assist: now }));
-
-      showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
+      setIsSending(true);
+      setSuccessMessage('');
+      await publish({ tableNumber: parsedTableNumber, type });
+      setLastRequestTime(prev => ({ ...prev, [type]: now }));
+      setSuccessMessage('✅ Request sent! Our team will assist you shortly.');
+      showStatusMessage('✅ Request sent! Our team will assist you shortly.');
     } catch (error: any) {
-      console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
-      showStatusMessage('❌ Request failed. Please try again or call a waiter manually.');
-    }
-  };
-
-  const handleRequestBill = async () => {
-    animateButton('bill');
-    
-    if (!hasValidTableNumber) {
-      showStatusMessage('❌ Table number not found');
-      return;
-    }
-
-    const now = Date.now();
-    const lastRequest = lastRequestTime.bill || 0;
-    if (now - lastRequest < 10000) {
-      showStatusMessage('⏳ Please wait 10 seconds before requesting again');
-      return;
-    }
-
-    console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
-
-    try {
-      await requestBillMutation.mutateAsync(parsedTableNumber);
-
-      setLastRequestTime(prev => ({ ...prev, bill: now }));
-
-      showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
-    } catch (error: any) {
-      console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);
-      showStatusMessage('❌ Request failed. Please try again or ask your waiter.');
+      console.error('[CustomerOrder] ❌ Notification failed:', error?.message || error);
+      showStatusMessage('❌ Request failed. Please try again or inform staff.');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -1096,27 +1041,27 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
+                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}> 
+                  {isSending ? (
                     <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{'Notify Staff'.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.actionButton, styles.actionButtonPrimary]}
                 onPress={handleViewOrder}
                 activeOpacity={0.7}
@@ -1129,21 +1074,21 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
+                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>\
+                  {isSending ? (
                     <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{'Notify Team'.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1166,21 +1111,21 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleCallWaiter}
+                onPress={() => handleNotification('assist')}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
+                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>\
+                  {isSending ? (
                     <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{'Notify Staff'.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1199,21 +1144,21 @@ export default function CustomerOrderScreen() {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.actionButton}
-                onPress={handleRequestBill}
+                onPress={() => handleNotification('notify')}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
+                disabled={isSending}
               >
-                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
+                <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}> 
+                  {isSending ? (
                     <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
                   ) : (
                     <>
                       <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
                         <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
                       </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
+                      <Text style={styles.actionButtonText}>{'Notify Team'.replace(' ', "\n")}</Text>
                     </>
                   )}
                 </Animated.View>
@@ -1318,13 +1263,13 @@ export default function CustomerOrderScreen() {
       </Modal>
 
       {requestStatus.visible && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.statusToast,
             { opacity: statusOpacity }
           ]}
         >
-          <Text style={styles.statusToastText}>{requestStatus.message}</Text>
+          <Text style={styles.statusToastText}>{successMessage || requestStatus.message}</Text>
         </Animated.View>
       )}
 
