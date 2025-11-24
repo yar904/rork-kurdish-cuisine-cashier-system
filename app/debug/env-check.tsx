@@ -12,13 +12,84 @@ import { Stack } from "expo-router";
 import { getTrpcBaseUrl, trpcClient } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
 
+type HealthCheck = {
+  success: boolean;
+  message: string;
+  data?: unknown;
+};
+
+type TestResults = {
+  envVars: Record<string, string | undefined>;
+  supabaseTest: HealthCheck;
+  trpcTest: HealthCheck;
+};
+
+type InsightSeverity = "error" | "warning" | "info";
+
+type Insight = {
+  id: string;
+  title: string;
+  description: string;
+  severity: InsightSeverity;
+};
+
+const buildInsights = (
+  envVars: TestResults["envVars"],
+  supabaseTest: HealthCheck,
+  trpcTest: HealthCheck,
+): Insight[] => {
+  const insights: Insight[] = [];
+  const missingEnv = Object.entries(envVars).filter(
+    ([key, value]) => !value || value === "Missing",
+  );
+
+  if (missingEnv.length > 0) {
+    insights.push({
+      id: "env",
+      title: "Environment variables missing",
+      description: `Set ${missingEnv.map(([key]) => key).join(", ")} in your .env to allow the client to reach Supabase and tRPC endpoints. Restart Expo after updating them so process.env refreshes.`,
+      severity: "error",
+    });
+  }
+
+  if (!supabaseTest.success) {
+    insights.push({
+      id: "supabase",
+      title: "Supabase connectivity failing",
+      description:
+        "Verify EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY point to an active project and that RLS policies allow read access for anon requests.",
+      severity: "error",
+    });
+  }
+
+  if (!trpcTest.success) {
+    const offlineTriggered = trpcTest.message.toLowerCase().includes("offline");
+    insights.push({
+      id: "trpc",
+      title: offlineTriggered ? "Client is offline" : "tRPC fetch failed",
+      description: offlineTriggered
+        ? "The Supabase Edge Function returned an offline payload (503). Double-check local internet connectivity or firewall restrictions blocking https://oqspnszwjxzyvwqjvjiy.supabase.co."
+        : `Confirm EXPO_PUBLIC_TRPC_URL resolves to your Supabase Edge Function deployment and that that function is healthy. You can hit ${envVars.RESOLVED_TRPC_URL} in a browser to confirm.`,
+      severity: offlineTriggered ? "warning" : "error",
+    });
+  }
+
+  if (insights.length === 0) {
+    insights.push({
+      id: "healthy",
+      title: "Everything looks good",
+      description: "All env vars loaded and connections succeeded.",
+      severity: "info",
+    });
+  }
+
+  return insights;
+};
+
 export default function EnvCheckScreen() {
   const [loading, setLoading] = useState(false);
-  const [testResults, setTestResults] = useState<{
-    envVars: Record<string, string | undefined>;
-    supabaseTest: { success: boolean; message: string };
-    trpcTest: { success: boolean; message: string; data?: any };
-  } | null>(null);
+  const [testResults, setTestResults] = useState<TestResults | null>(null);
+  const [insights, setInsights] = useState<Insight[]>([]);
 
   const runTests = async () => {
     setLoading(true);
@@ -34,9 +105,9 @@ export default function EnvCheckScreen() {
         RESOLVED_TRPC_URL: getTrpcBaseUrl(),
       };
 
-      let supabaseTest = { success: false, message: "" };
+      let supabaseTest: HealthCheck = { success: false, message: "" };
       try {
-        const { data, error } = await supabase.from("menu_items").select("id").limit(1);
+        const { error } = await supabase.from("menu_items").select("id").limit(1);
         if (error) {
           supabaseTest = {
             success: false,
@@ -55,7 +126,7 @@ export default function EnvCheckScreen() {
         };
       }
 
-      let trpcTest: { success: boolean; message: string; data?: any } = {
+      let trpcTest: HealthCheck = {
         success: false,
         message: "",
       };
@@ -74,6 +145,7 @@ export default function EnvCheckScreen() {
       }
 
       setTestResults({ envVars, supabaseTest, trpcTest });
+      setInsights(buildInsights(envVars, supabaseTest, trpcTest));
     } catch (err: any) {
       console.error("Test error:", err);
     }
@@ -103,10 +175,10 @@ export default function EnvCheckScreen() {
 
         {testResults && (
           <>
-            <View style={styles.section}>
+            <View style={styles.section} testID="env-section">
               <Text style={styles.sectionTitle}>Environment Variables</Text>
               {Object.entries(testResults.envVars).map(([key, value]) => (
-                <View key={key} style={styles.row}>
+                <View key={key} style={styles.row} testID={`env-row-${key}`}>
                   <Text style={styles.label}>{key}:</Text>
                   <Text
                     style={[
@@ -122,7 +194,7 @@ export default function EnvCheckScreen() {
               ))}
             </View>
 
-            <View style={styles.section}>
+            <View style={styles.section} testID="supabase-section">
               <Text style={styles.sectionTitle}>Supabase Connection</Text>
               <View
                 style={[
@@ -139,7 +211,7 @@ export default function EnvCheckScreen() {
               </View>
             </View>
 
-            <View style={styles.section}>
+            <View style={styles.section} testID="trpc-section">
               <Text style={styles.sectionTitle}>tRPC Connection</Text>
               <View
                 style={[
@@ -154,8 +226,8 @@ export default function EnvCheckScreen() {
                   {testResults.trpcTest.message}
                 </Text>
               </View>
-              {testResults.trpcTest.data && (
-                <View style={styles.dataPreview}>
+              {Array.isArray(testResults.trpcTest.data) && (
+                <View style={styles.dataPreview} testID="trpc-data">
                   <Text style={styles.dataLabel}>Sample Data:</Text>
                   <Text style={styles.dataText} numberOfLines={5}>
                     {JSON.stringify(testResults.trpcTest.data.slice(0, 2), null, 2)}
@@ -164,7 +236,26 @@ export default function EnvCheckScreen() {
               )}
             </View>
 
-            <TouchableOpacity style={styles.retryButton} onPress={runTests}>
+            <View style={styles.section} testID="insights-section">
+              <Text style={styles.sectionTitle}>Troubleshooting Guidance</Text>
+              {insights.map((insight) => (
+                <View
+                  key={insight.id}
+                  style={[
+                    styles.insightCard,
+                    insight.severity === "error" && styles.insightError,
+                    insight.severity === "warning" && styles.insightWarning,
+                    insight.severity === "info" && styles.insightInfo,
+                  ]}
+                  testID={`insight-${insight.id}`}
+                >
+                  <Text style={styles.insightTitle}>{insight.title}</Text>
+                  <Text style={styles.insightDescription}>{insight.description}</Text>
+                </View>
+              ))}
+            </View>
+
+            <TouchableOpacity style={styles.retryButton} onPress={runTests} testID="retry-tests">
               <Text style={styles.retryButtonText}>Re-run Tests</Text>
             </TouchableOpacity>
           </>
@@ -280,5 +371,36 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  insightCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  insightTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+    color: "#2C1810",
+  },
+  insightDescription: {
+    fontSize: 14,
+    color: "#3A3A3A",
+    lineHeight: 20,
+  },
+  insightError: {
+    backgroundColor: "#FEECEC",
+    borderWidth: 1,
+    borderColor: "#E53935",
+  },
+  insightWarning: {
+    backgroundColor: "#FFF4E5",
+    borderWidth: 1,
+    borderColor: "#FB8C00",
+  },
+  insightInfo: {
+    backgroundColor: "#E7F3FF",
+    borderWidth: 1,
+    borderColor: "#42A5F5",
   },
 });
