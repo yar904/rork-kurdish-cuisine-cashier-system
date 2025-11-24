@@ -95,12 +95,18 @@ export const createTrpcHttpLink = () =>
     headers: getAuthorizationHeader,
     async fetch(requestUrl, options) {
       const targetUrl = typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
+      const buildFetchOptions = (): RequestInit => ({
+        ...(options ?? {}),
+        method: "POST",
+        cache: "no-store",
+      });
 
       const attemptFetch = async (attempt: number): Promise<Response> => {
         console.log(`[tRPC] Fetching attempt ${attempt}:`, targetUrl);
+        const fetchOptions = buildFetchOptions();
 
         try {
-          const response = await fetch(targetUrl, options);
+          const response = await fetch(targetUrl, fetchOptions);
 
           if (!response.ok) {
             const bodyText = await response.text().catch(() => undefined);
@@ -110,8 +116,8 @@ export const createTrpcHttpLink = () =>
               baseUrl: resolvedTrpcUrl,
               status: response.status,
               statusText: response.statusText,
-              method: options?.method ?? "POST",
-              body: options?.body,
+              method: fetchOptions.method ?? "POST",
+              body: fetchOptions.body,
               responseBody: bodyText,
               attempt,
             };
@@ -137,8 +143,8 @@ export const createTrpcHttpLink = () =>
           logTrpcError({
             url: targetUrl,
             baseUrl: resolvedTrpcUrl,
-            method: options?.method ?? "POST",
-            body: options?.body,
+            method: fetchOptions.method ?? "POST",
+            body: fetchOptions.body,
             error: errorMessage,
             stack: error instanceof Error ? error.stack : undefined,
             attempt,
