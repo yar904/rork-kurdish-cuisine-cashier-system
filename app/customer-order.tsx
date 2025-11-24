@@ -123,16 +123,6 @@ export default function CustomerOrderScreen() {
   }>({ type: null, message: '', visible: false });
   const statusOpacity = useRef(new Animated.Value(0)).current;
 
-  const callWaiterMutation = useMutation({
-    mutationFn: async (tableNumber: number) =>
-      publish({ tableNumber, type: 'assist' }),
-  });
-
-  const requestBillMutation = useMutation({
-    mutationFn: async (tableNumber: number) =>
-      publish({ tableNumber, type: 'bill' }),
-  });
-
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const chefFloatY = useRef(new Animated.Value(0)).current;
   const chefHatFloat = useRef(new Animated.Value(0)).current;
@@ -255,7 +245,7 @@ export default function CustomerOrderScreen() {
       
       Alert.alert(
         t.orderSubmitted || 'Order Submitted!',
-        t.orderSentToKitchen || 'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
+        'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
       );
     },
     onError: (error: any) => {
@@ -482,10 +472,8 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 📞 Initiating call waiter for table:', table);
 
     try {
-      await callWaiterMutation.mutateAsync(parsedTableNumber);
-
+      await publish({ tableNumber: parsedTableNumber, type: 'assist' });
       setLastRequestTime(prev => ({ ...prev, assist: now }));
-
       showStatusMessage('✅ Waiter called! Someone will assist you shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Call waiter failed:', error?.message || error);
@@ -511,7 +499,7 @@ export default function CustomerOrderScreen() {
     console.log('[CustomerOrder] 🧾 Initiating bill request for table:', table);
 
     try {
-      await requestBillMutation.mutateAsync(parsedTableNumber);
+      await publish({ tableNumber: parsedTableNumber, type: 'bill' });
       setLastRequestTime(prev => ({ ...prev, bill: now }));
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
@@ -1098,19 +1086,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1131,19 +1112,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
             </View>
@@ -1168,19 +1142,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleCallWaiter}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.waiter }] }]}>
-                  {callWaiterMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <ChefHat size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.callWaiter.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -1201,19 +1168,12 @@ export default function CustomerOrderScreen() {
                 style={styles.actionButton}
                 onPress={handleRequestBill}
                 activeOpacity={0.7}
-                disabled={callWaiterMutation.isPending || requestBillMutation.isPending}
               >
                 <Animated.View style={[styles.actionButtonInner, { transform: [{ scale: buttonScales.bill }] }]}>
-                  {requestBillMutation.isPending ? (
-                    <ActivityIndicator size="small" color="rgba(255, 255, 255, 0.95)" />
-                  ) : (
-                    <>
-                      <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
-                        <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
-                    </>
-                  )}
+                  <View style={[styles.actionIconContainer, styles.actionIconSecondary]}>
+                    <Receipt size={20} color="rgba(255, 255, 255, 0.95)" strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.actionButtonText}>{t.requestBill.replace(' ', "\n")}</Text>
                 </Animated.View>
               </TouchableOpacity>
             </View>
