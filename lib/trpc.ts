@@ -89,6 +89,33 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const shouldRetry = (status: number) => status === 429 || status >= 500;
 
+const normalizeTrpcRequest = (requestUrl: string, init?: RequestInit) => {
+  if (!init) {
+    return { url: requestUrl, init: undefined };
+  }
+
+  const normalizedInit: RequestInit = { ...init };
+  const currentMethod = (normalizedInit.method ?? "POST").toUpperCase();
+
+  if (currentMethod !== "GET") {
+    return { url: requestUrl, init: normalizedInit };
+  }
+
+  const absoluteUrl = requestUrl.startsWith("http") ? requestUrl : `${resolvedTrpcUrl.replace(/\/$/, "")}/${requestUrl.replace(/^\//, "")}`;
+  const parsedUrl = new URL(absoluteUrl);
+  const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
+  const inputParam = parsedUrl.searchParams.get("input");
+  const fallbackBody = '{"0":{"json":null}}';
+
+  normalizedInit.method = "POST";
+
+  if (!normalizedInit.body) {
+    normalizedInit.body = inputParam ?? fallbackBody;
+  }
+
+  return { url: sanitizedUrl, init: normalizedInit };
+};
+
 export const createTrpcHttpLink = () =>
   httpLink({
     url: resolvedTrpcUrl,
@@ -97,21 +124,22 @@ export const createTrpcHttpLink = () =>
       const targetUrl = typeof requestUrl === "string" ? requestUrl : requestUrl.toString();
 
       const attemptFetch = async (attempt: number): Promise<Response> => {
-        console.log(`[tRPC] Fetching attempt ${attempt}:`, targetUrl);
+        const { url: normalizedUrl, init: normalizedInit } = normalizeTrpcRequest(targetUrl, options);
+        console.log(`[tRPC] Fetching attempt ${attempt}:`, normalizedUrl);
 
         try {
-          const response = await fetch(targetUrl, options);
+          const response = await fetch(normalizedUrl, normalizedInit);
 
           if (!response.ok) {
             const bodyText = await response.text().catch(() => undefined);
             const offlineMessage = parseOfflineMessage(response.status, bodyText);
             const errorDetails = {
-              url: targetUrl,
+              url: normalizedUrl,
               baseUrl: resolvedTrpcUrl,
               status: response.status,
               statusText: response.statusText,
-              method: options?.method ?? "POST",
-              body: options?.body,
+              method: normalizedInit?.method ?? "POST",
+              body: normalizedInit?.body,
               responseBody: bodyText,
               attempt,
             };
@@ -135,10 +163,10 @@ export const createTrpcHttpLink = () =>
         } catch (error: unknown) {
           const errorMessage = stringifyError(error);
           logTrpcError({
-            url: targetUrl,
+            url: normalizedUrl,
             baseUrl: resolvedTrpcUrl,
-            method: options?.method ?? "POST",
-            body: options?.body,
+            method: normalizedInit?.method ?? "POST",
+            body: normalizedInit?.body,
             error: errorMessage,
             stack: error instanceof Error ? error.stack : undefined,
             attempt,
