@@ -512,9 +512,7 @@ export default function CustomerOrderScreen() {
 
     try {
       await requestBillMutation.mutateAsync(parsedTableNumber);
-
       setLastRequestTime(prev => ({ ...prev, bill: now }));
-
       showStatusMessage('✅ Bill request sent! Staff will bring your bill shortly.');
     } catch (error: any) {
       console.error('[CustomerOrder] ❌ Request bill failed:', error?.message || error);

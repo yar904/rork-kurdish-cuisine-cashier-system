@@ -687,7 +687,7 @@ const ordersRouter = createTRPCRouter({
 export type NotificationRecord = {
   id: number;
   table_number: number;
-  type: "assist" | "notify";
+  type: "assist" | "bill" | "notify";
   created_at: string;
 };
 
@@ -703,7 +703,7 @@ const notificationsRouter = createTRPCRouter({
     .input(
       z.object({
         tableNumber: z.number(),
-        type: z.enum(["assist", "notify"]),
+        type: z.enum(["assist", "bill", "notify"]),
       }),
     )
     .mutation(async ({ input }) => {

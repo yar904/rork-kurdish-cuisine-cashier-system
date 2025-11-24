@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useRealtime } from "@/contexts/RealtimeContext";
 import type { NotificationRecord } from "@/supabase/functions/tapse-backend/_shared/trpc-router";
 
-export type NotificationType = "assist" | "notify";
+export type NotificationType = "assist" | "bill" | "notify";
 
 export type TableNotification = {
   id: number;
