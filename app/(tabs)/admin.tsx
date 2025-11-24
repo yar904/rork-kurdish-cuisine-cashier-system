@@ -41,7 +41,7 @@ type TableInfo = {
 export default function AdminDashboard() {
   const insets = useSafeAreaInsets();
   const [activeSection, setActiveSection] = useState<AdminSection>(null);
-  const notificationsQuery = useNotifications();
+  const { notifications, isLoading: notificationsLoading } = useNotifications();
   const clearNotification = useClearNotification();
   const clearTableNotifications = useClearTableNotifications();
   const [clearingId, setClearingId] = useState<number | null>(null);
@@ -191,10 +191,10 @@ export default function AdminDashboard() {
 
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            {notificationsQuery.isLoading ? (
+            {notificationsLoading ? (
               <ActivityIndicator color="#5C0000" />
-            ) : notificationsQuery.data && notificationsQuery.data.length > 0 ? (
-              notificationsQuery.data.map((notification) => (
+            ) : notifications.length > 0 ? (
+              notifications.map((notification) => (
                 <View key={notification.id} style={styles.notificationRow}>
                   <Text style={styles.notificationText}>
                     Table {notification.tableNumber} — {notification.type} — {getTimeSince(notification.createdAt)}
