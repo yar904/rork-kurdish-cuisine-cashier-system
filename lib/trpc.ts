@@ -53,6 +53,10 @@ const stringifyError = (value: unknown) => {
   return String(value);
 };
 
+const logTrpcError = (payload: Record<string, unknown>) => {
+  console.error("[tRPC fetch error]", JSON.stringify(payload, null, 2));
+};
+
 export const createTrpcHttpLink = () =>
   httpLink({
     url: resolvedTrpcUrl,
@@ -75,7 +79,7 @@ export const createTrpcHttpLink = () =>
             body: options?.body,
             responseBody: bodyText,
           };
-          console.error("[tRPC fetch error]", errorDetails);
+          logTrpcError(errorDetails);
           throw new Error(
             `tRPC fetch failed (${response.status} ${response.statusText}). Ensure EXPO_PUBLIC_TRPC_URL (${resolvedTrpcUrl}) and EXPO_PUBLIC_SUPABASE_ANON_KEY are set correctly.`,
           );
@@ -84,7 +88,7 @@ export const createTrpcHttpLink = () =>
         return response;
       } catch (error: unknown) {
         const errorMessage = stringifyError(error);
-        console.error("[tRPC fetch error]", {
+        logTrpcError({
           url: targetUrl,
           baseUrl: resolvedTrpcUrl,
           method: options?.method ?? "POST",
