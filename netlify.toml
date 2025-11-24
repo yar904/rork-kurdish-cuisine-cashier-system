@@ -3,10 +3,11 @@
   publish = "dist"
   
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "20.11.1"
   NPM_FLAGS = "--legacy-peer-deps"
   EXPO_NO_DOTENV = "1"
   CI = "true"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 [[redirects]]
   from = "/.netlify/functions/*"
