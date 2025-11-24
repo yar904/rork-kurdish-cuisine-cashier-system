@@ -6,22 +6,8 @@ import type { AppRouter } from "@/types/trpc";
 export const trpc = createTRPCReact<AppRouter>();
 export const trpcTransformer = superjson;
 
-const readEnv = (key: string) => {
-  if (typeof process !== "undefined" && process.env) {
-    return process.env[key];
-  }
-
-  if (typeof globalThis !== "undefined") {
-    const globalRecord = globalThis as Record<string, unknown>;
-    const value = globalRecord[key];
-    return typeof value === "string" ? value : undefined;
-  }
-
-  return undefined;
-};
-
 const resolveTrpcUrl = () => {
-  const envUrl = readEnv("EXPO_PUBLIC_TRPC_URL");
+  const envUrl = process.env?.EXPO_PUBLIC_TRPC_URL;
 
   if (!envUrl) {
     throw new Error("EXPO_PUBLIC_TRPC_URL is required for tRPC connectivity.");
@@ -37,7 +23,7 @@ console.log("[tRPC] Using Supabase Edge URL:", resolvedTrpcUrl);
 export const getTrpcBaseUrl = () => resolvedTrpcUrl;
 
 const getAuthorizationHeader = async () => {
-  const anonKey = readEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY");
+  const anonKey = process.env?.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!anonKey) {
     throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY; cannot authenticate Supabase Edge requests.");
