@@ -13,36 +13,66 @@ export const trpcTransformer = superjson;
 
 const TRPC_ENDPOINT_PATH = "/tapse-backend";
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+const collapseDoubleSlashes = (value: string) => {
+  if (!value) {
+    return value;
+  }
+
+  const [protocol, ...rest] = value.split("://");
+  if (rest.length === 0) {
+    return value.replace(/\/{2,}/g, "/");
+  }
+
+  const sanitizedPath = rest.join("://").replace(/\/{2,}/g, "/");
+  return `${protocol}://${sanitizedPath}`;
+};
+const readEnv = (key: string) => {
+  if (typeof process !== "undefined" && process.env) {
+    return process.env[key];
+  }
+
+  if (typeof globalThis !== "undefined") {
+    return (globalThis as unknown as Record<string, string | undefined>)[key];
+  }
+
+  return undefined;
+};
 
 const ensureTrpcEndpoint = (value?: string | null) => {
   if (!value) {
     return null;
   }
 
-  const normalized = stripTrailingSlash(value.trim());
-  if (!normalized) {
+  const trimmed = value.trim();
+  if (!trimmed) {
     return null;
   }
 
-  if (normalized.endsWith(TRPC_ENDPOINT_PATH)) {
-    return normalized;
+  const normalizedBase = collapseDoubleSlashes(stripTrailingSlash(trimmed));
+
+  if (!normalizedBase) {
+    return null;
   }
 
-  return `${normalized}${TRPC_ENDPOINT_PATH}`;
+  if (normalizedBase.endsWith(TRPC_ENDPOINT_PATH)) {
+    return normalizedBase;
+  }
+
+  return collapseDoubleSlashes(`${normalizedBase}${TRPC_ENDPOINT_PATH}`);
 };
 
 const resolveSupabaseEdgeUrl = (): string => {
-  const explicitUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_TRPC_URL);
+  const explicitUrl = ensureTrpcEndpoint(readEnv("EXPO_PUBLIC_TRPC_URL"));
   if (explicitUrl) {
     return explicitUrl;
   }
 
-  const supabaseFunctionsUrl = ensureTrpcEndpoint(process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL);
+  const supabaseFunctionsUrl = ensureTrpcEndpoint(readEnv("EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL"));
   if (supabaseFunctionsUrl) {
     return supabaseFunctionsUrl;
   }
 
-  const projectRef = process.env.EXPO_PUBLIC_SUPABASE_PROJECT_ID?.trim();
+  const projectRef = readEnv("EXPO_PUBLIC_SUPABASE_PROJECT_ID")?.trim();
   if (projectRef) {
     const derivedUrl = ensureTrpcEndpoint(`https://${projectRef}.functions.supabase.co`);
     if (derivedUrl) {
@@ -113,14 +143,15 @@ export const createTrpcHttpLink = () =>
       return fetch(normalizedRequestUrl, finalOptions).catch((error: any) => {
         const errorMessage = error?.message || String(error);
         console.error("[tRPC fetch error]", {
-          url: requestUrl,
+          url: normalizedRequestUrl,
+          baseUrl: linkBaseUrl,
           method: "POST",
           body: options?.body,
           error: errorMessage,
           stack: error?.stack,
         });
         throw new Error(
-          `tRPC fetch failed: ${errorMessage || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_TRPC_URL is set correctly.`,
+          `tRPC fetch failed: ${errorMessage || "Unknown error"}. Check that your backend is running and EXPO_PUBLIC_TRPC_URL is set correctly (resolved to ${linkBaseUrl}).`,
         );
       });
     },
