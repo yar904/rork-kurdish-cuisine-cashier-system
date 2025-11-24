@@ -847,11 +847,18 @@ function CategoriesManagement({ onBack }: { onBack: () => void }) {
 
   const { data: menuItems, isLoading, refetch } = trpc.menu.getAll.useQuery();
 
-  const categories = menuItems 
-    ? Array.from(new Set(menuItems.map((item: any) => item.category))).map(categoryName => ({
-        name: categoryName,
-        itemCount: menuItems.filter((item: any) => item.category === categoryName).length
-      }))
+  const categories: { name: string; itemCount: number }[] = menuItems
+    ? menuItems
+        .reduce<string[]>((unique: string[], item: Database['public']['Tables']['menu_items']['Row']) => {
+          if (typeof item?.category === 'string' && item.category.length > 0 && !unique.includes(item.category)) {
+            unique.push(item.category);
+          }
+          return unique;
+        }, [])
+        .map((categoryName: string) => ({
+          name: categoryName,
+          itemCount: menuItems.filter((item: Database['public']['Tables']['menu_items']['Row']) => item.category === categoryName).length,
+        }))
     : [];
 
   const handleDelete = (name: string, itemCount: number) => {
