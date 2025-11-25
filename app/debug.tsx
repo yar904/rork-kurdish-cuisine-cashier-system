@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Eye, Utensils, ShoppingCart, ArrowRight } from 'lucide-react-native';
+import { Eye, Utensils, ShoppingCart, ArrowRight, ShieldCheck } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 
 export default function DebugScreen() {
@@ -28,6 +28,13 @@ export default function DebugScreen() {
       path: '/(tabs)/cashier',
       icon: ShoppingCart,
       color: '#10B981',
+    },
+    {
+      title: 'Platform Scan',
+      description: 'Run automated diagnostics for Supabase, tRPC, and Edge functions',
+      path: '/debug/platform-scan',
+      icon: ShieldCheck,
+      color: '#EF4444',
     },
   ];
 
@@ -71,7 +78,7 @@ export default function DebugScreen() {
 
         <View style={styles.note}>
           <Text style={styles.noteText}>
-            ℹ️ This screen is only for development. It won't appear in production.
+            ℹ️ This screen is only for development. It won’t appear in production.
           </Text>
         </View>
       </View>
