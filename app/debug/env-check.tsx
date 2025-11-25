@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
-import { getTrpcBaseUrl, trpcClient } from "@/lib/trpc";
+import { TRPC_URL, trpcClient } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
 
 type HealthCheck = {
@@ -120,8 +120,8 @@ const buildInsights = (
     insights.push({
       id: "trpc",
       title: offlineTriggered ? "Client is offline" : "tRPC fetch failed",
-      description: offlineTriggered
-        ? "The Supabase Edge Function returned an offline payload (503). Double-check local internet connectivity or firewall restrictions blocking https://oqspnszwjxzyvwqjvjiy.supabase.co."
+        description: offlineTriggered
+        ? "The Supabase Edge Function returned an offline payload (503). Double-check local internet connectivity or firewall restrictions blocking https://opsqnzswjxzvywvqjvjv.supabase.co."
         : `Confirm EXPO_PUBLIC_TRPC_URL resolves to your Supabase Edge Function deployment and that that function is healthy. You can hit ${envVars.RESOLVED_TRPC_URL} in a browser to confirm.`,
       severity: offlineTriggered ? "warning" : "error",
     });
@@ -185,7 +185,7 @@ export default function EnvCheckScreen() {
         EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL:
           process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL,
         EXPO_PUBLIC_TRPC_URL: process.env.EXPO_PUBLIC_TRPC_URL,
-        RESOLVED_TRPC_URL: getTrpcBaseUrl(),
+        RESOLVED_TRPC_URL: TRPC_URL,
         TRPC_HOST: trpcDiagnostics.displayHost,
         TRPC_RECOMMENDED_URL: trpcDiagnostics.recommendedUrl,
       };

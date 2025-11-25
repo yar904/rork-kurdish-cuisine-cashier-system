@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
-import { getTrpcBaseUrl, trpcClient } from "@/lib/trpc";
+import { TRPC_URL, trpcClient } from "@/lib/trpc";
 
 interface CheckResult {
   name: string;
@@ -78,7 +78,7 @@ const testTrpc = async (): Promise<CheckResult> => {
       ok: true,
       detail: `tRPC online. Menu items fetched: ${menu.length}`,
       meta: {
-        trpcUrl: getTrpcBaseUrl(),
+        trpcUrl: TRPC_URL,
       },
     };
   } catch (error) {
@@ -87,7 +87,7 @@ const testTrpc = async (): Promise<CheckResult> => {
       ok: false,
       detail: `tRPC request failed: ${(error as Error).message}`,
       meta: {
-        trpcUrl: getTrpcBaseUrl(),
+        trpcUrl: TRPC_URL,
       },
     };
   }
