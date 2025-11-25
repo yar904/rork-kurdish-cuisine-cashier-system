@@ -2,13 +2,13 @@ import { Handler, HandlerEvent } from '@netlify/functions';
 
 const TRPC_TARGET =
   process.env.EXPO_PUBLIC_TRPC_URL ||
-  'https://opsqnzswjxzvywqjvjy.functions.supabase.co/tapse-backend/trpc';
+  'https://opsqnzswjxzvywqjqvjy.functions.supabase.co/tapse-backend/trpc';
 
 const allowedOrigins = [
   'https://tapse.netlify.app',
   'http://localhost:3000',
-  'https://opsqnzswjxzvywqjvjy.supabase.co',
-  'https://opsqnzswjxzvywqjvjy.functions.supabase.co',
+  'https://opsqnzswjxzvywqjqvjy.supabase.co',
+  'https://opsqnzswjxzvywqjqvjy.functions.supabase.co',
 ];
 
 const resolveOrigin = (origin?: string) => {
