@@ -81,7 +81,13 @@ const stringifyError = (value: unknown) => {
 };
 
 const logTrpcError = (payload: Record<string, unknown>) => {
-  console.error("[tRPC fetch error]", JSON.stringify(payload, null, 2));
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(payload, null, 2);
+  } catch (error) {
+    serialized = `Failed to serialize payload: ${String(error)} | Raw payload keys: ${Object.keys(payload).join(", ")}`;
+  }
+  console.error("[tRPC fetch error]", serialized);
 };
 
 const parseOfflineMessage = (status: number, bodyText?: string) => {
