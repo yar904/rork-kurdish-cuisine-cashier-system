@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createTrpcHttpLink, trpc, trpcTransformer } from "@/lib/trpc";
+import { trpc, trpcClient } from "@/lib/trpc";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
@@ -10,7 +10,7 @@ import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { OfflineProvider } from "@/contexts/OfflineContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { RealtimeProvider } from "@/contexts/RealtimeContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LogBox } from "react-native";
 import { useFonts, NotoNaskhArabic_400Regular, NotoNaskhArabic_600SemiBold, NotoNaskhArabic_700Bold } from '@expo-google-fonts/noto-naskh-arabic';
 import { PlayfairDisplay_400Regular, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold, PlayfairDisplay_900Black } from '@expo-google-fonts/playfair-display';
@@ -55,13 +55,6 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      transformer: trpcTransformer,
-      links: [createTrpcHttpLink()],
-    })
-  );
-
   useEffect(() => {
     LogBox.ignoreLogs([
       'PostHog',

@@ -2,10 +2,10 @@ import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Stack } from "expo-router";
 import { Colors } from "@/constants/colors";
-import { getTrpcBaseUrl, trpc } from "@/lib/trpc";
+import { TRPC_URL, trpc } from "@/lib/trpc";
 
 export default function DebugHealthScreen() {
-  const baseUrl = getTrpcBaseUrl();
+  const baseUrl = TRPC_URL;
   const healthUrl = React.useMemo(
     () => baseUrl.replace(/\/trpc$/, "/health"),
     [baseUrl],

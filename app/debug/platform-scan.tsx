@@ -14,7 +14,7 @@ import { Stack } from "expo-router";
 import { AlertTriangle, Database, RefreshCw, Server, ShieldCheck } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { supabase } from "@/lib/supabase";
-import { getTrpcBaseUrl, trpcClient } from "@/lib/trpc";
+import { TRPC_URL, trpcClient } from "@/lib/trpc";
 
 const CHECK_DEFINITIONS = [
   {
@@ -114,10 +114,7 @@ export default function PlatformScanScreen() {
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const pulseLoopRef = useRef<Animated.CompositeAnimation | null>(null);
 
-  const healthUrl = useMemo(() => {
-    const baseUrl = getTrpcBaseUrl();
-    return baseUrl.replace(/\/trpc$/, "/health");
-  }, []);
+  const healthUrl = useMemo(() => TRPC_URL.replace(/\/trpc$/, "/health"), []);
 
   const updateCheck = useCallback((id: CheckId, patch: Partial<CheckState>) => {
     setChecks((current) => current.map((check) => (check.id === id ? { ...check, ...patch } : check)));
@@ -140,7 +137,7 @@ export default function PlatformScanScreen() {
             throw new Error(`Missing: ${missing.join(", ")}`);
           }
 
-          const normalizedUrl = getTrpcBaseUrl();
+          const normalizedUrl = TRPC_URL;
           return `All env vars present. tRPC ➜ ${normalizedUrl}`;
         },
         supabase: async () => {
