@@ -707,7 +707,7 @@ type NotificationRow = {
   created_at: string;
 };
 
-const mapNotification = (record: NotificationRecord) => ({
+const mapNotification = (record: NotificationRow) => ({
   id: record.id,
   tableNumber: record.table_number,
   type: record.type,
@@ -737,7 +737,7 @@ const notificationsRouter = createTRPCRouter({
         throw new Error("Failed to publish notification");
       }
 
-      return mapNotification(data as NotificationRecord);
+      return mapNotification(data as NotificationRow);
     }),
   list: publicProcedure.query(async () => {
     const { data, error } = await supabase
@@ -750,7 +750,7 @@ const notificationsRouter = createTRPCRouter({
       throw new Error("Failed to fetch notifications");
     }
 
-    return (data ?? []).map((record) => mapNotification(record as NotificationRecord));
+    return (data ?? []).map((record) => mapNotification(record as NotificationRow));
   }),
   clear: publicProcedure
     .input(z.object({ id: z.number() }))
