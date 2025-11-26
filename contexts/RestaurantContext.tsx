@@ -6,7 +6,7 @@ import { Order, OrderItem, OrderStatus, MenuItem } from '@/types/restaurant';
 
 import { useTables } from '@/contexts/TableContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
-import { trpc, trpcClient } from '@/lib/trpc';
+import { trpc, trpcClient } from '@/lib/trpcClient';
 
 const generateDemoOrders = (): Order[] => {
   return [];

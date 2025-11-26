@@ -13,7 +13,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { Users, Plus, Clock, Calendar, TrendingUp, Trash2 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function EmployeesScreen() {
   const router = useRouter();

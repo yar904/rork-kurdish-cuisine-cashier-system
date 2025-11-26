@@ -4,7 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Plus, Edit, Trash2, Save, X, ChevronDown } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 import { formatPrice } from '@/constants/currency';
 import { CATEGORY_NAMES } from '@/constants/menu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

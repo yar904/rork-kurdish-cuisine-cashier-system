@@ -13,7 +13,7 @@ import {
 import { Stack } from 'expo-router';
 import { Package, AlertTriangle, Plus, TrendingUp, TrendingDown, History, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function InventoryScreen() {
   const [showAddModal, setShowAddModal] = useState(false);

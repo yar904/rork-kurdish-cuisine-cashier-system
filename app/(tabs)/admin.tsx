@@ -7,7 +7,7 @@ import { Settings, MenuSquare, Users, Package, Briefcase, Table, X, Plus, Edit, 
 import { TableQRManagement } from '@/components/admin/TableQRManagement';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 import { useClearNotification, useClearTableNotifications, useNotifications } from '@/contexts/NotificationContext';
 
 type AdminSection = 'menu' | 'inventory' | 'employees' | 'categories' | 'tables' | 'qr-codes' | null;

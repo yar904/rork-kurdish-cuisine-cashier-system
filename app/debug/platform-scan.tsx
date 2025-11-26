@@ -13,8 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { AlertTriangle, Database, RefreshCw, Server, ShieldCheck } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
-import { supabase } from "@/lib/supabase";
-import { TRPC_URL, trpcClient } from "@/lib/trpc";
+import { TRPC_URL, trpcClient } from "@/lib/trpcClient";
 
 const CHECK_DEFINITIONS = [
   {
@@ -25,8 +24,8 @@ const CHECK_DEFINITIONS = [
   },
   {
     id: "supabase",
-    title: "Supabase Connectivity",
-    description: "Reads menu_items to confirm database health",
+    title: "Backend Connectivity",
+    description: "Uses tRPC to confirm menu access",
     importance: "critical" as const,
   },
   {
@@ -141,18 +140,9 @@ export default function PlatformScanScreen() {
           return `All env vars present. tRPC ➜ ${normalizedUrl}`;
         },
         supabase: async () => {
-          console.log("[PlatformScan] Running Supabase DB check");
-          const { data, error, count } = await supabase
-            .from("menu_items")
-            .select("id", { count: "exact", head: false })
-            .limit(1);
-
-          if (error) {
-            throw new Error(error.message);
-          }
-
-          const sampleCount = count ?? data?.length ?? 0;
-          return `Connected. Sample rows: ${sampleCount}`;
+          console.log("[PlatformScan] Running backend menu check");
+          const items = await trpcClient.menu.getAll.query();
+          return `Connected via tRPC. Menu items: ${items.length}`;
         },
         "trpc-menu": async () => {
           console.log("[PlatformScan] Running tRPC menu.getAll check");
