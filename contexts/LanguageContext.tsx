@@ -1,52 +1,21 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import createContextHook from '@nkzw/create-context-hook';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Language, translations, categoryTranslations } from '@/constants/i18n';
+import React, { createContext, useContext, useState } from 'react';
 
-const LANGUAGE_STORAGE_KEY = '@tapse_language';
+type Language = 'en' | 'ku';
 
-export const [LanguageProvider, useLanguage] = createContextHook(() => {
-  const [language, setLanguageState] = useState<Language>('ku');
-  const [isLoading, setIsLoading] = useState(true);
+type LanguageContextValue = {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+};
 
-  useEffect(() => {
-    loadLanguage();
-  }, []);
+const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
-  const loadLanguage = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-      if (stored && (stored === 'en' || stored === 'ku' || stored === 'ar')) {
-        setLanguageState(stored as Language);
-      }
-    } catch (error) {
-      console.error('Failed to load language:', error);
-    }
-    setIsLoading(false);
-  };
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState<Language>('en');
+  return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>;
+};
 
-  const setLanguage = useCallback(async (lang: Language) => {
-    try {
-      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-      setLanguageState(lang);
-    } catch (error) {
-      console.error('Failed to save language:', error);
-    }
-  }, []);
-
-  const t = useCallback((key: keyof typeof translations.en): string => {
-    return translations[language][key] || translations.en[key] || key;
-  }, [language]);
-
-  const tc = useCallback((category: string): string => {
-    return categoryTranslations[language][category as keyof typeof categoryTranslations.en] || category;
-  }, [language]);
-
-  return useMemo(() => ({
-    language,
-    setLanguage,
-    t,
-    tc,
-    isLoading,
-  }), [language, setLanguage, t, tc, isLoading]);
-});
+export const useLanguage = () => {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
+  return ctx;
+};

@@ -1,88 +1,48 @@
-import createContextHook from '@nkzw/create-context-hook';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-export type UserRole = 'guest' | 'staff' | 'manager' | 'admin';
-
-interface User {
-  role: UserRole;
-  authenticated: boolean;
-}
-
-const AUTH_STORAGE_KEY = '@tapse_auth';
-
-const ROLE_PASSWORDS = {
-  staff: '123tapse',
-  manager: 'manager99',
-  admin: 'farman12',
+export type AuthContextValue = {
+  session: any;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
-export const [AuthProvider, useAuth] = createContextHook(() => {
-  const [user, setUser] = useState<User>({
-    role: 'guest',
-    authenticated: false,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadAuthState();
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => setSession(newSession));
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const loadAuthState = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        const parsedUser = JSON.parse(stored) as User;
-        setUser(parsedUser);
-      }
-    } catch (error) {
-      console.log('Failed to load auth state:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) throw error;
+    setSession(data.session);
   };
 
-  const login = useCallback(async (password: string): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
-    if (password === ROLE_PASSWORDS.admin) {
-      const newUser: User = { role: 'admin', authenticated: true };
-      setUser(newUser);
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
-      return { success: true, role: 'admin' };
-    } else if (password === ROLE_PASSWORDS.manager) {
-      const newUser: User = { role: 'manager', authenticated: true };
-      setUser(newUser);
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
-      return { success: true, role: 'manager' };
-    } else if (password === ROLE_PASSWORDS.staff) {
-      const newUser: User = { role: 'staff', authenticated: true };
-      setUser(newUser);
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
-      return { success: true, role: 'staff' };
-    }
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+  };
 
-    return { success: false, error: 'Invalid password' };
-  }, []);
+  return <AuthContext.Provider value={{ session, loading, signIn, signOut }}>{children}</AuthContext.Provider>;
+};
 
-  const logout = useCallback(async () => {
-    const guestUser: User = { role: 'guest', authenticated: false };
-    setUser(guestUser);
-    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-  }, []);
-
-  const hasAccess = useCallback((requiredRole: UserRole): boolean => {
-    if (!user.authenticated) return false;
-    if (requiredRole === 'guest') return true;
-    if (user.role === 'admin') return true;
-    if (user.role === 'manager' && (requiredRole === 'manager' || requiredRole === 'staff')) return true;
-    if (requiredRole === 'staff' && user.role === 'staff') return true;
-    return false;
-  }, [user]);
-
-  return useMemo(() => ({
-    user,
-    isLoading,
-    login,
-    logout,
-    hasAccess,
-  }), [user, isLoading, login, logout, hasAccess]);
-});
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+};

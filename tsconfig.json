@@ -1,25 +1,22 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "jsx": "react",
     "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
-      "@/components/*": ["./components/*"],
-      "@/constants/*": ["./constants/*"],
-      "@/contexts/*": ["./contexts/*"],
-      "@/hooks/*": ["./hooks/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/types/*": ["./types/*"],
-      "@/utils/*": ["./utils/*"]
-    },
-    "types": ["expo-router/types"]
+      "@/lib/*": ["lib/*"],
+      "@/contexts/*": ["contexts/*"],
+      "@/components/*": ["components/*"],
+      "@/types/*": ["types/*"],
+      "@/supabase/*": ["supabase/*"]
+    }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["app", "components", "contexts", "lib", "types", "supabase"],
+  "exclude": ["node_modules"]
 }
