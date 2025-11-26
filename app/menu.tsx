@@ -78,20 +78,13 @@ export default function PublicMenuScreen() {
   const menuQuery = trpc.menu.getAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
-  const useMenuRatingsQuery =
-    ((trpc as unknown as { menu?: { getRatings?: { useQuery: typeof trpc.ratings.getAllStats.useQuery } } }).menu
-      ?.getRatings?.useQuery ?? trpc.ratings.getAllStats.useQuery);
-  const useMenuByCategoryQuery =
-    ((trpc as unknown as { menu?: { getByCategory?: { useQuery: (input: { category: string }, opts?: any) => any } } }).menu
-      ?.getByCategory?.useQuery ?? null);
 
   const menuItems = menuQuery.data ?? [];
-  const menuByCategoryQuery = useMenuByCategoryQuery
-    ? useMenuByCategoryQuery(
-        { category: selectedCategory },
-        { enabled: selectedCategory !== 'all', staleTime: 5 * 60 * 1000 }
-      )
-    : null;
+  const menuByCategoryQuery = trpc.menu.getByCategory.useQuery(
+    { category: selectedCategory },
+    { enabled: selectedCategory !== 'all', staleTime: 5 * 60 * 1000 }
+  );
+  const ratingsStatsQuery = trpc.menu.getRatings.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
 
   const categories = useMemo(() => {
     const categoriesFromMenu = Array.from(new Set(menuItems.map((item) => item.category)));
@@ -227,7 +220,6 @@ export default function PublicMenuScreen() {
 
   const cartItemCount = currentOrder.reduce((sum, item) => sum + item.quantity, 0);
 
-  const ratingsStatsQuery = useMenuRatingsQuery({ staleTime: 5 * 60 * 1000 });
   const ratingsStats = ratingsStatsQuery.data || {};
 
   const itemRatingsQuery = trpc.ratings.getByMenuItem.useQuery(
