@@ -1,4 +1,4 @@
-import { trpcClient } from "@/lib/trpc";
+import { trpcClient } from "@/lib/trpcClient";
 
 // Menu
 export const apiMenu = {

@@ -30,7 +30,7 @@ import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
 import { usePublishNotification } from '@/contexts/NotificationContext';
 
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();

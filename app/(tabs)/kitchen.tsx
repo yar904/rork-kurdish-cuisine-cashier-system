@@ -4,7 +4,7 @@ import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
 import { ChefHat, Clock, CheckCircle, PlayCircle, ArrowRight } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function KitchenDashboard() {
   const insets = useSafeAreaInsets();

@@ -28,7 +28,7 @@ import { useTables } from '@/contexts/TableContext';
 import { Colors } from '@/constants/colors';
 import { formatPrice } from '@/constants/currency';
 import AIChatbot from '@/components/AIChatbot';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();

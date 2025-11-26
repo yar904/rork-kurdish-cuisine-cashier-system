@@ -16,7 +16,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, X, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 import { MENU_ITEMS } from '@/constants/menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';

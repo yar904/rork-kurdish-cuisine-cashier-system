@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpcClient";
 import { useRealtime } from "@/contexts/RealtimeContext";
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { Notification } from "@/types/restaurant";
+import type { RealtimePayload } from "@/contexts/RealtimeContext";
 
 export type NotificationType = "assist" | "bill" | "notify";
 
@@ -59,7 +59,7 @@ export const [NotificationProvider, useNotificationsContext] =
     const clearAllMutation = trpc.notifications.clearAll.useMutation();
 
     useEffect(() => {
-      return subscribeToNotifications((payload: RealtimePostgresChangesPayload<NotificationRow>) => {
+      return subscribeToNotifications((payload: RealtimePayload) => {
         if (payload.eventType === "INSERT") {
           const record = payload.new as NotificationRow;
           setNotifications((prev) => {

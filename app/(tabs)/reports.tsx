@@ -4,7 +4,7 @@ import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
 import { FileText, DollarSign, Package, Table as TableIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 type ReportTab = 'sales' | 'items' | 'operations';
 

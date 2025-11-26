@@ -11,7 +11,7 @@ import {
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Clock, LogIn, LogOut } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function ClockInOutScreen() {
   const { employeeId, name } = useLocalSearchParams<{ employeeId: string; name: string }>();
