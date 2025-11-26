@@ -6,8 +6,8 @@ const path = require("path");
 const { ensureLogsDir, EMOJIS } = require("./health-utils");
 
 const ROOT = process.cwd();
-const REQUIRED_SUPABASE_URL = "https://opsqnzswjxzvywqjqvjy.supabase.co";
-const REQUIRED_FUNCTIONS_URL = "https://opsqnzswjxzvywqjqvjy.functions.supabase.co";
+const REQUIRED_SUPABASE_URL = "https://opsqnzswjxzvywvqjvjv.supabase.co";
+const REQUIRED_FUNCTIONS_URL = "https://opsqnzswjxzvywvqjvjv.functions.supabase.co";
 const REQUIRED_TRPC_URL = `${REQUIRED_FUNCTIONS_URL}/tapse-backend/trpc`;
 const CORE_DIRECTORIES = [
   { label: "Frontend App", path: "app" },

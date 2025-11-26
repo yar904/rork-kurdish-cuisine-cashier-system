@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
@@ -9,23 +9,51 @@ import { trpc } from '@/lib/trpc';
 export default function AnalyticsDashboard() {
   const insets = useSafeAreaInsets();
   
-  const { data: salesSummary, isLoading: loadingSummary } = trpc.reports.salesSummary.useQuery();
-  const { data: dailySales, isLoading: loadingDaily } = trpc.reports.salesDaily.useQuery();
-  const { data: itemSales, isLoading: loadingItems } = trpc.reports.itemSalesSummary.useQuery();
+  const dateRange = useMemo(() => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+    return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+  }, []);
 
-  const isLoading = loadingSummary || loadingDaily || loadingItems;
+  const summaryQuery = trpc.reports.summary.useQuery(dateRange);
+  const menuQuery = trpc.menu.getAll.useQuery();
 
-  const todaySales = dailySales?.[0];
-  const topItems = itemSales?.sort((a: any, b: any) => b.total_revenue - a.total_revenue).slice(0, 5) || [];
-  
-  const categoryTotals = itemSales?.reduce((acc: any, item: any) => {
-    acc[item.category] = (acc[item.category] || 0) + item.total_revenue;
-    return acc;
-  }, {}) || {};
-  
+  const dailySales = summaryQuery.data?.dailySales ?? [];
+  const todaySales = dailySales[dailySales.length - 1];
+  const todayRevenue = todaySales?.revenue ?? 0;
+  const todayOrders = todaySales?.orders ?? 0;
+  const todayAvgOrderValue = todayOrders > 0 ? todayRevenue / todayOrders : 0;
+
+  const topItems = useMemo(() => {
+    const menuMap = new Map((menuQuery.data ?? []).map((item) => [item.id, item]));
+    return (summaryQuery.data?.topItems ?? [])
+      .map((item) => ({
+        item_id: item.id,
+        item_name: item.name,
+        total_quantity: item.quantity,
+        total_revenue: item.revenue,
+        category: menuMap.get(item.id)?.category ?? 'Uncategorized',
+      }))
+      .sort((a, b) => b.total_revenue - a.total_revenue)
+      .slice(0, 5);
+  }, [menuQuery.data, summaryQuery.data?.topItems]);
+
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    (summaryQuery.data?.categoryBreakdown ?? []).forEach((entry) => {
+      totals[entry.category] = (totals[entry.category] || 0) + entry.revenue;
+    });
+    return totals;
+  }, [summaryQuery.data?.categoryBreakdown]);
+
+  const isLoading = summaryQuery.isLoading;
+
   const categories = Object.entries(categoryTotals)
     .sort(([, a]: any, [, b]: any) => b - a)
     .slice(0, 5);
+
+  const salesSummary = summaryQuery.data?.summary;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -63,9 +91,7 @@ export default function AnalyticsDashboard() {
                   <DollarSign size={24} color="#5C0000" />
                 </View>
                 <Text style={styles.kpiLabel}>Total Revenue</Text>
-                <Text style={styles.kpiValue}>
-                  ${todaySales?.total_sales?.toFixed(2) || '0.00'}
-                </Text>
+                <Text style={styles.kpiValue}>${todayRevenue.toFixed(2)}</Text>
               </View>
 
               <View style={styles.kpiCard}>
@@ -73,7 +99,7 @@ export default function AnalyticsDashboard() {
                   <Clock size={24} color="#10B981" />
                 </View>
                 <Text style={styles.kpiLabel}>Total Orders</Text>
-                <Text style={styles.kpiValue}>{todaySales?.order_count || 0}</Text>
+                <Text style={styles.kpiValue}>{todayOrders}</Text>
               </View>
 
               <View style={styles.kpiCard}>
@@ -81,9 +107,7 @@ export default function AnalyticsDashboard() {
                   <Award size={24} color="#C6A667" />
                 </View>
                 <Text style={styles.kpiLabel}>Avg Order Value</Text>
-                <Text style={styles.kpiValue}>
-                  ${todaySales?.avg_order_value?.toFixed(2) || '0.00'}
-                </Text>
+                <Text style={styles.kpiValue}>${todayAvgOrderValue.toFixed(2)}</Text>
               </View>
             </View>
           </View>
@@ -94,20 +118,20 @@ export default function AnalyticsDashboard() {
               <View style={styles.statsGrid}>
                 <View style={styles.statCard}>
                   <Text style={styles.statValue}>
-                    ${salesSummary.total_revenue.toFixed(2)}
+                    ${salesSummary.totalRevenue.toFixed(2)}
                   </Text>
                   <Text style={styles.statLabel}>Total Revenue</Text>
                 </View>
                 <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{salesSummary.total_orders}</Text>
+                  <Text style={styles.statValue}>{salesSummary.totalOrders}</Text>
                   <Text style={styles.statLabel}>Total Orders</Text>
                 </View>
                 <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{salesSummary.paid_orders}</Text>
+                  <Text style={styles.statValue}>{salesSummary.paidOrders}</Text>
                   <Text style={styles.statLabel}>Paid Orders</Text>
                 </View>
                 <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{salesSummary.pending_orders}</Text>
+                  <Text style={styles.statValue}>{Math.max(salesSummary.totalOrders - salesSummary.paidOrders, 0)}</Text>
                   <Text style={styles.statLabel}>Pending Orders</Text>
                 </View>
               </View>
@@ -193,8 +217,8 @@ export default function AnalyticsDashboard() {
             ) : (
               <View style={styles.trendContainer}>
                 {dailySales.map((day: any, idx: number) => {
-                  const maxSales = Math.max(...dailySales.map((d: any) => d.total_sales));
-                  const height = maxSales > 0 ? (day.total_sales / maxSales) * 100 : 0;
+                  const maxSales = Math.max(...dailySales.map((d: any) => d.revenue));
+                  const height = maxSales > 0 ? (day.revenue / maxSales) * 100 : 0;
                   
                   return (
                     <View key={idx} style={styles.trendBar}>
@@ -207,9 +231,9 @@ export default function AnalyticsDashboard() {
                         />
                       </View>
                       <Text style={styles.trendLabel}>
-                        {new Date(day.sale_date).toLocaleDateString('en-US', { weekday: 'short' })}
+                        {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
                       </Text>
-                      <Text style={styles.trendValue}>${day.total_sales.toFixed(0)}</Text>
+                      <Text style={styles.trendValue}>${day.revenue.toFixed(0)}</Text>
                     </View>
                   );
                 })}

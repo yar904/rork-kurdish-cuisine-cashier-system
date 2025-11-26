@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
@@ -7,6 +7,82 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trpc } from '@/lib/trpc';
 
 type ReportTab = 'sales' | 'items' | 'operations';
+
+type DailySalesEntry = {
+  sale_date: string;
+  total_sales: number;
+  order_count: number;
+  avg_order_value: number;
+};
+
+type GroupedSales = {
+  label: string;
+  total_sales: number;
+  order_count: number;
+  avg_order_value: number;
+};
+
+const groupDailyByWeek = (daily: DailySalesEntry[]): GroupedSales[] => {
+  const grouped: Record<string, GroupedSales> = {};
+
+  daily.forEach((day) => {
+    const current = new Date(day.sale_date);
+    const temp = new Date(current);
+    const dayOfWeek = temp.getDay();
+    const diff = temp.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    temp.setDate(diff);
+
+    const weekStart = new Date(temp.getFullYear(), temp.getMonth(), temp.getDate());
+    const yearStart = new Date(weekStart.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(((weekStart.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+    const label = `Week ${weekNumber}`;
+
+    if (!grouped[label]) {
+      grouped[label] = { label, total_sales: 0, order_count: 0, avg_order_value: 0 };
+    }
+
+    grouped[label].total_sales += day.total_sales;
+    grouped[label].order_count += day.order_count;
+  });
+
+  return Object.values(grouped)
+    .map((entry) => ({
+      ...entry,
+      avg_order_value: entry.order_count > 0 ? entry.total_sales / entry.order_count : 0,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+};
+
+const groupDailyByMonth = (daily: DailySalesEntry[]): GroupedSales[] => {
+  const grouped: Record<string, GroupedSales> = {};
+
+  daily.forEach((day) => {
+    const date = new Date(day.sale_date);
+    const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+
+    if (!grouped[label]) {
+      grouped[label] = { label, total_sales: 0, order_count: 0, avg_order_value: 0 };
+    }
+
+    grouped[label].total_sales += day.total_sales;
+    grouped[label].order_count += day.order_count;
+  });
+
+  return Object.values(grouped)
+    .map((entry) => ({
+      ...entry,
+      avg_order_value: entry.order_count > 0 ? entry.total_sales / entry.order_count : 0,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+};
+
+const useReportDateRange = () =>
+  useMemo(() => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+    return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+  }, []);
 
 export default function ReportsDashboard() {
   const insets = useSafeAreaInsets();
@@ -63,11 +139,25 @@ export default function ReportsDashboard() {
 }
 
 function SalesReports() {
-  const { data: dailySales, isLoading: loadingDaily } = trpc.reports.salesDaily.useQuery();
-  const { data: weeklySales, isLoading: loadingWeekly } = trpc.reports.salesWeekly.useQuery();
-  const { data: monthlySales, isLoading: loadingMonthly } = trpc.reports.salesMonthly.useQuery();
+  const dateRange = useReportDateRange();
 
-  if (loadingDaily || loadingWeekly || loadingMonthly) {
+  const summaryQuery = trpc.reports.summary.useQuery(dateRange);
+
+  const dailySales = useMemo(
+    () =>
+      (summaryQuery.data?.dailySales ?? []).map((day) => ({
+        sale_date: day.date,
+        total_sales: day.revenue,
+        order_count: day.orders,
+        avg_order_value: day.orders > 0 ? day.revenue / day.orders : 0,
+      })),
+    [summaryQuery.data?.dailySales],
+  );
+
+  const weeklySales = useMemo(() => groupDailyByWeek(dailySales), [dailySales]);
+  const monthlySales = useMemo(() => groupDailyByMonth(dailySales), [dailySales]);
+
+  if (summaryQuery.isLoading) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#5C0000" />
@@ -76,36 +166,32 @@ function SalesReports() {
     );
   }
 
-  const totalDailySales = dailySales?.reduce((sum, day) => sum + day.total_sales, 0) || 0;
-  const totalDailyOrders = dailySales?.reduce((sum, day) => sum + day.order_count, 0) || 0;
+  const totalDailySales = dailySales.reduce((sum, day) => sum + day.total_sales, 0);
+  const totalDailyOrders = dailySales.reduce((sum, day) => sum + day.order_count, 0);
 
   return (
     <ScrollView style={styles.content}>
       <View style={styles.summaryCards}>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total Revenue (7d)</Text>
+          <Text style={styles.summaryLabel}>Total Revenue (30d)</Text>
           <Text style={styles.summaryValue}>${totalDailySales.toFixed(2)}</Text>
         </View>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total Orders (7d)</Text>
+          <Text style={styles.summaryLabel}>Total Orders (30d)</Text>
           <Text style={styles.summaryValue}>{totalDailyOrders}</Text>
         </View>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Daily Sales</Text>
-        {!dailySales || dailySales.length === 0 ? (
+        {dailySales.length === 0 ? (
           <Text style={styles.emptyText}>No daily sales data</Text>
         ) : (
           dailySales.map((day, idx) => (
             <View key={idx} style={styles.reportRow}>
               <View style={styles.reportRowLeft}>
-                <Text style={styles.reportRowTitle}>
-                  {new Date(day.sale_date).toLocaleDateString()}
-                </Text>
-                <Text style={styles.reportRowSubtitle}>
-                  {day.order_count} orders
-                </Text>
+                <Text style={styles.reportRowTitle}>{new Date(day.sale_date).toLocaleDateString()}</Text>
+                <Text style={styles.reportRowSubtitle}>{day.order_count} orders</Text>
               </View>
               <Text style={styles.reportRowValue}>${day.total_sales.toFixed(2)}</Text>
             </View>
@@ -115,13 +201,13 @@ function SalesReports() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Weekly Sales</Text>
-        {!weeklySales || weeklySales.length === 0 ? (
+        {weeklySales.length === 0 ? (
           <Text style={styles.emptyText}>No weekly sales data</Text>
         ) : (
           weeklySales.map((week, idx) => (
-            <View key={idx} style={styles.reportRow}>
+            <View key={week.label} style={styles.reportRow}>
               <View style={styles.reportRowLeft}>
-                <Text style={styles.reportRowTitle}>Week {idx + 1}</Text>
+                <Text style={styles.reportRowTitle}>{week.label}</Text>
                 <Text style={styles.reportRowSubtitle}>
                   {week.order_count} orders • Avg ${week.avg_order_value.toFixed(2)}
                 </Text>
@@ -134,13 +220,13 @@ function SalesReports() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Monthly Sales</Text>
-        {!monthlySales || monthlySales.length === 0 ? (
+        {monthlySales.length === 0 ? (
           <Text style={styles.emptyText}>No monthly sales data</Text>
         ) : (
-          monthlySales.map((month, idx) => (
-            <View key={idx} style={styles.reportRow}>
+          monthlySales.map((month) => (
+            <View key={month.label} style={styles.reportRow}>
               <View style={styles.reportRowLeft}>
-                <Text style={styles.reportRowTitle}>{month.month} {month.year}</Text>
+                <Text style={styles.reportRowTitle}>{month.label}</Text>
                 <Text style={styles.reportRowSubtitle}>
                   {month.order_count} orders • Avg ${month.avg_order_value.toFixed(2)}
                 </Text>
@@ -155,9 +241,28 @@ function SalesReports() {
 }
 
 function ItemPerformance() {
-  const { data: itemSales, isLoading } = trpc.reports.itemSalesSummary.useQuery();
+  const dateRange = useReportDateRange();
+  const summaryQuery = trpc.reports.summary.useQuery(dateRange);
+  const menuQuery = trpc.menu.getAll.useQuery();
 
-  if (isLoading) {
+  const mappedItems = useMemo(() => {
+    const menuMap = new Map((menuQuery.data ?? []).map((item) => [item.id, item]));
+
+    return (summaryQuery.data?.topItems ?? []).map((item) => {
+      const menuItem = menuMap.get(item.id);
+
+      return {
+        item_id: item.id,
+        item_name: item.name,
+        category: menuItem?.category ?? 'Uncategorized',
+        total_quantity: item.quantity,
+        total_revenue: item.revenue,
+        order_count: item.quantity,
+      };
+    });
+  }, [menuQuery.data, summaryQuery.data?.topItems]);
+
+  if (summaryQuery.isLoading) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#5C0000" />
@@ -166,7 +271,7 @@ function ItemPerformance() {
     );
   }
 
-  const sortedItems = itemSales?.sort((a, b) => b.total_revenue - a.total_revenue) || [];
+  const sortedItems = mappedItems.sort((a, b) => b.total_revenue - a.total_revenue);
   const topItems = sortedItems.slice(0, 10);
 
   return (
@@ -220,10 +325,11 @@ function ItemPerformance() {
 }
 
 function OperationsOverview() {
-  const { data: activeTables, isLoading: loadingTables } = trpc.reports.activeTables.useQuery();
-  const { data: salesSummary, isLoading: loadingSummary } = trpc.reports.salesSummary.useQuery();
+  const dateRange = useReportDateRange();
+  const summaryQuery = trpc.reports.summary.useQuery(dateRange);
+  const tablesQuery = trpc.tables.getAll.useQuery();
 
-  if (loadingTables || loadingSummary) {
+  if (summaryQuery.isLoading || tablesQuery.isLoading) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#5C0000" />
@@ -232,48 +338,47 @@ function OperationsOverview() {
     );
   }
 
+  const activeTables = (tablesQuery.data ?? []).filter((table) => table.status !== 'available');
+  const salesSummary = summaryQuery.data?.summary;
+
   return (
     <ScrollView style={styles.content}>
       {salesSummary && (
         <View style={styles.summaryCards}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Revenue</Text>
-            <Text style={styles.summaryValue}>${salesSummary.total_revenue.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>${salesSummary.totalRevenue.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Orders</Text>
-            <Text style={styles.summaryValue}>{salesSummary.total_orders}</Text>
+            <Text style={styles.summaryValue}>{salesSummary.totalOrders}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Avg Order Value</Text>
-            <Text style={styles.summaryValue}>${salesSummary.avg_order_value.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>${salesSummary.averageOrderValue.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Paid Orders</Text>
-            <Text style={styles.summaryValue}>{salesSummary.paid_orders}</Text>
+            <Text style={styles.summaryValue}>{salesSummary.paidOrders}</Text>
           </View>
         </View>
       )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Active Tables</Text>
-        {!activeTables || activeTables.length === 0 ? (
+        {activeTables.length === 0 ? (
           <Text style={styles.emptyText}>No active tables</Text>
         ) : (
           activeTables.map((table) => (
-            <View key={table.table_number} style={styles.reportRow}>
+            <View key={table.number} style={styles.reportRow}>
               <View style={styles.reportRowLeft}>
                 <View style={styles.reportRowContent}>
-                  <Text style={styles.reportRowTitle}>Table {table.table_number}</Text>
+                  <Text style={styles.reportRowTitle}>Table {table.number}</Text>
                   <Text style={styles.reportRowSubtitle}>
                     {table.status} • Capacity: {table.capacity}
-                    {table.waiter_name && ` • Waiter: ${table.waiter_name}`}
                   </Text>
                 </View>
               </View>
-              {table.order_total && (
-                <Text style={styles.reportRowValue}>${table.order_total.toFixed(2)}</Text>
-              )}
             </View>
           ))
         )}
