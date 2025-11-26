@@ -2,7 +2,10 @@ const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname);
+const config = getDefaultConfig(__dirname, {
+  // Enable CSS modules and web-style imports for Expo Router on web
+  isCSSEnabled: true,
+});
 
 config.resolver = {
   ...config.resolver,
@@ -18,6 +21,12 @@ config.resolver = {
     "@/types": path.resolve(__dirname, "types"),
     "@/utils": path.resolve(__dirname, "utils"),
   },
+  sourceExts: [...(config.resolver?.sourceExts ?? []), "cjs"],
+};
+
+config.transformer = {
+  ...config.transformer,
+  unstable_allowRequireContext: true,
 };
 
 module.exports = config;
