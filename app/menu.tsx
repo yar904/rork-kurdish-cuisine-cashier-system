@@ -37,8 +37,10 @@ type MenuCategory = {
   nameKu: string;
   nameEn: string;
   nameAr: string;
-  image: string;
+  image?: string;
 };
+
+const DEFAULT_CATEGORY_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop';
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -78,106 +80,28 @@ export default function PublicMenuScreen() {
   });
   const menuItems = menuQuery.data ?? [];
 
-  const baseCategories: MenuCategory[] = useMemo(() => [
-    {
+  const categories = useMemo(() => {
+    const categoriesFromMenu = Array.from(new Set(menuItems.map((item) => item.category)));
+    const baseCategory: MenuCategory = {
       id: 'all',
       nameKu: 'هەموو',
       nameEn: 'All',
       nameAr: 'الكل',
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'appetizers',
-      nameKu: 'دەستپێکەکان',
-      nameEn: 'Appetizers',
-      nameAr: 'مقبلات',
-      image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'soups',
-      nameKu: 'سوپەکان',
-      nameEn: 'Soups',
-      nameAr: 'شوربات',
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'salads',
-      nameKu: 'زەڵاتە',
-      nameEn: 'Salads',
-      nameAr: 'سلطات',
-      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'kebabs',
-      nameKu: 'کەبابەکان',
-      nameEn: 'Kebabs',
-      nameAr: 'كباب',
-      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'rice-dishes',
-      nameKu: 'خواردنی برنج',
-      nameEn: 'Rice Dishes',
-      nameAr: 'أطباق أرز',
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'stews',
-      nameKu: 'خۆراک',
-      nameEn: 'Stews',
-      nameAr: 'يخنات',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'seafood',
-      nameKu: 'ماسی',
-      nameEn: 'Seafood',
-      nameAr: 'مأكولات بحرية',
-      image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'breads',
-      nameKu: 'نان',
-      nameEn: 'Breads',
-      nameAr: 'خبز',
-      image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'desserts',
-      nameKu: 'خواردنی شیرین',
-      nameEn: 'Desserts',
-      nameAr: 'حلويات',
-      image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'hot-drinks',
-      nameKu: 'چا و قاوە',
-      nameEn: 'Tea & Coffee',
-      nameAr: 'شاي وقهوة',
-      image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'drinks',
-      nameKu: 'خواردنی سارد',
-      nameEn: 'Cold Drinks',
-      nameAr: 'مشروبات باردة',
-      image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'shisha',
-      nameKu: 'شیەشە',
-      nameEn: 'Shisha',
-      nameAr: 'شيشة',
-      image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
-    },
-  ], []);
+      image: DEFAULT_CATEGORY_IMAGE,
+    };
 
-  const categories = useMemo(() => {
-    const categoriesFromMenu = new Set(menuItems.map((item) => item.category));
-    return baseCategories.filter(
-      (category) => category.id === 'all' || categoriesFromMenu.has(category.id)
-    );
-  }, [baseCategories, menuItems]);
+    const derivedCategories: MenuCategory[] = categoriesFromMenu.map((id) => ({
+      id,
+      nameKu: id,
+      nameEn: id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' '),
+      nameAr: id,
+    }));
+
+    return [baseCategory, ...derivedCategories];
+  }, [menuItems]);
 
   useEffect(() => {
     if (params.table) {
@@ -1056,7 +980,7 @@ export default function PublicMenuScreen() {
                 ]}>
                   {isActive && <View style={styles.activeIndicatorDot} />}
                   <Image
-                    source={{ uri: category.image }}
+                    source={{ uri: category.image || DEFAULT_CATEGORY_IMAGE }}
                     style={styles.categoryImageNew}
                     resizeMode="cover"
                   />
