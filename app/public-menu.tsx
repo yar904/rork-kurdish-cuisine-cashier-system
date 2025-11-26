@@ -53,11 +53,22 @@ export default function PublicMenuScreen() {
   const menuQuery = trpc.menu.getAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
-  const menuItems = menuQuery.data ?? [];
+  const useMenuRatingsQuery =
+    ((trpc as unknown as { menu?: { getRatings?: { useQuery: typeof trpc.ratings.getAllStats.useQuery } } }).menu
+      ?.getRatings?.useQuery ?? trpc.ratings.getAllStats.useQuery);
+  const useMenuByCategoryQuery =
+    ((trpc as unknown as { menu?: { getByCategory?: { useQuery: (input: { category: string }, opts?: any) => any } } }).menu
+      ?.getByCategory?.useQuery ?? null);
 
-  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
-    staleTime: 5 * 60 * 1000,
-  });
+  const menuItems = menuQuery.data ?? [];
+  const menuByCategoryQuery = useMenuByCategoryQuery
+    ? useMenuByCategoryQuery(
+        { category: selectedCategory },
+        { enabled: selectedCategory !== 'all', staleTime: 5 * 60 * 1000 }
+      )
+    : null;
+
+  const ratingsStatsQuery = useMenuRatingsQuery({ staleTime: 5 * 60 * 1000 });
   const ratingsStats = ratingsStatsQuery.data || {};
 
   const getItemName = (item: MenuItem) => {
@@ -96,11 +107,14 @@ export default function PublicMenuScreen() {
   }, [menuItems]);
 
   const filteredItems = useMemo(() => {
-    return menuItems.filter((item) => {
+    const baseItems =
+      selectedCategory !== 'all' && menuByCategoryQuery?.data ? menuByCategoryQuery.data : menuItems;
+
+    return baseItems.filter((item) => {
       const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
       return matchesCategory && item.available;
     });
-  }, [menuItems, selectedCategory]);
+  }, [menuByCategoryQuery?.data, menuItems, selectedCategory]);
 
   const groupedItems = useMemo(() => {
     if (selectedCategory !== 'all') {

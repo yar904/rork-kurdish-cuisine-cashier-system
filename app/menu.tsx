@@ -78,7 +78,20 @@ export default function PublicMenuScreen() {
   const menuQuery = trpc.menu.getAll.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
+  const useMenuRatingsQuery =
+    ((trpc as unknown as { menu?: { getRatings?: { useQuery: typeof trpc.ratings.getAllStats.useQuery } } }).menu
+      ?.getRatings?.useQuery ?? trpc.ratings.getAllStats.useQuery);
+  const useMenuByCategoryQuery =
+    ((trpc as unknown as { menu?: { getByCategory?: { useQuery: (input: { category: string }, opts?: any) => any } } }).menu
+      ?.getByCategory?.useQuery ?? null);
+
   const menuItems = menuQuery.data ?? [];
+  const menuByCategoryQuery = useMenuByCategoryQuery
+    ? useMenuByCategoryQuery(
+        { category: selectedCategory },
+        { enabled: selectedCategory !== 'all', staleTime: 5 * 60 * 1000 }
+      )
+    : null;
 
   const categories = useMemo(() => {
     const categoriesFromMenu = Array.from(new Set(menuItems.map((item) => item.category)));
@@ -214,7 +227,7 @@ export default function PublicMenuScreen() {
 
   const cartItemCount = currentOrder.reduce((sum, item) => sum + item.quantity, 0);
 
-  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery();
+  const ratingsStatsQuery = useMenuRatingsQuery({ staleTime: 5 * 60 * 1000 });
   const ratingsStats = ratingsStatsQuery.data || {};
 
   const itemRatingsQuery = trpc.ratings.getByMenuItem.useQuery(
@@ -429,14 +442,19 @@ export default function PublicMenuScreen() {
     );
   };
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesSearch =
-      searchQuery === '' ||
-      getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch && item.available;
-  });
+  const filteredItems = useMemo(() => {
+    const baseItems =
+      selectedCategory !== 'all' && menuByCategoryQuery?.data ? menuByCategoryQuery.data : menuItems;
+
+    return baseItems.filter((item) => {
+      const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+      const matchesSearch =
+        searchQuery === '' ||
+        getItemName(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getItemDescription(item).toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch && item.available;
+    });
+  }, [getItemDescription, getItemName, menuByCategoryQuery?.data, menuItems, searchQuery, selectedCategory]);
 
   const renderAllCategories = () => {
     return availableCategories.map((category) => {
