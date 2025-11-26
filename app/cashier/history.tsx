@@ -14,25 +14,35 @@ export default function CashierHistory() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   const getDateFilter = () => {
-    const now = new Date();
     switch (filter) {
-      case 'today':
+      case 'today': {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return { fromDate: today.toISOString() };
-      case 'week':
+        return { fromDate: today };
+      }
+      case 'week': {
         const week = new Date();
         week.setDate(week.getDate() - 7);
-        return { fromDate: week.toISOString() };
+        return { fromDate: week };
+      }
       default:
         return {};
     }
   };
 
-  const historyQuery = trpc.orders.getPaidHistory.useQuery({
-    limit: 100,
-    ...getDateFilter(),
-  });
+  const historyQuery = trpc.orders.getAll.useQuery();
+
+  const filteredOrders = React.useMemo(() => {
+    if (!historyQuery.data) return [];
+    const { fromDate } = getDateFilter();
+
+    return historyQuery.data
+      .filter((order) => order.status === 'paid')
+      .filter((order) => {
+        if (!fromDate) return true;
+        return new Date(order.createdAt) >= fromDate;
+      });
+  }, [historyQuery.data, filter]);
 
   const formatDate = (date: Date) => {
     const d = new Date(date);
@@ -45,8 +55,8 @@ export default function CashierHistory() {
   };
 
   const getTotalRevenue = () => {
-    if (!historyQuery.data) return 0;
-    return historyQuery.data.reduce((sum, order) => sum + order.total, 0);
+    if (!filteredOrders) return 0;
+    return filteredOrders.reduce((sum, order) => sum + order.total, 0);
   };
 
   return (
@@ -76,11 +86,11 @@ export default function CashierHistory() {
           ))}
         </View>
 
-        {!historyQuery.isLoading && historyQuery.data && (
+        {!historyQuery.isLoading && filteredOrders && (
           <View style={styles.summaryCard}>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Total Orders</Text>
-              <Text style={styles.summaryValue}>{historyQuery.data.length}</Text>
+              <Text style={styles.summaryValue}>{filteredOrders.length}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
@@ -109,7 +119,7 @@ export default function CashierHistory() {
           </View>
         )}
 
-        {!historyQuery.isLoading && !historyQuery.error && historyQuery.data?.length === 0 && (
+        {!historyQuery.isLoading && !historyQuery.error && filteredOrders.length === 0 && (
           <View style={styles.emptyContainer}>
             <Calendar size={64} color="#8E8E93" />
             <Text style={styles.emptyTitle}>No Orders Found</Text>
@@ -119,9 +129,9 @@ export default function CashierHistory() {
           </View>
         )}
 
-        {!historyQuery.isLoading && !historyQuery.error && historyQuery.data && historyQuery.data.length > 0 && (
+        {!historyQuery.isLoading && !historyQuery.error && filteredOrders.length > 0 && (
           <ScrollView style={styles.ordersList} showsVerticalScrollIndicator={false}>
-            {historyQuery.data.map((order) => (
+            {filteredOrders.map((order) => (
               <View key={order.id} style={styles.orderHistoryCard}>
                 <View style={styles.orderHistoryHeader}>
                   <View style={styles.orderHistoryInfo}>

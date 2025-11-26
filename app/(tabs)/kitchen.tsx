@@ -10,15 +10,16 @@ export default function KitchenDashboard() {
   const insets = useSafeAreaInsets();
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  const newOrdersQuery = trpc.kitchen.getNew.useQuery(undefined, { refetchInterval: 4000 });
-  const inProgressQuery = trpc.kitchen.getInProgress.useQuery(undefined, { refetchInterval: 4000 });
-  const completedQuery = trpc.kitchen.getCompleted.useQuery(undefined, { refetchInterval: 10000 });
+  const activeOrdersQuery = trpc.orders.getActive.useQuery(undefined, { refetchInterval: 4000 });
+
+  const newOrders = activeOrdersQuery.data?.filter((order) => order.status === 'new') ?? [];
+  const inProgressOrders = activeOrdersQuery.data?.filter((order) => order.status === 'preparing') ?? [];
+  const readyOrders =
+    activeOrdersQuery.data?.filter((order) => order.status === 'ready' || order.status === 'served') ?? [];
 
   const updateStatusMutation = trpc.orders.updateStatus.useMutation({
     onSuccess: () => {
-      newOrdersQuery.refetch();
-      inProgressQuery.refetch();
-      completedQuery.refetch();
+      activeOrdersQuery.refetch();
       setUpdatingOrderId(null);
     },
     onError: () => {
@@ -99,11 +100,9 @@ export default function KitchenDashboard() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={newOrdersQuery.isRefetching}
+            refreshing={activeOrdersQuery.isRefetching}
             onRefresh={() => {
-              newOrdersQuery.refetch();
-              inProgressQuery.refetch();
-              completedQuery.refetch();
+              activeOrdersQuery.refetch();
             }}
             tintColor="#5C0000"
           />
@@ -118,25 +117,25 @@ export default function KitchenDashboard() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>New Orders</Text>
             <View style={[styles.badge, { backgroundColor: '#F59E0B' }]}>
-              <Text style={styles.badgeText}>{newOrdersQuery.data?.length || 0}</Text>
+              <Text style={styles.badgeText}>{newOrders.length}</Text>
             </View>
           </View>
 
-          {newOrdersQuery.isLoading && (
+          {activeOrdersQuery.isLoading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator color="#5C0000" />
             </View>
           )}
 
-          {!newOrdersQuery.isLoading && newOrdersQuery.data?.length === 0 && (
+          {!activeOrdersQuery.isLoading && newOrders.length === 0 && (
             <View style={styles.emptySection}>
               <Text style={styles.emptyText}>No new orders</Text>
             </View>
           )}
 
-          {newOrdersQuery.data && newOrdersQuery.data.length > 0 && (
+          {newOrders.length > 0 && (
             <View style={styles.ordersContainer}>
-              {newOrdersQuery.data.map((order) => (
+              {newOrders.map((order) => (
                 <OrderCard
                   key={order.id}
                   order={order}
@@ -154,25 +153,25 @@ export default function KitchenDashboard() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>In Progress</Text>
             <View style={[styles.badge, { backgroundColor: '#3B82F6' }]}>
-              <Text style={styles.badgeText}>{inProgressQuery.data?.length || 0}</Text>
+              <Text style={styles.badgeText}>{inProgressOrders.length}</Text>
             </View>
           </View>
 
-          {inProgressQuery.isLoading && (
+          {activeOrdersQuery.isLoading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator color="#5C0000" />
             </View>
           )}
 
-          {!inProgressQuery.isLoading && inProgressQuery.data?.length === 0 && (
+          {!activeOrdersQuery.isLoading && inProgressOrders.length === 0 && (
             <View style={styles.emptySection}>
               <Text style={styles.emptyText}>No orders in progress</Text>
             </View>
           )}
 
-          {inProgressQuery.data && inProgressQuery.data.length > 0 && (
+          {inProgressOrders.length > 0 && (
             <View style={styles.ordersContainer}>
-              {inProgressQuery.data.map((order) => (
+              {inProgressOrders.map((order) => (
                 <OrderCard
                   key={order.id}
                   order={order}
@@ -190,25 +189,25 @@ export default function KitchenDashboard() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Completed Today</Text>
             <View style={[styles.badge, { backgroundColor: '#10B981' }]}>
-              <Text style={styles.badgeText}>{completedQuery.data?.length || 0}</Text>
+              <Text style={styles.badgeText}>{readyOrders.length}</Text>
             </View>
           </View>
 
-          {completedQuery.isLoading && (
+          {activeOrdersQuery.isLoading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator color="#5C0000" />
             </View>
           )}
 
-          {!completedQuery.isLoading && completedQuery.data?.length === 0 && (
+          {!activeOrdersQuery.isLoading && readyOrders.length === 0 && (
             <View style={styles.emptySection}>
               <Text style={styles.emptyText}>No completed orders today</Text>
             </View>
           )}
 
-          {completedQuery.data && completedQuery.data.length > 0 && (
+          {readyOrders.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.completedScroll}>
-              {completedQuery.data.slice(0, 10).map((order) => (
+              {readyOrders.slice(0, 10).map((order) => (
                 <View key={order.id} style={styles.completedCard}>
                   <Text style={styles.completedTable}>Table {order.tableNumber}</Text>
                   <Text style={styles.completedTime}>{getTimeSince(order.updatedAt)}</Text>
