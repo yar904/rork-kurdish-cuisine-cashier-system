@@ -1,32 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
-import { getMenuItems, createOrder } from "../lib/api";
+import { trpc } from "@/lib/trpcClient";
+import type { RouterOutputs } from "@/types/trpc";
+
+type MenuItem = RouterOutputs["menu"]["getAll"][number];
 
 export default function MenuScreen() {
-  const [menu, setMenu] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const menuQuery = trpc.menu.getAll.useQuery();
+  const createOrderMutation = trpc.orders.create.useMutation();
 
-  useEffect(() => {
-    loadMenu();
-  }, []);
-
-  const loadMenu = async () => {
+  const handleOrder = async (item: MenuItem) => {
     try {
-      const data = await getMenuItems();
-      setMenu(data);
-    } catch (err) {
-      console.error("Menu fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOrder = async (item: any) => {
-    try {
-      const newOrder = await createOrder({
+      const newOrder = await createOrderMutation.mutateAsync({
         table_id: "demo-table-1",
+        tableNumber: 1,
+        items: [
+          {
+            menuItemId: item.id,
+            quantity: 1,
+            notes: "",
+          },
+        ],
         total: item.price,
-        status: "pending",
       });
       alert(`✅ Order created for ${item.name}`);
       console.log(newOrder);
@@ -36,15 +31,22 @@ export default function MenuScreen() {
     }
   };
 
-  if (loading) return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: "center" }} />;
+  if (menuQuery.isLoading) return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: "center" }} />;
+  if (menuQuery.error) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text>{menuQuery.error.message}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", padding: 16 }}>
       <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 12 }}>🍽 Menu</Text>
       <FlatList
-        data={menu}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }: { item: any }) => (
+        data={menuQuery.data || []}
+        keyExtractor={(item: MenuItem) => item.id}
+        renderItem={({ item }: { item: MenuItem }) => (
           <TouchableOpacity
             onPress={() => handleOrder(item)}
             style={{

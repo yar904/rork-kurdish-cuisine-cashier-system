@@ -9,7 +9,7 @@ import {
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { TrendingUp, Clock, Calendar, DollarSign } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function EmployeeMetricsScreen() {
   const { employeeId, name } = useLocalSearchParams<{ employeeId: string; name: string }>();

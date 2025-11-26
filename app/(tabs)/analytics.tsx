@@ -4,7 +4,7 @@ import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
 import { TrendingUp, Award, Clock, DollarSign } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 export default function AnalyticsDashboard() {
   const insets = useSafeAreaInsets();

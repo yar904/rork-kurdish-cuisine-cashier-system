@@ -16,11 +16,13 @@ import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, X, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { trpc } from '@/lib/trpc';
-import { MENU_ITEMS } from '@/constants/menu';
+import { trpc } from '@/lib/trpcClient';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/constants/currency';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import type { RouterOutputs } from '@/types/trpc';
+
+type MenuItem = RouterOutputs['menu']['getAll'][number];
 
 export default function PublicMenuScreen() {
   const router = useRouter();
@@ -28,9 +30,9 @@ export default function PublicMenuScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const { language, setLanguage } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedItem, setSelectedItem] = useState<typeof MENU_ITEMS[0] | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemModalVisible, setItemModalVisible] = useState(false);
-  const [cart, setCart] = useState<Array<{ item: typeof MENU_ITEMS[0], quantity: number }>>([]);
+  const [cart, setCart] = useState<Array<{ item: MenuItem, quantity: number }>>([]);
   const categoryScales = useRef(new Map<string, Animated.Value>()).current;
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
@@ -39,28 +41,33 @@ export default function PublicMenuScreen() {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const glowTranslateX = useRef(new Animated.Value(0)).current;
 
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const menuItems = menuQuery.data ?? [];
+
   const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
   const ratingsStats = ratingsStatsQuery.data || {};
 
-  const getItemName = (item: typeof MENU_ITEMS[0]) => {
+  const getItemName = (item: MenuItem) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
     return item.name;
   };
 
-  const getItemDescription = (item: typeof MENU_ITEMS[0]) => {
+  const getItemDescription = (item: MenuItem) => {
     if (language === 'ar') return item.descriptionArabic;
     if (language === 'ku') return item.descriptionKurdish;
     return item.description;
   };
 
-  const categories = useMemo(() => [
-    { 
-      id: 'all', 
-      nameKu: 'هەموو', 
-      nameEn: 'All', 
+  const baseCategories = useMemo(() => [
+    {
+      id: 'all',
+      nameKu: 'هەموو',
+      nameEn: 'All',
       nameAr: 'الكل',
       image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
     },
@@ -141,28 +148,35 @@ export default function PublicMenuScreen() {
       nameAr: 'مشروبات باردة',
       image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'shisha', 
-      nameKu: 'شیەشە', 
-      nameEn: 'Shisha', 
+    {
+      id: 'shisha',
+      nameKu: 'شیەشە',
+      nameEn: 'Shisha',
       nameAr: 'شيشة',
       image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
     },
   ], []);
 
+  const categories = useMemo(() => {
+    const categoriesFromMenu = new Set(menuItems.map((item) => item.category));
+    return baseCategories.filter(
+      (category) => category.id === 'all' || categoriesFromMenu.has(category.id)
+    );
+  }, [baseCategories, menuItems]);
+
   const filteredItems = useMemo(() => {
-    return MENU_ITEMS.filter((item) => {
+    return menuItems.filter((item) => {
       const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
       return matchesCategory && item.available;
     });
-  }, [selectedCategory]);
+  }, [menuItems, selectedCategory]);
 
   const groupedItems = useMemo(() => {
     if (selectedCategory !== 'all') {
       return [{ category: selectedCategory, items: filteredItems }];
     }
-    
-    const grouped = new Map<string, typeof MENU_ITEMS>();
+
+    const grouped = new Map<string, MenuItem[]>();
     filteredItems.forEach(item => {
       if (!grouped.has(item.category)) {
         grouped.set(item.category, []);
@@ -173,7 +187,7 @@ export default function PublicMenuScreen() {
     return Array.from(grouped.entries()).map(([category, items]) => ({ category, items }));
   }, [filteredItems, selectedCategory]);
 
-  const handleItemPress = (item: typeof MENU_ITEMS[0]) => {
+  const handleItemPress = (item: MenuItem) => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
@@ -181,7 +195,7 @@ export default function PublicMenuScreen() {
     setItemModalVisible(true);
   };
 
-  const handleAddToCart = (item: typeof MENU_ITEMS[0], event: any) => {
+  const handleAddToCart = (item: MenuItem, event: any) => {
     event.stopPropagation();
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -194,7 +208,7 @@ export default function PublicMenuScreen() {
     }
   };
 
-  const handleShowReviews = (item: typeof MENU_ITEMS[0], event: any) => {
+  const handleShowReviews = (item: MenuItem, event: any) => {
     event.stopPropagation();
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -203,7 +217,7 @@ export default function PublicMenuScreen() {
     setItemModalVisible(true);
   };
 
-  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+  const renderMenuItem = (item: MenuItem) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;

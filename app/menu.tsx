@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ImageBackground } from 'react-native';
 import {
   View,
@@ -21,8 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, UtensilsCrossed, Plus, Minus, X, Send, Star, Utensils, ArrowLeft, Search, ChefHat, Menu as MenuIcon, Utensils as UtensilsIcon, Receipt } from 'lucide-react-native';
 import Svg, { Path, Circle, Ellipse, Defs, Pattern, Rect, G } from 'react-native-svg';
 
-import { MENU_ITEMS } from '@/constants/menu';
-import { MenuCategory, MenuItem } from '@/types/restaurant';
+import type { RouterOutputs } from '@/types/trpc';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { useRestaurant } from '@/contexts/RestaurantContext';
@@ -30,7 +29,16 @@ import { useTables } from '@/contexts/TableContext';
 import { formatPrice } from '@/constants/currency';
 import { usePublishNotification } from '@/contexts/NotificationContext';
 
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
+
+type MenuItem = RouterOutputs['menu']['getAll'][number];
+type MenuCategory = {
+  id: string;
+  nameKu: string;
+  nameEn: string;
+  nameAr: string;
+  image: string;
+};
 
 export default function PublicMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -65,99 +73,111 @@ export default function PublicMenuScreen() {
   const [quickAddingItem, setQuickAddingItem] = useState<string | null>(null);
   const cardAnimations = useRef<Map<string, Animated.Value>>(new Map()).current;
 
-  const categories = [
-    { 
-      id: 'all', 
-      nameKu: 'هەموو', 
-      nameEn: 'All', 
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const menuItems = menuQuery.data ?? [];
+
+  const baseCategories: MenuCategory[] = useMemo(() => [
+    {
+      id: 'all',
+      nameKu: 'هەموو',
+      nameEn: 'All',
       nameAr: 'الكل',
       image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'appetizers', 
-      nameKu: 'دەستپێکەکان', 
-      nameEn: 'Appetizers', 
+    {
+      id: 'appetizers',
+      nameKu: 'دەستپێکەکان',
+      nameEn: 'Appetizers',
       nameAr: 'مقبلات',
       image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'soups', 
-      nameKu: 'سوپەکان', 
-      nameEn: 'Soups', 
+    {
+      id: 'soups',
+      nameKu: 'سوپەکان',
+      nameEn: 'Soups',
       nameAr: 'شوربات',
       image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'salads', 
-      nameKu: 'زەڵاتە', 
-      nameEn: 'Salads', 
+    {
+      id: 'salads',
+      nameKu: 'زەڵاتە',
+      nameEn: 'Salads',
       nameAr: 'سلطات',
       image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'kebabs', 
-      nameKu: 'کەبابەکان', 
-      nameEn: 'Kebabs', 
+    {
+      id: 'kebabs',
+      nameKu: 'کەبابەکان',
+      nameEn: 'Kebabs',
       nameAr: 'كباب',
       image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'rice-dishes', 
-      nameKu: 'خواردنی برنج', 
-      nameEn: 'Rice Dishes', 
+    {
+      id: 'rice-dishes',
+      nameKu: 'خواردنی برنج',
+      nameEn: 'Rice Dishes',
       nameAr: 'أطباق أرز',
       image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'stews', 
-      nameKu: 'خۆراک', 
-      nameEn: 'Stews', 
+    {
+      id: 'stews',
+      nameKu: 'خۆراک',
+      nameEn: 'Stews',
       nameAr: 'يخنات',
       image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'seafood', 
-      nameKu: 'ماسی', 
-      nameEn: 'Seafood', 
+    {
+      id: 'seafood',
+      nameKu: 'ماسی',
+      nameEn: 'Seafood',
       nameAr: 'مأكولات بحرية',
       image: 'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'breads', 
-      nameKu: 'نان', 
-      nameEn: 'Breads', 
+    {
+      id: 'breads',
+      nameKu: 'نان',
+      nameEn: 'Breads',
       nameAr: 'خبز',
       image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'desserts', 
-      nameKu: 'خواردنی شیرین', 
-      nameEn: 'Desserts', 
+    {
+      id: 'desserts',
+      nameKu: 'خواردنی شیرین',
+      nameEn: 'Desserts',
       nameAr: 'حلويات',
       image: 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'hot-drinks', 
-      nameKu: 'چا و قاوە', 
-      nameEn: 'Tea & Coffee', 
+    {
+      id: 'hot-drinks',
+      nameKu: 'چا و قاوە',
+      nameEn: 'Tea & Coffee',
       nameAr: 'شاي وقهوة',
       image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'drinks', 
-      nameKu: 'خواردنی سارد', 
-      nameEn: 'Cold Drinks', 
+    {
+      id: 'drinks',
+      nameKu: 'خواردنی سارد',
+      nameEn: 'Cold Drinks',
       nameAr: 'مشروبات باردة',
       image: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=400&h=300&fit=crop'
     },
-    { 
-      id: 'shisha', 
-      nameKu: 'شیەشە', 
-      nameEn: 'Shisha', 
+    {
+      id: 'shisha',
+      nameKu: 'شیەشە',
+      nameEn: 'Shisha',
       nameAr: 'شيشة',
       image: 'https://images.unsplash.com/photo-1580933073521-dc49ac0d4e6a?w=400&h=300&fit=crop'
     },
-  ];
+  ], []);
+
+  const categories = useMemo(() => {
+    const categoriesFromMenu = new Set(menuItems.map((item) => item.category));
+    return baseCategories.filter(
+      (category) => category.id === 'all' || categoriesFromMenu.has(category.id)
+    );
+  }, [baseCategories, menuItems]);
 
   useEffect(() => {
     if (params.table) {
@@ -355,7 +375,10 @@ export default function PublicMenuScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await ratingsStatsQuery.refetch();
+    await Promise.all([
+      ratingsStatsQuery.refetch(),
+      menuQuery.refetch(),
+    ]);
     setTimeout(() => setRefreshing(false), 800);
   };
 
@@ -385,23 +408,23 @@ export default function PublicMenuScreen() {
   };
 
   const availableCategories = categories.filter((category) => {
-    const categoryItems = MENU_ITEMS.filter(item => item.category === category.id && item.available);
-    return categoryItems.length > 0;
+    const categoryItems = menuItems.filter((item) => item.category === category.id && item.available);
+    return category.id === 'all' || categoryItems.length > 0;
   });
 
-  const getItemName = (item: typeof MENU_ITEMS[0]) => {
+  const getItemName = (item: MenuItem) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
     return item.name;
   };
 
-  const getItemDescription = (item: typeof MENU_ITEMS[0]) => {
+  const getItemDescription = (item: MenuItem) => {
     if (language === 'ar') return item.descriptionArabic;
     if (language === 'ku') return item.descriptionKurdish;
     return item.description;
   };
 
-  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+  const renderMenuItem = (item: MenuItem) => {
     const isPremium = item.price > 25000;
     const itemStats = ratingsStats[item.id];
     const hasRatings = itemStats && itemStats.totalRatings > 0;
@@ -412,11 +435,11 @@ export default function PublicMenuScreen() {
         key={item.id} 
         style={[styles.menuItemCardHorizontal, isPremium && styles.premiumCard]}
       >
-        <TouchableOpacity
-          style={styles.menuItemTouchable}
-          activeOpacity={0.95}
-          onPress={() => handleOpenItemModal(item as MenuItem)}
-        >
+          <TouchableOpacity
+            style={styles.menuItemTouchable}
+            activeOpacity={0.95}
+            onPress={() => handleOpenItemModal(item)}
+          >
           <View style={styles.menuItemContentHorizontal}>
             {item.image && (
               <View style={styles.imageContainerHorizontal}>
@@ -468,7 +491,7 @@ export default function PublicMenuScreen() {
           
           <TouchableOpacity
             style={[styles.quickAddButton, isQuickAdding && styles.quickAddButtonActive]}
-            onPress={() => handleQuickAdd(item as MenuItem)}
+            onPress={() => handleQuickAdd(item)}
             activeOpacity={0.7}
           >
             {isQuickAdding ? (
@@ -482,7 +505,7 @@ export default function PublicMenuScreen() {
     );
   };
 
-  const filteredItems = MENU_ITEMS.filter((item) => {
+  const filteredItems = menuItems.filter((item) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesSearch =
       searchQuery === '' ||
@@ -860,7 +883,7 @@ export default function PublicMenuScreen() {
             {!ratingItem && (
               <ScrollView style={styles.reviewsList} showsVerticalScrollIndicator={false}>
                 {Object.entries(ratingsStats).map(([itemId, stats]) => {
-                  const menuItem = MENU_ITEMS.find(item => item.id === itemId);
+                  const menuItem = menuItems.find((item) => item.id === itemId);
                   if (!menuItem || stats.totalRatings === 0) return null;
                   
                   return (

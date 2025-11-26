@@ -4,7 +4,7 @@ import { Text } from '@/components/CustomText';
 import { Stack } from 'expo-router';
 import { Clock, DollarSign, XCircle, RefreshCw, Calendar } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 type TimeFilter = 'today' | 'week' | 'all';
 

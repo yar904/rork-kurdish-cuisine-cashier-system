@@ -9,8 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
-import { TRPC_URL, trpcClient } from "@/lib/trpc";
-import { supabase } from "@/lib/supabase";
+import { TRPC_URL, trpcClient } from "@/lib/trpcClient";
 
 type HealthCheck = {
   success: boolean;
@@ -192,22 +191,15 @@ export default function EnvCheckScreen() {
 
       let supabaseTest: HealthCheck = { success: false, message: "" };
       try {
-        const { error } = await supabase.from("menu_items").select("id").limit(1);
-        if (error) {
-          supabaseTest = {
-            success: false,
-            message: `Supabase Error: ${error.message}`,
-          };
-        } else {
-          supabaseTest = {
-            success: true,
-            message: "Supabase connection successful",
-          };
-        }
+        const result = await trpcClient.menu.getAll.query();
+        supabaseTest = {
+          success: true,
+          message: `Backend reachable via tRPC (${result.length} menu items)`,
+        };
       } catch (err: any) {
         supabaseTest = {
           success: false,
-          message: `Supabase Exception: ${err.message}`,
+          message: `Backend Error: ${err.message}`,
         };
       }
 
