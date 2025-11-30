@@ -42,7 +42,7 @@ type MenuCategory = {
 
 const DEFAULT_CATEGORY_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop';
 
-export default function PublicMenuScreen() {
+export default function MenuScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { language, setLanguage, t, tc } = useLanguage();
