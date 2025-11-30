@@ -55,12 +55,7 @@ export default function PublicMenuScreen() {
   });
 
   const menuItems = menuQuery.data ?? [];
-  const menuByCategoryQuery = trpc.menu.getByCategory.useQuery(
-    { category: selectedCategory },
-    { enabled: selectedCategory !== 'all', staleTime: 5 * 60 * 1000 }
-  );
-
-  const ratingsStatsQuery = trpc.menu.getRatings.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const ratingsStats = ratingsStatsQuery.data || {};
 
   const getItemName = (item: MenuItem) => {
@@ -99,14 +94,11 @@ export default function PublicMenuScreen() {
   }, [menuItems]);
 
   const filteredItems = useMemo(() => {
-    const baseItems =
-      selectedCategory !== 'all' && menuByCategoryQuery?.data ? menuByCategoryQuery.data : menuItems;
-
-    return baseItems.filter((item) => {
+    return menuItems.filter((item) => {
       const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
       return matchesCategory && item.available;
     });
-  }, [menuByCategoryQuery?.data, menuItems, selectedCategory]);
+  }, [menuItems, selectedCategory]);
 
   const groupedItems = useMemo(() => {
     if (selectedCategory !== 'all') {
