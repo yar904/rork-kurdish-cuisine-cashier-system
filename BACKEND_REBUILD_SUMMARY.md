@@ -36,7 +36,6 @@ The `tapse-backend/router.ts` includes ALL POS routes:
 
 #### 4. Frontend Integration
 - `lib/trpc.ts` points to: `https://opsnzswjxzvywvqjvjvy.functions.supabase.co/tapse-backend`
-- `lib/api.ts` uses tRPC client for all API calls
 - `types/trpc.ts` imports types from `supabase/functions/tapse-backend/router`
 - No references to old backend folder found
 
