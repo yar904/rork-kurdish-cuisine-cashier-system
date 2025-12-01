@@ -41,7 +41,6 @@ export default function PublicMenuScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemModalVisible, setItemModalVisible] = useState(false);
-  const [cart, setCart] = useState<Array<{ item: MenuItem, quantity: number }>>([]);
   const categoryScales = useRef(new Map<string, Animated.Value>()).current;
   const categoryScrollViewRef = useRef<ScrollView>(null);
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
@@ -122,19 +121,6 @@ export default function PublicMenuScreen() {
     }
     setSelectedItem(item);
     setItemModalVisible(true);
-  };
-
-  const handleAddToCart = (item: MenuItem, event: any) => {
-    event.stopPropagation();
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    const existingItem = cart.find(c => c.item.id === item.id);
-    if (existingItem) {
-      setCart(cart.map(c => c.item.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
-    } else {
-      setCart([...cart, { item, quantity: 1 }]);
-    }
   };
 
   const handleShowReviews = (item: MenuItem, event: any) => {
@@ -1065,38 +1051,5 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: '#fff',
     letterSpacing: 0.2,
-  },
-  cartBadge: {
-    position: 'absolute' as const,
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#D4AF37',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    borderWidth: 2,
-    borderColor: '#1a0000',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        boxShadow: '0 2px 8px rgba(212, 175, 55, 0.8)',
-      },
-    }),
-  },
-  cartBadgeText: {
-    fontSize: 12,
-    fontWeight: '800' as const,
-    color: '#1a0000',
-    fontFamily: 'NotoNaskhArabic_700Bold',
   },
 });
