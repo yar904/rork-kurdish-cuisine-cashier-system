@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import { trpc } from "@/lib/trpcClient";
 import { useRealtime } from "@/contexts/RealtimeContext";
+import type { Notification } from "@/types/restaurant";
 import type { RealtimePayload } from "@/contexts/RealtimeContext";
-import type { RouterOutputs } from "@/types/trpc";
 
 export type NotificationType = "assist" | "bill" | "notify";
 
