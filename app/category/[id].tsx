@@ -4,12 +4,14 @@ import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Globe, ArrowLeft, UtensilsCrossed, Plus, Minus, X } from 'lucide-react-native';
 
-import { MENU_ITEMS } from '@/constants/menu';
-import { MenuCategory, MenuItem } from '@/types/restaurant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/i18n';
 import { formatPrice } from '@/constants/currency';
 import { useRestaurant } from '@/contexts/RestaurantContext';
+import { trpc } from '@/lib/trpcClient';
+import type { RouterOutputs } from '@/types/trpc';
+
+type MenuItem = RouterOutputs['menu']['getAll'][number];
 
 
 
@@ -24,28 +26,33 @@ export default function CategoryDetailScreen() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
   const [itemQuantity, setItemQuantity] = useState(1);
-  
+
+  const menuQuery = trpc.menu.getAll.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const menuItems = menuQuery.data ?? [];
 
 
-  const category = id as MenuCategory;
 
-  const filteredItems = MENU_ITEMS.filter((item) => {
+  const category = (id as string) || '';
+
+  const filteredItems = menuItems.filter((item) => {
     const matchesCategory = item.category === category;
     const matchesSearch =
       searchQuery === '' ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.nameKurdish.includes(searchQuery) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.nameKurdish || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch && item.available;
   });
 
-  const getItemName = (item: typeof MENU_ITEMS[0]) => {
+  const getItemName = (item: MenuItem) => {
     if (language === 'ar') return item.nameArabic;
     if (language === 'ku') return item.nameKurdish;
     return item.name;
   };
 
-  const getItemDescription = (item: typeof MENU_ITEMS[0]) => {
+  const getItemDescription = (item: MenuItem) => {
     if (language === 'ar') return item.descriptionArabic;
     if (language === 'ku') return item.descriptionKurdish;
     return item.description;
@@ -61,7 +68,7 @@ export default function CategoryDetailScreen() {
     }
   };
 
-  const renderMenuItem = (item: typeof MENU_ITEMS[0]) => {
+  const renderMenuItem = (item: MenuItem) => {
     return (
       <View 
         key={item.id} 

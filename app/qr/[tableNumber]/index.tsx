@@ -43,7 +43,6 @@ export default function QROrderingPage() {
 
   const menuQuery = trpc.menu.getAll.useQuery();
   const createOrderMutation = trpc.orders.create.useMutation();
-  const addItemMutation = trpc.orders.addItem.useMutation();
   const publishNotification = usePublishNotification();
 
   const categories = useMemo(() => {
@@ -121,7 +120,7 @@ export default function QROrderingPage() {
         total: finalTotal,
       });
 
-      setPlacedOrderId(order.id);
+      setPlacedOrderId(order.orderId || order.id || '');
       setOrderPlaced(true);
       setCart([]);
       setCartModalVisible(false);
