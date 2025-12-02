@@ -9,9 +9,9 @@ export default function DebugScreen() {
 
   const debugRoutes = [
     {
-      title: 'Public Menu',
-      description: 'Customer-facing menu with landing page',
-      path: '/public-menu',
+      title: 'Menu',
+      description: 'Customer-facing menu with live tRPC data',
+      path: '/menu',
       icon: Eye,
       color: '#3B82F6',
     },

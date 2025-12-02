@@ -1196,7 +1196,7 @@ export default function CustomerOrderScreen() {
 
       <TouchableOpacity
         style={styles.switchButton}
-        onPress={() => router.push('/public-menu')}
+        onPress={() => router.push('/menu')}
         activeOpacity={0.8}
       >
         <Eye size={20} color="#fff" strokeWidth={2.5} />

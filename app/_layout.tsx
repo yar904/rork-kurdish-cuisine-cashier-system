@@ -45,7 +45,6 @@ function RootLayoutNav() {
       <Stack.Screen name="inventory" options={{ headerShown: false }} />
       <Stack.Screen name="table-qr-codes" options={{ headerShown: false }} />
       <Stack.Screen name="customer-order" options={{ headerShown: false }} />
-      <Stack.Screen name="public-menu" options={{ headerShown: false }} />
       <Stack.Screen
         name="font-preview"
         options={{ headerShown: true, title: "Kurdish Fonts" }}
