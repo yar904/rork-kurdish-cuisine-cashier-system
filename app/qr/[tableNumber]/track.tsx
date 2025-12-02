@@ -22,7 +22,7 @@ import {
   AlertCircle,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 import { usePublishNotification } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';
@@ -133,11 +133,13 @@ export default function TrackOrderPage() {
     statusQuery.refetch();
   };
 
-  const hasOrder = statusQuery.data?.hasOrder;
+  const hasOrder = Boolean(
+    statusQuery.data?.status && statusQuery.data.status !== 'no_order'
+  );
 
   const currentStatus: StatusKey = useMemo(() => {
     if (!hasOrder) return 'waiting';
-    return statusQuery.data?.status ?? 'new';
+    return (statusQuery.data?.status as StatusKey) ?? 'new';
   }, [hasOrder, statusQuery.data?.status]);
 
   const config = STATUS_CONFIG[currentStatus];
@@ -187,11 +189,11 @@ export default function TrackOrderPage() {
               <Text style={[styles.statusTitle, { color: config.color }]}>{config.title}</Text>
               <Text style={styles.statusMessage}>{config.message}</Text>
 
-              {hasOrder && statusQuery.data?.created_at && (
+              {hasOrder && statusQuery.data?.createdAt && (
                 <View style={styles.orderIdContainer}>
                   <Text style={styles.orderIdLabel}>Order Created</Text>
                   <Text style={styles.orderId}>
-                    {new Date(statusQuery.data.created_at).toLocaleTimeString()}
+                    {new Date(statusQuery.data.createdAt).toLocaleTimeString()}
                   </Text>
                 </View>
               )}
@@ -216,20 +218,17 @@ export default function TrackOrderPage() {
               </View>
             )}
 
-            {hasOrder && statusQuery.data?.items && statusQuery.data.items.length > 0 && (
-              <View style={styles.itemsCard}>
-                <Text style={styles.itemsTitle}>Your Order</Text>
-                {statusQuery.data.items.map((item, index) => (
-                  <View key={`${item.name}-${index}`} style={styles.orderItem}>
-                    <View style={styles.itemDetails}>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.itemQuantity}>×{item.quantity}</Text>
+              {hasOrder && statusQuery.data?.items && statusQuery.data.items.length > 0 && (
+                <View style={styles.itemsCard}>
+                  <Text style={styles.itemsTitle}>Your Order</Text>
+                  {statusQuery.data.items.map((item, index) => (
+                    <View key={`${item.name}-${index}`} style={styles.orderItem}>
+                      <View style={styles.itemDetails}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemQuantity}>×{item.quantity}</Text>
+                      </View>
                     </View>
-                    <Text style={styles.itemPrice}>
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </Text>
-                  </View>
-                ))}
+                  ))}
 
                 <View style={styles.divider} />
 
@@ -547,11 +546,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
     fontWeight: '600' as const,
-  },
-  itemPrice: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#5C0000',
   },
   divider: {
     height: 1,

@@ -22,9 +22,7 @@ import Svg, { Defs, Pattern, Rect, Path, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Colors } from '@/constants/colors';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { trpc, trpcClient } from '@/lib/trpc';
-import { supabase } from '@/lib/supabase';
+import { trpc } from '@/lib/trpcClient';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -137,89 +135,20 @@ export default function CustomerOrderScreen() {
   });
 
   const menuData = menuQuery.data || [];
-  
-  const ratingsStatsQuery = useQuery({
-    queryKey: ['ratings-stats'],
-    queryFn: async () => {
-      console.log('[CustomerOrder] Fetching ratings from Supabase');
-      try {
-        const { data, error } = await supabase
-          .from('ratings')
-          .select('menu_item_id, rating');
-        
-        if (error) {
-          console.warn('[CustomerOrder] Could not fetch ratings:', error.message);
-          return [];
-        }
 
-        const statsMap = new Map<string, { sum: number; count: number }>();
-        data?.forEach(rating => {
-          const current = statsMap.get(rating.menu_item_id) || { sum: 0, count: 0 };
-          statsMap.set(rating.menu_item_id, {
-            sum: current.sum + rating.rating,
-            count: current.count + 1
-          });
-        });
-
-        const stats = Array.from(statsMap.entries()).map(([menuItemId, { sum, count }]) => ({
-          menuItemId,
-          averageRating: sum / count,
-          totalRatings: count
-        }));
-        
-        console.log('[CustomerOrder] ✅ Ratings loaded:', stats.length);
-        return stats;
-      } catch (err) {
-        console.warn('[CustomerOrder] Error fetching ratings:', err);
-        return [];
-      }
-    },
+  const ratingsStatsQuery = trpc.ratings.getAllStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    retry: false,
   });
 
-  const createOrderMutation = useMutation({
-    mutationFn: async (payload: { tableNumber: number; items: any[]; total: number }) => {
-      console.log('[CustomerOrder] 🚀 Submitting order');
-      console.log('[CustomerOrder] 📋 Payload:', JSON.stringify(payload, null, 2));
-      
-      try {
-        console.log('[CustomerOrder] Attempting tRPC order submission...');
-        const trpcResult = await trpcClient.orders.create.mutate(payload);
-        console.log('[CustomerOrder] ✅ tRPC order submitted:', trpcResult);
-        return trpcResult;
-      } catch (trpcError: any) {
-        console.warn('[CustomerOrder] ⚠️ tRPC failed, using Supabase fallback');
-        console.warn('[CustomerOrder] tRPC error:', trpcError?.message);
-        
-        const { data, error } = await supabase
-          .from('orders')
-          .insert({
-            table_number: payload.tableNumber,
-            items: payload.items,
-            total: payload.total,
-            status: 'pending',
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-        
-        if (error) {
-          console.error('[CustomerOrder] ❌ Supabase fallback also failed:', error);
-          throw new Error(error.message || 'Failed to submit order');
-        }
-        
-        console.log('[CustomerOrder] ✅ Order submitted via Supabase fallback:', data.id);
-        return { orderId: data.id, ...data };
-      }
-    },
+  const ratingsStats = ratingsStatsQuery.data || {};
+
+  const createOrderMutation = trpc.orders.create.useMutation({
     onSuccess: (data) => {
       console.log('[CustomerOrder] ✅ Order submitted successfully');
-      console.log('[CustomerOrder] ✅ Order ID:', data.orderId || data.id);
-      
+      console.log('[CustomerOrder] ✅ Order ID:', (data as any).orderId || (data as any).id);
+
       setCart([]);
-      
+
       Alert.alert(
         t.orderSubmitted || 'Order Submitted!',
         'Your order has been sent to the kitchen. We\'ll bring it to your table soon!'
@@ -228,9 +157,9 @@ export default function CustomerOrderScreen() {
     onError: (error: any) => {
       console.error('[CustomerOrder] ❌ Order submission failed');
       console.error('[CustomerOrder] ❌ Error:', error?.message || error);
-      
+
       Alert.alert(
-        'Order Failed', 
+        'Order Failed',
         error?.message || 'Failed to submit order. Please try again.'
       );
     },
@@ -924,9 +853,9 @@ export default function CustomerOrderScreen() {
           </View>
         ) : (
           <>
-            {categories.filter(cat => cat !== 'all').map((category) => {
-              const categoryItems = filteredMenu.filter(item => item.category === category);
-              if (categoryItems.length === 0) return null;
+                {categories.filter(cat => cat !== 'all').map((category) => {
+                  const categoryItems = filteredMenu.filter(item => item.category === category);
+                  if (categoryItems.length === 0) return null;
               
               return (
                 <View 
@@ -948,7 +877,7 @@ export default function CustomerOrderScreen() {
                   
                   <View style={isGridView ? styles.menuItemsGrid : styles.menuItemsList}>
                     {categoryItems.map((item) => {
-                const itemStats = ratingsStatsQuery.data?.find(stat => stat.menuItemId === item.id);
+                const itemStats = ratingsStats[item.id];
                 const avgRating = itemStats?.averageRating || 0;
                 const totalRatings = itemStats?.totalRatings || 0;
                 
@@ -1267,7 +1196,7 @@ export default function CustomerOrderScreen() {
 
       <TouchableOpacity
         style={styles.switchButton}
-        onPress={() => router.push('/public-menu')}
+        onPress={() => router.push('/menu')}
         activeOpacity={0.8}
       >
         <Eye size={20} color="#fff" strokeWidth={2.5} />
@@ -1304,14 +1233,14 @@ export default function CustomerOrderScreen() {
                   <Text style={styles.itemModalName}>{getMenuItemName(selectedItem)}</Text>
                   <Text style={styles.itemModalDescription}>{getMenuItemDescription(selectedItem)}</Text>
                   
-                  {ratingsStatsQuery.data?.find(stat => stat.menuItemId === selectedItem.id) && (
+                  {ratingsStats[selectedItem.id] && (
                     <View style={styles.itemModalRating}>
                       <Star size={20} color="#D4AF37" fill="#D4AF37" />
                       <Text style={styles.itemModalRatingText}>
-                        {ratingsStatsQuery.data.find(stat => stat.menuItemId === selectedItem.id)!.averageRating.toFixed(1)}
+                        {ratingsStats[selectedItem.id]!.averageRating.toFixed(1)}
                       </Text>
                       <Text style={styles.itemModalRatingCount}>
-                        ({ratingsStatsQuery.data.find(stat => stat.menuItemId === selectedItem.id)!.totalRatings} reviews)
+                        ({ratingsStats[selectedItem.id]!.totalRatings} reviews)
                       </Text>
                     </View>
                   )}

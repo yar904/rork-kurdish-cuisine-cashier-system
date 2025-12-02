@@ -4,7 +4,7 @@ import { Text } from '@/components/CustomText';
 import { Stack, useRouter } from 'expo-router';
 import { ShoppingCart, Clock, DollarSign, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 import { useClearNotification, useNotifications } from '@/contexts/NotificationContext';
 
 type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'paid';

@@ -42,7 +42,7 @@ export default function LandingPage() {
   };
 
   const handleContinue = () => {
-    router.replace('/public-menu');
+    router.replace('/menu');
   };
 
 

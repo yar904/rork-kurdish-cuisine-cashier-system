@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpcClient";
 import { useRealtime } from "@/contexts/RealtimeContext";
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
-import type { Notification } from "@/types/restaurant";
+import type { RealtimePayload } from "@/contexts/RealtimeContext";
+import type { RouterOutputs } from "@/types/trpc";
 
 export type NotificationType = "assist" | "bill" | "notify";
 
@@ -31,11 +31,19 @@ type NotificationContextValue = {
   clearAll: () => Promise<void>;
 };
 
-const mapNotificationRecord = (record: NotificationRecord): TableNotification => ({
+type NotificationRecord = RouterOutputs["notifications"]["list"][number];
+type NotificationRowShape = {
+  id: number;
+  table_number: number;
+  type: NotificationType;
+  created_at: string;
+};
+
+const normalizeNotification = (record: NotificationRecord | NotificationRowShape): TableNotification => ({
   id: record.id,
-  tableNumber: record.table_number,
+  tableNumber: "table_number" in record ? record.table_number : record.tableNumber,
   type: record.type,
-  createdAt: record.created_at,
+  createdAt: "created_at" in record ? record.created_at : record.createdAt,
 });
 
 export const [NotificationProvider, useNotificationsContext] =
@@ -49,7 +57,7 @@ export const [NotificationProvider, useNotificationsContext] =
 
     useEffect(() => {
       if (notificationsQuery.data) {
-        setNotifications(notificationsQuery.data);
+        setNotifications(notificationsQuery.data.map(normalizeNotification));
       }
     }, [notificationsQuery.data]);
 
@@ -59,11 +67,11 @@ export const [NotificationProvider, useNotificationsContext] =
     const clearAllMutation = trpc.notifications.clearAll.useMutation();
 
     useEffect(() => {
-      return subscribeToNotifications((payload: RealtimePostgresChangesPayload<NotificationRow>) => {
+      return subscribeToNotifications((payload: RealtimePayload) => {
         if (payload.eventType === "INSERT") {
-          const record = payload.new as NotificationRow;
+          const record = payload.new as NotificationRowShape | NotificationRecord;
           setNotifications((prev) => {
-            const mapped = mapNotificationRow(record);
+            const mapped = normalizeNotification(record);
             const next = [mapped, ...prev.filter((item) => item.id !== mapped.id)];
             return next.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
           });
@@ -71,7 +79,7 @@ export const [NotificationProvider, useNotificationsContext] =
         }
 
         if (payload.eventType === "DELETE") {
-          const record = payload.old as NotificationRow;
+          const record = payload.old as NotificationRowShape | NotificationRecord;
           setNotifications((prev) => prev.filter((item) => item.id !== record.id));
         }
       });
@@ -88,7 +96,7 @@ export const [NotificationProvider, useNotificationsContext] =
           type: input.type ?? "notify",
         });
 
-        const mapped = mapNotificationRecord(created as NotificationRecord);
+        const mapped = normalizeNotification(created as NotificationRecord);
         setNotifications((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
         await utils.notifications.list.invalidate();
         return created;
@@ -98,7 +106,7 @@ export const [NotificationProvider, useNotificationsContext] =
 
     const list = useCallback(async () => {
       const data = await utils.notifications.list.fetch();
-      const mapped = data ?? [];
+      const mapped = (data ?? []).map(normalizeNotification);
       setNotifications(mapped);
       return mapped;
     }, [utils]);

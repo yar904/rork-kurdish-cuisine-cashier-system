@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { trpc, trpcClient } from "@/lib/trpc";
+import { trpc, trpcClient } from "@/lib/trpcClient";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TableProvider } from "@/contexts/TableContext";
@@ -45,7 +45,6 @@ function RootLayoutNav() {
       <Stack.Screen name="inventory" options={{ headerShown: false }} />
       <Stack.Screen name="table-qr-codes" options={{ headerShown: false }} />
       <Stack.Screen name="customer-order" options={{ headerShown: false }} />
-      <Stack.Screen name="public-menu" options={{ headerShown: false }} />
       <Stack.Screen
         name="font-preview"
         options={{ headerShown: true, title: "Kurdish Fonts" }}

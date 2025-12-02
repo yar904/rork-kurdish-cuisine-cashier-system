@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import { Table, TableStatus } from '@/types/restaurant';
-import { trpc } from '@/lib/trpc';
+import { trpc } from '@/lib/trpcClient';
 
 const generateInitialTables = (): Table[] => {
   return Array.from({ length: 12 }, (_, i) => ({
