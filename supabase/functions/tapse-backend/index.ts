@@ -1,10 +1,10 @@
+// No-op update to trigger Supabase redeploy
 import { handleRequest } from "./router.ts";
 
 Deno.serve(async (req: Request) => {
-  const url = new URL(req.url);
-  
-  console.log("[Supabase Function] Incoming request:", req.method, url.pathname);
-  console.log("[Supabase Function] Headers:", Object.fromEntries(req.headers.entries()));
+  const { pathname } = new URL(req.url);
+
+  console.log("[Supabase Function] Incoming request:", req.method, pathname);
 
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
