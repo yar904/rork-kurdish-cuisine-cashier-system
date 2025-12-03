@@ -1,4 +1,4 @@
-// Trigger Supabase redeploy to ensure public tapse-backend behavior
+// No-op update to trigger Supabase redeploy
 import { handleRequest } from "./router.ts";
 
 Deno.serve(async (req: Request) => {
