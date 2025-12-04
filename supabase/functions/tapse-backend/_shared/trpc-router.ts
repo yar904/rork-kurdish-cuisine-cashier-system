@@ -1,4 +1,4 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC } from "jsr:@trpc/server@latest";
 import superjson from "superjson";
 import { z } from "zod";
 import type { TRPCContext } from "./trpc-context.ts";
