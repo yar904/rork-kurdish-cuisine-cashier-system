@@ -1,4 +1,4 @@
-// redeploy trigger
+// No-op update to trigger Supabase redeploy
 import { handleRequest } from "./router.ts";
 
 Deno.serve(async (req: Request) => {
