@@ -1,3 +1,4 @@
+import type { inferAsyncReturnType } from "jsr:@trpc/server@^10.45.0";
 import { supabase } from "./supabase.ts";
 
 export interface AuthenticatedUser {
@@ -22,3 +23,5 @@ export async function createTRPCContext(req: Request): Promise<TRPCContext> {
     request: req,
   };
 }
+
+export type CreateTRPCContext = inferAsyncReturnType<typeof createTRPCContext>;
