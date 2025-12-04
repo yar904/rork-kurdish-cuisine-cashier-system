@@ -1,4 +1,4 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { fetchRequestHandler } from "jsr:@trpc/server@^10.45.0/adapters/fetch";
 import { createTRPCContext } from "./_shared/trpc-context.ts";
 import { appRouter } from "./_shared/trpc-router.ts";
 import { supabase } from "./_shared/supabase.ts";
@@ -35,11 +35,6 @@ export function handleRequest(request: Request): Promise<Response> {
     return Promise.resolve(healthResponse);
   }
 
-  // All TRPC calls require an Authorization header. When testing locally, pass the anon key:
-  //   curl -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-  //        -H "Content-Type: application/json" \
-  //        --data '{"id":0,"method":"query","params":{"input":null,"path":"menu.getAll"}}' \
-  //        https://opsqnzswjxzvywqjvjy.functions.supabase.co/tapse-backend/trpc
   return fetchRequestHandler({
     endpoint: TRPC_ENDPOINT,
     req: request,
