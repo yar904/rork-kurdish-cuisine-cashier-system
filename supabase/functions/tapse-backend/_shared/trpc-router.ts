@@ -1,6 +1,6 @@
-import { initTRPC } from "jsr:@trpc/server@latest";
+import { initTRPC } from "jsr:@trpc/server";
 import superjson from "superjson";
-import { z } from "zod";
+import { z } from "jsr:zod";
 import type { TRPCContext } from "./trpc-context.ts";
 import { supabase } from "./supabase.ts";
 
@@ -8,8 +8,8 @@ const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
 });
 
-const createTRPCRouter = t.router;
-const publicProcedure = t.procedure;
+export const createTRPCRouter = t.router;
+export const publicProcedure = t.procedure;
 
 const exampleRouter = createTRPCRouter({
   hi: publicProcedure

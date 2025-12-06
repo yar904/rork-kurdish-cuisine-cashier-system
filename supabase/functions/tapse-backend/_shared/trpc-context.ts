@@ -1,4 +1,4 @@
-import type { inferAsyncReturnType } from "jsr:@trpc/server@^10.45.0";
+import { type inferAsyncReturnType } from "jsr:@trpc/server";
 import { supabase } from "./supabase.ts";
 
 export interface AuthenticatedUser {
