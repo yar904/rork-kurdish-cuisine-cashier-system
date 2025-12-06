@@ -1,4 +1,4 @@
-import { fetchRequestHandler } from "jsr:@trpc/server@latest/adapters/fetch";
+import { fetchRequestHandler } from "jsr:@trpc/server/adapters/fetch";
 import { createTRPCContext } from "./_shared/trpc-context.ts";
 import { appRouter } from "./_shared/trpc-router.ts";
 import { supabase } from "./_shared/supabase.ts";
